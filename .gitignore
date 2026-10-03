@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+build/
+*.o
+*.elf
+*.plugin
+.env
+
+# build desktop dell'app e suoi dati
+client/desktop/omega-ui-desktop
+client/desktop/data/
+
+# immagini del catalogo dello Store (vedi server/README.md)
+server/api/store-assets/*
+!server/api/store-assets/.gitkeep

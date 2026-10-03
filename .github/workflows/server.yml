@@ -1,0 +1,52 @@
+name: server
+
+on:
+  push:
+    paths: ["server/**", ".github/workflows/server.yml"]
+  pull_request:
+    paths: ["server/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: omega
+          POSTGRES_PASSWORD: omega
+          POSTGRES_DB: omega
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U omega" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://omega:omega@127.0.0.1:5432/omega
+      OMEGA_SESSION_SECRET: ci-only-secret-0123456789abcdef0123456789
+      ADMIN_INSECURE_COOKIE: "1"
+      API_PORT: "18080"
+      PUBLIC_SOURCE_DIR: /tmp/src-pub
+    defaults:
+      run:
+        working-directory: server/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/api/package-lock.json
+      - run: npm ci
+      - name: sorgente servito su /source
+        run: |
+          mkdir -p /tmp/src-pub
+          cp -r ../../client /tmp/src-pub/omega-ui-src
+          cp -r ../../daemon /tmp/src-pub/omega-redirect-src
+      - run: find src test -name '*.js' -o -name '*.mjs' | xargs -n1 node --check
+      - name: avvio dell'api
+        run: |
+          nohup node src/server.js > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:18080/healthz && break; sleep 1; done
+      - run: npm test
+      - if: failure()
+        run: cat api.log

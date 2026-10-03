@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Omega">
+  <defs>
+    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7fe3ff"/>
+      <stop offset=".5" stop-color="#6f8bff"/>
+      <stop offset="1" stop-color="#b47bff"/>
+    </linearGradient>
+  </defs>
+  <path d="M11 50h12.5v-4.6A17.5 17.5 0 1 1 40.5 45.4V50H53" fill="none" stroke="url(#g)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

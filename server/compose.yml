@@ -1,0 +1,103 @@
+# Omega — server
+#
+#   proxy  l'unico servizio esposto: registra le richieste (con i dati sensibili
+#          oscurati) e le inoltra all'api
+#   api    account, social, Store, pannello di moderazione
+#   db     PostgreSQL
+#
+#   docker compose up -d --build --wait
+#   docker compose -f compose.yml -f compose.tls.yml up -d --build --wait   # con HTTPS (Caddy)
+#
+# Le variabili arrivano da .env: vedi .env.example o lancia scripts/install.sh.
+
+name: omega
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: omega-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PGUSER:-omega}
+      POSTGRES_PASSWORD: ${PGPASSWORD:?imposta PGPASSWORD nel .env}
+      POSTGRES_DB: ${PGDATABASE:-omega}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    logging: &logs
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  api:
+    build: ./api
+    image: omega-api:latest
+    container_name: omega-api
+    restart: unless-stopped
+    environment:
+      API_PORT: "8080"
+      DATABASE_URL: postgres://${PGUSER:-omega}:${PGPASSWORD}@db:5432/${PGDATABASE:-omega}
+      OMEGA_SESSION_SECRET: ${OMEGA_SESSION_SECRET:?imposta OMEGA_SESSION_SECRET nel .env}
+      OMEGA_SESSION_TTL_SECONDS: ${OMEGA_SESSION_TTL_SECONDS:-86400}
+      OMEGA_REGISTRATION_KEY: ${OMEGA_REGISTRATION_KEY:-}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8090}
+      LEGAL_CONTROLLER_NAME: ${LEGAL_CONTROLLER_NAME:-}
+      LEGAL_CONTROLLER_VAT: ${LEGAL_CONTROLLER_VAT:-}
+      LEGAL_CONTROLLER_ADDRESS: ${LEGAL_CONTROLLER_ADDRESS:-}
+      LEGAL_CONTACT_EMAIL: ${LEGAL_CONTACT_EMAIL:-}
+      LEGAL_HOSTING_PROVIDER: ${LEGAL_HOSTING_PROVIDER:-}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+      STORE_AUTOHIDE_REPORTS: ${STORE_AUTOHIDE_REPORTS:-3}
+    volumes:
+      - media-data:/app/media
+      # il sorgente dell'app, scaricabile da /source come chiede la GPL
+      - ../client:/app/src-pub/omega-ui-src:ro
+      - ../daemon:/app/src-pub/omega-redirect-src:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    logging: *logs
+
+  proxy:
+    build: ./proxy
+    image: omega-proxy:latest
+    container_name: omega-proxy
+    restart: unless-stopped
+    environment:
+      PROXY_PORT: "9986"
+      UPSTREAM_URL: http://api:8080
+      LOG_DIR: /var/log/omega
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+      REDACT_HEADERS: "authorization,cookie,set-cookie,proxy-authorization"
+      REDACT_QUERY: "access_token,refresh_token,code,id_token,ticket,token,password"
+      LOG_SKIP_PREFIXES: ${LOG_SKIP_PREFIXES-/api/v1/party/voice,/lab/v1/party/voice}
+    ports:
+      # di default solo in locale: davanti va un reverse proxy con HTTPS (compose.tls.yml)
+      - "${OMEGA_BIND:-127.0.0.1}:${OMEGA_PORT:-8090}:9986"
+    volumes:
+      - logs:/var/log/omega
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9986/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    logging: *logs
+
+volumes:
+  db-data:
+  logs:
+  media-data:

@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<title>Omega · Amministrazione</title>
+<style>
+:root {
+  --bg: #0c0e16;
+  --panel: #161a26;
+  --panel-2: #1c2130;
+  --line: #262c3d;
+  --accent: #0070f3;
+  --accent-2: #38a0ff;
+  --text: #e8ecf5;
+  --dim: #8b93a7;
+  --danger: #e5484d;
+  --ok: #2fbf71;
+  --warn: #f5a524;
+  --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 var(--font);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, select, textarea { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+/* ---------- Buttons & inputs ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+  padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500;
+  white-space: nowrap; transition: background .15s, border-color .15s, opacity .15s;
+}
+.btn:hover:not(:disabled) { border-color: #3a4258; background: #232a3c; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: #1a80ff; border-color: #1a80ff; }
+.btn.danger { background: transparent; border-color: rgba(229,72,77,.5); color: #ff7b7f; }
+.btn.danger:hover:not(:disabled) { background: rgba(229,72,77,.12); border-color: var(--danger); }
+.btn.danger.solid { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn.danger.solid:hover:not(:disabled) { background: #f05a5f; }
+.btn.ok { background: transparent; border-color: rgba(47,191,113,.5); color: #5fd896; }
+.btn.ok:hover:not(:disabled) { background: rgba(47,191,113,.12); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--dim); }
+.btn.ghost:hover:not(:disabled) { color: var(--text); background: var(--panel-2); }
+.btn.sm { padding: 4px 9px; font-size: 12px; border-radius: 7px; }
+
+.input, .select, .textarea {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 11px; color: var(--text); width: 100%; min-width: 0;
+}
+.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,112,243,.2); }
+.textarea { resize: vertical; min-height: 72px; }
+.select { appearance: none; padding-right: 30px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%), linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+label.field { display: block; margin-bottom: 14px; }
+label.field > span { display: block; font-size: 12px; color: var(--dim); margin-bottom: 5px; font-weight: 500; }
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap;
+  background: var(--panel-2); color: var(--dim); border: 1px solid var(--line);
+}
+.badge.accent { background: rgba(0,112,243,.15); color: var(--accent-2); border-color: rgba(56,160,255,.35); }
+.badge.danger { background: rgba(229,72,77,.14); color: #ff8a8d; border-color: rgba(229,72,77,.4); }
+.badge.ok { background: rgba(47,191,113,.13); color: #5fd896; border-color: rgba(47,191,113,.35); }
+.badge.warn { background: rgba(245,165,36,.13); color: #f7bb55; border-color: rgba(245,165,36,.35); }
+
+/* ---------- Login ---------- */
+#login {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,112,243,.18), transparent 60%), var(--bg);
+}
+.login-card {
+  width: 100%; max-width: 380px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 16px; padding: 30px 26px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-weight: 700; font-size: 19px;
+}
+.brand-name { font-weight: 700; font-size: 16px; letter-spacing: .01em; }
+.brand-sub { color: var(--dim); font-size: 12px; }
+.login-card h1 { font-size: 20px; margin: 22px 0 4px; }
+.login-card p.hint { color: var(--dim); margin: 0 0 20px; font-size: 13px; }
+.login-error {
+  background: rgba(229,72,77,.12); border: 1px solid rgba(229,72,77,.4); color: #ff9a9d;
+  padding: 9px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px;
+}
+.login-card .btn.primary { width: 100%; padding: 10px; font-size: 14px; }
+
+/* ---------- App layout ---------- */
+#app { display: grid; grid-template-columns: 228px minmax(0, 1fr); grid-template-rows: auto 1fr; min-height: 100vh; }
+.topbar {
+  grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 22px; border-bottom: 1px solid var(--line); background: rgba(12,14,22,.92);
+  position: sticky; top: 0; z-index: 20; backdrop-filter: blur(8px);
+}
+.topbar .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar .who-text { color: var(--dim); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar .who-text strong { color: var(--text); font-weight: 600; }
+.sidebar { border-right: 1px solid var(--line); padding: 16px 12px; background: var(--bg); }
+.nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 76px; }
+.nav a {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px 12px; border-radius: 8px; color: var(--dim); font-weight: 500; text-decoration: none;
+}
+.nav a:hover { background: var(--panel); color: var(--text); }
+.nav a.active { background: rgba(0,112,243,.14); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); }
+.nav .count {
+  min-width: 20px; padding: 0 6px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700;
+  display: inline-grid; place-items: center; background: var(--danger); color: #fff;
+}
+main { padding: 24px 26px 60px; min-width: 0; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.page-head h2 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
+.page-head p { margin: 4px 0 0; color: var(--dim); font-size: 13px; }
+
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.toolbar .search { flex: 1 1 240px; max-width: 420px; }
+.toolbar .select { width: auto; flex: 0 0 auto; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line); background: var(--panel); color: var(--dim); border-radius: 999px;
+  padding: 6px 13px; cursor: pointer; font-size: 13px; font-weight: 500;
+}
+.chip:hover { color: var(--text); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 11px; border-radius: 999px;
+  background: rgba(0,112,243,.15); border: 1px solid rgba(56,160,255,.35); color: var(--accent-2); font-size: 12px; max-width: 100%;
+}
+.filter-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-pill button { border: 0; background: transparent; color: inherit; cursor: pointer; padding: 0 4px; font-size: 15px; line-height: 1; }
+
+/* ---------- Stats ---------- */
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.stat {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px;
+  text-align: left; cursor: pointer; transition: border-color .15s, transform .15s; color: var(--text);
+}
+.stat:hover { border-color: #3a4258; transform: translateY(-1px); }
+.stat .label { color: var(--dim); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+.stat .value { font-size: 28px; font-weight: 700; margin-top: 6px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat.highlight { border-color: var(--accent); background: linear-gradient(160deg, rgba(0,112,243,.22), var(--panel) 70%); }
+.stat.highlight .value { color: var(--accent-2); }
+.stat.highlight.hot { border-color: var(--danger); background: linear-gradient(160deg, rgba(229,72,77,.2), var(--panel) 70%); }
+.stat.highlight.hot .value { color: #ff8a8d; }
+.callout {
+  margin-top: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.callout h3 { margin: 0 0 3px; font-size: 15px; }
+.callout p { margin: 0; color: var(--dim); font-size: 13px; }
+
+/* ---------- Cards (reports) ---------- */
+.cards { display: grid; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; min-width: 0; }
+.card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.card-head .spacer { flex: 1; }
+.card-head .date { color: var(--dim); font-size: 12px; }
+.target-title { font-weight: 600; font-size: 15px; word-break: break-word; }
+.target-meta { color: var(--dim); font-size: 13px; margin-top: 2px; word-break: break-word; }
+.quote {
+  margin: 10px 0 0; padding: 10px 12px; background: var(--bg); border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0; white-space: pre-wrap; word-break: break-word; font-size: 13px;
+}
+.quote.muted { border-left-color: var(--line); color: var(--dim); }
+.card-info { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; color: var(--dim); font-size: 12px; }
+.card-info strong { color: var(--text); font-weight: 500; }
+.card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+/* ---------- Tables ---------- */
+.table-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data th {
+  text-align: left; color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+  padding: 11px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--panel-2);
+}
+table.data td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.data tr:last-child td { border-bottom: 0; }
+table.data tr:hover td { background: rgba(255,255,255,.015); }
+table.data td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data th.num { text-align: right; }
+table.data td.nowrap { white-space: nowrap; }
+.cell-title { font-weight: 600; overflow-wrap: anywhere; word-break: normal; min-width: 9ch; }
+.cell-sub { color: var(--dim); font-size: 12px; margin-top: 2px; word-break: break-word; }
+.cell-body { max-width: 440px; white-space: pre-wrap; word-break: break-word; }
+.cell-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; align-items: center; }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.muted { color: var(--dim); }
+.danger-text { color: #ff8a8d; }
+
+.empty, .loading {
+  padding: 40px 16px; text-align: center; color: var(--dim); background: var(--panel);
+  border: 1px dashed var(--line); border-radius: var(--radius);
+}
+.loading::before {
+  content: ""; display: block; width: 22px; height: 22px; margin: 0 auto 10px; border-radius: 50%;
+  border: 2px solid var(--line); border-top-color: var(--accent-2); animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 14px; color: var(--dim); font-size: 13px; }
+.pager .btns { display: flex; gap: 8px; }
+
+/* ---------- Modal ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(5,6,10,.7); z-index: 100; display: flex;
+  align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px);
+  animation: fade .12s ease-out;
+}
+.modal {
+  width: 100%; max-width: 460px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px; box-shadow: 0 30px 80px rgba(0,0,0,.5); max-height: calc(100vh - 32px); overflow-y: auto;
+}
+.modal h3 { margin: 0 0 8px; font-size: 17px; }
+.modal p { margin: 0 0 12px; color: var(--dim); word-break: break-word; }
+.modal .subject { color: var(--text); font-weight: 600; }
+.modal .warning {
+  background: rgba(229,72,77,.1); border: 1px solid rgba(229,72,77,.45); color: #ffb0b2;
+  padding: 11px 13px; border-radius: 9px; margin-bottom: 14px; font-size: 13px;
+}
+.modal .warning strong { display: block; color: #ff8a8d; margin-bottom: 3px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+@keyframes fade { from { opacity: 0; } }
+
+/* ---------- Toasts ---------- */
+#toasts { position: fixed; right: 16px; bottom: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; max-width: min(380px, calc(100vw - 32px)); }
+.toast {
+  background: var(--panel-2); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+  border-radius: 10px; padding: 11px 14px; box-shadow: 0 12px 30px rgba(0,0,0,.45);
+  animation: slide .18s ease-out; cursor: pointer; word-break: break-word;
+}
+.toast.error { border-left-color: var(--danger); }
+.toast.ok { border-left-color: var(--ok); }
+.toast .t-title { font-weight: 600; font-size: 13px; }
+.toast .t-detail { color: var(--dim); font-size: 12px; margin-top: 2px; }
+@keyframes slide { from { transform: translateY(10px); opacity: 0; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr; }
+  .topbar { padding: 10px 16px; position: static; }
+  .brand-sub { display: none; }
+  .sidebar {
+    border-right: 0; border-bottom: 1px solid var(--line); padding: 0 8px;
+    position: sticky; top: 0; z-index: 19; background: rgba(12,14,22,.96); backdrop-filter: blur(8px);
+  }
+  .nav { flex-direction: row; overflow-x: auto; position: static; gap: 0; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { flex: 0 0 auto; border-radius: 0; padding: 12px 12px; box-shadow: none; }
+  .nav a.active { background: transparent; box-shadow: inset 0 -2px 0 var(--accent); }
+  main { padding: 18px 16px 50px; }
+  .page-head h2 { font-size: 19px; }
+  .toolbar .search { max-width: none; flex-basis: 100%; }
+  .toolbar .select { flex: 1 1 auto; }
+
+  /* table -> cards */
+  .table-wrap { background: transparent; border: 0; overflow: visible; }
+  table.data, table.data tbody, table.data tr, table.data td { display: block; width: 100%; }
+  table.data thead { display: none; }
+  table.data tr {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 10px 14px; margin-bottom: 10px;
+  }
+  table.data tr:hover td { background: transparent; }
+  table.data td {
+    border: 0; padding: 5px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+    text-align: right;
+  }
+  table.data td.num { text-align: right; }
+  table.data td::before {
+    content: attr(data-label); color: var(--dim); font-size: 12px; font-weight: 500; flex: 0 0 auto; text-align: left; padding-top: 1px;
+  }
+  table.data td.cell-main { display: block; text-align: left; padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+  table.data td.cell-main::before { display: none; }
+  table.data td.cell-main .cell-badges { justify-content: flex-start; }
+  table.data td .cell-body { max-width: none; text-align: left; }
+  table.data td.cell-actions { display: block; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--line); }
+  table.data td.cell-actions::before { display: none; }
+  table.data td.cell-actions .actions { justify-content: flex-start; }
+  table.data td > div, table.data td > span { min-width: 0; }
+  .cell-badges { justify-content: flex-end; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat .value { font-size: 24px; }
+}
+@media (max-width: 420px) {
+  .topbar .who-text .lbl { display: none; }
+  .stat { padding: 13px 14px; }
+}
+</style>
+</head>
+<body>
+
+<section id="login" hidden>
+  <form class="login-card" id="login-form" autocomplete="on" novalidate>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">Ω</div>
+      <div>
+        <div class="brand-name">Omega</div>
+        <div class="brand-sub">Amministrazione</div>
+      </div>
+    </div>
+    <h1>Accesso amministratori</h1>
+    <p class="hint">Entra con il tuo ID online e la password di un account amministratore.</p>
+    <div class="login-error" id="login-error" role="alert" hidden></div>
+    <label class="field"><span>ID online</span>
+      <input class="input" id="login-id" name="online_id" autocomplete="username" required autocapitalize="off" spellcheck="false">
+    </label>
+    <label class="field"><span>Password</span>
+      <input class="input" id="login-pw" name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn primary" type="submit" id="login-btn">Accedi</button>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">Ω</div>
+      <div>
+        <div class="brand-name">Omega</div>
+        <div class="brand-sub">Amministrazione</div>
+      </div>
+    </div>
+    <div class="who">
+      <span class="who-text"><span class="lbl">Connesso come </span><strong id="me-name"></strong></span>
+      <button class="btn sm" id="logout-btn" type="button">Esci</button>
+    </div>
+  </header>
+  <aside class="sidebar">
+    <nav class="nav" id="nav" aria-label="Sezioni"></nav>
+  </aside>
+  <main id="view" tabindex="-1"></main>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* --- Utilities --- */
+  const PAGE = 50;
+
+  function el(tag, props) {
+    const n = document.createElement(tag);
+    if (props) {
+      for (const k of Object.keys(props)) {
+        const v = props[k];
+        if (v == null || v === false) continue;
+        if (k === 'class') n.className = v;
+        else if (k === 'text') n.textContent = String(v);
+        else if (k.slice(0, 2) === 'on' && typeof v === 'function') n.addEventListener(k.slice(2), v);
+        else if (k === 'value') n.value = v;
+        else n.setAttribute(k, v === true ? '' : String(v));
+      }
+    }
+    for (let i = 2; i < arguments.length; i++) append(n, arguments[i]);
+    return n;
+  }
+  function append(n, c) {
+    if (c == null || c === false) return;
+    if (Array.isArray(c)) { c.forEach(x => append(n, x)); return; }
+    n.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+
+  function parseDate(v) {
+    if (v == null || v === '') return null;
+    let d;
+    if (typeof v === 'number') d = new Date(v < 1e12 ? v * 1000 : v);
+    else {
+      const s = String(v);
+      if (/^\d+$/.test(s)) { const n = Number(s); d = new Date(n < 1e12 ? n * 1000 : n); }
+      else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) d = new Date(s.replace(' ', 'T') + 'Z');
+      else d = new Date(s);
+    }
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const dtFmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const dFmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+  function fmtDate(v) { const d = parseDate(v); return d ? dtFmt.format(d) : (v ? String(v) : '—'); }
+  function fmtDay(v) { const d = parseDate(v); return d ? dFmt.format(d) : (v ? String(v) : '—'); }
+  function fmtNum(v) { const n = Number(v); return Number.isFinite(n) ? n.toLocaleString('it-IT') : '—'; }
+  function safeUrl(u) {
+    if (!u || typeof u !== 'string') return null;
+    try {
+      const url = new URL(u, location.href);
+      return (url.protocol === 'http:' || url.protocol === 'https:') ? url.href : null;
+    } catch (_) { return null; }
+  }
+  function truncate(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+  function qs(obj) {
+    const p = new URLSearchParams();
+    for (const k of Object.keys(obj)) if (obj[k] !== '' && obj[k] != null) p.set(k, obj[k]);
+    const s = p.toString();
+    return s ? '?' + s : '';
+  }
+  function debounce(fn, ms) { let t; return function () { const a = arguments; clearTimeout(t); t = setTimeout(() => fn.apply(null, a), ms); }; }
+
+  /* --- Toasts --- */
+  const toasts = document.getElementById('toasts');
+  function toast(title, detail, kind) {
+    const t = el('div', { class: 'toast ' + (kind || ''), role: kind === 'error' ? 'alert' : 'status' },
+      el('div', { class: 't-title', text: title }),
+      detail ? el('div', { class: 't-detail', text: detail }) : null);
+    const remove = () => { if (t.parentNode) t.parentNode.removeChild(t); };
+    t.addEventListener('click', remove);
+    toasts.appendChild(t);
+    setTimeout(remove, kind === 'error' ? 7000 : 4000);
+    while (toasts.children.length > 4) toasts.removeChild(toasts.firstChild);
+  }
+
+  const ERRORS = {
+    invalid_credentials: 'Credenziali non valide',
+    not_admin: 'Questo account non è un amministratore',
+    too_many_attempts: 'Troppi tentativi: riprova tra qualche minuto',
+    rate_limited: 'Troppe richieste: riprova tra poco',
+    unauthorized: 'Sessione scaduta',
+    forbidden: 'Operazione non consentita',
+    not_found: 'Elemento non trovato',
+    invalid_action: 'Azione non valida',
+    bad_request: 'Richiesta non valida',
+    csrf: 'Richiesta bloccata (controllo CSRF)',
+    network: 'Errore di rete',
+    server_error: 'Errore del server',
+    internal_error: 'Errore del server'
+  };
+  function errorTitle(err) {
+    const code = err && err.body && err.body.error;
+    if (code && ERRORS[code]) return ERRORS[code];
+    if (err && err.status === 429) return ERRORS.too_many_attempts;
+    if (err && err.status >= 500) return ERRORS.server_error;
+    return code ? String(code) : 'Errore imprevisto';
+  }
+  function errorDetail(err) {
+    const b = err && err.body;
+    if (!b || b.detail == null) return (b && b.error && ERRORS[b.error]) ? String(b.error) : '';
+    return typeof b.detail === 'string' ? b.detail : JSON.stringify(b.detail);
+  }
+  function toastError(err) { toast(errorTitle(err), errorDetail(err), 'error'); }
+
+  /* --- API --- */
+  class ApiError extends Error {
+    constructor(status, body) { super((body && body.error) || ('HTTP ' + status)); this.status = status; this.body = body || {}; }
+  }
+  async function api(method, path, body, opts) {
+    opts = opts || {};
+    const init = { method: method, credentials: 'same-origin', headers: { 'Accept': 'application/json' }, cache: 'no-store' };
+    if (method !== 'GET') {
+      init.headers['X-Omega-Admin'] = '1';
+      init.headers['Content-Type'] = 'application/json';
+      if (body !== undefined) init.body = JSON.stringify(body);
+    }
+    let res;
+    try { res = await fetch(path, init); }
+    catch (e) {
+      const err = new ApiError(0, { error: 'network', detail: 'Impossibile contattare il server' });
+      if (!opts.silent) toastError(err);
+      throw err;
+    }
+    let data = null;
+    if (res.status !== 204) {
+      const txt = await res.text();
+      if (txt) { try { data = JSON.parse(txt); } catch (_) { data = res.ok ? null : { error: 'HTTP ' + res.status, detail: truncate(txt, 200) }; } }
+    }
+    if (res.status === 401 && !opts.isLogin) {
+      showLogin(state.me ? 'La sessione è scaduta: accedi di nuovo.' : '');
+      throw new ApiError(401, data);
+    }
+    if (!res.ok) {
+      const err = new ApiError(res.status, data || { error: 'HTTP ' + res.status });
+      if (!opts.silent) toastError(err);
+      throw err;
+    }
+    return data;
+  }
+
+  /* --- Modal --- */
+  // opts: {title, message (string|Node), subject, warning:{title,text}, confirmLabel, danger,
+  //        reason: {label, placeholder}, requireText}
+  function confirmModal(opts) {
+    return new Promise(resolve => {
+      const prevFocus = document.activeElement;
+      let reasonInput = null, typeInput = null;
+      const confirmBtn = el('button', { class: 'btn ' + (opts.danger ? 'danger solid' : 'primary'), type: 'submit', text: opts.confirmLabel || 'Conferma' });
+      const cancelBtn = el('button', { class: 'btn', type: 'button', text: 'Annulla' });
+      const body = [];
+      if (opts.message) body.push(el('p', null, opts.message));
+      if (opts.subject) body.push(el('p', null, el('span', { class: 'subject', text: opts.subject })));
+      if (opts.warning) body.push(el('div', { class: 'warning' }, el('strong', { text: opts.warning.title }), opts.warning.text));
+      if (opts.reason) {
+        reasonInput = el('textarea', { class: 'textarea', maxlength: '500', placeholder: opts.reason.placeholder || 'Facoltativo' });
+        body.push(el('label', { class: 'field' }, el('span', { text: opts.reason.label || 'Motivo (facoltativo)' }), reasonInput));
+      }
+      if (opts.requireText) {
+        typeInput = el('input', { class: 'input', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'off' });
+        confirmBtn.disabled = true;
+        typeInput.addEventListener('input', () => { confirmBtn.disabled = typeInput.value.trim() !== opts.requireText; });
+        body.push(el('label', { class: 'field' },
+          el('span', null, 'Per confermare digita ', el('strong', { style: 'color:var(--text)', text: opts.requireText })),
+          typeInput));
+      }
+      const form = el('form', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'modal-title' },
+        el('h3', { id: 'modal-title', text: opts.title }),
+        body,
+        el('div', { class: 'modal-actions' }, cancelBtn, confirmBtn));
+      const overlay = el('div', { class: 'overlay' }, form);
+      function close(result) {
+        document.removeEventListener('keydown', onKey, true);
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        if (prevFocus && prevFocus.focus) try { prevFocus.focus(); } catch (_) {}
+        resolve(result);
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); close(null); }
+        else if (e.key === 'Tab') {
+          const f = form.querySelectorAll('button:not(:disabled), input, textarea');
+          if (!f.length) return;
+          const first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        if (confirmBtn.disabled) return;
+        close({ reason: reasonInput ? reasonInput.value.trim() : '' });
+      });
+      cancelBtn.addEventListener('click', () => close(null));
+      overlay.addEventListener('mousedown', e => { if (e.target === overlay) close(null); });
+      document.addEventListener('keydown', onKey, true);
+      document.body.appendChild(overlay);
+      (typeInput || reasonInput || cancelBtn).focus();
+    });
+  }
+
+  /* --- State & routing --- */
+  const state = {
+    me: null,
+    route: 'panoramica',
+    seq: 0,
+    reports: { status: 'open', kind: 'store' },
+    posts: { q: '', status: 'all', offset: 0 },
+    apps: { q: '', status: 'all', offset: 0 },
+    comments: { q: '', status: 'all', app_id: '', app_title: '', offset: 0 },
+    users: { q: '', status: 'all', offset: 0 },
+    log: { offset: 0 }
+  };
+
+  const ROUTES = [
+    { id: 'panoramica', label: 'Panoramica', render: renderOverview },
+    { id: 'segnalazioni', label: 'Segnalazioni', render: renderReports },
+    { id: 'homebrew', label: 'Homebrew', render: renderApps },
+    { id: 'commenti', label: 'Commenti', render: renderComments },
+    { id: 'bacheca', label: 'Bacheca', render: renderPosts },
+    { id: 'utenti', label: 'Utenti', render: renderUsers },
+    { id: 'registro', label: 'Registro', render: renderLog }
+  ];
+
+  const loginSec = document.getElementById('login');
+  const appSec = document.getElementById('app');
+  const view = document.getElementById('view');
+  const nav = document.getElementById('nav');
+  const navLinks = {};
+  let reportsBadge = null;
+
+  ROUTES.forEach(r => {
+    const a = el('a', { href: '#' + r.id }, el('span', { text: r.label }));
+    if (r.id === 'segnalazioni') { reportsBadge = el('span', { class: 'count', hidden: true }); a.appendChild(reportsBadge); }
+    navLinks[r.id] = a;
+    nav.appendChild(a);
+  });
+
+  function currentRoute() {
+    const h = (location.hash || '').replace(/^#/, '');
+    return ROUTES.find(r => r.id === h) || ROUTES[0];
+  }
+  function go(id) { if (location.hash === '#' + id) rerender(); else location.hash = id; }
+  window.addEventListener('hashchange', () => { if (state.me) rerender(true); });
+
+  function rerender(scrollTop) {
+    const r = currentRoute();
+    state.route = r.id;
+    Object.keys(navLinks).forEach(k => {
+      navLinks[k].classList.toggle('active', k === r.id);
+      if (k === r.id) navLinks[k].setAttribute('aria-current', 'page'); else navLinks[k].removeAttribute('aria-current');
+    });
+    document.title = r.label + ' · Omega · Amministrazione';
+    if (scrollTop) window.scrollTo(0, 0);
+    const seq = ++state.seq;
+    r.render(seq);
+  }
+  function stale(seq) { return seq !== state.seq; }
+
+  function setView(nodes) { view.replaceChildren(); append(view, nodes); }
+
+  function pageHead(title, sub, right) {
+    return el('div', { class: 'page-head' },
+      el('div', null, el('h2', { text: title }), sub ? el('p', { text: sub }) : null),
+      right || null);
+  }
+  function loading() { return el('div', { class: 'loading', text: 'Caricamento…' }); }
+  function empty(text) { return el('div', { class: 'empty', text: text }); }
+
+  function chips(options, current, onPick) {
+    return el('div', { class: 'chips', role: 'group' }, options.map(o =>
+      el('button', { type: 'button', class: 'chip' + (o.value === current ? ' active' : ''), 'aria-pressed': o.value === current ? 'true' : 'false',
+        text: o.label, onclick: () => { if (o.value !== current) onPick(o.value); } })));
+  }
+  function searchBox(value, placeholder, onSearch) {
+    const input = el('input', { class: 'input search', type: 'search', placeholder: placeholder, value: value, 'aria-label': placeholder });
+    const fire = debounce(() => onSearch(input.value.trim()), 350);
+    input.addEventListener('input', fire);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); onSearch(input.value.trim()); } });
+    return input;
+  }
+  function pager(total, offset, onChange) {
+    total = Number(total) || 0;
+    const from = total ? offset + 1 : 0;
+    const to = Math.min(offset + PAGE, total);
+    return el('div', { class: 'pager' },
+      el('span', { text: total ? (fmtNum(from) + '–' + fmtNum(to) + ' di ' + fmtNum(total)) : 'Nessun risultato' }),
+      el('div', { class: 'btns' },
+        el('button', { class: 'btn sm', type: 'button', text: '‹ Precedente', disabled: offset <= 0,
+          onclick: () => onChange(Math.max(0, offset - PAGE)) }),
+        el('button', { class: 'btn sm', type: 'button', text: 'Successiva ›', disabled: offset + PAGE >= total,
+          onclick: () => onChange(offset + PAGE) })));
+  }
+  function td(label, content, cls) { return el('td', { 'data-label': label, class: cls || null }, content); }
+  function table(headers, rows) {
+    return el('div', { class: 'table-wrap' },
+      el('table', { class: 'data' },
+        el('thead', null, el('tr', null, headers.map(h => el('th', { class: h.num ? 'num' : null, scope: 'col', text: h.label })))),
+        el('tbody', null, rows)));
+  }
+
+  // Run an action button: disables, calls fn, toasts ok, refreshes.
+  async function runAction(btn, fn, okMsg) {
+    const btns = btn && btn.closest ? btn.closest('.actions, .card-actions') : null;
+    const all = btns ? Array.from(btns.querySelectorAll('button')) : (btn ? [btn] : []);
+    all.forEach(b => { b.disabled = true; });
+    try {
+      await fn();
+      toast(okMsg, '', 'ok');
+      refreshBadge();
+      rerender();
+    } catch (e) {
+      all.forEach(b => { b.disabled = false; });
+    }
+  }
+
+  /* --- Auth --- */
+  const loginForm = document.getElementById('login-form');
+  const loginErr = document.getElementById('login-error');
+  const loginBtn = document.getElementById('login-btn');
+  const loginId = document.getElementById('login-id');
+  const loginPw = document.getElementById('login-pw');
+
+  function showLogin(msg) {
+    state.me = null;
+    state.seq++;
+    document.querySelectorAll('.overlay').forEach(o => o.remove());
+    appSec.hidden = true;
+    loginSec.hidden = false;
+    document.title = 'Accesso · Omega · Amministrazione';
+    loginPw.value = '';
+    if (msg) { loginErr.textContent = msg; loginErr.hidden = false; } else loginErr.hidden = true;
+    setTimeout(() => (loginId.value ? loginPw : loginId).focus(), 0);
+  }
+  function showApp(me) {
+    state.me = me;
+    document.getElementById('me-name').textContent = me.online_id || '';
+    loginSec.hidden = true;
+    appSec.hidden = false;
+    refreshBadge();
+    rerender(true);
+  }
+
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    loginErr.hidden = true;
+    const id = loginId.value.trim(), pw = loginPw.value;
+    if (!id || !pw) { loginErr.textContent = 'Inserisci ID online e password.'; loginErr.hidden = false; return; }
+    loginBtn.disabled = true; loginBtn.textContent = 'Accesso in corso…';
+    try {
+      const me = await api('POST', '/admin/api/login', { online_id: id, password: pw }, { isLogin: true, silent: true });
+      loginPw.value = '';
+      showApp(me || { online_id: id });
+    } catch (err) {
+      let msg = errorTitle(err);
+      if (err.status === 401) msg = 'ID online o password non corretti.';
+      else if (err.status === 403) msg = 'Questo account non ha i permessi di amministratore.';
+      else if (err.status === 429) msg = 'Troppi tentativi di accesso. Riprova tra qualche minuto.';
+      const d = err.body && typeof err.body.detail === 'string' ? err.body.detail : '';
+      loginErr.textContent = d ? msg + ' (' + d + ')' : msg;
+      loginErr.hidden = false;
+    } finally {
+      loginBtn.disabled = false; loginBtn.textContent = 'Accedi';
+    }
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try { await api('POST', '/admin/api/logout', {}, { silent: true }); } catch (_) {}
+    showLogin('Sei uscito.');
+  });
+
+  async function refreshBadge() {
+    try {
+      const s = await api('GET', '/admin/api/stats', undefined, { silent: true });
+      const n = openTotal(s);
+      reportsBadge.textContent = n > 99 ? '99+' : String(n);
+      reportsBadge.hidden = n === 0;
+      return s;
+    } catch (_) { return null; }
+  }
+
+  // segnalazioni aperte in tutto: Store + social
+  function openTotal(s) { return (Number(s && s.open_reports) || 0) + (Number(s && s.open_social_reports) || 0); }
+
+  /* --- Labels --- */
+  const REASONS = {
+    pirateria: 'Pirateria',
+    malware: 'Malware/pericoloso',
+    contenuto_offensivo: 'Contenuto offensivo',
+    spam: 'Spam',
+    link_rotto: 'Link non funzionante',
+    molestie: 'Molestie',
+    impersonificazione: 'Impersonificazione',
+    altro: 'Altro'
+  };
+  const REPORT_STATUS = { open: ['Aperta', 'warn'], resolved: ['Risolta', 'ok'], dismissed: ['Archiviata', ''] };
+  const LOG_ACTIONS = {
+    login: 'Accesso', logout: 'Uscita',
+    hide: 'Oscurato', show: 'Ripristinato', delete: 'Eliminato', remove: 'Eliminato',
+    dismiss: 'Segnalazione archiviata',
+    ban: 'Bannato', unban: 'Riabilitato', make_admin: 'Reso admin', remove_admin: 'Admin rimosso',
+    logout_all: 'Disconnesso ovunque',
+    report_dismiss: 'Segnalazione archiviata', report_hide: 'Segnalazione: oscurato', report_remove: 'Segnalazione: eliminato',
+    app_hide: 'Homebrew oscurato', app_show: 'Homebrew ripristinato', app_delete: 'Homebrew eliminato',
+    comment_hide: 'Commento oscurato', comment_show: 'Commento ripristinato', comment_delete: 'Commento eliminato',
+    user_ban: 'Utente bannato', user_unban: 'Utente riabilitato', user_make_admin: 'Utente reso admin',
+    user_remove_admin: 'Admin rimosso', user_logout_all: 'Utente disconnesso ovunque', user_delete: 'Account eliminato',
+    social_report_dismiss: 'Segnalazione social archiviata', social_report_resolve: 'Segnalazione social risolta',
+    social_report_hide: 'Segnalazione social: oscurato', social_report_remove: 'Segnalazione social: eliminato',
+    post_hide: 'Post oscurato', post_show: 'Post ripristinato', post_delete: 'Post eliminato'
+  };
+  const TARGET_TYPES = { app: 'Homebrew', comment: 'Commento', user: 'Utente', report: 'Segnalazione', post: 'Post', post_comment: 'Commento a un post' };
+  function reasonBadge(r) {
+    const cls = (r === 'malware' || r === 'pirateria' || r === 'molestie') ? 'danger' : (r === 'contenuto_offensivo' || r === 'impersonificazione' ? 'warn' : 'accent');
+    return el('span', { class: 'badge ' + cls, text: REASONS[r] || r || 'Altro' });
+  }
+  function isAdminRole(role) { return role === 'admin' || role === 'superadmin' || role === 'owner'; }
+
+  /* --- Panoramica --- */
+  async function renderOverview(seq) {
+    setView([pageHead('Panoramica', 'Stato generale del servizio Omega: Store e social.'), loading()]);
+    let s;
+    try { s = await api('GET', '/admin/api/stats'); } catch (_) { if (!stale(seq)) setView([pageHead('Panoramica'), empty('Impossibile caricare le statistiche.')]); return; }
+    if (stale(seq)) return;
+    s = s || {};
+    const open = openTotal(s);
+    reportsBadge.textContent = open > 99 ? '99+' : String(open);
+    reportsBadge.hidden = open === 0;
+    const cards = [
+      { k: 'open_reports', label: 'Segnalazioni Store', go: () => { state.reports.status = 'open'; state.reports.kind = 'store'; go('segnalazioni'); }, hl: true, hot: Number(s.open_reports) > 0 },
+      { k: 'open_social_reports', label: 'Segnalazioni social', go: () => { state.reports.status = 'open'; state.reports.kind = 'social'; go('segnalazioni'); }, hl: true, hot: Number(s.open_social_reports) > 0 },
+      { k: 'users', label: 'Utenti', go: () => { state.users.status = 'all'; state.users.offset = 0; go('utenti'); } },
+      { k: 'banned', label: 'Utenti bannati', go: () => { state.users.status = 'banned'; state.users.offset = 0; go('utenti'); } },
+      { k: 'admins', label: 'Amministratori', go: () => { state.users.status = 'admins'; state.users.offset = 0; go('utenti'); } },
+      { k: 'apps', label: 'Homebrew', go: () => { state.apps.status = 'all'; state.apps.offset = 0; go('homebrew'); } },
+      { k: 'hidden_apps', label: 'Homebrew oscurati', go: () => { state.apps.status = 'hidden'; state.apps.offset = 0; go('homebrew'); } },
+      { k: 'comments', label: 'Commenti', go: () => { state.comments.status = 'all'; state.comments.offset = 0; go('commenti'); } },
+      { k: 'hidden_comments', label: 'Commenti oscurati', go: () => { state.comments.status = 'hidden'; state.comments.offset = 0; go('commenti'); } },
+      { k: 'posts', label: 'Post in bacheca', go: () => { state.posts.status = 'all'; state.posts.offset = 0; go('bacheca'); } },
+      { k: 'hidden_posts', label: 'Post oscurati', go: () => { state.posts.status = 'hidden'; state.posts.offset = 0; go('bacheca'); } },
+      { k: 'groups', label: 'Gruppi', go: null },
+      { k: 'library_items', label: 'Elementi in libreria', go: null },
+      { k: 'active_sessions', label: 'Sessioni attive', go: null }
+    ];
+    const grid = el('div', { class: 'stats' }, cards.map(c => {
+      const cls = 'stat' + (c.hl ? ' highlight' + (c.hot ? ' hot' : '') : '');
+      const inner = [el('div', { class: 'label', text: c.label }), el('div', { class: 'value', text: fmtNum(s[c.k]) })];
+      return c.go ? el('button', { type: 'button', class: cls, onclick: c.go }, inner) : el('div', { class: cls, style: 'cursor:default' }, inner);
+    }));
+    const callout = el('div', { class: 'callout' },
+      el('div', null,
+        el('h3', { text: open > 0 ? (open === 1 ? 'C’è 1 segnalazione da esaminare' : 'Ci sono ' + fmtNum(open) + ' segnalazioni da esaminare') : 'Nessuna segnalazione in attesa' }),
+        el('p', { text: open > 0 ? 'Controlla i contenuti segnalati dagli utenti e decidi se archiviarli, oscurarli o eliminarli.' : 'Ottimo lavoro: la coda di moderazione è vuota.' })),
+      el('button', { class: 'btn primary', type: 'button', text: 'Vai alle segnalazioni', onclick: () => {
+        state.reports.status = 'open'; state.reports.kind = (Number(s.open_reports) || 0) === 0 && Number(s.open_social_reports) > 0 ? 'social' : 'store'; go('segnalazioni');
+      } }));
+    setView([pageHead('Panoramica', 'Stato generale del servizio Omega: Store e social.',
+      el('button', { class: 'btn sm', type: 'button', text: 'Aggiorna', onclick: () => rerender() })), grid, callout]);
+  }
+
+  /* --- Segnalazioni --- */
+  async function renderReports(seq) {
+    const f = state.reports;
+    const social = f.kind === 'social';
+    const head = pageHead('Segnalazioni', social ? 'Utenti, post e commenti della bacheca segnalati dagli utenti.' : 'Homebrew e commenti dello Store segnalati dagli utenti.',
+      el('button', { class: 'btn sm', type: 'button', text: 'Aggiorna', onclick: () => rerender() }));
+    const bar = el('div', { class: 'toolbar' },
+      chips([{ value: 'store', label: 'Store' }, { value: 'social', label: 'Social' }], f.kind, v => { f.kind = v; rerender(); }),
+      chips([
+        { value: 'open', label: 'Aperte' }, { value: 'resolved', label: 'Risolte' },
+        { value: 'dismissed', label: 'Archiviate' }, { value: 'all', label: 'Tutte' }
+      ], f.status, v => { f.status = v; rerender(); }));
+    setView([head, bar, loading()]);
+    let data;
+    try { data = await api('GET', (social ? '/admin/api/social-reports' : '/admin/api/reports') + qs({ status: f.status })); } catch (_) { if (!stale(seq)) setView([head, bar, empty('Impossibile caricare le segnalazioni.')]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.reports) || [];
+    if (!list.length) { setView([head, bar, empty(f.status === 'open' ? 'Nessuna segnalazione aperta.' : 'Nessuna segnalazione.')]); return; }
+    setView([head, bar, el('div', { class: 'cards' }, list.map(social ? socialReportCard : reportCard))]);
+  }
+
+  // Segnalazione social: utente, post della bacheca o commento a un post.
+  function socialReportCard(r) {
+    const st = REPORT_STATUS[r.status] || [r.status || '—', ''];
+    const type = r.target_type;
+    const kindLabel = type === 'user' ? 'Utente' : type === 'post' ? 'Post' : 'Commento a un post';
+    const target = [];
+    if (type === 'user') {
+      target.push(el('div', { class: 'target-title' }, 'Utente ', r.owner || '(account eliminato)'));
+      target.push(el('div', { class: 'target-meta' }, r.banned ? el('span', { class: 'badge danger', text: 'Bannato' }) : el('span', { class: 'badge ok', text: 'Attivo' }),
+        ' · per il ban usa la sezione Utenti'));
+      if (r.text) target.push(el('div', { class: 'quote muted' }, el('strong', { text: 'Profilo al momento della segnalazione: ' }), r.text));
+    } else {
+      target.push(el('div', { class: 'target-title' }, (type === 'post' ? 'Post di ' : 'Commento di ') + (r.owner || 'utente sconosciuto')));
+      target.push(el('div', { class: 'target-meta' },
+        type === 'post_comment' && r.post_id ? 'sul post #' + r.post_id + ' · ' : null,
+        r.game_name ? r.game_name + ' · ' : null,
+        !r.exists ? el('span', { class: 'badge', text: 'Eliminato' }) : r.hidden ? el('span', { class: 'badge warn', text: 'Oscurato' }) : el('span', { class: 'badge ok', text: 'Visibile' })));
+      target.push(el('div', { class: 'quote' + (r.exists ? '' : ' muted'), text: r.text || '' }));
+    }
+    if (r.note) target.push(el('div', { class: 'quote muted' }, el('strong', { text: 'Nota del segnalante: ' }), r.note));
+
+    const info = el('div', { class: 'card-info' },
+      el('span', null, 'Segnalato da ', el('strong', { text: r.reporter || '—' })),
+      el('span', null, 'Tipo: ', el('strong', { text: kindLabel })),
+      Number(r.open_for_target) > 0 ? el('span', null, 'Segnalazioni aperte su questo contenuto: ',
+        el('strong', { class: Number(r.open_for_target) > 1 ? 'danger-text' : null, text: fmtNum(r.open_for_target) })) : null,
+      r.resolved_by ? el('span', null, 'Gestita da ', el('strong', { text: r.resolved_by }), r.resolved_at ? ' il ' + fmtDate(r.resolved_at) : '') : null);
+
+    let actions = null;
+    if (r.status === 'open') {
+      const subj = type === 'user' ? (r.owner || '') : '«' + truncate(r.text, 120) + '»';
+      const path = '/admin/api/social-reports/' + encodeURIComponent(r.report_id);
+      const act = (btn, action, cfg, ok) => async () => {
+        const res = await confirmModal(Object.assign({ subject: subj, reason: { label: 'Nota (facoltativa)', placeholder: 'Annotazione interna sulla decisione' } }, cfg));
+        if (!res) return;
+        const body = { action: action };
+        if (res.reason) body.note = res.reason;
+        runAction(btn, () => api('POST', path, body), ok);
+      };
+      const bD = el('button', { class: 'btn sm', type: 'button', text: 'Archivia' });
+      bD.addEventListener('click', act(bD, 'dismiss', { title: 'Archiviare la segnalazione?', message: 'La segnalazione verrà chiusa senza intervenire.', confirmLabel: 'Archivia' }, 'Segnalazione archiviata'));
+      const btns = [bD];
+      if (type === 'user') {
+        const bOk = el('button', { class: 'btn sm ok', type: 'button', text: 'Segna come risolta' });
+        bOk.addEventListener('click', act(bOk, 'resolve', { title: 'Segnare come risolta?', message: 'Usa questa azione dopo aver preso provvedimenti (es. ban dalla sezione Utenti).', confirmLabel: 'Risolta' }, 'Segnalazione risolta'));
+        const bU = el('button', { class: 'btn sm', type: 'button', text: 'Apri in Utenti' });
+        bU.addEventListener('click', () => { Object.assign(state.users, { q: r.owner || '', status: 'all', offset: 0 }); go('utenti'); });
+        btns.push(bOk, bU);
+      } else if (r.exists) {
+        const what = type === 'post' ? 'il post' : 'il commento';
+        const bH = el('button', { class: 'btn sm', type: 'button', text: 'Oscura' });
+        const bR = el('button', { class: 'btn sm danger', type: 'button', text: 'Elimina contenuto' });
+        bH.addEventListener('click', act(bH, 'hide', { title: 'Oscurare il contenuto?', message: 'Verrà oscurato ' + what + ' segnalato: non sarà più visibile agli utenti, ma potrà essere ripristinato.', confirmLabel: 'Oscura', danger: true }, 'Contenuto oscurato'));
+        bR.addEventListener('click', act(bR, 'remove', { title: 'Eliminare definitivamente il contenuto?', message: 'Verrà eliminato ' + what + ' segnalato.', warning: { title: 'Operazione irreversibile', text: 'Il contenuto sarà cancellato e non potrà essere recuperato.' }, confirmLabel: 'Elimina contenuto', danger: true }, 'Contenuto eliminato'));
+        btns.push(bH, bR);
+      } else {
+        const bOk = el('button', { class: 'btn sm ok', type: 'button', text: 'Segna come risolta' });
+        bOk.addEventListener('click', act(bOk, 'resolve', { title: 'Segnare come risolta?', message: 'Il contenuto non esiste più.', confirmLabel: 'Risolta' }, 'Segnalazione risolta'));
+        btns.push(bOk);
+      }
+      actions = el('div', { class: 'card-actions' }, btns);
+    }
+
+    return el('article', { class: 'card' },
+      el('div', { class: 'card-head' }, el('span', { class: 'badge', text: kindLabel }), reasonBadge(r.reason), el('span', { class: 'badge ' + st[1], text: st[0] }),
+        el('span', { class: 'spacer' }), el('span', { class: 'date', text: fmtDate(r.created_at) })),
+      target, info, actions);
+  }
+
+  function reportCard(r) {
+    const st = REPORT_STATUS[r.status] || [r.status || '—', ''];
+    const app = r.app || {};
+    const isComment = r.target_type === 'comment' && r.comment;
+    const target = [];
+    if (isComment) {
+      const c = r.comment;
+      target.push(el('div', { class: 'target-title' }, 'Commento di ', c.author || 'utente sconosciuto'));
+      target.push(el('div', { class: 'target-meta' }, 'su «', app.title || 'homebrew sconosciuto', '»',
+        c.hidden ? ' · ' : null, c.hidden ? el('span', { class: 'badge warn', text: 'Oscurato' }) : null));
+      target.push(el('div', { class: 'quote', text: c.body || '' }));
+    } else if (r.target_type === 'comment') {
+      target.push(el('div', { class: 'target-title', text: 'Commento eliminato' }));
+      target.push(el('div', { class: 'target-meta' }, 'su «', app.title || 'homebrew sconosciuto', '»'));
+    } else {
+      target.push(el('div', { class: 'target-title' }, 'Homebrew «', app.title || 'sconosciuto', '»'));
+      target.push(el('div', { class: 'target-meta' }, 'di ', app.author || '—', ' · ',
+        app.published === false ? el('span', { class: 'badge warn', text: 'Oscurato' }) : el('span', { class: 'badge ok', text: 'Pubblicato' })));
+    }
+    if (r.note) target.push(el('div', { class: 'quote muted' }, el('strong', { text: 'Nota del segnalante: ' }), r.note));
+
+    const info = el('div', { class: 'card-info' },
+      el('span', null, 'Segnalato da ', el('strong', { text: r.reporter || '—' })),
+      el('span', null, 'Tipo: ', el('strong', { text: isComment || r.target_type === 'comment' ? 'Commento' : 'Homebrew' })),
+      Number(r.open_for_target) > 0 ? el('span', null, 'Segnalazioni aperte su questo contenuto: ',
+        el('strong', { class: Number(r.open_for_target) > 1 ? 'danger-text' : null, text: fmtNum(r.open_for_target) })) : null,
+      r.resolved_by ? el('span', null, 'Gestita da ', el('strong', { text: r.resolved_by }), r.resolved_at ? ' il ' + fmtDate(r.resolved_at) : '') : null);
+
+    let actions = null;
+    if (r.status === 'open') {
+      const subj = isComment ? '«' + truncate(r.comment.body, 120) + '»' : '«' + (app.title || '') + '»';
+      const act = (btn, action, cfg, ok) => async () => {
+        const res = await confirmModal(Object.assign({ subject: subj, reason: { label: 'Nota (facoltativa)', placeholder: 'Annotazione interna sulla decisione' } }, cfg));
+        if (!res) return;
+        const body = { action: action };
+        if (res.reason) body.note = res.reason;
+        runAction(btn(), () => api('POST', '/admin/api/reports/' + encodeURIComponent(r.report_id), body), ok);
+      };
+      const bD = el('button', { class: 'btn sm', type: 'button', text: 'Archivia' });
+      const bH = el('button', { class: 'btn sm', type: 'button', text: 'Oscura' });
+      const bR = el('button', { class: 'btn sm danger', type: 'button', text: 'Elimina contenuto' });
+      const what = isComment ? 'il commento' : 'l’homebrew';
+      bD.addEventListener('click', act(() => bD, 'dismiss', { title: 'Archiviare la segnalazione?', message: 'La segnalazione verrà chiusa senza intervenire sul contenuto.', confirmLabel: 'Archivia' }, 'Segnalazione archiviata'));
+      bH.addEventListener('click', act(() => bH, 'hide', { title: 'Oscurare il contenuto?', message: 'Verrà oscurato ' + what + ' segnalato: non sarà più visibile agli utenti, ma potrà essere ripristinato.', confirmLabel: 'Oscura', danger: true }, 'Contenuto oscurato'));
+      bR.addEventListener('click', act(() => bR, 'remove', { title: 'Eliminare definitivamente il contenuto?', message: 'Verrà eliminato ' + what + ' segnalato.', warning: { title: 'Operazione irreversibile', text: 'Il contenuto sarà cancellato e non potrà essere recuperato.' }, confirmLabel: 'Elimina contenuto', danger: true }, 'Contenuto eliminato'));
+      actions = el('div', { class: 'card-actions' }, bD, bH, bR);
+    }
+
+    return el('article', { class: 'card' },
+      el('div', { class: 'card-head' }, reasonBadge(r.reason), el('span', { class: 'badge ' + st[1], text: st[0] }),
+        el('span', { class: 'spacer' }), el('span', { class: 'date', text: fmtDate(r.created_at) })),
+      target, info, actions);
+  }
+
+  /* --- Homebrew --- */
+  async function renderApps(seq) {
+    const f = state.apps;
+    const head = pageHead('Homebrew', 'Applicazioni pubblicate dagli utenti e voci di catalogo.');
+    const bar = el('div', { class: 'toolbar' },
+      searchBox(f.q, 'Cerca per titolo o autore…', q => { f.q = q; f.offset = 0; rerender(); }),
+      chips([{ value: 'all', label: 'Tutti' }, { value: 'published', label: 'Pubblicati' }, { value: 'hidden', label: 'Oscurati' }],
+        f.status, v => { f.status = v; f.offset = 0; rerender(); }));
+    setView([head, bar, loading()]);
+    let data;
+    try { data = await api('GET', '/admin/api/apps' + qs({ q: f.q, status: f.status, offset: f.offset, limit: PAGE })); }
+    catch (_) { if (!stale(seq)) setView([head, bar, empty('Impossibile caricare gli homebrew.')]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.apps) || [];
+    const total = data && data.total != null ? data.total : list.length;
+    const pg = pager(total, f.offset, o => { f.offset = o; rerender(true); });
+    if (!list.length) { setView([head, bar, empty('Nessun homebrew trovato.'), total ? pg : null]); return; }
+    const rows = list.map(appRow);
+    setView([head, bar, table([
+      { label: 'Titolo' }, { label: 'Autore' }, { label: 'Piattaforma' }, { label: 'Tipo file' }, { label: 'Stato' },
+      { label: 'Download', num: true }, { label: 'Mi piace', num: true }, { label: 'Segnal.', num: true }, { label: 'Data' }, { label: 'Azioni' }
+    ], rows), pg]);
+  }
+
+  function appRow(a) {
+    const hidden = a.published === false || a.published === 0;
+    const href = safeUrl(a.download_url);
+    const badges = el('div', { class: 'cell-badges' },
+      a.catalog_key != null ? el('span', { class: 'badge accent', title: 'Voce del catalogo curato', text: 'Catalogo' }) : null,
+      a.category ? el('span', { class: 'badge', text: a.category }) : null,
+      href ? el('a', { href: href, target: '_blank', rel: 'noopener noreferrer', text: 'Download ↗' }) : null,
+      Number(a.comments) > 0 ? el('a', { href: '#commenti', text: fmtNum(a.comments) + ' commenti', onclick: e => {
+        e.preventDefault(); Object.assign(state.comments, { app_id: a.app_id, app_title: a.title || '', offset: 0, q: '', status: 'all' }); go('commenti');
+      } }) : null);
+    const stato = hidden
+      ? el('div', null, el('span', { class: 'badge warn', text: 'Oscurato' }), a.hidden_reason ? el('div', { class: 'cell-sub', text: a.hidden_reason }) : null)
+      : el('span', { class: 'badge ok', text: 'Pubblicato' });
+
+    const bToggle = el('button', { class: 'btn sm' + (hidden ? ' ok' : ''), type: 'button', text: hidden ? 'Ripristina' : 'Oscura' });
+    const bDel = el('button', { class: 'btn sm danger', type: 'button', text: 'Elimina' });
+    const path = '/admin/api/apps/' + encodeURIComponent(a.app_id);
+    bToggle.addEventListener('click', async () => {
+      if (hidden) { runAction(bToggle, () => api('POST', path, { action: 'show' }), 'Homebrew ripristinato'); return; }
+      const res = await confirmModal({ title: 'Oscurare questo homebrew?', subject: '«' + (a.title || '') + '»',
+        message: 'Non sarà più visibile nello Store finché non verrà ripristinato.', danger: true, confirmLabel: 'Oscura',
+        reason: { label: 'Motivo (facoltativo)', placeholder: 'Visibile all’autore e nel registro' } });
+      if (!res) return;
+      const body = { action: 'hide' }; if (res.reason) body.reason = res.reason;
+      runAction(bToggle, () => api('POST', path, body), 'Homebrew oscurato');
+    });
+    bDel.addEventListener('click', async () => {
+      const res = await confirmModal({ title: 'Eliminare questo homebrew?', subject: '«' + (a.title || '') + '»',
+        warning: { title: 'Operazione irreversibile', text: 'Verranno eliminati l’homebrew, i suoi commenti, voti e segnalazioni.' },
+        danger: true, confirmLabel: 'Elimina' });
+      if (!res) return;
+      runAction(bDel, () => api('DELETE', path), 'Homebrew eliminato');
+    });
+    const likes = el('span', { title: fmtNum(a.likes) + ' mi piace, ' + fmtNum(a.dislikes) + ' non mi piace' },
+      fmtNum(a.likes), el('span', { class: 'muted', text: ' / ' + fmtNum(a.dislikes) }));
+    const rep = Number(a.reports_open) || 0;
+    return el('tr', null,
+      td('Titolo', [el('div', { class: 'cell-title', text: a.title || '(senza titolo)' }),
+        a.tagline ? el('div', { class: 'cell-sub', text: a.tagline }) : null, badges], 'cell-main'),
+      td('Autore', el('span', { text: a.author || '—' })),
+      td('Piattaforma', el('span', { text: a.platform || '—' })),
+      td('Tipo file', el('span', { text: a.file_kind || '—' })),
+      td('Stato', stato),
+      td('Download', fmtNum(a.downloads), 'num'),
+      td('Mi piace', likes, 'num'),
+      td('Segnalazioni aperte', rep ? el('span', { class: 'badge danger', text: fmtNum(rep) }) : el('span', { class: 'muted', text: '0' }), 'num'),
+      td('Data', el('span', { text: fmtDay(a.created_at), title: fmtDate(a.created_at) }), 'nowrap'),
+      td('Azioni', el('div', { class: 'actions' }, bToggle, bDel), 'cell-actions'));
+  }
+
+  /* --- Commenti --- */
+  async function renderComments(seq) {
+    const f = state.comments;
+    const head = pageHead('Commenti', 'Commenti degli utenti sugli homebrew.');
+    const bar = el('div', { class: 'toolbar' },
+      searchBox(f.q, 'Cerca nel testo o per autore…', q => { f.q = q; f.offset = 0; rerender(); }),
+      chips([{ value: 'all', label: 'Tutti' }, { value: 'visible', label: 'Visibili' }, { value: 'hidden', label: 'Oscurati' }],
+        f.status, v => { f.status = v; f.offset = 0; rerender(); }),
+      f.app_id ? el('span', { class: 'filter-pill' }, el('span', { text: 'Homebrew: ' + (f.app_title || f.app_id) }),
+        el('button', { type: 'button', 'aria-label': 'Rimuovi filtro', text: '×', onclick: () => { f.app_id = ''; f.app_title = ''; f.offset = 0; rerender(); } })) : null);
+    setView([head, bar, loading()]);
+    let data;
+    try { data = await api('GET', '/admin/api/comments' + qs({ q: f.q, app_id: f.app_id, status: f.status, offset: f.offset, limit: PAGE })); }
+    catch (_) { if (!stale(seq)) setView([head, bar, empty('Impossibile caricare i commenti.')]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.comments) || [];
+    const total = data && data.total != null ? data.total : list.length;
+    const pg = pager(total, f.offset, o => { f.offset = o; rerender(true); });
+    if (!list.length) { setView([head, bar, empty('Nessun commento trovato.'), total ? pg : null]); return; }
+    setView([head, bar, table([
+      { label: 'Commento' }, { label: 'Homebrew' }, { label: 'Autore' }, { label: 'Stato' }, { label: 'Segnal.', num: true }, { label: 'Data' }, { label: 'Azioni' }
+    ], list.map(commentRow)), pg]);
+  }
+
+  function commentRow(c) {
+    const hidden = !!c.hidden;
+    const path = '/admin/api/comments/' + encodeURIComponent(c.comment_id);
+    const bToggle = el('button', { class: 'btn sm' + (hidden ? ' ok' : ''), type: 'button', text: hidden ? 'Ripristina' : 'Oscura' });
+    const bDel = el('button', { class: 'btn sm danger', type: 'button', text: 'Elimina' });
+    const subj = '«' + truncate(c.body, 140) + '» di ' + (c.author || '—');
+    bToggle.addEventListener('click', async () => {
+      if (hidden) { runAction(bToggle, () => api('POST', path, { action: 'show' }), 'Commento ripristinato'); return; }
+      const res = await confirmModal({ title: 'Oscurare questo commento?', subject: subj,
+        message: 'Il commento non sarà più visibile agli utenti, ma potrà essere ripristinato.', danger: true, confirmLabel: 'Oscura' });
+      if (!res) return;
+      runAction(bToggle, () => api('POST', path, { action: 'hide' }), 'Commento oscurato');
+    });
+    bDel.addEventListener('click', async () => {
+      const res = await confirmModal({ title: 'Eliminare questo commento?', subject: subj,
+        warning: { title: 'Operazione irreversibile', text: 'Il commento sarà cancellato definitivamente.' }, danger: true, confirmLabel: 'Elimina' });
+      if (!res) return;
+      runAction(bDel, () => api('DELETE', path), 'Commento eliminato');
+    });
+    const rep = Number(c.reports_open) || 0;
+    return el('tr', null,
+      td('Commento', el('div', { class: 'cell-body', text: c.body || '' }), 'cell-main'),
+      td('Homebrew', el('a', { href: '#commenti', text: c.app_title || ('#' + c.app_id), title: 'Mostra solo i commenti di questo homebrew',
+        onclick: e => { e.preventDefault(); Object.assign(state.comments, { app_id: c.app_id, app_title: c.app_title || '', offset: 0 }); rerender(); } })),
+      td('Autore', el('span', { text: c.author || '—' })),
+      td('Stato', hidden ? el('span', { class: 'badge warn', text: 'Oscurato' }) : el('span', { class: 'badge ok', text: 'Visibile' })),
+      td('Segnalazioni aperte', rep ? el('span', { class: 'badge danger', text: fmtNum(rep) }) : el('span', { class: 'muted', text: '0' }), 'num'),
+      td('Data', el('span', { text: fmtDate(c.created_at) }), 'nowrap'),
+      td('Azioni', el('div', { class: 'actions' }, bToggle, bDel), 'cell-actions'));
+  }
+
+  /* --- Bacheca --- */
+  async function renderPosts(seq) {
+    const f = state.posts;
+    const head = pageHead('Bacheca', 'Post pubblicati dagli utenti nella bacheca social.');
+    const bar = el('div', { class: 'toolbar' },
+      searchBox(f.q, 'Cerca nel testo o per autore…', q => { f.q = q; f.offset = 0; rerender(); }),
+      chips([{ value: 'all', label: 'Tutti' }, { value: 'visible', label: 'Visibili' }, { value: 'hidden', label: 'Oscurati' }],
+        f.status, v => { f.status = v; f.offset = 0; rerender(); }));
+    setView([head, bar, loading()]);
+    let data;
+    try { data = await api('GET', '/admin/api/posts' + qs({ q: f.q, status: f.status, offset: f.offset, limit: PAGE })); }
+    catch (_) { if (!stale(seq)) setView([head, bar, empty('Impossibile caricare i post.')]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.posts) || [];
+    const total = data && data.total != null ? data.total : list.length;
+    const pg = pager(total, f.offset, o => { f.offset = o; rerender(true); });
+    if (!list.length) { setView([head, bar, empty('Nessun post trovato.'), total ? pg : null]); return; }
+    setView([head, bar, table([
+      { label: 'Post' }, { label: 'Autore' }, { label: 'Stato' }, { label: 'Mi piace', num: true }, { label: 'Commenti', num: true },
+      { label: 'Segnal.', num: true }, { label: 'Data' }, { label: 'Azioni' }
+    ], list.map(postRow)), pg]);
+  }
+
+  function postRow(p) {
+    const hidden = !!p.hidden;
+    const path = '/admin/api/posts/' + encodeURIComponent(p.post_id);
+    const bToggle = el('button', { class: 'btn sm' + (hidden ? ' ok' : ''), type: 'button', text: hidden ? 'Ripristina' : 'Oscura' });
+    const bDel = el('button', { class: 'btn sm danger', type: 'button', text: 'Elimina' });
+    const subj = '«' + truncate(p.text, 140) + '» di ' + (p.author || '—');
+    bToggle.addEventListener('click', async () => {
+      if (hidden) { runAction(bToggle, () => api('POST', path, { action: 'show' }), 'Post ripristinato'); return; }
+      const res = await confirmModal({ title: 'Oscurare questo post?', subject: subj,
+        message: 'Il post non sarà più visibile agli utenti, ma potrà essere ripristinato.', danger: true, confirmLabel: 'Oscura',
+        reason: { label: 'Motivo (facoltativo)', placeholder: 'Resta nel registro' } });
+      if (!res) return;
+      const body = { action: 'hide' }; if (res.reason) body.reason = res.reason;
+      runAction(bToggle, () => api('POST', path, body), 'Post oscurato');
+    });
+    bDel.addEventListener('click', async () => {
+      const res = await confirmModal({ title: 'Eliminare questo post?', subject: subj,
+        warning: { title: 'Operazione irreversibile', text: 'Verranno eliminati il post, i suoi commenti e i mi piace.' }, danger: true, confirmLabel: 'Elimina' });
+      if (!res) return;
+      runAction(bDel, () => api('DELETE', path), 'Post eliminato');
+    });
+    const rep = Number(p.reports_open) || 0;
+    const stato = hidden
+      ? el('div', null, el('span', { class: 'badge warn', text: 'Oscurato' }), p.hidden_reason ? el('div', { class: 'cell-sub', text: p.hidden_reason }) : null)
+      : el('span', { class: 'badge ok', text: 'Visibile' });
+    return el('tr', null,
+      td('Post', [el('div', { class: 'cell-body', text: p.text || '' }),
+        p.game_name ? el('div', { class: 'cell-badges' }, el('span', { class: 'badge accent', text: p.game_name })) : null], 'cell-main'),
+      td('Autore', el('span', { text: p.author || '—' })),
+      td('Stato', stato),
+      td('Mi piace', fmtNum(p.likes), 'num'),
+      td('Commenti', fmtNum(p.comments), 'num'),
+      td('Segnalazioni aperte', rep ? el('span', { class: 'badge danger', text: fmtNum(rep) }) : el('span', { class: 'muted', text: '0' }), 'num'),
+      td('Data', el('span', { text: fmtDate(p.created_at) }), 'nowrap'),
+      td('Azioni', el('div', { class: 'actions' }, bToggle, bDel), 'cell-actions'));
+  }
+
+  /* --- Utenti --- */
+  async function renderUsers(seq) {
+    const f = state.users;
+    const head = pageHead('Utenti', 'Account registrati al servizio.');
+    const bar = el('div', { class: 'toolbar' },
+      searchBox(f.q, 'Cerca per ID online o email…', q => { f.q = q; f.offset = 0; rerender(); }),
+      chips([{ value: 'all', label: 'Tutti' }, { value: 'banned', label: 'Bannati' }, { value: 'admins', label: 'Admin' }],
+        f.status, v => { f.status = v; f.offset = 0; rerender(); }));
+    setView([head, bar, loading()]);
+    let data;
+    try { data = await api('GET', '/admin/api/users' + qs({ q: f.q, status: f.status, offset: f.offset, limit: PAGE })); }
+    catch (_) { if (!stale(seq)) setView([head, bar, empty('Impossibile caricare gli utenti.')]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.users) || [];
+    const total = data && data.total != null ? data.total : list.length;
+    const pg = pager(total, f.offset, o => { f.offset = o; rerender(true); });
+    if (!list.length) { setView([head, bar, empty('Nessun utente trovato.'), total ? pg : null]); return; }
+    setView([head, bar, table([
+      { label: 'Utente' }, { label: 'Ruolo' }, { label: 'Iscritto' }, { label: 'Ultimo accesso' }, { label: 'Stato' },
+      { label: 'Homebrew', num: true }, { label: 'Commenti', num: true }, { label: 'Segnal. ricevute', num: true }, { label: 'Azioni' }
+    ], list.map(userRow)), pg]);
+  }
+
+  function userRow(u) {
+    const self = state.me && u.online_id === state.me.online_id;
+    const banned = !!u.banned_at;
+    const admin = isAdminRole(u.role);
+    const path = '/admin/api/users/' + encodeURIComponent(u.account_id);
+    const name = u.online_id || ('#' + u.account_id);
+
+    const bBan = el('button', { class: 'btn sm ' + (banned ? 'ok' : 'danger'), type: 'button', text: banned ? 'Riabilita' : 'Banna', disabled: self && !banned });
+    const bAdm = el('button', { class: 'btn sm', type: 'button', text: admin ? 'Togli admin' : 'Rendi admin', disabled: self && admin });
+    const bOut = el('button', { class: 'btn sm', type: 'button', text: 'Disconnetti ovunque' });
+    const bDel = el('button', { class: 'btn sm danger', type: 'button', text: 'Elimina account', disabled: self });
+    if (self) [bBan, bAdm, bDel].forEach(b => { if (b.disabled) b.title = 'Non puoi applicare questa azione al tuo account'; });
+
+    bBan.addEventListener('click', async () => {
+      if (banned) {
+        const res = await confirmModal({ title: 'Riabilitare questo utente?', subject: name, message: 'L’utente potrà di nuovo accedere e pubblicare contenuti.', confirmLabel: 'Riabilita' });
+        if (!res) return;
+        runAction(bBan, () => api('POST', path, { action: 'unban' }), 'Utente riabilitato');
+        return;
+      }
+      const res = await confirmModal({ title: 'Bannare questo utente?', subject: name,
+        message: 'L’utente non potrà più accedere e tutte le sue sessioni verranno chiuse.', danger: true, confirmLabel: 'Banna',
+        reason: { label: 'Motivo del ban (facoltativo)', placeholder: 'Es. pubblicazione ripetuta di contenuti pirata' } });
+      if (!res) return;
+      const body = { action: 'ban' }; if (res.reason) body.reason = res.reason;
+      runAction(bBan, () => api('POST', path, body), 'Utente bannato');
+    });
+    bAdm.addEventListener('click', async () => {
+      const res = await confirmModal(admin
+        ? { title: 'Togliere i permessi di amministratore?', subject: name, message: 'L’utente non potrà più accedere a questo pannello.', danger: true, confirmLabel: 'Togli admin', reason: { label: 'Motivo (facoltativo)' } }
+        : { title: 'Rendere amministratore questo utente?', subject: name, message: 'Avrà accesso completo a questo pannello: moderazione, ban ed eliminazione di account.', confirmLabel: 'Rendi admin', reason: { label: 'Motivo (facoltativo)' } });
+      if (!res) return;
+      const body = { action: admin ? 'remove_admin' : 'make_admin' }; if (res.reason) body.reason = res.reason;
+      runAction(bAdm, () => api('POST', path, body), admin ? 'Permessi di amministratore rimossi' : 'Utente reso amministratore');
+    });
+    bOut.addEventListener('click', async () => {
+      const res = await confirmModal({ title: 'Disconnettere ovunque?', subject: name,
+        message: 'Tutte le sessioni attive di questo utente (console e web) verranno chiuse.', danger: true, confirmLabel: 'Disconnetti',
+        reason: { label: 'Motivo (facoltativo)' } });
+      if (!res) return;
+      const body = { action: 'logout_all' }; if (res.reason) body.reason = res.reason;
+      runAction(bOut, () => api('POST', path, body), 'Sessioni chiuse');
+    });
+    bDel.addEventListener('click', async () => {
+      const res = await confirmModal({ title: 'Eliminare definitivamente l’account?', subject: name + (u.email ? ' · ' + u.email : ''),
+        warning: { title: 'Attenzione: operazione irreversibile',
+          text: 'Verranno cancellati l’account e TUTTI i suoi contenuti: ' + fmtNum(u.apps) + ' homebrew, ' + fmtNum(u.comments) +
+            ' commenti, voti, libreria e sessioni. Non sarà possibile recuperarli.' },
+        requireText: u.online_id || String(u.account_id), danger: true, confirmLabel: 'Elimina account' });
+      if (!res) return;
+      runAction(bDel, () => api('DELETE', path), 'Account eliminato');
+    });
+
+    const stato = banned
+      ? el('div', null, el('span', { class: 'badge danger', text: 'Bannato' }),
+          el('div', { class: 'cell-sub', text: 'dal ' + fmtDay(u.banned_at) }),
+          u.ban_reason ? el('div', { class: 'cell-sub', text: 'Motivo: ' + u.ban_reason }) : null)
+      : el('span', { class: 'badge ok', text: 'Attivo' });
+    const rep = Number(u.reports_against) || 0;
+    return el('tr', null,
+      td('Utente', [el('div', { class: 'cell-title' }, name, self ? el('span', { class: 'muted', text: ' (tu)' }) : null),
+        el('div', { class: 'cell-sub', text: u.email || '—' })], 'cell-main'),
+      td('Ruolo', admin ? el('span', { class: 'badge accent', text: 'Admin' }) : el('span', { class: 'muted', text: 'Utente' })),
+      td('Iscritto', el('span', { text: fmtDay(u.created_at), title: fmtDate(u.created_at) }), 'nowrap'),
+      td('Ultimo accesso', el('span', { text: u.last_login_at ? fmtDate(u.last_login_at) : 'Mai' }), 'nowrap'),
+      td('Stato', stato),
+      td('Homebrew', fmtNum(u.apps), 'num'),
+      td('Commenti', fmtNum(u.comments), 'num'),
+      td('Segnalazioni ricevute', rep ? el('span', { class: 'badge danger', text: fmtNum(rep) }) : el('span', { class: 'muted', text: '0' }), 'num'),
+      td('Azioni', el('div', { class: 'actions' }, bBan, bAdm, bOut, bDel), 'cell-actions'));
+  }
+
+  /* --- Registro --- */
+  async function renderLog(seq) {
+    const f = state.log;
+    const head = pageHead('Registro', 'Azioni eseguite dagli amministratori.',
+      el('button', { class: 'btn sm', type: 'button', text: 'Aggiorna', onclick: () => rerender() }));
+    setView([head, loading()]);
+    let data;
+    try { data = await api('GET', '/admin/api/log' + qs({ offset: f.offset, limit: PAGE })); }
+    catch (_) { if (!stale(seq)) setView([head, empty('Impossibile caricare il registro.')]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.log) || [];
+    const total = data && data.total != null ? data.total : list.length;
+    const pg = pager(total, f.offset, o => { f.offset = o; rerender(true); });
+    if (!list.length) { setView([head, empty('Il registro è vuoto.'), total ? pg : null]); return; }
+    setView([head, table([{ label: 'Data' }, { label: 'Amministratore' }, { label: 'Azione' }, { label: 'Destinazione' }, { label: 'Dettaglio' }],
+      list.map(e => {
+        let detail = e.detail;
+        if (detail != null && typeof detail === 'object') detail = JSON.stringify(detail);
+        const target = e.target_type ? (TARGET_TYPES[e.target_type] || e.target_type) + (e.target_id != null && e.target_id !== '' ? ' #' + e.target_id : '') : '—';
+        return el('tr', null,
+          td('Data', el('span', { text: fmtDate(e.created_at) }), 'cell-main nowrap'),
+          td('Amministratore', el('span', { text: e.admin || '—' })),
+          td('Azione', el('span', { class: 'badge', title: e.action || '', text: LOG_ACTIONS[e.action] || e.action || '—' })),
+          td('Destinazione', el('span', { text: target })),
+          td('Dettaglio', el('div', { class: 'cell-body muted', text: detail ? String(detail) : '—' })));
+      })), pg]);
+  }
+
+  /* --- Boot --- */
+  (async function boot() {
+    try {
+      const me = await api('GET', '/admin/api/me', undefined, { isLogin: true, silent: true });
+      if (me && me.online_id) showApp(me); else showLogin('');
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) showLogin('');
+      else showLogin('Impossibile verificare la sessione: ' + errorTitle(err) + '.');
+    }
+  })();
+})();
+</script>
+</body>
+</html>

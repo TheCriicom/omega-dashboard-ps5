@@ -1,0 +1,8 @@
+{$OMEGA_DOMAIN} {
+	encode zstd gzip
+	# la voce del party usa long-poll: niente buffer
+	reverse_proxy proxy:9986 {
+		flush_interval -1
+		header_up X-Forwarded-For {remote_host}
+	}
+}

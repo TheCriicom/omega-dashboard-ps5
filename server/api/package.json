@@ -1,0 +1,22 @@
+{
+  "name": "omega-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server di Omega: account, funzioni social e Store di homebrew per l'app console",
+  "license": "GPL-3.0-or-later",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "seed:store": "node src/seed-store.js",
+    "admin": "node src/admin.js",
+    "test": "node test/run.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "linkedom": "^0.18.13",
+    "pg": "^8.13.1"
+  }
+}

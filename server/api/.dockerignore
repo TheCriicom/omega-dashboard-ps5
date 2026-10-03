@@ -1,0 +1,5 @@
+node_modules
+test
+updates
+*.log
+.DS_Store

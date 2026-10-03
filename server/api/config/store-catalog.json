@@ -1,0 +1,1182 @@
+{
+  "_doc": "Catalogo curato dello Store Omega: homebrew open source da GitHub Releases (link diretti verificati). Immagini in store-assets/ (asset:<file>). Caricamento: node src/seed-store.js (idempotente, chiave catalog_key).",
+  "curator": "OmegaStore",
+  "apps": [
+    {
+      "catalog_key": "ghcat:retroarch",
+      "title": "RetroArch",
+      "tagline": "Tutte le console retro in un'unica app",
+      "description": "Il frontend libretro con i core già pronti: Genesis Plus GX, FCEUmm, Snes9x 2010, FinalBurn Neo, Beetle GBA, PUAE (Amiga) e VICE (Commodore 64). Shader, salvataggi rapidi e database dei giochi.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "retroarch",
+        "libretro",
+        "multisistema"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/RetroArch.zip",
+      "file_kind": "zip",
+      "size_bytes": 259432156,
+      "homepage_url": "https://www.retroarch.com/",
+      "license": "GPL-3.0",
+      "icon": "asset:retroarch.jpg",
+      "cover": "asset:retroarch.jpg",
+      "screenshots": [
+        "asset:shot-8670284fcb.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:devilutionx",
+      "title": "DevilutionX",
+      "tagline": "Diablo e Hellfire, nativi su PS5",
+      "description": "DevilutionX porta Diablo e l'espansione Hellfire su PS5 con controller, alta risoluzione e tante correzioni. Contiene la versione demo (spawn.mpq); per il gioco completo aggiungi il tuo DIABDAT.MPQ (CD o GOG) nella cartella.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "diablo",
+        "rpg",
+        "azione",
+        "classici"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/DevilutionX.zip",
+      "file_kind": "zip",
+      "size_bytes": 31898888,
+      "homepage_url": "https://github.com/diasurgical/devilutionX",
+      "license": "Sustainable Use",
+      "icon": "asset:devilutionx.jpg",
+      "cover": "asset:devilutionx.jpg",
+      "screenshots": [
+        "asset:shot-13f4b1d506.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:scummvm",
+      "title": "ScummVM",
+      "tagline": "Le avventure grafiche classiche",
+      "description": "Esegue le avventure grafiche di LucasArts, Sierra, Revolution e centinaia di altre: Monkey Island, Day of the Tentacle, Broken Sword… Copia i file dei tuoi giochi e aggiungili dall'interfaccia.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "avventura",
+        "lucasarts",
+        "punta-e-clicca"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/ScummVM.zip",
+      "file_kind": "zip",
+      "size_bytes": 123753234,
+      "homepage_url": "https://www.scummvm.org/",
+      "license": "GPL-3.0",
+      "icon": "asset:scummvm.jpg",
+      "cover": "asset:scummvm.jpg",
+      "screenshots": [
+        "asset:shot-e7130202e5.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:yquake2",
+      "title": "Yamagi Quake II",
+      "tagline": "Quake II con la demo inclusa",
+      "description": "Yamagi Quake II è il port più curato di Quake II: fedele all'originale, stabile e con il pacchetto di texture ad alta risoluzione. Contiene la demo ufficiale.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "quake",
+        "fps",
+        "retro"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/YQuake2.zip",
+      "file_kind": "zip",
+      "size_bytes": 467458367,
+      "homepage_url": "https://www.yamagi.org/quake2/",
+      "license": "GPL-2.0",
+      "icon": "asset:yquake2.jpg",
+      "cover": "asset:yquake2.jpg",
+      "screenshots": [
+        "asset:shot-151976c924.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:crispydoom",
+      "title": "Crispy Doom",
+      "tagline": "Doom com'era, solo più nitido",
+      "description": "Crispy Doom è un source port di Doom fedele all'originale: risoluzione raddoppiata, schermo largo e piccoli ritocchi, senza snaturare il gioco. Include l'episodio shareware di Doom: per i giochi completi copia i tuoi file WAD nella cartella dell'homebrew.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "doom",
+        "fps",
+        "retro",
+        "classici"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/CrispyDoom.zip",
+      "file_kind": "zip",
+      "size_bytes": 37690872,
+      "homepage_url": "https://github.com/fabiangreffrath/crispy-doom",
+      "license": "GPL-2.0",
+      "icon": "asset:crispydoom.jpg",
+      "cover": "asset:crispydoom.jpg",
+      "screenshots": [
+        "asset:shot-45dd890298.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:mari0",
+      "title": "Mari0",
+      "tagline": "Mario incontra Portal",
+      "description": "Il celebre platform fan-made che unisce Super Mario Bros. e la pistola dei portali di Portal. Gira sul motore LÖVE, con controller.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "platform",
+        "portal",
+        "indie"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/Mari0.zip",
+      "file_kind": "zip",
+      "size_bytes": 57262377,
+      "homepage_url": "https://stabyourself.net/mari0/",
+      "license": "CC BY-NC-SA",
+      "icon": "asset:mari0.jpg",
+      "cover": "asset:mari0.jpg",
+      "screenshots": [
+        "asset:shot-15750bb029.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:vvvvvv",
+      "title": "VVVVVV",
+      "tagline": "Inverti la gravità, sopravvivi",
+      "description": "Il platform di Terry Cavanagh dove non si salta: si inverte la gravità. Versione \"Make and Play\" gratuita con i livelli della community.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "platform",
+        "indie",
+        "pixel-art"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/VVVVVV.zip",
+      "file_kind": "zip",
+      "size_bytes": 66437655,
+      "homepage_url": "https://thelettervsixtim.es/",
+      "license": "VVVVVV Source",
+      "icon": "asset:vvvvvv.jpg",
+      "cover": "asset:vvvvvv.jpg",
+      "screenshots": [
+        "asset:shot-1bb392c0cd.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:fbneo",
+      "title": "FinalBurn Neo",
+      "tagline": "L'emulatore arcade di riferimento",
+      "description": "FinalBurn Neo emula migliaia di cabinati arcade: CPS-1/2/3, Neo Geo, Toaplan, Cave e molto altro. Le ROM non sono incluse: usa quelle dei giochi che possiedi.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "arcade",
+        "neogeo",
+        "cps",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/FBNeo.zip",
+      "file_kind": "zip",
+      "size_bytes": 13768381,
+      "homepage_url": "https://github.com/finalburnneo/FBNeo",
+      "license": "Non commerciale",
+      "icon": "asset:fbneo.jpg",
+      "cover": "asset:fbneo.jpg",
+      "screenshots": [
+        "asset:shot-9ed3c2849d.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:mednafen",
+      "title": "Mednafen",
+      "tagline": "Emulatore multi-sistema",
+      "description": "Mednafen emula con precisione molte console: NES, SNES, Game Boy/Advance, Mega Drive, PC Engine, Neo Geo Pocket, Virtual Boy e PlayStation. ROM e BIOS non inclusi.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "multisistema",
+        "psx",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/Mednafen.zip",
+      "file_kind": "zip",
+      "size_bytes": 34774813,
+      "homepage_url": "https://mednafen.github.io/",
+      "license": "GPL-2.0",
+      "icon": "asset:mednafen.jpg",
+      "cover": "asset:mednafen.jpg",
+      "screenshots": [
+        "asset:shot-bd7d6d1604.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:dlnaplay",
+      "title": "DLNA Play",
+      "tagline": "Video e musica dal tuo media server",
+      "description": "Mediaplayer per server DLNA/UPnP (Plex, Jellyfin, minidlna, NAS…): sfoglia le cartelle di rete e riproduci video, musica e foto a schermo intero.",
+      "category": "app",
+      "version": "0.1",
+      "platform": "PS5",
+      "hashtags": [
+        "dlna",
+        "media",
+        "video"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/dlnaplay/releases/download/v0.1/DLNAPlay.zip",
+      "file_kind": "zip",
+      "size_bytes": 19056495,
+      "homepage_url": "https://github.com/ps5-payload-dev/dlnaplay",
+      "license": "GPL-3.0",
+      "icon": "asset:dlnaplay.jpg",
+      "cover": "asset:dlnaplay.jpg",
+      "screenshots": [
+        "asset:shot-564d91382e.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:tvhp",
+      "title": "TVHP",
+      "tagline": "Client TVHeadend: TV in diretta e registrazioni",
+      "description": "Client Tvheadend nativo: parla HTSP direttamente e decodifica con FFmpeg. Elenco canali con programmi in onda, guida TV, registrazioni programmate e più server.",
+      "category": "app",
+      "version": "0.3",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "tvheadend",
+        "dvr"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/tvhp/releases/download/v0.3/TVHP.zip",
+      "file_kind": "zip",
+      "size_bytes": 19810772,
+      "homepage_url": "https://github.com/ps5-payload-dev/tvhp",
+      "license": "GPL-3.0",
+      "icon": "asset:tvhp.jpg",
+      "cover": "asset:tvhp.jpg",
+      "screenshots": [
+        "asset:shot-d3a497ed0e.jpg",
+        "asset:shot-d5bc175ba9.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:transmission",
+      "title": "Transmission",
+      "tagline": "Client BitTorrent con interfaccia web",
+      "description": "Il client BitTorrent leggero e open source che gira sulla console: gestiscilo dal browser di PC o telefono e salva i file su disco o USB.",
+      "category": "app",
+      "version": "0.33",
+      "platform": "PS5",
+      "hashtags": [
+        "torrent",
+        "download",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.33/Transmission.zip",
+      "file_kind": "zip",
+      "size_bytes": 4687068,
+      "homepage_url": "https://transmissionbt.com/",
+      "license": "GPL-2.0",
+      "icon": "asset:transmission.jpg",
+      "cover": "asset:transmission.jpg",
+      "screenshots": [
+        "asset:shot-76a33212e9.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:eduke32",
+      "title": "EDuke32",
+      "tagline": "Duke Nukem 3D è tornato",
+      "description": "EDuke32 è il source port più completo di Duke Nukem 3D: rendering moderno, mod e mappe utente. Pronto all'uso con l'episodio shareware; copia DUKE3D.GRP per la versione completa.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "duke",
+        "fps",
+        "retro"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/EDuke32.zip",
+      "file_kind": "zip",
+      "size_bytes": 8876270,
+      "homepage_url": "https://www.eduke32.com/",
+      "license": "GPL-2.0",
+      "icon": "asset:eduke32.jpg",
+      "cover": "asset:eduke32.jpg",
+      "screenshots": [
+        "asset:shot-bd7d6d1604.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:openjazz",
+      "title": "OpenJazz",
+      "tagline": "Jazz Jackrabbit, veloce come allora",
+      "description": "Reimplementazione open source del classico platform Jazz Jackrabbit. Include la versione shareware; supporta anche i dati della versione completa.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "jazz",
+        "platform",
+        "retro"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/OpenJazz.zip",
+      "file_kind": "zip",
+      "size_bytes": 3608101,
+      "homepage_url": "https://github.com/AlisterT/openjazz",
+      "license": "GPL-2.0",
+      "icon": "asset:openjazz.jpg",
+      "cover": "asset:openjazz.jpg",
+      "screenshots": [
+        "asset:shot-2945bf5319.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:omnispeak",
+      "title": "Omnispeak",
+      "tagline": "Commander Keen 4-6 rinato",
+      "description": "Reimplementazione open source di Commander Keen 4, 5 e 6. Pronto con i dati shareware di Keen 4; aggiungi i file dei capitoli completi se li possiedi.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "keen",
+        "platform",
+        "retro"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/Omnispeak.zip",
+      "file_kind": "zip",
+      "size_bytes": 2332678,
+      "homepage_url": "https://github.com/sulix/omnispeak",
+      "license": "GPL-2.0",
+      "icon": "asset:omnispeak.jpg",
+      "cover": "asset:omnispeak.jpg",
+      "screenshots": [
+        "asset:shot-f923d9ab55.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:wolf4sdl",
+      "title": "Wolf4SDL",
+      "tagline": "Wolfenstein 3D, l'originale",
+      "description": "Port di Wolfenstein 3D basato sul codice originale di id Software. Include l'episodio shareware; copia i file della versione completa se la possiedi.",
+      "category": "gioco",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "wolfenstein",
+        "fps",
+        "retro"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/Wolf4SDL.zip",
+      "file_kind": "zip",
+      "size_bytes": 5208481,
+      "homepage_url": "https://github.com/lazd/wolf4sdl",
+      "license": "GPL-2.0",
+      "icon": "asset:wolf4sdl.jpg",
+      "cover": "asset:wolf4sdl.jpg",
+      "screenshots": [
+        "asset:shot-a45f7e8a13.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:ffplay",
+      "title": "FFplay",
+      "tagline": "Lettore video e audio di FFmpeg",
+      "description": "Il lettore multimediale di FFmpeg: apre praticamente qualsiasi formato video e audio da chiavetta USB o dalla rete, con accelerazione e sottotitoli.",
+      "category": "app",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "video",
+        "musica",
+        "player",
+        "ffmpeg"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/FFplay.zip",
+      "file_kind": "zip",
+      "size_bytes": 16631093,
+      "homepage_url": "https://ffmpeg.org/",
+      "license": "LGPL-2.1",
+      "icon": "asset:ffplay.jpg",
+      "cover": "asset:ffplay.jpg",
+      "screenshots": [
+        "asset:shot-915cf347d7.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:pnes",
+      "title": "pNES",
+      "tagline": "Emulatore pemu di Cpasjuste",
+      "description": "Emulatore NES/Famicom basato su Nestopia, con l'interfaccia pemu di Cpasjuste: database dei giochi, filtri e salvataggi. ROM non incluse.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "nes",
+        "nintendo",
+        "pemu",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/pnes-7.1_ps5.zip",
+      "file_kind": "zip",
+      "size_bytes": 43244348,
+      "homepage_url": "https://github.com/Cpasjuste/pemu",
+      "license": "GPL-3.0",
+      "icon": "asset:pnes.jpg",
+      "cover": "asset:pnes.jpg",
+      "screenshots": [
+        "asset:shot-63eb7a1254.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:psnes",
+      "title": "pSNES",
+      "tagline": "Emulatore pemu di Cpasjuste",
+      "description": "Emulatore Super Nintendo basato su Snes9x con l'interfaccia pemu di Cpasjuste. ROM non incluse.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "snes",
+        "nintendo",
+        "pemu",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/psnes-7.1_ps5.zip",
+      "file_kind": "zip",
+      "size_bytes": 43249002,
+      "homepage_url": "https://github.com/Cpasjuste/pemu",
+      "license": "GPL-3.0",
+      "icon": "asset:psnes.jpg",
+      "cover": "asset:psnes.jpg",
+      "screenshots": [
+        "asset:shot-63eb7a1254.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:pgen",
+      "title": "pGEN",
+      "tagline": "Emulatore pemu di Cpasjuste",
+      "description": "Emulatore SEGA (Mega Drive/Genesis, Master System, Game Gear, Mega-CD) con l'interfaccia pemu di Cpasjuste. ROM non incluse.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "megadrive",
+        "sega",
+        "pemu",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/pgen-7.1_ps5.zip",
+      "file_kind": "zip",
+      "size_bytes": 43066032,
+      "homepage_url": "https://github.com/Cpasjuste/pemu",
+      "license": "GPL-3.0",
+      "icon": "asset:pgen.jpg",
+      "cover": "asset:pgen.jpg",
+      "screenshots": [
+        "asset:shot-63eb7a1254.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:pgba",
+      "title": "pGBA",
+      "tagline": "Emulatore pemu di Cpasjuste",
+      "description": "Emulatore Game Boy Advance con interfaccia a schermo intero di Cpasjuste: filtri, rapporto d'aspetto e salvataggi rapidi. ROM non incluse.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "gba",
+        "gameboy",
+        "pemu",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/pgba-7.1_ps5.zip",
+      "file_kind": "zip",
+      "size_bytes": 42676069,
+      "homepage_url": "https://github.com/Cpasjuste/pemu",
+      "license": "GPL-3.0",
+      "icon": "asset:pgba.jpg",
+      "cover": "asset:pgba.jpg",
+      "screenshots": [
+        "asset:shot-63eb7a1254.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:pfbneo",
+      "title": "pFBNeo",
+      "tagline": "Emulatore pemu di Cpasjuste",
+      "description": "Frontend arcade di Cpasjuste basato su FinalBurn Neo: interfaccia curata con anteprime, filtri video e salvataggi rapidi. ROM non incluse.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "arcade",
+        "neogeo",
+        "pemu",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/pfbneo-7.1_ps5.zip",
+      "file_kind": "zip",
+      "size_bytes": 54239318,
+      "homepage_url": "https://github.com/Cpasjuste/pemu",
+      "license": "GPL-3.0",
+      "icon": "asset:pfbneo.jpg",
+      "cover": "asset:pfbneo.jpg",
+      "screenshots": [
+        "asset:shot-63eb7a1254.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:lakesnes",
+      "title": "LakeSnes",
+      "tagline": "Emulatore SNES leggero",
+      "description": "LakeSnes è un emulatore Super Nintendo scritto in C, piccolo e veloce. Include una ROM homebrew di prova; aggiungi le tue nella cartella roms.",
+      "category": "emulatore",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "snes",
+        "nintendo",
+        "emulatore"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/LakeSnes.zip",
+      "file_kind": "zip",
+      "size_bytes": 2488279,
+      "homepage_url": "https://github.com/ps5-payload-dev/LakeSnes",
+      "license": "MIT",
+      "icon": "asset:lakesnes.jpg",
+      "cover": "asset:lakesnes.jpg",
+      "screenshots": [
+        "asset:shot-0569ea414f.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:jtplay",
+      "title": "JTPlay",
+      "tagline": "Player audio/video con plugin",
+      "description": "Lettore audio e video per PS5 che legge da server UPnP/DLNA e dal disco locale, estendibile con plugin JavaScript per aggiungere nuove sorgenti.",
+      "category": "app",
+      "version": "0.2",
+      "platform": "PS5",
+      "hashtags": [
+        "media",
+        "player",
+        "plugin"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/jtplay/releases/download/v0.2/JTPlay.zip",
+      "file_kind": "zip",
+      "size_bytes": 21570322,
+      "homepage_url": "https://github.com/ps5-payload-dev/jtplay",
+      "license": "GPL-3.0",
+      "icon": "asset:jtplay.jpg",
+      "cover": "asset:jtplay.jpg",
+      "screenshots": [
+        "asset:shot-3310ac4361.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:plutotv",
+      "title": "Pluto TV",
+      "tagline": "Canali TV gratuiti in streaming",
+      "description": "Interfaccia da salotto per Pluto TV: centinaia di canali gratuiti e film on demand. Avvialo una volta da Payload Manager per aggiungerlo alla Home.",
+      "category": "app",
+      "version": "0.2",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "streaming"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/plutotv/releases/download/v0.2/plutotv-install.elf",
+      "file_kind": "elf",
+      "size_bytes": 985512,
+      "homepage_url": "https://github.com/ps5-payload-dev/plutotv",
+      "license": "GPL-3.0",
+      "icon": "asset:plutotv.jpg",
+      "cover": "asset:plutotv.jpg",
+      "screenshots": [
+        "asset:shot-e6053092d9.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:playpods",
+      "title": "FGG PlayPods",
+      "tagline": "L'audio della PS5 sulle cuffie Bluetooth",
+      "description": "Porta l'audio di giochi e sistema su qualsiasi cuffia o auricolare Bluetooth, anche quelli non supportati ufficialmente dalla console.",
+      "category": "utility",
+      "version": "1.0",
+      "platform": "PS5",
+      "hashtags": [
+        "bluetooth",
+        "audio",
+        "cuffie"
+      ],
+      "download_url": "https://github.com/FGGstore/FGG-PlayPods/releases/download/1.0/fgg-playpods.elf",
+      "file_kind": "elf",
+      "size_bytes": 184680,
+      "homepage_url": "https://github.com/FGGstore/FGG-PlayPods",
+      "license": "Open source",
+      "icon": "asset:playpods.jpg",
+      "cover": "asset:playpods.jpg",
+      "screenshots": [
+        "asset:shot-520cc9e73b.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:tailscale",
+      "title": "Tailscale",
+      "tagline": "La tua PS5 nella tua rete privata",
+      "description": "Client Tailscale per PS5: raggiungi la console (FTP, web, shell) da ovunque attraverso la tua tailnet cifrata, senza aprire porte sul router.",
+      "category": "utility",
+      "version": "0.5.0",
+      "platform": "PS5",
+      "hashtags": [
+        "vpn",
+        "rete",
+        "tailscale"
+      ],
+      "download_url": "https://github.com/holdmysocks/ps5-tailscale/releases/download/v0.5.0/tailscale.elf",
+      "file_kind": "elf",
+      "size_bytes": 24819248,
+      "homepage_url": "https://github.com/holdmysocks/ps5-tailscale",
+      "license": "BSD-3-Clause",
+      "icon": "asset:tailscale.jpg",
+      "cover": "asset:tailscale.jpg",
+      "screenshots": [
+        "asset:shot-9220b3f565.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:romm",
+      "title": "RomM Sync",
+      "tagline": "I giochi del tuo server RomM sulla PS5",
+      "description": "Client per RomM, il gestore di collezioni retro self-hosted: sfoglia la tua libreria dal server e scarica ROM e copertine direttamente sulla console.",
+      "category": "app",
+      "version": "1.0.1",
+      "platform": "PS5",
+      "hashtags": [
+        "romm",
+        "retro",
+        "sync"
+      ],
+      "download_url": "https://github.com/s0liton/ps5-romm/releases/download/v1.0.1/romm-sync.elf",
+      "file_kind": "elf",
+      "size_bytes": 8474608,
+      "homepage_url": "https://github.com/s0liton/ps5-romm",
+      "license": "Open source",
+      "icon": "asset:romm.jpg",
+      "cover": "asset:romm.jpg",
+      "screenshots": [
+        "asset:shot-392d6a343b.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:nuvio",
+      "title": "Nuvio",
+      "tagline": "Nuvio TV come app per PS5",
+      "description": "L'interfaccia di Nuvio TV portata su PS5 come app nativa, pensata per il divano e il controller.",
+      "category": "app",
+      "version": "1.7.2",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "streaming",
+        "media"
+      ],
+      "download_url": "https://github.com/theghostonline/Nuvio-PS5/releases/download/v1.7.2/nuvio-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 42911832,
+      "homepage_url": "https://github.com/theghostonline/Nuvio-PS5",
+      "license": "Open source",
+      "icon": "asset:nuvio.jpg",
+      "cover": "asset:nuvio.jpg",
+      "screenshots": [
+        "asset:shot-b389f7c99e.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:linkdev",
+      "title": "LinkDev",
+      "tagline": "Collega dispositivi senza PSN",
+      "description": "Collega alla PS5 dispositivi e app companion (come Remote Play) anche senza accesso alla rete PlayStation, generando i codici di abbinamento in locale.",
+      "category": "utility",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "remoteplay",
+        "rete",
+        "utility"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/LinkDev.zip",
+      "file_kind": "zip",
+      "size_bytes": 3415542,
+      "homepage_url": "https://github.com/ps5-payload-dev/linkdev",
+      "license": "GPL-3.0",
+      "icon": "asset:linkdev.jpg",
+      "cover": "asset:linkdev.jpg",
+      "screenshots": [
+        "asset:shot-d79104f14e.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:offact",
+      "title": "OffAct",
+      "tagline": "Attivazione offline dell'account",
+      "description": "Attiva un account locale della console in modalità offline, utile per usare homebrew e contenuti che richiedono un account attivato senza collegarsi alla rete PlayStation.",
+      "category": "utility",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "account",
+        "offline",
+        "utility"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/OffAct.zip",
+      "file_kind": "zip",
+      "size_bytes": 3417404,
+      "homepage_url": "https://github.com/ps5-payload-dev/offact",
+      "license": "GPL-3.0",
+      "icon": "asset:offact.jpg",
+      "cover": "asset:offact.jpg",
+      "screenshots": [
+        "asset:shot-6f2a7149fa.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:pkginstall",
+      "title": "PKG Install",
+      "tagline": "Installa un pkg da un indirizzo web",
+      "description": "Piccolo homebrew che chiede alla console di scaricare e installare un pacchetto .pkg da un URL, come la funzione di installazione delle impostazioni di debug.",
+      "category": "utility",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "pkg",
+        "installer",
+        "utility"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/PKGInstall.zip",
+      "file_kind": "zip",
+      "size_bytes": 93250,
+      "homepage_url": "https://github.com/ps5-payload-dev/websrv",
+      "license": "GPL-3.0",
+      "icon": "asset:pkginstall.jpg",
+      "cover": "asset:pkginstall.jpg",
+      "screenshots": [
+        "asset:shot-bd7d6d1604.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:sverigesradio",
+      "title": "Sveriges Radio",
+      "tagline": "La radio pubblica svedese in diretta",
+      "description": "Ascolta in streaming i canali di Sveriges Radio dalla PS5, con elenco dei canali e programmi in onda.",
+      "category": "app",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "radio",
+        "streaming",
+        "musica"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/SverigesRadio.zip",
+      "file_kind": "zip",
+      "size_bytes": 16569699,
+      "homepage_url": "https://github.com/ps5-payload-dev/websrv",
+      "license": "GPL-3.0",
+      "icon": "asset:sverigesradio.jpg",
+      "cover": "asset:sverigesradio.jpg",
+      "screenshots": [
+        "asset:shot-bd7d6d1604.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:svtplay-hb",
+      "title": "SVT Play",
+      "tagline": "La TV pubblica svedese",
+      "description": "Interfaccia per il televisore che porta su PS5 i programmi e le dirette di SVT Play.",
+      "category": "app",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "streaming",
+        "video"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/SVTplay.zip",
+      "file_kind": "zip",
+      "size_bytes": 16575343,
+      "homepage_url": "https://github.com/ps5-payload-dev/svtplay",
+      "license": "GPL-3.0",
+      "icon": "asset:svtplay-hb.jpg",
+      "cover": "asset:svtplay-hb.jpg",
+      "screenshots": [
+        "asset:shot-46a0bd3192.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:tvheadend",
+      "title": "TVHeadend Live",
+      "tagline": "Canali TV dal tuo server TVHeadend",
+      "description": "Mostra i canali e i programmi in onda del tuo server TVHeadend e li riproduce con FFplay. Imposta l'indirizzo del server nel file homebrew.js.",
+      "category": "app",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "tvheadend",
+        "iptv"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/TVHeadend.zip",
+      "file_kind": "zip",
+      "size_bytes": 16572740,
+      "homepage_url": "https://tvheadend.org/",
+      "license": "GPL-3.0",
+      "icon": "asset:tvheadend.jpg",
+      "cover": "asset:tvheadend.jpg",
+      "screenshots": [
+        "asset:shot-5d6bfe032e.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:websrv",
+      "title": "websrv",
+      "tagline": "Launcher di homebrew e server web",
+      "description": "Server web sulla porta 8080 con il launcher degli homebrew: apri http://<ip-ps5>:8080 dal browser o dalla console per avviare tutto ciò che sta in /data/homebrew.",
+      "category": "utility",
+      "version": "0.34",
+      "platform": "PS5",
+      "hashtags": [
+        "launcher",
+        "web",
+        "homebrew"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.34/websrv-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 1597864,
+      "homepage_url": "https://github.com/ps5-payload-dev/websrv",
+      "license": "GPL-3.0",
+      "icon": "asset:websrv.jpg",
+      "cover": "asset:websrv.jpg",
+      "screenshots": [
+        "asset:shot-bd7d6d1604.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:elfldr",
+      "title": "ELF Loader",
+      "tagline": "Carica payload sulla porta 9021",
+      "description": "Riceve ed esegue payload ELF inviati in rete sulla porta 9021, ognuno nel proprio processo. Il compagno ideale per chi sviluppa.",
+      "category": "utility",
+      "version": "0.26",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/elfldr/releases/download/v0.26/elfldr-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 394480,
+      "homepage_url": "https://github.com/ps5-payload-dev/elfldr",
+      "license": "GPL-3.0",
+      "icon": "asset:elfldr.jpg",
+      "cover": "asset:elfldr.jpg",
+      "screenshots": [
+        "asset:shot-fee1add6c4.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:ftpsrv",
+      "title": "FTP Server",
+      "tagline": "Accesso ai file via FTP (porta 2121)",
+      "description": "Server FTP per sfogliare, copiare e modificare i file della console da un PC sulla porta 2121.",
+      "category": "utility",
+      "version": "0.21.1",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/ftpsrv/releases/download/v0.21.1/ftpsrv-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 191864,
+      "homepage_url": "https://github.com/ps5-payload-dev/ftpsrv",
+      "license": "GPL-3.0",
+      "icon": "asset:ftpsrv.jpg",
+      "cover": "asset:ftpsrv.jpg",
+      "screenshots": [
+        "asset:shot-7d5a850a88.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:ftpsrv-app",
+      "title": "FTP Server (app)",
+      "tagline": "Il server FTP con icona nella Home",
+      "description": "Installa il server FTP come applicazione con la sua icona nella Home: avvialo una volta da Payload Manager e poi lancialo come un gioco.",
+      "category": "utility",
+      "version": "0.21.1",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/ftpsrv/releases/download/v0.21.1/ftpsrv-ps5-install.elf",
+      "file_kind": "elf",
+      "size_bytes": 717272,
+      "homepage_url": "https://github.com/ps5-payload-dev/ftpsrv",
+      "license": "GPL-3.0",
+      "icon": "asset:ftpsrv-app.jpg",
+      "cover": "asset:ftpsrv-app.jpg",
+      "screenshots": [
+        "asset:shot-7d5a850a88.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:gdbsrv",
+      "title": "GDB Server",
+      "tagline": "Debug remoto dei payload",
+      "description": "Server GDB per il debug remoto dei processi e dei payload in esecuzione sulla console.",
+      "category": "utility",
+      "version": "0.9",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/gdbsrv/releases/download/v0.9/gdbsrv-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 174248,
+      "homepage_url": "https://github.com/ps5-payload-dev/gdbsrv",
+      "license": "GPL-3.0",
+      "icon": "asset:gdbsrv.jpg",
+      "cover": "asset:gdbsrv.jpg",
+      "screenshots": [
+        "asset:shot-87e45fc26c.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:klogsrv",
+      "title": "klogsrv",
+      "tagline": "Log del kernel in rete",
+      "description": "Inoltra /dev/klog su un socket TCP (porta 3232): leggi i log del sistema dal PC in tempo reale.",
+      "category": "utility",
+      "version": "0.9",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/klogsrv/releases/download/v0.9/klogsrv-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 136016,
+      "homepage_url": "https://github.com/ps5-payload-dev/klogsrv",
+      "license": "GPL-3.0",
+      "icon": "asset:klogsrv.jpg",
+      "cover": "asset:klogsrv.jpg",
+      "screenshots": [
+        "asset:shot-a44db724b5.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:shsrv",
+      "title": "Shell Server",
+      "tagline": "Una shell remota sulla PS5",
+      "description": "Server di shell simile a telnet: collegati dalla rete ed esegui comandi direttamente sulla console.",
+      "category": "utility",
+      "version": "0.20",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/shsrv/releases/download/v0.20/shsrv-ps5.elf",
+      "file_kind": "elf",
+      "size_bytes": 986184,
+      "homepage_url": "https://github.com/ps5-payload-dev/shsrv",
+      "license": "GPL-3.0",
+      "icon": "asset:shsrv.jpg",
+      "cover": "asset:shsrv.jpg",
+      "screenshots": [
+        "asset:shot-63943a7534.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:launchpad",
+      "title": "Launchpad",
+      "tagline": "Lancia payload dal browser",
+      "description": "Webapp che avvia payload ELF dal browser della console tramite elfldr, con un elenco di payload aggiornato ogni giorno. Il payload aggiunge l'icona nella Home.",
+      "category": "utility",
+      "version": "0.2",
+      "platform": "PS5",
+      "hashtags": [
+        "payload",
+        "rete"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/launchpad/releases/download/v0.2/launchpad-install.elf",
+      "file_kind": "elf",
+      "size_bytes": 247384,
+      "homepage_url": "https://github.com/ps5-payload-dev/launchpad",
+      "license": "GPL-3.0",
+      "icon": "asset:launchpad.jpg",
+      "cover": "asset:launchpad.jpg",
+      "screenshots": [
+        "asset:shot-db85c7b626.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:tv4play",
+      "title": "TV4 Play",
+      "tagline": "Programmi e dirette di TV4",
+      "description": "Interfaccia da salotto per tv4play.se. Avvialo una volta da Payload Manager per aggiungerlo alla Home.",
+      "category": "app",
+      "version": "0.2",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "streaming"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/tv4play/releases/download/v0.2/tv4play-install.elf",
+      "file_kind": "elf",
+      "size_bytes": 625056,
+      "homepage_url": "https://github.com/ps5-payload-dev/tv4play",
+      "license": "GPL-3.0",
+      "icon": "asset:tv4play.jpg",
+      "cover": "asset:tv4play.jpg",
+      "screenshots": [
+        "asset:shot-8121f2d8aa.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:svtplay-app",
+      "title": "SVT Play (app)",
+      "tagline": "SVT Play con icona nella Home",
+      "description": "Installa SVT Play come app con la sua icona nella Home. Avvialo una volta da Payload Manager.",
+      "category": "app",
+      "version": "0.3",
+      "platform": "PS5",
+      "hashtags": [
+        "tv",
+        "streaming"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/svtplay/releases/download/v0.3/svtplay-install.elf",
+      "file_kind": "elf",
+      "size_bytes": 149168,
+      "homepage_url": "https://github.com/ps5-payload-dev/svtplay",
+      "license": "GPL-3.0",
+      "icon": "asset:svtplay-app.jpg",
+      "cover": "asset:svtplay-app.jpg",
+      "screenshots": [
+        "asset:shot-46a0bd3192.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:hbloader",
+      "title": "Homebrew Launcher",
+      "tagline": "L'icona di websrv nella Home",
+      "description": "Pacchetto che aggiunge alla Home un'icona per aprire il launcher degli homebrew di websrv. Richiede il supporto ai pacchetti non ufficiali (fpkg).",
+      "category": "utility",
+      "version": "0.30",
+      "platform": "PS5",
+      "hashtags": [
+        "launcher",
+        "pkg",
+        "websrv"
+      ],
+      "download_url": "https://github.com/ps5-payload-dev/websrv/releases/download/v0.30/IV9999-FAKE00000_00-HOMEBREWLOADER01.pkg",
+      "file_kind": "pkg",
+      "size_bytes": 18168015,
+      "homepage_url": "https://github.com/ps5-payload-dev/websrv",
+      "license": "GPL-3.0",
+      "icon": "asset:hbloader.jpg",
+      "cover": "asset:hbloader.jpg",
+      "screenshots": [
+        "asset:shot-bd7d6d1604.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:hbstore-ps5",
+      "title": "Homebrew Store",
+      "tagline": "Il negozio di homebrew di LightningMods",
+      "description": "Lo storico Homebrew Store (pkg-zone) nella versione per PS5: centinaia di homebrew PS4 giocabili su PS5. Richiede il supporto fpkg.",
+      "category": "app",
+      "version": "4.5",
+      "platform": "PS5",
+      "hashtags": [
+        "store",
+        "homebrew",
+        "pkg"
+      ],
+      "download_url": "https://github.com/LightningMods/PS4-Store/releases/download/4.5/Store-R2-PS5.pkg",
+      "file_kind": "pkg",
+      "size_bytes": 43450368,
+      "homepage_url": "https://github.com/LightningMods/PS4-Store",
+      "license": "GPL-3.0",
+      "icon": "asset:hbstore-ps5.jpg",
+      "cover": "asset:hbstore-ps5.jpg",
+      "screenshots": [
+        "asset:shot-fae622a6c0.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:hbstore-ps4",
+      "title": "Homebrew Store (PS4)",
+      "tagline": "Il negozio di homebrew per PS4",
+      "description": "La versione PS4 dell'Homebrew Store di LightningMods, con aggiornamenti automatici e download diretti dei pacchetti.",
+      "category": "app",
+      "version": "4.5",
+      "platform": "PS4",
+      "hashtags": [
+        "store",
+        "homebrew",
+        "ps4"
+      ],
+      "download_url": "https://github.com/LightningMods/PS4-Store/releases/download/4.5/Store-R2.pkg",
+      "file_kind": "pkg",
+      "size_bytes": 24772608,
+      "homepage_url": "https://github.com/LightningMods/PS4-Store",
+      "license": "GPL-3.0",
+      "icon": "asset:hbstore-ps4.jpg",
+      "cover": "asset:hbstore-ps4.jpg",
+      "screenshots": [
+        "asset:shot-fae622a6c0.jpg"
+      ]
+    },
+    {
+      "catalog_key": "ghcat:apollo",
+      "title": "Apollo Save Tool",
+      "tagline": "Gestisci e modifica i salvataggi",
+      "description": "Il gestore di salvataggi di bucanero: backup e ripristino su USB, cheat e patch per centinaia di giochi, rifirma e trasferimento dei salvataggi tra account.",
+      "category": "utility",
+      "version": "2.3.2",
+      "platform": "PS4",
+      "hashtags": [
+        "salvataggi",
+        "cheat",
+        "backup"
+      ],
+      "download_url": "https://github.com/bucanero/apollo-ps4/releases/download/v2.3.2/IV0000-APOL00004_00-APOLLO0000000PS4.pkg",
+      "file_kind": "pkg",
+      "size_bytes": 22675456,
+      "homepage_url": "https://github.com/bucanero/apollo-ps4",
+      "license": "GPL-3.0",
+      "icon": "asset:apollo.jpg",
+      "cover": "asset:apollo.jpg",
+      "screenshots": [
+        "asset:shot-d34ed83099.jpg"
+      ]
+    }
+  ]
+}

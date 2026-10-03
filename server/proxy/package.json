@@ -1,0 +1,14 @@
+{
+  "name": "omega-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proxy di Omega: inoltra all'api e tiene il registro delle richieste, senza dipendenze",
+  "license": "GPL-3.0-or-later",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

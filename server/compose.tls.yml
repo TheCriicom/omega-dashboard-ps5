@@ -1,0 +1,27 @@
+# HTTPS automatico con Caddy (certificati Let's Encrypt).
+# Serve un dominio che punta a questo server e le porte 80 e 443 libere.
+#
+#   docker compose -f compose.yml -f compose.tls.yml up -d --build --wait
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: omega-caddy
+    restart: unless-stopped
+    environment:
+      OMEGA_DOMAIN: ${OMEGA_DOMAIN:?imposta OMEGA_DOMAIN nel .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      proxy:
+        condition: service_healthy
+
+volumes:
+  caddy-data:
+  caddy-config:

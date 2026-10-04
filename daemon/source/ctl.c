@@ -50,6 +50,19 @@
 #define MAX_BODY (4 * 1024 * 1024)
 
 void player_log(const char *fmt, ...);
+
+// I thread della console nascono con uno stack piccolo: si chiede spazio esplicito
+// (i gestori dei caricamenti hanno parecchi percorsi in variabili locali).
+#define CTL_STACK (512 * 1024)
+static int spawn(void *(*fn)(void *), void *arg) {
+  pthread_attr_t at; pthread_attr_init(&at);
+  pthread_attr_setstacksize(&at, CTL_STACK);
+  pthread_attr_setdetachstate(&at, PTHREAD_CREATE_DETACHED);
+  pthread_t t; int rc = pthread_create(&t, &at, fn, arg);
+  pthread_attr_destroy(&at);
+  return rc;
+}
+#define NOINLINE __attribute__((noinline))
 extern const char REMOTE_HTML[]; extern const size_t REMOTE_HTML_LEN;
 
 static char data_dir[200];
@@ -104,7 +117,7 @@ static void reply_json(int s, int code, const char *js) { reply(s, code, "applic
 
 static int cmd_is(const char *a, const char *b) { return a && !strcmp(a, b); }
 
-static void do_cmd(int s, JVal *j) {
+NOINLINE static void do_cmd(int s, JVal *j) {
   const char *c = jstr(j, "cmd", "");
   double v = jnum(j, "value", -1);
   if (cmd_is(c, "play")) player_play();
@@ -125,7 +138,7 @@ static void do_cmd(int s, JVal *j) {
   reply_json(s, 200, st);
 }
 
-static void do_queue(int s, JVal *j) {
+NOINLINE static void do_queue(int s, JVal *j) {
   JVal *arr = jget(j, "items");
   int n = jlen(arr);
   if (n <= 0 || n > PLAYER_MAX_ITEMS) { reply_json(s, 400, "{\"error\":\"items\"}"); return; }
@@ -181,7 +194,7 @@ static void url_decode(char *s) {
 }
 static void music_dir(char *out, size_t n) { snprintf(out, n, "%s/Music", data_dir); mkdir(out, 0777); }
 
-static void do_upload(int s, const char *qs, const char *body_start, size_t have, long long clen) {
+NOINLINE static void do_upload(int s, const char *qs, const char *body_start, size_t have, long long clen) {
   char name[256] = "", raw[512] = "";
   const char *p = qs ? strstr(qs, "name=") : NULL;
   if (p) { snprintf(raw, sizeof raw, "%.*s", (int)strcspn(p + 5, "&"), p + 5); url_decode(raw); }
@@ -208,7 +221,7 @@ static void do_upload(int s, const char *qs, const char *body_start, size_t have
   reply_json(s, 200, "{\"ok\":true}");
 }
 
-static void music_files(int s) {
+NOINLINE static void music_files(int s) {
   char dir[300]; music_dir(dir, sizeof dir);
   size_t cap = 512 * 1024, at = 0; char *o = malloc(cap);
   if (!o) { reply_json(s, 500, "{}"); return; }
@@ -322,7 +335,7 @@ static void *up_thread(void *arg) {
   return NULL;
 }
 // 1 = la connessione passa al thread (il chiamante non la chiude)
-static int start_upload(int s, const char *qs, const char *pre, size_t have, long long clen) {
+NOINLINE static int start_upload(int s, const char *qs, const char *pre, size_t have, long long clen) {
   char b[40], rel[1024], relc[1024], root[300], dst[1200];
   qparam(qs, "b", b, sizeof b); qparam(qs, "p", rel, sizeof rel);
   if (!batch_ok(b) || !clean_rel(rel, relc, sizeof relc)) { reply_json(s, 400, "{\"error\":\"bad_path\"}"); return 0; }
@@ -335,9 +348,7 @@ static int start_upload(int s, const char *qs, const char *pre, size_t have, lon
   u->s = s; u->clen = clen; snprintf(u->dst, sizeof u->dst, "%s", dst);
   if (have > (size_t)clen) have = (size_t)clen;
   if (have) { u->pre = malloc(have); if (!u->pre) { free(u); reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; } memcpy(u->pre, pre, have); u->have = have; }
-  pthread_t t;
-  if (pthread_create(&t, NULL, up_thread, u) != 0) { free(u->pre); free(u); reply_json(s, 500, "{\"error\":\"thread\"}"); return 0; }
-  pthread_detach(t);
+  if (spawn(up_thread, u) != 0) { free(u->pre); free(u); reply_json(s, 500, "{\"error\":\"thread\"}"); return 0; }
   return 1;
 }
 
@@ -352,7 +363,7 @@ static char *read_small(const char *path, size_t max, size_t *len) {
 static int exists(const char *dir, const char *name) { char p[1200]; struct stat st; snprintf(p, sizeof p, "%s/%s", dir, name); return stat(p, &st) == 0; }
 
 // param.sfo dei giochi PS4: TITLE, TITLE_ID, APP_VER
-static void sfo_read(const char *path, char *title, size_t tn, char *tid, size_t idn, char *ver, size_t vn) {
+NOINLINE static void sfo_read(const char *path, char *title, size_t tn, char *tid, size_t idn, char *ver, size_t vn) {
   size_t L = 0; unsigned char *b = (unsigned char *)read_small(path, 1024 * 1024, &L);
   if (!b || L < 20 || memcmp(b, "\0PSF", 4)) { free(b); return; }
   #define U32(o) ((unsigned)b[o] | (unsigned)b[o + 1] << 8 | (unsigned)b[o + 2] << 16 | (unsigned)b[o + 3] << 24)
@@ -369,7 +380,7 @@ static void sfo_read(const char *path, char *title, size_t tn, char *tid, size_t
   free(b);
 }
 
-static void do_upload_done(int s, JVal *j) {
+NOINLINE static void do_upload_done(int s, JVal *j) {
   char b[40], up[300], batch[600], root[900], name[256] = "", title[128], cover[1400] = "", tid[16] = "", ver[24] = "", plat[8] = "", url[1100], id[40] = "";
   snprintf(b, sizeof b, "%s", jstr(j, "b", ""));
   if (!batch_ok(b)) { reply_json(s, 400, "{\"error\":\"bad_batch\"}"); return; }
@@ -458,7 +469,7 @@ static void do_upload_done(int s, JVal *j) {
 }
 
 // icona dentro un lotto (solo immagini)
-static void upload_file(int s, const char *qs) {
+NOINLINE static void upload_file(int s, const char *qs) {
   char b[40], rel[1024], relc[1024], up[300], p[1400];
   qparam(qs, "b", b, sizeof b); qparam(qs, "p", rel, sizeof rel);
   size_t L = strlen(rel);
@@ -482,11 +493,10 @@ static void *sync_thread(void *arg) {
 static void start_sync(const char *url) {
   if (syncing) return;
   syncing = 1;
-  pthread_t t;
-  if (pthread_create(&t, NULL, sync_thread, url ? strdup(url) : NULL) == 0) pthread_detach(t); else syncing = 0;
+  if (spawn(sync_thread, url ? strdup(url) : NULL) != 0) syncing = 0;
 }
 
-static void do_library(int s, const char *what, JVal *j) {
+NOINLINE static void do_library(int s, const char *what, JVal *j) {
   char err[64] = "", b[160];
   if (!strcmp(what, "item")) {
     if (lib_add(j, err, sizeof err) == 0) reply_json(s, 200, "{\"ok\":true}");
@@ -500,8 +510,8 @@ static void do_library(int s, const char *what, JVal *j) {
     size_t ul = strlen(up);
     if (!rc && !strncmp(url, "file://", 7) && !strncmp(url + 7, up, ul) && url[7 + ul] == '/') {
       const char *bb = url + 8 + ul; char bdir[400]; snprintf(bdir, sizeof bdir, "%s/%.*s", up, (int)strcspn(bb, "/"), bb);
-      char *arg = strdup(bdir); pthread_t t;
-      if (arg && pthread_create(&t, NULL, rm_thread, arg) == 0) pthread_detach(t); else free(arg);
+      char *arg = strdup(bdir);
+      if (!arg || spawn(rm_thread, arg) != 0) free(arg);
     }
   } else if (!strcmp(what, "import")) {
     int r = lib_import(j, err, sizeof err);
@@ -529,7 +539,7 @@ static int handle(int s, int local) {
     if ((end = strstr(hdr, "\r\n\r\n"))) break;
   }
   if (!end) { reply_json(s, 400, "{\"error\":\"header\"}"); return 0; }
-  char method[8] = "", path[2048] = "";
+  static char path[2048]; char method[8] = ""; path[0] = 0;   // statici: un solo thread serve le richieste
   sscanf(hdr, "%7s %2047s", method, path);
   size_t clen = 0;
   for (char *l = strstr(hdr, "\r\n"); l && l < end; l = strstr(l + 2, "\r\n"))
@@ -541,7 +551,7 @@ static int handle(int s, int local) {
   char tok[64] = "";
   for (char *l = strstr(hdr, "\r\n"); l && l < end; l = strstr(l + 2, "\r\n"))
     if (!strncasecmp(l + 2, "x-omega-token:", 14)) { const char *v = l + 16; while (*v == ' ') v++; snprintf(tok, sizeof tok, "%.*s", (int)strcspn(v, "\r\n "), v); }
-  char *qs = strchr(path, '?'); char qcopy[2048] = "";
+  char *qs = strchr(path, '?'); static char qcopy[2048]; qcopy[0] = 0;
   if (qs) { snprintf(qcopy, sizeof qcopy, "%s", qs); char *k = strstr(qs, "k="); if (k && !tok[0]) snprintf(tok, sizeof tok, "%.*s", (int)strcspn(k + 2, "&"), k + 2); *qs = 0; }
 
   // la pagina del telecomando e l'abbinamento sono aperti; il resto dalla rete vuole il token
@@ -673,7 +683,7 @@ int ctl_start(int port, const char *dir) {
   struct sockaddr_in a; memset(&a, 0, sizeof a);
   a.sin_family = AF_INET; a.sin_port = htons((unsigned short)port); a.sin_addr.s_addr = htonl(INADDR_ANY);   // anche dalla rete di casa: vedi il controllo del token
   if (bind(lsock, (struct sockaddr *)&a, sizeof a) != 0 || listen(lsock, 8) != 0) { close(lsock); lsock = -1; return -2; }
-  pthread_t t; pthread_create(&t, NULL, ctl_thread, NULL);
+  if (spawn(ctl_thread, NULL) != 0) { close(lsock); lsock = -1; return -3; }
   player_log("controllo in ascolto sulla porta %d (telecomando con PIN)", port);
   return 0;
 }

@@ -22,14 +22,35 @@
 #define FAN_MAX 80
 
 #ifdef PS5
-int sceKernelGetCpuTemperature(int *t);
-int sceKernelGetSocSensorTemperature(int n, int *t);
-int sceKernelGetCurrentFanDuty(int *unk, int *duty);
+#include <ps5/kernel.h>
 typedef struct { size_t size; char str[0x1C]; uint32_t ver; } SwVer;
-int sceKernelGetProsperoSystemSwVersion(SwVer *v);
-int sceKernelAvailableFlexibleMemorySize(size_t *sz);
 int sceNetCtlInit(void);
 int sceNetCtlGetInfo(int code, void *info);
+// Temperature, ventola, firmware e memoria: non tutte esistono nella libkernel
+// che vede un'app (sceKernelGetCurrentFanDuty è solo in libkernel_sys), e una
+// funzione assente chiamata direttamente fa chiudere Omega. Si cercano a runtime.
+static void *ksym(const char *name) {
+  static const char *libs[] = { "libkernel_sys.sprx", "libkernel.sprx", "libkernel_web.sprx" };
+  for (int i = 0; i < 3; i++) {
+    uint32_t h; if (kernel_dynlib_handle(-1, libs[i], &h)) continue;
+    intptr_t p = kernel_dynlib_dlsym(-1, h, name);
+    if (p) return (void *)p;
+  }
+  return NULL;
+}
+static struct {
+  int done;
+  int (*cpu_t)(int *); int (*soc_t)(int, int *); int (*fan)(int *, int *);
+  int (*sw)(SwVer *); int (*mem)(size_t *);
+} K;
+static void ksyms(void) {
+  if (K.done) return;
+  K.cpu_t = ksym("sceKernelGetCpuTemperature"); K.soc_t = ksym("sceKernelGetSocSensorTemperature");
+  K.fan = ksym("sceKernelGetCurrentFanDuty"); K.sw = ksym("sceKernelGetProsperoSystemSwVersion");
+  K.mem = ksym("sceKernelAvailableFlexibleMemorySize");
+  omega_log("sistema: temp %d sensori %d ventola %d firmware %d memoria %d", !!K.cpu_t, !!K.soc_t, !!K.fan, !!K.sw, !!K.mem);
+  K.done = 1;
+}
 #endif
 
 // ------------------------------------------------------------ fotografia --
@@ -80,12 +101,13 @@ static void gather(SysInfo *si) {
   snprintf(si->fw, sizeof si->fw, "\xE2\x80\x94"); snprintf(si->ip, sizeof si->ip, "\xE2\x80\x94");
 #ifdef PS5
   int v;
-  if (sceKernelGetCpuTemperature(&v) == 0 && v > 0 && v < 130) si->cpu_t = v;
-  if (sceKernelGetSocSensorTemperature(0, &v) == 0 && v > 0 && v < 130) si->soc_t = v;
-  int unk = 0; if (sceKernelGetCurrentFanDuty(&unk, &v) == 0 && v >= 0 && v <= 100) si->fan = v;
+  ksyms();
+  if (K.cpu_t && K.cpu_t(&v) == 0 && v > 0 && v < 130) si->cpu_t = v;
+  if (K.soc_t && K.soc_t(0, &v) == 0 && v > 0 && v < 130) si->soc_t = v;
+  int unk = 0; if (K.fan && K.fan(&unk, &v) == 0 && v >= 0 && v <= 100) si->fan = v;
   SwVer sw; memset(&sw, 0, sizeof sw); sw.size = sizeof sw;
-  if (sceKernelGetProsperoSystemSwVersion(&sw) == 0 && sw.str[0]) { snprintf(si->fw, sizeof si->fw, "%.27s", sw.str); char *sp = strchr(si->fw, ' '); if (sp) *sp = 0; }
-  size_t mf = 0; if (sceKernelAvailableFlexibleMemorySize(&mf) == 0) si->mem_free = mf / 1048576.0;
+  if (K.sw && K.sw(&sw) == 0 && sw.str[0]) { snprintf(si->fw, sizeof si->fw, "%.27s", sw.str); char *sp = strchr(si->fw, ' '); if (sp) *sp = 0; }
+  size_t mf = 0; if (K.mem && K.mem(&mf) == 0) si->mem_free = mf / 1048576.0;
   static int netctl; if (!netctl) netctl = sceNetCtlInit() >= 0 ? 1 : -1;
   char info[256]; memset(info, 0, sizeof info);
   if (sceNetCtlGetInfo(14 /* IP_ADDRESS */, info) == 0 && info[0]) snprintf(si->ip, sizeof si->ip, "%.15s", info);

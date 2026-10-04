@@ -54,12 +54,12 @@
 
 void player_log(const char *fmt, ...);
 
-// I thread della console nascono con uno stack piccolo: si chiede spazio esplicito
-// (i gestori dei caricamenti hanno parecchi percorsi in variabili locali).
-#define CTL_STACK (512 * 1024)
+// Thread staccati con lo stack di default della console: una dimensione esplicita
+// (512 KB) faceva cadere il servizio appena una richiesta entrava nelle librerie di
+// sistema (/v1/system). I gestori pesanti restano fuori linea (NOINLINE), così il
+// thread delle richieste usa poco stack.
 static int spawn(void *(*fn)(void *), void *arg) {
   pthread_attr_t at; pthread_attr_init(&at);
-  pthread_attr_setstacksize(&at, CTL_STACK);
   pthread_attr_setdetachstate(&at, PTHREAD_CREATE_DETACHED);
   pthread_t t; int rc = pthread_create(&t, &at, fn, arg);
   pthread_attr_destroy(&at);

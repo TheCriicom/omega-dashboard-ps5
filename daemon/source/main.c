@@ -449,6 +449,21 @@ static void on_crash(int sig, siginfo_t *si, void *ucv) {
   (void)ucv;
 #endif
   lg("CRASH segnale %d, indirizzo %p, codice %#lx, stack %#lx (main %p), ultima richiesta: %s", sig, si ? si->si_addr : NULL, rip, rsp, (void *)main, ctl_last_request());
+#if defined(PS5) && defined(__x86_64__)
+  // catena delle chiamate dai frame pointer: indirizzi relativi a main, da
+  // ritrovare con llvm-nm nel .elf (main + offset). Ci si ferma se un frame non torna.
+  unsigned long rbp = (unsigned long)((ucontext_t *)ucv)->uc_mcontext.mc_rbp, m = (unsigned long)main;
+  char bt[400]; int n = 0;
+  n += snprintf(bt + n, sizeof bt - n, "%+ld", (long)(rip - m));
+  for (int i = 0; i < 24 && rbp && !(rbp & 7) && n < (int)sizeof bt - 24; i++) {
+    unsigned long *f = (unsigned long *)rbp;
+    unsigned long ret = f[1], next = f[0];
+    n += snprintf(bt + n, sizeof bt - n, " %+ld", (long)(ret - m));
+    if (next <= rbp || next - rbp > (1ul << 20)) break;
+    rbp = next;
+  }
+  lg("CRASH chiamate (rispetto a main): %s", bt);
+#endif
   _exit(128 + sig);
 }
 static void guard_signals(void) {

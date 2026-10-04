@@ -376,6 +376,7 @@ int  hb_icon(const char *dir, char *out, size_t n);
 // payload ELF (payload.c)
 int  payload_scan(AppEntry *list, int n, int max);
 int  payload_run(const char *elf, char *err, size_t en);
+int  payload_run_service(const char *elf, char *err, size_t en);   // solo elfldr (vedi payload.c)
 int  payload_remove(const char *elf);
 
 // ----------------------------------------------------- store: installazione --

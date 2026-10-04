@@ -298,7 +298,7 @@ static void run_plan(void) {
   started_now = 0;
   if (!ctl_alive() && is_file(daemon_dst)) {
     char err[200];
-    if (payload_run(daemon_dst, err, sizeof err) == 0) { SDL_Delay(1500); started_now = ctl_alive(); }
+    if (payload_run_service(daemon_dst, err, sizeof err) == 0) { SDL_Delay(1500); started_now = ctl_alive(); }
   }
   need_reboot = steps[ST_PLUGIN].todo || steps[ST_PLUGIN_AUTO].todo || steps[ST_SHORTCUT].todo || (!started_now && !ctl_alive());
   FILE *f = fopen(SETUP_FILE, "w"); if (f) { fprintf(f, "%d 0\n", owner); fclose(f); }

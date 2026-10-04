@@ -94,7 +94,7 @@ di browser konsol. Sebagai alternatif, unduh paket dari situs web dan salin
 ## Meng-host server
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

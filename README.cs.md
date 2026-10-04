@@ -91,7 +91,7 @@ Případně si stáhněte balíček z webu a zkopírujte `data/` do konzole pře
 ## Provoz serveru
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

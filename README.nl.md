@@ -94,7 +94,7 @@ browser van de console. Je kunt ook het pakket van de website downloaden en
 ## Een server hosten
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

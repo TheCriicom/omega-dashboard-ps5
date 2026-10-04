@@ -88,7 +88,7 @@ Omega는 홈브루 사용자를 위해 만든 대시보드이며, 원한다면 H
 ## 서버 호스팅하기
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

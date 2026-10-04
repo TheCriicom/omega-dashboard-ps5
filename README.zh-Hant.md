@@ -85,7 +85,7 @@ Omega 是專為自製軟體使用者設計的儀表板，只要你願意，它�
 ## 架設伺服器
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

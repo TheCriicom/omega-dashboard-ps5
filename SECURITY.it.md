@@ -4,7 +4,7 @@
 
 Se trovi una vulnerabilità nel server o nell'app, non aprire una issue
 pubblica: scrivi un messaggio privato tramite
-[GitHub Security Advisories](https://github.com/CristianLaporta/omega-dashboard-ps5/security/advisories/new)
+[GitHub Security Advisories](https://github.com/TheCriicom/omega-dashboard-ps5/security/advisories/new)
 con una descrizione e, se possibile, i passi per riprodurla.
 
 Rispondiamo entro pochi giorni e, una volta corretto il problema, lo rendiamo

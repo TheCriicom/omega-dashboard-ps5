@@ -79,7 +79,7 @@ payload 加载器。最简单的方式是用主机的浏览器打开
 ## 自建服务器
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

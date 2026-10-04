@@ -88,7 +88,7 @@ Store ติดตั้งได้ด้วยปุ่มเดียว เ�
 ## การโฮสต์เซิร์ฟเวอร์
 
 ```sh
-git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
+git clone https://github.com/TheCriicom/omega-dashboard-ps5.git
 cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```

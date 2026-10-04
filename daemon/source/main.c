@@ -390,7 +390,20 @@ static void on_track(const char *title, const char *artist) {
 
 // /v1/system per il telecomando: cosa sta girando e quanto scalda
 int sceKernelGetCpuTemperature(int *t);
-int sceKernelGetCurrentFanDuty(int *unk, int *duty);
+#include <ps5/kernel.h>
+// sceKernelGetCurrentFanDuty esiste solo in libkernel_sys: quando il servizio lo
+// avvia websrv (riavvio automatico dalla UI) non c'è, e chiamarla direttamente
+// salta in un punto a caso del programma. Si cerca a runtime.
+static int (*fan_duty_fn)(int *, int *);
+static int fan_duty(int *unk, int *duty) {
+  static int done;
+  if (!done) {
+    static const char *libs[] = { "libkernel_sys.sprx", "libkernel.sprx", "libkernel_web.sprx" };
+    for (int i = 0; i < 3 && !fan_duty_fn; i++) { uint32_t h; if (!kernel_dynlib_handle(-1, libs[i], &h)) fan_duty_fn = (void *)kernel_dynlib_dlsym(-1, h, "sceKernelGetCurrentFanDuty"); }
+    done = 1;
+  }
+  return fan_duty_fn ? fan_duty_fn(unk, duty) : -1;
+}
 static void system_json(char *out, size_t n) {
   char tid[64] = "", name[128] = "", esc[260] = "";
   int appId = sceSystemServiceGetAppIdOfRunningBigApp();
@@ -399,7 +412,7 @@ static void system_json(char *out, size_t n) {
   }
   int t = -1, unk = 0, fan = -1;
   if (sceKernelGetCpuTemperature(&t) != 0) t = -1;
-  if (sceKernelGetCurrentFanDuty(&unk, &fan) != 0) fan = -1;
+  if (fan_duty(&unk, &fan) != 0) fan = -1;
   snprintf(out, n, "{\"game\":\"%s\",\"title_id\":\"%s\",\"cpu_t\":%d,\"fan\":%d,\"friends_online\":%d,\"lang\":\"%s\"}", esc, esc[0] ? tid : "", t, fan, friends_online, i18n_code());
 }
 
@@ -428,13 +441,14 @@ int main(void);
 // Un crash finisce nel log con il segnale, l'indirizzo e l'ultima richiesta servita:
 // sottraendo l'indirizzo di main si ritrova la riga nel file .elf.
 static void on_crash(int sig, siginfo_t *si, void *ucv) {
-  unsigned long rip = 0;
+  unsigned long rip = 0, rsp = 0;
 #if defined(PS5) && defined(__x86_64__)
   rip = (unsigned long)((ucontext_t *)ucv)->uc_mcontext.mc_rip;
+  rsp = (unsigned long)((ucontext_t *)ucv)->uc_mcontext.mc_rsp;
 #else
   (void)ucv;
 #endif
-  lg("CRASH segnale %d, indirizzo %p, codice %#lx (main %p), ultima richiesta: %s", sig, si ? si->si_addr : NULL, rip, (void *)main, ctl_last_request());
+  lg("CRASH segnale %d, indirizzo %p, codice %#lx, stack %#lx (main %p), ultima richiesta: %s", sig, si ? si->si_addr : NULL, rip, rsp, (void *)main, ctl_last_request());
   _exit(128 + sig);
 }
 static void guard_signals(void) {

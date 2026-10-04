@@ -54,17 +54,22 @@
 
 void player_log(const char *fmt, ...);
 
-// Thread staccati con lo stack di default della console: una dimensione esplicita
-// (512 KB) faceva cadere il servizio appena una richiesta entrava nelle librerie di
-// sistema (/v1/system). I gestori pesanti restano fuori linea (NOINLINE), così il
-// thread delle richieste usa poco stack.
-static int spawn(void *(*fn)(void *), void *arg) {
+// Thread con uno stack nostro (1 MB). Sulla console il thread riceve comunque uno
+// stack minuscolo se si chiede solo una dimensione (pthread_attr_setstacksize è
+// ignorato): bastava formattare una risposta per esaurirlo. Con la memoria data
+// da noi (pthread_attr_setstack) lo stack è davvero quello.
+#define CTL_STACK (1024 * 1024)
+int omega_thread(void *(*fn)(void *), void *arg) {
   pthread_attr_t at; pthread_attr_init(&at);
   pthread_attr_setdetachstate(&at, PTHREAD_CREATE_DETACHED);
+  void *stk = NULL;
+  if (posix_memalign(&stk, 4096, CTL_STACK) == 0) pthread_attr_setstack(&at, stk, CTL_STACK);
   pthread_t t; int rc = pthread_create(&t, &at, fn, arg);
   pthread_attr_destroy(&at);
+  if (rc && stk) free(stk);
   return rc;
 }
+#define spawn omega_thread
 #define NOINLINE __attribute__((noinline))
 extern const char REMOTE_HTML[]; extern const size_t REMOTE_HTML_LEN;
 
@@ -637,8 +642,11 @@ static int handle(int s, int local) {
       reply_json(s, 200, b); return 0;
     }
     if (!strcmp(path, "/v1/system")) {
+      static int traced; if (traced < 3) player_log("richiesta /v1/system (thread delle richieste)");
       char b[600] = "{}"; if (system_fn) system_fn(b, sizeof b);
-      reply_json(s, 200, b); return 0;
+      reply_json(s, 200, b);
+      if (traced < 3) { player_log("richiesta /v1/system: risposta inviata"); traced++; }
+      return 0;
     }
     if (!strcmp(path, "/v1/favorites")) {
       char p[260]; snprintf(p, sizeof p, "%s/music.json", data_dir);
@@ -726,6 +734,7 @@ static int handle(int s, int local) {
 
 static void *ctl_thread(void *arg) {
   (void)arg;
+  { char probe; player_log("thread delle richieste: stack intorno a %p", (void *)&probe); }
   for (;;) {
     struct sockaddr_in ca; socklen_t cl = sizeof ca;
     int c = accept(lsock, (struct sockaddr *)&ca, &cl);

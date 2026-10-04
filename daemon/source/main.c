@@ -404,16 +404,25 @@ static int fan_duty(int *unk, int *duty) {
   }
   return fan_duty_fn ? fan_duty_fn(unk, duty) : -1;
 }
+static int sys_trace = 3;   // i primi passi di /v1/system finiscono nel log (diagnosi)
+#define STEP(...) do { if (sys_trace > 0) lg(__VA_ARGS__); } while (0)
 static void system_json(char *out, size_t n) {
   char tid[64] = "", name[128] = "", esc[260] = "";
+  STEP("sistema: inizio");
   int appId = sceSystemServiceGetAppIdOfRunningBigApp();
+  STEP("sistema: app %d", appId);
   if (appId >= 0 && sceSystemServiceGetAppTitleId(appId, tid) == 0 && strncmp(tid, "NPXS", 4) && strcmp(tid, host_tid) && !ui_in_foreground()) {
     game_name(tid, name, sizeof name); json_esc(esc, sizeof esc, name);
   }
+  STEP("sistema: gioco [%s] [%s]", tid, esc);
   int t = -1, unk = 0, fan = -1;
   if (sceKernelGetCpuTemperature(&t) != 0) t = -1;
-  if (fan_duty(&unk, &fan) != 0) fan = -1;
+  STEP("sistema: temperatura %d", t);
+  if (fan_duty(&unk, &fan) != 0 || fan < 0 || fan > 100) fan = -1;
+  STEP("sistema: ventola %d", fan);
   snprintf(out, n, "{\"game\":\"%s\",\"title_id\":\"%s\",\"cpu_t\":%d,\"fan\":%d,\"friends_online\":%d,\"lang\":\"%s\"}", esc, esc[0] ? tid : "", t, fan, friends_online, i18n_code());
+  STEP("sistema: risposta pronta (%d byte)", (int)strlen(out));
+  if (sys_trace > 0) sys_trace--;
 }
 
 // La soglia della ventola si perde a ogni riavvio: se l'utente ne ha scelta

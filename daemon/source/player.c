@@ -5,6 +5,7 @@
 //    (sceAudioOutOutput è bloccante e dà il ritmo).
 // Comandi e stato passano da un mutex; chi comanda non aspetta mai la rete.
 #include "player.h"
+#include "ctl.h"
 #include "json.h"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -443,9 +444,9 @@ void player_init(const char *file) {
   reorder();
   avformat_network_init();
   av_log_set_level(AV_LOG_ERROR);
-  pthread_t a, b;
-  pthread_create(&a, NULL, decode_thread, NULL);
-  pthread_create(&b, NULL, out_thread, NULL);
+  // stack nostro anche qui (vedi omega_thread in ctl.c): FFmpeg ne usa parecchio
+  omega_thread(decode_thread, NULL);
+  omega_thread(out_thread, NULL);
   player_log("lettore pronto: %d brani in coda", count);
 }
 

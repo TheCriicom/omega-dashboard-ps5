@@ -487,6 +487,14 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
     const char *kind = !strcasecmp(ext, ".pkg") ? "pkg" : !strcasecmp(ext, ".zip") ? "zip" : !strcasecmp(ext, ".elf") ? "elf" : NULL;
     if (!kind) { rm_rf(batch); reply_json(s, 400, "{\"error\":\"unknown_file\"}"); return; }
     if (!title[0]) snprintf(title, sizeof title, "%.*s", (int)(L - 4), only);
+    // nome pulito sul disco (l'installatore di sistema non vuole spazi e simboli); il titolo resta quello originale
+    char safe[256]; size_t so = 0;
+    for (const char *c = only; *c && so + 1 < sizeof safe; c++) safe[so++] = ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '.' || *c == '-' || *c == '_') ? *c : '_';
+    safe[so] = 0;
+    if (strcmp(safe, only)) {
+      char from[900], to[900]; snprintf(from, sizeof from, "%s/%s", batch, only); snprintf(to, sizeof to, "%s/%s", batch, safe);
+      if (rename(from, to) == 0) snprintf(only, sizeof only, "%s", safe);
+    }
     snprintf(url, sizeof url, "file://%s/%s", batch, only);
     if (lib_add_upload(title, url, kind, "", "", "", "", id, sizeof id)) { reply_json(s, 500, "{\"error\":\"library\"}"); return; }
     char o[160]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"%s\"}", id, kind); reply_json(s, 200, o);

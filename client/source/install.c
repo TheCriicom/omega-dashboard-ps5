@@ -253,10 +253,27 @@ static int do_pkg(const InstallReq *j) {
 #ifdef PS5
   if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "%s", _("AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.")); return -1; }
   const char *uri = local_path(j->url) ? local_path(j->url) : j->url;   // un pkg caricato si installa dal disco
+  // l'installatore di sistema rifiuta i percorsi con spazi e simboli: accanto al
+  // file si crea un collegamento con un nome pulito e si installa da lì
+  char clean[700];
+  if (local_path(j->url) && strpbrk(uri, " []()'&#%")) {
+    snprintf(clean, sizeof clean, "%s", uri);
+    char *base = strrchr(clean, '/'); base = base ? base + 1 : clean;
+    for (char *c = base; *c; c++) if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '.' || *c == '-' || *c == '_')) *c = '_';
+    unlink(clean);
+    if (link(uri, clean) == 0 || rename(uri, clean) == 0) uri = clean;
+    omega_log("install: pkg dal percorso %s", uri);
+  }
   pkg_metadata_t meta = { .uri = uri, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = j->name[0] ? j->name : "", .icon_url = "" };
   pkg_info_t info; memset(&info, 0, sizeof info);
   playgo_info_t pg; memset(&pg, 0, sizeof pg);
   int rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
+  if (rc && local_path(j->url)) {   // alcune versioni vogliono l'URI file://
+    char furi[720]; snprintf(furi, sizeof furi, "file://%s", uri);
+    omega_log("install: pkg rifiutato (0x%08X), riprovo come %s", (unsigned)rc, furi);
+    meta.uri = furi; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg);
+    rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
+  }
   if (rc) { snprintf(g_result, sizeof g_result, _("Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow."), (unsigned)rc); return -1; }
   snprintf(g_result, sizeof g_result, "%s", _("Installazione avviata: comparirà nella Home della console"));
   return 0;

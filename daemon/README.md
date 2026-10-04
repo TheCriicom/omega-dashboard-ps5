@@ -53,6 +53,16 @@ musica, si mandano file audio in `/data/Omega/Music` e si gestisce La mia
 libreria (`source/lib.c`, salvata in `/data/Omega/library.json`): giochi
 aggiunti a mano, importati da un JSON o sincronizzati da un link.
 
+Dalla stessa pagina si possono caricare i giochi direttamente sulla console: un
+file `.pkg`, `.zip` o `.elf`, oppure una cartella intera (anche trascinata dal
+PC). I file arrivano in `/data/Omega/uploads/<lotto>/`, ognuno in un thread suo,
+così musica e comandi restano liberi. A fine lotto il demone guarda cosa è
+arrivato: una cartella con `homebrew.js` o `eboot.elf` va subito in
+`/data/homebrew`; un gioco (`sce_sys/param.json` per PS5, `param.sfo` per PS4)
+o un file diventa una voce di La mia libreria con link `file://`, che la UI
+installa senza scaricare niente (le cartelle in `/user/app/<Title ID>`).
+Togliendo la voce si cancellano anche i file caricati.
+
 Per provarlo sul Mac: `desktop/build-desktop.sh` (FFmpeg e SDL2 di Homebrew),
 poi `desktop/omega-player-desktop /tmp/omega/player.json` e apri
 `http://127.0.0.1:9095`.

@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday} {day}. {month}",
   "È stato online": "Oli online",
   "è online": "on online",
-  "✕ ingrandisci": "✕ suurenna"
+  "✕ ingrandisci": "✕ suurenna",
+  "CARTELLA": "KANSIO",
+  "Cartella non valida: manca il Title ID": "Virheellinen kansio: Title ID puuttuu",
+  "Copia non riuscita": "Kopiointi epäonnistui",
+  "Copia sulla console": "Kopioidaan konsoliin"
 }

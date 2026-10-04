@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{month} {day}일 {weekday}",
   "È stato online": "최근 온라인",
   "è online": "온라인 접속",
-  "✕ ingrandisci": "✕ 확대"
+  "✕ ingrandisci": "✕ 확대",
+  "CARTELLA": "폴더",
+  "Cartella non valida: manca il Title ID": "잘못된 폴더: Title ID가 없습니다",
+  "Copia non riuscita": "복사하지 못했습니다",
+  "Copia sulla console": "본체로 복사하는 중"
 }

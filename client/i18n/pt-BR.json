@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day} de {month}",
   "È stato online": "Esteve online",
   "è online": "está online",
-  "✕ ingrandisci": "✕ ampliar"
+  "✕ ingrandisci": "✕ ampliar",
+  "CARTELLA": "PASTA",
+  "Cartella non valida: manca il Title ID": "Pasta inválida: falta o Title ID",
+  "Copia non riuscita": "Não foi possível copiar",
+  "Copia sulla console": "Copiando para o console"
 }

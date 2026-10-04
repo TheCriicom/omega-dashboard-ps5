@@ -116,7 +116,7 @@ static const char *KINDS[] = { "auto", "pkg", "zip", "elf" };
 #define NKINDS 4
 #define NCATS 6
 
-static int kind_of(const char *s) { return !strcmp(s, "pkg") ? 1 : !strcmp(s, "zip") ? 2 : !strcmp(s, "elf") ? 3 : 0; }
+static int kind_of(const char *s) { return !strcmp(s, "pkg") ? 1 : !strcmp(s, "zip") ? 2 : !strcmp(s, "elf") ? 3 : !strcmp(s, "folder") ? 4 : 0; }
 
 // ------------------------------------------------------------------ texture --
 static void free_covers(void) {
@@ -612,7 +612,7 @@ static void draw_stars(int x, int y, int size, float rating, int alpha) {
   }
 }
 
-static const char *kind_label(int k) { return k == 1 ? "PKG" : k == 2 ? "ZIP" : k == 3 ? "ELF" : "FILE"; }
+static const char *kind_label(int k) { return k == 1 ? "PKG" : k == 2 ? "ZIP" : k == 3 ? "ELF" : k == 4 ? _("CARTELLA") : "FILE"; }
 static void human_size(long b, char *out, size_t n) {
   if (b <= 0) out[0] = 0;
   else if (b >= 1073741824L) snprintf(out, n, _("%.1f GB"), b / 1073741824.0);

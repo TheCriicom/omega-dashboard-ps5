@@ -438,7 +438,9 @@ int main(void) {
   player_on_track(on_track);
   sleep(BOOT_DELAY_S);
 
-  if (home_mode_on()) {
+  // avviato a console accesa (dalla UI, dopo la configurazione dell'HEN): Omega è già aperta
+  if (ui_in_foreground()) lg("Omega è già aperta: nessun avvio iniziale");
+  else if (home_mode_on()) {
     for (int i = 0; i < BOOT_TRIES; i++) {
       if (launch_omega() == 0) { lg("avvio iniziale: Omega lanciata"); break; }
       lg("websrv non pronto (tentativo %d)", i + 1); sleep(3);

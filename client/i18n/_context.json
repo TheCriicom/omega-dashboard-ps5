@@ -273,7 +273,7 @@
   },
   "%s  ·  %.1f / %.1f MB": {
     "where": [
-      "omega-ui-src/source/install.c:385"
+      "omega-ui-src/source/install.c:463"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s f f; unit or abbreviation: use the usual short form of your language"
   },
@@ -298,25 +298,26 @@
   },
   "%s installato": {
     "where": [
-      "omega-ui-src/source/install.c:323"
+      "omega-ui-src/source/install.c:374",
+      "omega-ui-src/source/install.c:407"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato in Payload Manager": {
     "where": [
-      "omega-ui-src/source/install.c:273"
+      "omega-ui-src/source/install.c:322"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato per %s: lo trovi in home e tra i payload del caricatore": {
     "where": [
-      "omega-ui-src/source/install.c:240"
+      "omega-ui-src/source/install.c:289"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
   "%s installato: lo trovi nella Home di Omega": {
     "where": [
-      "omega-ui-src/source/install.c:303"
+      "omega-ui-src/source/install.c:354"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -334,7 +335,7 @@
   },
   "%s è in Payload Manager: avvialo una volta per completare l'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:271"
+      "omega-ui-src/source/install.c:320"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -741,7 +742,7 @@
   },
   "Analisi": {
     "where": [
-      "omega-ui-src/source/install.c:281"
+      "omega-ui-src/source/install.c:332"
     ]
   },
   "Anche le sottocartelle, in ordine": {
@@ -801,7 +802,7 @@
   },
   "AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.": {
     "where": [
-      "omega-ui-src/source/install.c:206"
+      "omega-ui-src/source/install.c:254"
     ]
   },
   "Apri": {
@@ -1123,7 +1124,7 @@
   },
   "C'è già un'installazione in corso": {
     "where": [
-      "omega-ui-src/source/install.c:349",
+      "omega-ui-src/source/install.c:427",
       "omega-ui-src/source/store.c:441"
     ],
     "kind": [
@@ -1139,6 +1140,11 @@
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "CARTELLA": {
+    "where": [
+      "omega-ui-src/source/store.c:615"
+    ]
   },
   "Cambia": {
     "where": [
@@ -1254,6 +1260,11 @@
   "Cartella non leggibile": {
     "where": [
       "omega-ui-src/source/music.c:425"
+    ]
+  },
+  "Cartella non valida: manca il Title ID": {
+    "where": [
+      "omega-ui-src/source/install.c:387"
     ]
   },
   "Cartella vuota o non leggibile": {
@@ -1677,6 +1688,12 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Copia non riuscita": {
+    "where": [
+      "omega-ui-src/source/install.c:239",
+      "omega-ui-src/source/install.c:397"
+    ]
+  },
   "Copia non riuscita (spazio o permessi)": {
     "where": [
       "omega-ui-src/source/system.c:400"
@@ -1685,6 +1702,12 @@
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Copia sulla console": {
+    "where": [
+      "omega-ui-src/source/install.c:236",
+      "omega-ui-src/source/install.c:393"
+    ]
   },
   "Copiato: scegli la cartella e premi △": {
     "where": [
@@ -1906,7 +1929,7 @@
   },
   "Download non riuscito (%d)": {
     "where": [
-      "omega-ui-src/source/install.c:200"
+      "omega-ui-src/source/install.c:248"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -2157,14 +2180,14 @@
   },
   "Estrazione (%d file)": {
     "where": [
-      "omega-ui-src/source/install.c:154"
+      "omega-ui-src/source/install.c:158"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Estrazione dello zip non riuscita": {
     "where": [
-      "omega-ui-src/source/install.c:301",
-      "omega-ui-src/source/install.c:316"
+      "omega-ui-src/source/install.c:352",
+      "omega-ui-src/source/install.c:367"
     ]
   },
   "Fatto": {
@@ -2668,7 +2691,7 @@
   },
   "Impossibile avviare l'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:359"
+      "omega-ui-src/source/install.c:437"
     ],
     "kind": [
       "message"
@@ -2706,8 +2729,8 @@
   },
   "Impossibile salvare il payload": {
     "where": [
-      "omega-ui-src/source/install.c:236",
-      "omega-ui-src/source/install.c:248"
+      "omega-ui-src/source/install.c:285",
+      "omega-ui-src/source/install.c:297"
     ]
   },
   "Impostazioni": {
@@ -2748,7 +2771,7 @@
   },
   "In corso": {
     "where": [
-      "omega-ui-src/source/install.c:388"
+      "omega-ui-src/source/install.c:466"
     ]
   },
   "In diretta": {
@@ -2941,7 +2964,7 @@
   },
   "Installato: ora è nella tua Home": {
     "where": [
-      "omega-ui-src/source/install.c:368"
+      "omega-ui-src/source/install.c:446"
     ],
     "kind": [
       "toast"
@@ -2950,22 +2973,24 @@
   },
   "Installazione": {
     "where": [
-      "omega-ui-src/source/install.c:354"
+      "omega-ui-src/source/install.c:432"
     ]
   },
   "Installazione annullata": {
     "where": [
-      "omega-ui-src/source/install.c:199"
+      "omega-ui-src/source/install.c:239",
+      "omega-ui-src/source/install.c:247",
+      "omega-ui-src/source/install.c:397"
     ]
   },
   "Installazione avviata: comparirà nella Home della console": {
     "where": [
-      "omega-ui-src/source/install.c:212"
+      "omega-ui-src/source/install.c:261"
     ]
   },
   "Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow.": {
     "where": [
-      "omega-ui-src/source/install.c:211"
+      "omega-ui-src/source/install.c:260"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
@@ -3340,7 +3365,7 @@
   },
   "Link di download mancante": {
     "where": [
-      "omega-ui-src/source/install.c:350"
+      "omega-ui-src/source/install.c:428"
     ],
     "kind": [
       "message"
@@ -3392,7 +3417,7 @@
   },
   "Lo zip è vuoto o danneggiato": {
     "where": [
-      "omega-ui-src/source/install.c:283"
+      "omega-ui-src/source/install.c:334"
     ]
   },
   "Malware o file pericoloso": {
@@ -3422,7 +3447,7 @@
   },
   "Memoria insufficiente": {
     "where": [
-      "omega-ui-src/source/install.c:352"
+      "omega-ui-src/source/install.c:430"
     ],
     "kind": [
       "message"
@@ -4497,7 +4522,7 @@
   },
   "Preparazione": {
     "where": [
-      "omega-ui-src/source/install.c:336"
+      "omega-ui-src/source/install.c:414"
     ]
   },
   "Preparazione dei tuoi dati...": {
@@ -4783,7 +4808,8 @@
   },
   "Registrazione": {
     "where": [
-      "omega-ui-src/source/install.c:318"
+      "omega-ui-src/source/install.c:369",
+      "omega-ui-src/source/install.c:401"
     ]
   },
   "Registrazione chiusa su questo server": {
@@ -4806,7 +4832,8 @@
   },
   "Registrazione non riuscita (0x%08X). Privilegio ShellCore mancante?": {
     "where": [
-      "omega-ui-src/source/install.c:320"
+      "omega-ui-src/source/install.c:371",
+      "omega-ui-src/source/install.c:403"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
@@ -5096,7 +5123,7 @@
   },
   "Scaricamento": {
     "where": [
-      "omega-ui-src/source/install.c:193"
+      "omega-ui-src/source/install.c:242"
     ]
   },
   "Scegli": {
@@ -6256,7 +6283,7 @@
   },
   "Verifica": {
     "where": [
-      "omega-ui-src/source/install.c:250"
+      "omega-ui-src/source/install.c:299"
     ]
   },
   "Verifico il server...": {
@@ -6386,7 +6413,7 @@
   },
   "Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID": {
     "where": [
-      "omega-ui-src/source/install.c:307"
+      "omega-ui-src/source/install.c:358"
     ]
   },
   "adesso": {

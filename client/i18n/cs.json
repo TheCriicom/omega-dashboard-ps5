@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday} {day}. {month}",
   "È stato online": "Byl(a) online",
   "è online": "je online",
-  "✕ ingrandisci": "✕ zvětšit"
+  "✕ ingrandisci": "✕ zvětšit",
+  "CARTELLA": "SLOŽKA",
+  "Cartella non valida: manca il Title ID": "Neplatná složka: chybí Title ID",
+  "Copia non riuscita": "Kopírování se nezdařilo",
+  "Copia sulla console": "Kopírování do konzole"
 }

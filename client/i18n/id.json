@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day} {month}",
   "È stato online": "Sempat online",
   "è online": "kini online",
-  "✕ ingrandisci": "✕ perbesar"
+  "✕ ingrandisci": "✕ perbesar",
+  "CARTELLA": "FOLDER",
+  "Cartella non valida: manca il Title ID": "Folder tidak valid: Title ID tidak ada",
+  "Copia non riuscita": "Gagal menyalin",
+  "Copia sulla console": "Menyalin ke konsol"
 }

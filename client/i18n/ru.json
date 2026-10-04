@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day} {month}",
   "È stato online": "Был(а) в сети",
   "è online": "в сети",
-  "✕ ingrandisci": "✕ увеличить"
+  "✕ ingrandisci": "✕ увеличить",
+  "CARTELLA": "ПАПКА",
+  "Cartella non valida: manca il Title ID": "Неверная папка: нет Title ID",
+  "Copia non riuscita": "Не удалось скопировать",
+  "Copia sulla console": "Копирование на консоль"
 }

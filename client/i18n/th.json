@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}ที่ {day} {month}",
   "È stato online": "ออนไลน์ล่าสุด",
   "è online": "ออนไลน์อยู่",
-  "✕ ingrandisci": "✕ ขยาย"
+  "✕ ingrandisci": "✕ ขยาย",
+  "CARTELLA": "โฟลเดอร์",
+  "Cartella non valida: manca il Title ID": "โฟลเดอร์ไม่ถูกต้อง: ไม่มี Title ID",
+  "Copia non riuscita": "คัดลอกไม่สำเร็จ",
+  "Copia sulla console": "กำลังคัดลอกไปยังเครื่อง"
 }

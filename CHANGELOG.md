@@ -2,6 +2,11 @@
 
 ## 2026.10.04
 
+- Upload games straight from the phone or PC page: a .pkg, .zip or .elf file,
+  or a whole game or homebrew folder (drag and drop on PC). Homebrew folders go
+  to the Home at once; games land in My library and install from the console
+  without downloading anything.
+
 - Music, also during games: internet radio, Navidrome/Subsonic, USB files and
   audio links, played by the daemon in the background.
 - Phone remote: a web page served by the console (QR code + PIN) to control the

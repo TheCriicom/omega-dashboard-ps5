@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{day} {month} {weekday}",
   "È stato online": "Çevrimiçiydi",
   "è online": "çevrimiçi oldu",
-  "✕ ingrandisci": "✕ büyüt"
+  "✕ ingrandisci": "✕ büyüt",
+  "CARTELLA": "KLASÖR",
+  "Cartella non valida: manca il Title ID": "Geçersiz klasör: Title ID eksik",
+  "Copia non riuscita": "Kopyalanamadı",
+  "Copia sulla console": "Konsola kopyalanıyor"
 }

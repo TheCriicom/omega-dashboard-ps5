@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{month}{day}日 {weekday}",
   "È stato online": "曾上線",
   "è online": "已上線",
-  "✕ ingrandisci": "✕ 放大"
+  "✕ ingrandisci": "✕ 放大",
+  "CARTELLA": "資料夾",
+  "Cartella non valida: manca il Title ID": "資料夾無效：缺少 Title ID",
+  "Copia non riuscita": "複製失敗",
+  "Copia sulla console": "正在複製到主機"
 }

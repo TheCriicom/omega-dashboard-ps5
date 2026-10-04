@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {month} {day}",
   "È stato online": "Was online",
   "è online": "is online",
-  "✕ ingrandisci": "✕ enlarge"
+  "✕ ingrandisci": "✕ enlarge",
+  "CARTELLA": "FOLDER",
+  "Cartella non valida: manca il Title ID": "Invalid folder: the Title ID is missing",
+  "Copia non riuscita": "Copy failed",
+  "Copia sulla console": "Copying to the console"
 }

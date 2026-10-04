@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day} {month}",
   "È stato online": "Był(a) online",
   "è online": "jest online",
-  "✕ ingrandisci": "✕ powiększ"
+  "✕ ingrandisci": "✕ powiększ",
+  "CARTELLA": "FOLDER",
+  "Cartella non valida: manca il Title ID": "Nieprawidłowy folder: brak Title ID",
+  "Copia non riuscita": "Nie udało się skopiować",
+  "Copia sulla console": "Kopiowanie na konsolę"
 }

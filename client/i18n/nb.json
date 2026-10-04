@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday} {day}. {month}",
   "È stato online": "Var på nett",
   "è online": "er på nett",
-  "✕ ingrandisci": "✕ forstørr"
+  "✕ ingrandisci": "✕ forstørr",
+  "CARTELLA": "MAPPE",
+  "Cartella non valida: manca il Title ID": "Ugyldig mappe: Title ID mangler",
+  "Copia non riuscita": "Kopieringen mislyktes",
+  "Copia sulla console": "Kopierer til konsollen"
 }

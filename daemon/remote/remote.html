@@ -90,6 +90,14 @@
   .drop b { display:block; font-weight:600; }
   .drop span { color:var(--ink3); font-size:13px; }
 
+  .ups { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (min-width: 421px) { .ups .drop { flex-direction:column; align-items:flex-start; gap:10px; } }
+  .upbox { margin-top:14px; padding:14px; border-radius:12px; background:var(--bg2); border:1px solid var(--line); }
+  .upbox .row { align-items:center; margin-top:10px; }
+  .upbox .txt { font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums; }
+  .upbox .bar { margin-top:10px; }
+  @media (max-width: 420px) { .ups { grid-template-columns:1fr; } }
+
   /* ---------- PIN ---------- */
   .pair { width:calc(100% - 32px); max-width:420px; margin:8vh auto 0; text-align:center; padding:28px 22px; }
   .pair .logo { width:56px; height:56px; margin:0 auto 14px; }
@@ -315,6 +323,22 @@
         <div class="actions"><button class="btn primary" type="button" id="add_open_b"><svg aria-hidden="true"><use href="#i-plus"/></svg><span id="add_open"></span></button><button class="btn" type="button" id="imp_open_b"><svg aria-hidden="true"><use href="#i-code"/></svg><span id="imp_open"></span></button></div>
       </section>
 
+      <section class="card" id="upcard">
+        <h2><svg aria-hidden="true"><use href="#i-up"/></svg><span id="t_up"></span></h2>
+        <p class="help" id="t_up_help"></p>
+        <div class="ups">
+          <label class="drop" id="up_drop"><span class="ico"><svg aria-hidden="true"><use href="#i-up"/></svg></span><span><b id="l_upfile"></b><span>.pkg · .zip · .elf</span></span><input type="file" id="up_file" accept=".pkg,.zip,.elf"></label>
+          <label class="drop" id="up_drop2"><span class="ico"><svg aria-hidden="true"><use href="#i-folder"/></svg></span><span><b id="l_updir"></b><span id="l_updir_s"></span></span><input type="file" id="up_dir" webkitdirectory directory multiple></label>
+        </div>
+        <label class="f" for="up_name" id="l_upname"></label><input type="text" id="up_name" maxlength="120">
+        <div class="upbox" id="upbox" hidden>
+          <div class="txt" id="up_txt"></div>
+          <div class="bar"><i id="up_prog"></i></div>
+          <div class="row"><span class="txt" id="up_wait"></span><button class="btn ghost" type="button" id="up_cancel" style="flex:none"></button></div>
+        </div>
+        <div class="note ok" id="upok"></div><div class="note err" id="uperr"></div>
+      </section>
+
       <div class="lib-forms">
         <section class="card" id="form" hidden>
           <h2><svg aria-hidden="true"><use href="#i-edit"/></svg><span id="f_title"></span></h2>
@@ -360,7 +384,11 @@
           i_help: 'A JSON list of games: an array, or an object with "items"/"games". Accepted fields: title/name, url/download/link, cover/image, platform, title_id, version, description.',
           addmusic: 'Add music', addmusic_help: 'Send audio files from this phone or PC to the console: they go to Omega › Music › Files › Music in Omega. Or play any audio or radio link right away.',
           mfiles: 'Choose audio files', mlink: 'Play a link (MP3, AAC, radio stream…)', play: 'Play', uploading: 'Sending ', uploaded: 'Sent: ', upfail: 'Upload failed: ', onconsole: 'Music on the console',
-          file: 'From a file', paste: 'Paste JSON text', import_go: 'Import', link: 'From a link (kept in sync)', link_go: 'Link and sync', unlink: 'Unlink', added: 'Games added: ', syncing: 'Syncing… the games appear in a moment', badjson: 'This is not a valid games JSON', linked: 'Linked: ', from_link: 'link', from_import: 'imported' },
+          file: 'From a file', paste: 'Paste JSON text', import_go: 'Import', link: 'From a link (kept in sync)', link_go: 'Link and sync', unlink: 'Unlink', added: 'Games added: ', syncing: 'Syncing… the games appear in a moment', badjson: 'This is not a valid games JSON', linked: 'Linked: ', from_link: 'link', from_import: 'imported',
+          up: 'Upload from this device', up_help: 'Choose a .pkg, .zip or .elf file, or the folder of a game or homebrew: it is copied to the console over Wi-Fi. Homebrew folders (with homebrew.js or eboot.elf) go straight to Omega\'s Home; games appear in My library, ready to install.',
+          up_file: 'Choose a file', up_dir: 'Choose a folder', up_dir_s: 'game or homebrew', up_name: 'Name (optional)', up_sending: 'Sending {n} of {t} · {a} of {b}', up_wait: 'Keep this page open until it finishes.',
+          up_space: 'Not enough space on the console: {a} free, {b} needed', up_lib: 'Done: it\'s in My library, ready to install', up_hb: 'Done: {name} is now in Omega\'s Home, with your homebrew',
+          up_fail: 'Upload failed: ', up_unknown: 'Not recognised: choose a .pkg, .zip or .elf, or a folder with sce_sys/param.json, homebrew.js or eboot.elf', up_drop: 'or drag it here', from_upload: 'uploaded', up_nodir: 'This browser can\'t pick folders: use a computer, or upload a .zip' },
     it: { pair: 'Scrivi il PIN che vedi sulla console in Omega › Impostazioni › Sistema e strumenti › Telecomando.', bad: 'PIN errato', locked: 'Troppi tentativi: aspetta un minuto', off: 'non raggiungibile', on: 'collegato',
           music: 'Musica', lib: 'La mia libreria', console: 'Console', game: 'In gioco', none: 'Home', temp: 'Temperatura', fav: 'Radio preferite', queue: 'In coda', live: 'In diretta', paused: 'In pausa', loading: 'Caricamento…', stopped: 'Fermo', empty: 'La coda è vuota',
           lib_help: 'I backup dei tuoi giochi, salvati solo sulla tua console. Aggiungi un gioco con il link per scaricarlo e la copertina: lo trovi in Omega › Store › Libreria, pronto da installare.',
@@ -369,7 +397,11 @@
           i_help: 'Un elenco di giochi in JSON: un array, oppure un oggetto con "items"/"games". Campi accettati: title/name, url/download/link, cover/image, platform, title_id, version, description.',
           addmusic: 'Aggiungi musica', addmusic_help: 'Manda file audio da questo telefono o PC alla console: finiscono in Omega › Musica › File › Musica in Omega. Oppure ascolta subito un link audio o di una radio.',
           mfiles: 'Scegli i file audio', mlink: 'Ascolta un link (MP3, AAC, radio in streaming…)', play: 'Ascolta', uploading: 'Invio ', uploaded: 'Inviati: ', upfail: 'Invio non riuscito: ', onconsole: 'Musica sulla console',
-          file: 'Da un file', paste: 'Incolla il testo JSON', import_go: 'Importa', link: 'Da un link (resta sincronizzato)', link_go: 'Collega e sincronizza', unlink: 'Scollega', added: 'Giochi aggiunti: ', syncing: 'Sincronizzo… i giochi compaiono tra poco', badjson: 'Non è un JSON di giochi valido', linked: 'Collegato: ', from_link: 'link', from_import: 'importato' }
+          file: 'Da un file', paste: 'Incolla il testo JSON', import_go: 'Importa', link: 'Da un link (resta sincronizzato)', link_go: 'Collega e sincronizza', unlink: 'Scollega', added: 'Giochi aggiunti: ', syncing: 'Sincronizzo… i giochi compaiono tra poco', badjson: 'Non è un JSON di giochi valido', linked: 'Collegato: ', from_link: 'link', from_import: 'importato',
+          up: 'Carica da questo dispositivo', up_help: 'Scegli un file .pkg, .zip o .elf, oppure la cartella di un gioco o di un homebrew: viene copiato sulla console via Wi-Fi. Le cartelle di homebrew (con homebrew.js o eboot.elf) finiscono subito nella Home di Omega; i giochi compaiono in La mia libreria, pronti da installare.',
+          up_file: 'Scegli un file', up_dir: 'Scegli una cartella', up_dir_s: 'gioco o homebrew', up_name: 'Nome (facoltativo)', up_sending: 'Invio {n} di {t} · {a} di {b}', up_wait: 'Tieni aperta questa pagina finché non finisce.',
+          up_space: 'Spazio insufficiente sulla console: liberi {a}, servono {b}', up_lib: 'Fatto: lo trovi in La mia libreria, pronto da installare', up_hb: 'Fatto: {name} ora è nella Home di Omega, tra i tuoi homebrew',
+          up_fail: 'Caricamento non riuscito: ', up_unknown: 'Non riconosciuto: scegli un .pkg, .zip o .elf, oppure una cartella con sce_sys/param.json, homebrew.js o eboot.elf', up_drop: 'oppure trascinalo qui', from_upload: 'caricato', up_nodir: 'Questo browser non sceglie le cartelle: usa un computer, o carica uno .zip' }
   };
   /*T_MORE*/
   var L = T.en;
@@ -385,7 +417,8 @@
     var map = { t_pair: 'pair', t_console: 'console', t_game: 'game', t_temp: 'temp', t_fav: 'fav', t_queue: 'queue', t_lib: 'lib', t_lib_help: 'lib_help',
       add_open: 'add', imp_open: 'imp', l_title: 'title', l_url: 'url', l_cover: 'cover', l_plat: 'plat', l_tid: 'tid', l_ver: 'ver', l_desc: 'desc', save: 'save', cancel: 'cancel',
       i_title: 'imp', i_help: 'i_help', l_file: 'file', i_paste_s: 'paste', i_paste_go: 'import_go', l_link: 'link', i_link_go: 'link_go', i_unlink: 'unlink', t_games: 'games',
-      t_addmusic: 'addmusic', t_addmusic_help: 'addmusic_help', l_mfiles: 'mfiles', l_mlink: 'mlink', m_link_go: 'play', t_mfiles: 'onconsole' };
+      t_addmusic: 'addmusic', t_addmusic_help: 'addmusic_help', l_mfiles: 'mfiles', l_mlink: 'mlink', m_link_go: 'play', t_mfiles: 'onconsole',
+      t_up: 'up', t_up_help: 'up_help', l_upfile: 'up_file', l_updir: 'up_dir', l_updir_s: 'up_dir_s', l_upname: 'up_name', up_wait: 'up_wait', up_cancel: 'cancel' };
     Object.keys(map).forEach(function (k) { var el = $(k); if (el) el.textContent = tx(map[k]); });
     each('.l_music', function (el) { el.textContent = tx('music'); });
     each('.l_lib', function (el) { el.textContent = tx('lib'); });
@@ -395,6 +428,8 @@
   function icon(id) { return '<svg aria-hidden="true"><use href="#' + id + '"/></svg>'; }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
   function bg(url) { return 'url("' + url.replace(/["\\\n]/g, encodeURIComponent) + '")'; }
+  // le icone dei giochi caricati le serve la console stessa (127.0.0.1 dal suo punto di vista)
+  function img(u) { return u.indexOf('http://127.0.0.1:9095/') === 0 ? u.slice(21) + '&k=' + encodeURIComponent(tok) : u; }
   pickLang((navigator.language || 'en'));
   texts();
 
@@ -570,9 +605,9 @@
       games.forEach(function (g) {
         var li = el('li', 'game');
         var cv = el('div', 'cv'); cv.innerHTML = icon('i-games');
-        if (g.cover) { cv.style.backgroundImage = bg(g.cover); cv.classList.add('has'); }
+        if (g.cover) { cv.style.backgroundImage = bg(img(g.cover)); cv.classList.add('has'); }
         li.appendChild(cv);
-        if (g.origin !== 'manual') li.appendChild(el('span', 'tag', g.origin === 'json' ? L.from_link : L.from_import));
+        if (g.origin !== 'manual') li.appendChild(el('span', 'tag', g.origin === 'json' ? L.from_link : g.origin === 'upload' ? tx('from_upload') : L.from_import));
         var tools = el('div', 'tools');
         var ed = el('button', 'ibtn'); ed.type = 'button'; ed.innerHTML = icon('i-edit'); ed.title = L.edit; ed.setAttribute('aria-label', L.edit);
         ed.onclick = function () { openForm(g); };
@@ -587,8 +622,11 @@
       });
     }).catch(function () {});
   }
+  var editUpload = false;
   function openForm(g) {
     editId = g ? g.id : '';
+    editUpload = !!(g && g.origin === 'upload');
+    $('g_url').hidden = $('l_url').hidden = editUpload;
     $('f_title').textContent = g ? L.f_edit : L.f_new;
     $('g_title').value = g ? g.title : ''; $('g_url').value = g ? g.url : ''; $('g_cover').value = g ? g.cover : '';
     $('g_plat').value = g ? g.platform : ''; $('g_tid').value = g ? g.title_id : ''; $('g_ver').value = g ? g.version : ''; $('g_desc').value = g ? g.description : '';
@@ -602,7 +640,7 @@
     var g = { title: $('g_title').value.trim(), url: $('g_url').value.trim(), cover: $('g_cover').value.trim(), platform: $('g_plat').value,
               title_id: $('g_tid').value.trim().toUpperCase(), version: $('g_ver').value.trim(), description: $('g_desc').value.trim() };
     if (editId) g.id = editId;
-    if (!g.title || !/^https?:\/\//i.test(g.url)) { $('ferr').textContent = L.need; return; }
+    if (!g.title || (!editUpload && !/^https?:\/\//i.test(g.url))) { $('ferr').textContent = L.need; return; }
     api('POST', '/v1/library/item', g).then(function (j) {
       if (j._status === 200) { $('form').hidden = true; libseq = -1; loadLib(); }
       else $('ferr').textContent = L.need;
@@ -631,6 +669,88 @@
     api('POST', '/v1/library/source', { url: u }).then(function () { $('iok').textContent = L.syncing; $('ierr').textContent = ''; setTimeout(function () { libseq = -1; loadLib(); }, 2500); setTimeout(function () { libseq = -1; loadLib(); }, 7000); });
   };
   $('i_unlink').onclick = function () { api('POST', '/v1/library/source', { url: '' }).then(function () { $('i_link').value = ''; libseq = -1; loadLib(); }); };
+
+  // ------------------------------------- giochi da questo dispositivo --
+  var upX = null, upStop = false;
+  function size(b) { return b >= 1073741824 ? (b / 1073741824).toFixed(1) + ' GB' : (b / 1048576).toFixed(1) + ' MB'; }
+  function fill(t, o) { return t.replace(/\{(\w+)\}/g, function (m, k) { return o[k] !== undefined ? o[k] : m; }); }
+  function upMsg(ok, err) { $('upok').textContent = ok || ''; $('uperr').textContent = err || ''; }
+  function upEnd() { upX = null; $('upbox').hidden = true; $('up_file').disabled = $('up_dir').disabled = false; }
+  // list: [{file, path}] — path relativo dentro il lotto
+  function upStart(list) {
+    if (!list.length || upX) return;
+    upMsg('', '');
+    var total = list.reduce(function (a, x) { return a + x.file.size; }, 0);
+    var batch = ''; for (var i = 0; i < 12; i++) batch += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
+    api('GET', '/v1/library/space').then(function (sp) {
+      if (sp.free >= 0 && total + 268435456 > sp.free) { upMsg('', fill(tx('up_space'), { a: size(sp.free), b: size(total) })); return; }
+      upStop = false; $('upbox').hidden = false; $('up_file').disabled = $('up_dir').disabled = true;
+      var sent = 0;
+      (function next(i) {
+        if (upStop) { upEnd(); return; }
+        if (i >= list.length) {
+          api('POST', '/v1/library/upload/done', { b: batch, title: $('up_name').value.trim() }).then(function (r) {
+            upEnd();
+            if (r.homebrew) upMsg(fill(tx('up_hb'), { name: r.homebrew }), '');
+            else if (r.added) { upMsg(tx('up_lib'), ''); $('up_name').value = ''; libseq = -1; loadLib(); }
+            else upMsg('', /unknown|title_id/.test(r.error || '') ? tx('up_unknown') : tx('up_fail') + (r.error || ''));
+          }).catch(function () { upEnd(); upMsg('', tx('up_fail')); });
+          return;
+        }
+        var f = list[i].file, x = new XMLHttpRequest(); upX = x;
+        x.open('POST', '/v1/library/upload?b=' + batch + '&p=' + encodeURIComponent(list[i].path));
+        x.setRequestHeader('x-omega-token', tok);
+        var show = function (done) {
+          $('up_txt').textContent = fill(tx('up_sending'), { n: i + 1, t: list.length, a: size(sent + done), b: size(total) });
+          $('up_prog').style.width = (total ? (sent + done) / total * 100 : 0) + '%';
+        };
+        show(0);
+        x.upload.onprogress = function (e) { show(e.loaded); };
+        x.onload = function () {
+          if (x.status !== 200) { upEnd(); upMsg('', x.status === 507 ? fill(tx('up_space'), { a: '?', b: size(total) }) : tx('up_fail') + f.name); return; }
+          sent += f.size; next(i + 1);
+        };
+        x.onerror = function () { upEnd(); if (!upStop) upMsg('', tx('up_fail') + f.name); };
+        x.send(f);
+      })(0);
+    }).catch(function () { upMsg('', tx('up_fail')); });
+  }
+  $('up_cancel').onclick = function () { upStop = true; if (upX) upX.abort(); upEnd(); };
+  $('up_file').onchange = function () { var f = this.files && this.files[0]; if (f) upStart([{ file: f, path: f.name }]); this.value = ''; };
+  $('up_dir').onchange = function () {
+    var l = Array.prototype.map.call(this.files || [], function (f) { return { file: f, path: f.webkitRelativePath || f.name }; });
+    upStart(l); this.value = '';
+  };
+  if (!('webkitdirectory' in document.createElement('input')) || /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    $('up_drop2').onclick = function (e) { e.preventDefault(); upMsg('', tx('up_nodir')); };
+  }
+  // dal PC: file o cartelle trascinati sui riquadri
+  function walk(entry, pre, out) {
+    return new Promise(function (res) {
+      if (entry.isFile) entry.file(function (f) { out.push({ file: f, path: pre + f.name }); res(); }, function () { res(); });
+      else if (entry.isDirectory) {
+        var r = entry.createReader(), all = [];
+        (function more() {
+          r.readEntries(function (es) {
+            if (!es.length) { Promise.all(all.map(function (e) { return walk(e, pre + entry.name + '/', out); })).then(res); return; }
+            all = all.concat(Array.prototype.slice.call(es)); more();
+          }, function () { res(); });
+        })();
+      } else res();
+    });
+  }
+  ['up_drop', 'up_drop2'].forEach(function (id) {
+    var d = $(id);
+    ['dragenter', 'dragover'].forEach(function (n) { d.addEventListener(n, function (e) { e.preventDefault(); d.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function (n) { d.addEventListener(n, function () { d.classList.remove('over'); }); });
+    d.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var items = e.dataTransfer && e.dataTransfer.items, out = [];
+      if (!items || !items.length || !items[0].webkitGetAsEntry) { if (e.dataTransfer.files[0]) upStart([{ file: e.dataTransfer.files[0], path: e.dataTransfer.files[0].name }]); return; }
+      var entries = Array.prototype.map.call(items, function (it) { return it.webkitGetAsEntry(); }).filter(Boolean);
+      Promise.all(entries.map(function (en) { return walk(en, '', out); })).then(function () { upStart(out); });
+    });
+  });
 
   // ------------------------------------------------------------- ciclo --
   function poll() {

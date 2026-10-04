@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday} {day} {month}",
   "È stato online": "Var online",
   "è online": "är online",
-  "✕ ingrandisci": "✕ förstora"
+  "✕ ingrandisci": "✕ förstora",
+  "CARTELLA": "MAPP",
+  "Cartella non valida: manca il Title ID": "Ogiltig mapp: Title ID saknas",
+  "Copia non riuscita": "Kopieringen misslyckades",
+  "Copia sulla console": "Kopierar till konsolen"
 }

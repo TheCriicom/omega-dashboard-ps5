@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday} {day} {month}",
   "È stato online": "Était en ligne",
   "è online": "est en ligne",
-  "✕ ingrandisci": "✕ agrandir"
+  "✕ ingrandisci": "✕ agrandir",
+  "CARTELLA": "DOSSIER",
+  "Cartella non valida: manca il Title ID": "Dossier non valide : le Title ID est manquant",
+  "Copia non riuscita": "La copie a échoué",
+  "Copia sulla console": "Copie sur la console"
 }

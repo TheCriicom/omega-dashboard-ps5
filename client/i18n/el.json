@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday} {day} {month}",
   "È stato online": "Ήταν σε σύνδεση",
   "è online": "είναι σε σύνδεση",
-  "✕ ingrandisci": "✕ μεγέθυνση"
+  "✕ ingrandisci": "✕ μεγέθυνση",
+  "CARTELLA": "ΦΑΚΕΛΟΣ",
+  "Cartella non valida: manca il Title ID": "Μη έγκυρος φάκελος: λείπει το Title ID",
+  "Copia non riuscita": "Η αντιγραφή απέτυχε",
+  "Copia sulla console": "Αντιγραφή στην κονσόλα"
 }

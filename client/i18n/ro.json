@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day} {month}",
   "È stato online": "A fost online",
   "è online": "este online",
-  "✕ ingrandisci": "✕ mărește"
+  "✕ ingrandisci": "✕ mărește",
+  "CARTELLA": "DOSAR",
+  "Cartella non valida: manca il Title ID": "Dosar nevalid: lipsește Title ID",
+  "Copia non riuscita": "Copierea nu a reușit",
+  "Copia sulla console": "Se copiază pe consolă"
 }

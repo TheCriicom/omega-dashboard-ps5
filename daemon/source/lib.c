@@ -20,7 +20,7 @@
 void player_log(const char *fmt, ...);
 
 typedef struct {
-  char id[40], title[128], url[1024], cover[1024], platform[8], version[24], title_id[16], kind[8], origin[8];   // origin: manual, import, json
+  char id[40], title[128], url[1024], cover[1024], platform[8], version[24], title_id[16], kind[8], origin[8];   // origin: manual, import, json, upload
   char desc[1200];
   char shots[4][512]; int nshots;
   double size;
@@ -36,10 +36,16 @@ static unsigned seq;
 static unsigned fnv(const char *s) { unsigned h = 2166136261u; for (; *s; s++) { h ^= (unsigned char)*s; h *= 16777619u; } return h; }
 
 static int is_http(const char *u) { return !strncasecmp(u, "http://", 7) || !strncasecmp(u, "https://", 8); }
+// file caricati dal telefono o dal PC (ctl.c): restano sulla console
+#ifdef PS5
+static int is_local(const char *u) { return !strncmp(u, "file:///data/", 13) && !strstr(u, "/../"); }
+#else
+static int is_local(const char *u) { return !strncmp(u, "file:///", 8) && !strstr(u, "/../"); }   // prova sul Mac: cartella di prova
+#endif
 
 static void kind_of(const char *hint, const char *url, char *out, size_t on) {
   const char *k = hint && *hint ? hint : NULL;
-  if (k && (!strcasecmp(k, "pkg") || !strcasecmp(k, "zip") || !strcasecmp(k, "elf"))) { snprintf(out, on, "%s", k); for (char *c = out; *c; c++) *c = (char)(*c | 0x20); return; }
+  if (k && (!strcasecmp(k, "pkg") || !strcasecmp(k, "zip") || !strcasecmp(k, "elf") || !strcasecmp(k, "folder"))) { snprintf(out, on, "%s", k); for (char *c = out; *c; c++) *c = (char)(*c | 0x20); return; }
   const char *q = strchr(url, '?'); size_t L = q ? (size_t)(q - url) : strlen(url);
   if (L >= 4 && !strncasecmp(url + L - 4, ".pkg", 4)) snprintf(out, on, "pkg");
   else if (L >= 4 && !strncasecmp(url + L - 4, ".zip", 4)) snprintf(out, on, "zip");
@@ -65,7 +71,7 @@ static int item_from(Item *it, JVal *o, const char *origin, int idx) {
   memset(it, 0, sizeof *it);
   snprintf(it->title, sizeof it->title, "%s", first(o, K_TITLE));
   snprintf(it->url, sizeof it->url, "%s", first(o, K_URL));
-  if (!it->title[0] || !is_http(it->url)) return -1;
+  if (!it->title[0] || !(is_http(it->url) || (!strcmp(origin, "upload") && is_local(it->url)))) return -1;
   const char *cv = first(o, K_COVER); if (is_http(cv)) snprintf(it->cover, sizeof it->cover, "%s", cv);
   snprintf(it->desc, sizeof it->desc, "%s", first(o, K_DESC));
   snprintf(it->version, sizeof it->version, "%s", first(o, K_VER));
@@ -127,7 +133,7 @@ void lib_init(const char *file, lib_fetch_fn fn) {
     JFOR(o, jget(j, "items")) {
       if (n >= MAX_ITEMS) break;
       Item it; const char *origin = jstr(o, "origin", "manual");
-      if (item_from(&it, o, origin[0] == 'j' ? "json" : origin[0] == 'i' ? "import" : "manual", n) == 0) { const char *id = jstr(o, "id", ""); if (*id) snprintf(it.id, sizeof it.id, "%s", id); items[n++] = it; }
+      if (item_from(&it, o, origin[0] == 'j' ? "json" : origin[0] == 'i' ? "import" : origin[0] == 'u' ? "upload" : "manual", n) == 0) { const char *id = jstr(o, "id", ""); if (*id) snprintf(it.id, sizeof it.id, "%s", id); items[n++] = it; }
     }
     json_free(j);
   }
@@ -178,8 +184,16 @@ size_t lib_list_json(char *o, size_t cap) {
 int lib_add(JVal *o, char *err, size_t en) {
   if (!items) { snprintf(err, en, "starting"); return -1; }
   Item it;
-  if (item_from(&it, o, "manual", (int)time(NULL)) != 0) { snprintf(err, en, "title_and_url_required"); return -1; }
   const char *id = jstr(o, "id", NULL);
+  // un gioco caricato si può rinominare o completare, ma file e tipo restano quelli
+  char up_url[1024] = "", up_kind[8] = "";
+  pthread_mutex_lock(&mx);
+  if (id && *id) for (int i = 0; i < n; i++) if (!strcmp(items[i].id, id) && !strcmp(items[i].origin, "upload")) { snprintf(up_url, sizeof up_url, "%s", items[i].url); snprintf(up_kind, sizeof up_kind, "%s", items[i].kind); }
+  pthread_mutex_unlock(&mx);
+  if (up_url[0]) {
+    if (item_from(&it, o, "upload", 0) != 0 && !it.title[0]) { snprintf(err, en, "title_and_url_required"); return -1; }
+    snprintf(it.url, sizeof it.url, "%s", up_url); snprintf(it.kind, sizeof it.kind, "%s", up_kind);
+  } else if (item_from(&it, o, "manual", (int)time(NULL)) != 0) { snprintf(err, en, "title_and_url_required"); return -1; }
   pthread_mutex_lock(&mx);
   int at = -1;
   if (id && *id) for (int i = 0; i < n; i++) if (!strcmp(items[i].id, id)) { at = i; break; }
@@ -191,14 +205,36 @@ int lib_add(JVal *o, char *err, size_t en) {
   return 0;
 }
 
-int lib_remove(const char *id) {
+int lib_remove(const char *id, char *url_out, size_t un) {
   if (!items) return -1;
   pthread_mutex_lock(&mx);
   int rc = -1;
-  for (int i = 0; i < n; i++) if (!strcmp(items[i].id, id)) { memmove(&items[i], &items[i + 1], (size_t)(n - i - 1) * sizeof *items); n--; rc = 0; break; }
+  if (url_out && un) url_out[0] = 0;
+  for (int i = 0; i < n; i++) if (!strcmp(items[i].id, id)) { if (url_out && !strcmp(items[i].origin, "upload")) snprintf(url_out, un, "%s", items[i].url); memmove(&items[i], &items[i + 1], (size_t)(n - i - 1) * sizeof *items); n--; rc = 0; break; }
   if (!rc) save_locked();
   pthread_mutex_unlock(&mx);
   return rc;
+}
+
+// Un gioco caricato dal telefono o dal PC (file:///data/...): cartella, pkg, zip o elf.
+int lib_add_upload(const char *title, const char *url, const char *kind, const char *cover,
+                   const char *title_id, const char *version, const char *platform, char *id_out, size_t idn) {
+  if (!items || !title[0] || !is_local(url)) return -1;
+  Item it; memset(&it, 0, sizeof it);
+  snprintf(it.title, sizeof it.title, "%s", title); snprintf(it.url, sizeof it.url, "%s", url);
+  snprintf(it.kind, sizeof it.kind, "%s", kind); snprintf(it.origin, sizeof it.origin, "upload");
+  if (cover && is_http(cover)) snprintf(it.cover, sizeof it.cover, "%s", cover);
+  if (title_id) snprintf(it.title_id, sizeof it.title_id, "%s", title_id);
+  if (version) snprintf(it.version, sizeof it.version, "%s", version);
+  if (platform) snprintf(it.platform, sizeof it.platform, "%s", platform);
+  pthread_mutex_lock(&mx);
+  if (n >= MAX_ITEMS) { pthread_mutex_unlock(&mx); return -1; }
+  snprintf(it.id, sizeof it.id, "u%08x%04x", fnv(url) ^ (unsigned)time(NULL), (unsigned)(rand() & 0xffff));
+  items[n++] = it;
+  if (id_out) snprintf(id_out, idn, "%s", it.id);
+  save_locked();
+  pthread_mutex_unlock(&mx);
+  return 0;
 }
 
 // Importa un JSON (array, oppure {"items"|"games"|"library":[...]}). replace_json:

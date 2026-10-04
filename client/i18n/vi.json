@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day} {month}",
   "È stato online": "Đã trực tuyến",
   "è online": "đang trực tuyến",
-  "✕ ingrandisci": "✕ phóng to"
+  "✕ ingrandisci": "✕ phóng to",
+  "CARTELLA": "THƯ MỤC",
+  "Cartella non valida: manca il Title ID": "Thư mục không hợp lệ: thiếu Title ID",
+  "Copia non riuscita": "Không sao chép được",
+  "Copia sulla console": "Đang sao chép vào máy"
 }

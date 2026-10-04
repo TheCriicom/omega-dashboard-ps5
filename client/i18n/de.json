@@ -951,5 +951,9 @@
   "{weekday} {day} {month}": "{weekday}, {day}. {month}",
   "È stato online": "War online",
   "è online": "ist online",
-  "✕ ingrandisci": "✕ vergrößern"
+  "✕ ingrandisci": "✕ vergrößern",
+  "CARTELLA": "ORDNER",
+  "Cartella non valida: manca il Title ID": "Ungültiger Ordner: Die Title ID fehlt",
+  "Copia non riuscita": "Kopieren fehlgeschlagen",
+  "Copia sulla console": "Wird auf die Konsole kopiert"
 }

@@ -3,7 +3,10 @@
 //  · .zip con homebrew.js in radice → /data/homebrew/<Nome>;
 //  · .elf → Payload Manager, con il .elf.json accanto;
 //  · .zip di un'app con Title ID → /user/app/<TID> e registrazione del titolo;
-//  · .pkg → sceAppInstUtilInstallByPackage: la console lo scarica da sé.
+//  · .pkg → sceAppInstUtilInstallByPackage: la console lo scarica da sé;
+//  · cartella di un gioco (caricata dal telefono o dal PC, file:///data/...) →
+//    /user/app/<TID> e registrazione del titolo.
+// I file caricati in La mia libreria (url file://) si usano dove sono, senza scaricarli.
 // Le prime tre scrivono solo file; pkg e registrazione dei titoli richiedono il
 // privilegio ShellCore, e senza si indica un ripiego (ItemzFlow).
 // Sul desktop si lavora nel finto filesystem OMEGA_SYSROOT (serve minizip).
@@ -16,6 +19,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #if defined(PS5) || defined(OMEGA_HAVE_MINIZIP)
 #define HAVE_ZIP 1
@@ -38,7 +42,7 @@ int sceAppInstUtilAppUnInstall(const char *);
 #define CANCELLED (-102)       // omega_url_download: interrotto con *cancel
 
 // -------------------------------------------------------------------- stato --
-enum { KIND_AUTO = 0, KIND_PKG = 1, KIND_ZIP = 2, KIND_ELF = 3 };
+enum { KIND_AUTO = 0, KIND_PKG = 1, KIND_ZIP = 2, KIND_ELF = 3, KIND_FOLDER = 4 };
 
 static SDL_atomic_t g_state;          // 0 fermo, 1 in corso, 2 finito
 static volatile long g_done, g_total; // byte scaricati / totali
@@ -172,14 +176,20 @@ static int reg_app(const char *title_id, const char *dir) {
 #endif
 
 // ------------------------------------------------------ riconoscimento tipo --
+// file già sulla console (caricato da La mia libreria): file:///data/...
+static const char *local_path(const char *url) { return !strncmp(url, "file://", 7) ? url + 7 : NULL; }
+
 static int detect_kind(int kind, const char *url) {
-  if (kind == KIND_PKG || kind == KIND_ZIP || kind == KIND_ELF) return kind;
+  if (kind == KIND_PKG || kind == KIND_ZIP || kind == KIND_ELF || kind == KIND_FOLDER) return kind;
+  if (local_path(url)) { struct stat st; if (stat(local_path(url), &st) == 0 && S_ISDIR(st.st_mode)) return KIND_FOLDER; }
   const char *q = strpbrk(url, "?#"); size_t L = q ? (size_t)(q - url) : strlen(url);
   if (L >= 4 && !strncasecmp(url + L - 4, ".pkg", 4)) return KIND_PKG;
   if (L >= 4 && !strncasecmp(url + L - 4, ".zip", 4)) return KIND_ZIP;
   if (L >= 4 && !strncasecmp(url + L - 4, ".elf", 4)) return KIND_ELF;
   unsigned char m[8] = { 0 };
-  long got = omega_url_peek(url, m, sizeof m);
+  long got = -1;
+  if (local_path(url)) { int fd = open(local_path(url), O_RDONLY); if (fd >= 0) { got = read(fd, m, sizeof m); close(fd); } }
+  else got = omega_url_peek(url, m, sizeof m);
   if (got >= 4) {
     if (m[0] == 'P' && m[1] == 'K' && m[2] == 3 && m[3] == 4) return KIND_ZIP;
     if (m[0] == 0x7F && m[1] == 'E' && m[2] == 'L' && m[3] == 'F') return KIND_ELF;
@@ -189,9 +199,47 @@ static int detect_kind(int kind, const char *url) {
 }
 
 // ------------------------------------------------------------------- lavori --
+static int copy_file(const char *src, const char *dst) {
+  int in = open(src, O_RDONLY); if (in < 0) return -1;
+  int out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666); if (out < 0) { close(in); return -1; }
+  struct stat st; if (fstat(in, &st) == 0) g_total = (long)st.st_size;
+  static char buf[ZIP_CHUNK]; ssize_t k; int rc = 0;
+  while ((k = read(in, buf, sizeof buf)) > 0) {
+    if (g_cancel || write(out, buf, (size_t)k) != k) { rc = -1; break; }
+    g_done += (long)k;
+  }
+  if (k < 0) rc = -1;
+  close(in); close(out);
+  if (rc) unlink(dst);
+  return rc;
+}
+// cartella intera (quando non si può spostare: un'altra partizione)
+static int copy_tree(const char *src, const char *dst) {
+  struct stat st; if (stat(src, &st) != 0) return -1;
+  if (!S_ISDIR(st.st_mode)) return copy_file(src, dst);
+  mkdir(dst, 0777);
+  DIR *d = opendir(src); if (!d) return -1;
+  struct dirent *e; int rc = 0;
+  while (!rc && (e = readdir(d))) {
+    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) continue;
+    if (g_cancel) { rc = -1; break; }
+    char a[1024], b[1024]; snprintf(a, sizeof a, "%s/%s", src, e->d_name); snprintf(b, sizeof b, "%s/%s", dst, e->d_name);
+    rc = copy_tree(a, b);
+  }
+  closedir(d);
+  return rc;
+}
+
 static int download(const InstallReq *j, const char *dest) {
-  snprintf(g_phase, sizeof g_phase, "%s", _("Scaricamento")); g_dl = 1;
   mkparents(dest);
+  if (local_path(j->url)) {   // già sulla console: basta copiarlo
+    snprintf(g_phase, sizeof g_phase, "%s", _("Copia sulla console")); g_dl = 1;
+    if (copy_file(local_path(j->url), dest) == 0) return 0;
+    g_dl = 0;
+    snprintf(g_result, sizeof g_result, "%s", g_cancel ? _("Installazione annullata") : _("Copia non riuscita"));
+    return g_cancel ? -2 : -1;
+  }
+  snprintf(g_phase, sizeof g_phase, "%s", _("Scaricamento")); g_dl = 1;
   int st = omega_url_download(j->url, dest, &g_done, &g_total, &g_cancel);
   if (st == 200) return 0;
   unlink(dest);
@@ -204,7 +252,8 @@ static int download(const InstallReq *j, const char *dest) {
 static int do_pkg(const InstallReq *j) {
 #ifdef PS5
   if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "%s", _("AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.")); return -1; }
-  pkg_metadata_t meta = { .uri = j->url, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = j->name[0] ? j->name : "", .icon_url = "" };
+  const char *uri = local_path(j->url) ? local_path(j->url) : j->url;   // un pkg caricato si installa dal disco
+  pkg_metadata_t meta = { .uri = uri, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = j->name[0] ? j->name : "", .icon_url = "" };
   pkg_info_t info; memset(&info, 0, sizeof info);
   playgo_info_t pg; memset(&pg, 0, sizeof pg);
   int rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
@@ -276,11 +325,13 @@ static int do_elf(const InstallReq *j) {
 
 static int do_zip(const InstallReq *j) {
 #ifdef HAVE_ZIP
-  char zip[400]; snprintf(zip, sizeof zip, OMEGA_DIR "/dl/omega-install.zip");
-  int rc = download(j, zip); if (rc) return rc;
+  char zip[1100]; const char *lp = local_path(j->url);
+  int rc = 0;
+  if (lp) snprintf(zip, sizeof zip, "%s", lp);
+  else { snprintf(zip, sizeof zip, OMEGA_DIR "/dl/omega-install.zip"); rc = download(j, zip); if (rc) return rc; }
   snprintf(g_phase, sizeof g_phase, "%s", _("Analisi"));
   ZipInfo zi;
-  if (zip_scan(zip, &zi)) { unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Lo zip è vuoto o danneggiato")); return -1; }
+  if (zip_scan(zip, &zi)) { if (!lp) unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Lo zip è vuoto o danneggiato")); return -1; }
   if (zi.hb_top || zi.hb_root) {
     char dest[400], folder[256];
     if (zi.hb_top) { snprintf(folder, sizeof folder, "%.*s", (int)strlen(zi.top) - 1, zi.top); snprintf(dest, sizeof dest, "%s", OMEGA_HB_ROOT); }
@@ -297,14 +348,14 @@ static int do_zip(const InstallReq *j) {
     }
     mkdirs(dest);
     rc = unzip_to(zip, dest, "");
-    unlink(zip);
+    if (!lp) unlink(zip);
     if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
     omega_log("install: homebrew %s → %s/%s", j->name, OMEGA_HB_ROOT, folder);
     snprintf(g_result, sizeof g_result, _("%s installato: lo trovi nella Home di Omega"), j->name);
     g_installed_title = 1;
     return 0;
   }
-  if (!j->title_id[0]) { unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID")); return -1; }
+  if (!j->title_id[0]) { if (!lp) unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID")); return -1; }
   char dest[200]; snprintf(dest, sizeof dest, APP_DIR "/%s", j->title_id);
 # ifdef PS5
   sceAppInstUtilInitialize();
@@ -312,7 +363,7 @@ static int do_zip(const InstallReq *j) {
 # endif
   mkdirs(dest);
   rc = unzip_to(zip, dest, zi.top);
-  unlink(zip);
+  if (!lp) unlink(zip);
   if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
 # ifdef PS5
   snprintf(g_phase, sizeof g_phase, "%s", _("Registrazione"));
@@ -330,6 +381,33 @@ static int do_zip(const InstallReq *j) {
 #endif
 }
 
+// cartella di un gioco caricata in La mia libreria → /user/app/<TID> e registrazione
+static int do_folder(const InstallReq *j) {
+  const char *src = local_path(j->url);
+  if (!src || strlen(j->title_id) != 9) { snprintf(g_result, sizeof g_result, "%s", _("Cartella non valida: manca il Title ID")); return -1; }
+  char dest[200]; snprintf(dest, sizeof dest, APP_DIR "/%s", j->title_id);
+# ifdef PS5
+  sceAppInstUtilInitialize();
+  sceAppInstUtilAppUnInstall(j->title_id);     // reinstallazione
+# endif
+  snprintf(g_phase, sizeof g_phase, "%s", _("Copia sulla console"));
+  mkdirs(APP_DIR);
+  // stessa partizione: si sposta e basta; altrimenti si copia
+  if (rename(src, dest) != 0 && copy_tree(src, dest) != 0) {
+    snprintf(g_result, sizeof g_result, "%s", g_cancel ? _("Installazione annullata") : _("Copia non riuscita"));
+    return g_cancel ? -2 : -1;
+  }
+# ifdef PS5
+  snprintf(g_phase, sizeof g_phase, "%s", _("Registrazione"));
+  int rc = reg_app(j->title_id, "/user/app/");
+  if (rc) { snprintf(g_result, sizeof g_result, _("Registrazione non riuscita (0x%08X). Privilegio ShellCore mancante?"), (unsigned)rc); return -1; }
+  g_installed_title = 1;
+# endif
+  omega_log("install: cartella %s → %s", src, dest);
+  snprintf(g_result, sizeof g_result, _("%s installato"), j->name[0] ? j->name : j->title_id);
+  return 0;
+}
+
 static int install_thread(void *arg) {
   InstallReq *j = arg;
   g_done = g_total = 0; g_cancel = 0; g_dl = 0; g_result[0] = 0; g_result_err = 0; g_installed_title = 0;
@@ -337,7 +415,7 @@ static int install_thread(void *arg) {
   mkdir(OMEGA_DIR, 0777);
   int kind = detect_kind(j->kind, j->url);
   omega_log("install: %s kind=%d %s", j->name, kind, j->url);
-  int rc = kind == KIND_ZIP ? do_zip(j) : kind == KIND_ELF ? do_elf(j) : do_pkg(j);
+  int rc = kind == KIND_ZIP ? do_zip(j) : kind == KIND_ELF ? do_elf(j) : kind == KIND_FOLDER ? do_folder(j) : do_pkg(j);
   g_result_err = rc == -1;
   omega_log("install: %s -> %s", j->name, g_result);
   free(j);

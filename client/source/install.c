@@ -260,8 +260,9 @@ static int do_pkg(const InstallReq *j) {
     snprintf(clean, sizeof clean, "%s", uri);
     char *base = strrchr(clean, '/'); base = base ? base + 1 : clean;
     for (char *c = base; *c; c++) if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '.' || *c == '-' || *c == '_')) *c = '_';
-    unlink(clean);
-    if (link(uri, clean) == 0 || rename(uri, clean) == 0) uri = clean;
+    // mai cancellare: se il nome pulito c'è già (tentativo precedente) si usa quello
+    struct stat cst;
+    if (stat(clean, &cst) == 0 || link(uri, clean) == 0 || rename(uri, clean) == 0) uri = clean;
     omega_log("install: pkg dal percorso %s", uri);
   }
   pkg_metadata_t meta = { .uri = uri, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = j->name[0] ? j->name : "", .icon_url = "" };

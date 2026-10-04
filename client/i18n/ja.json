@@ -959,5 +959,8 @@
   "Musica e telecomando usano già la nuova versione": "音楽とリモコンはすでに新しいバージョンで動いています",
   "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega：スマホまたはPCからゲームを受信中（%d%%）",
   "Omega: %s è tra gli homebrew": "Omega：%s を自作ソフトに追加しました",
-  "Omega: %s è in La mia libreria, pronto da installare": "Omega：%s がマイライブラリーに追加されました。インストールできます"
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega：%s がマイライブラリーに追加されました。インストールできます",
+  "trucchi": "チート",
+  "Trucchi": "チート",
+  "Trucchi e mod": "チートとMOD"
 }

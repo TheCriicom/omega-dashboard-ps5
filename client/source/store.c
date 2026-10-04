@@ -111,10 +111,10 @@ static int pub_sel;
 static char p_title[96], p_tagline[140], p_desc[4000], p_ver[24], p_tid[16], p_url[1024], p_icon[1024], p_cover[1024], p_shots[1024], p_tags[256];
 static int p_cat, p_kind;           // indici in CATS e KINDS
 // valori inviati al server (dati, restano in italiano); nel modulo si mostrano tradotti
-static const char *CATS[] = { N_("app"), N_("gioco"), N_("utility"), N_("emulatore"), N_("tema"), N_("altro") };
+static const char *CATS[] = { N_("app"), N_("gioco"), N_("utility"), N_("emulatore"), N_("trucchi"), N_("tema"), N_("altro") };
 static const char *KINDS[] = { "auto", "pkg", "zip", "elf" };
 #define NKINDS 4
-#define NCATS 6
+#define NCATS (int)(sizeof CATS / sizeof CATS[0])
 
 static int kind_of(const char *s) { return !strcmp(s, "pkg") ? 1 : !strcmp(s, "zip") ? 2 : !strcmp(s, "elf") ? 3 : !strcmp(s, "folder") ? 4 : 0; }
 
@@ -649,13 +649,13 @@ static int sy(int cy) { return LIST_TOP + cy - (int)list_scroll; }        // con
 
 static const char *cat_label(const char *c) {
   return !strcmp(c, "gioco") ? _("Gioco") : !strcmp(c, "emulatore") ? _("Emulatore") : !strcmp(c, "utility") ? _("Strumento")
-       : !strcmp(c, "tema") ? _("Tema") : !strcmp(c, "app") ? _("App") : _("Altro");
+       : !strcmp(c, "tema") ? _("Tema") : !strcmp(c, "app") ? _("App") : !strcmp(c, "trucchi") ? _("Trucchi") : _("Altro");
 }
 
 static void build_shelves(void) {
   static const struct { const char *t, *c; int ps4; } D[] = {
     { N_("Giochi"), "gioco", 0 }, { N_("Emulatori"), "emulatore", 0 }, { N_("App e intrattenimento"), "app", 0 },
-    { N_("Strumenti e payload"), "utility", 0 }, { N_("Temi e altro"), "", 0 }, { N_("Per PS4"), "", 1 } };   // titoli tradotti quando si disegnano
+    { N_("Strumenti e payload"), "utility", 0 }, { N_("Trucchi e mod"), "trucchi", 0 }, { N_("Temi e altro"), "", 0 }, { N_("Per PS4"), "", 1 } };   // titoli tradotti quando si disegnano
   nshelf = 0;
   for (unsigned d = 0; d < sizeof D / sizeof D[0]; d++) {
     Shelf *s = &shelf[nshelf];
@@ -663,7 +663,7 @@ static void build_shelves(void) {
     for (int i = 0; i < nsapp; i++) {
       int ps4 = !strcmp(sapp[i].platform, "PS4");
       const char *c = sapp[i].category;
-      int known = !strcmp(c, "gioco") || !strcmp(c, "emulatore") || !strcmp(c, "app") || !strcmp(c, "utility");
+      int known = !strcmp(c, "gioco") || !strcmp(c, "emulatore") || !strcmp(c, "app") || !strcmp(c, "utility") || !strcmp(c, "trucchi");
       if (D[d].ps4) { if (!ps4) continue; }
       else if (ps4 || (D[d].c[0] ? strcmp(c, D[d].c) != 0 : known)) continue;
       s->idx[s->n++] = i;

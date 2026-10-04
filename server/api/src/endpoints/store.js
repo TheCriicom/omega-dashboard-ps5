@@ -26,9 +26,9 @@ const MAX_SHOTS = 8;
 const ASSET_DIR = config.storeAssetDir;
 const MAX_IMG = 5 * 1024 * 1024;
 const MAX_JSON = 4 * 1024 * 1024;
-const CATEGORIES = new Set(['app', 'gioco', 'utility', 'emulatore', 'tema', 'altro']);
+const CATEGORIES = new Set(['app', 'gioco', 'utility', 'emulatore', 'trucchi', 'tema', 'altro']);
 // categoria dello Store → categoria di Payload Manager (file .elf.json accanto al payload)
-const PLD_CATEGORY = { app: 'Apps', gioco: 'Games', utility: 'Utilities', emulatore: 'Emulators', tema: 'Themes', altro: 'Utilities' };
+const PLD_CATEGORY = { app: 'Apps', gioco: 'Games', utility: 'Utilities', emulatore: 'Emulators', trucchi: 'Utilities', tema: 'Themes', altro: 'Utilities' };
 
 function cleanText(v, max, { required = false, field = 'text' } = {}) {
   const s = multiline(v);

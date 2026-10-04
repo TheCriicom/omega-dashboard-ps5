@@ -959,5 +959,8 @@
   "Musica e telecomando usano già la nuova versione": "Musiikki ja kaukosäädin käyttävät jo uutta versiota",
   "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: vastaanotetaan pelejä puhelimesta tai PC:ltä (%d%%)",
   "Omega: %s è tra gli homebrew": "Omega: %s on nyt homebrew-sovelluksissasi",
-  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s on Omassa kirjastossa, valmiina asennettavaksi"
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s on Omassa kirjastossa, valmiina asennettavaksi",
+  "trucchi": "huijaukset",
+  "Trucchi": "Huijaukset",
+  "Trucchi e mod": "Huijaukset ja modit"
 }

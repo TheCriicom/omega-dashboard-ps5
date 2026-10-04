@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Ugyldig mappe: Title ID mangler",
   "Copia non riuscita": "Kopieringen mislykkedes",
   "Copia sulla console": "Kopierer til konsollen",
-  "Musica e telecomando usano già la nuova versione": "Musik og fjernbetjening bruger allerede den nye version"
+  "Musica e telecomando usano già la nuova versione": "Musik og fjernbetjening bruger allerede den nye version",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: modtager spil fra telefonen eller pc'en (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s er nu blandt dine homebrew",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s er i Mit bibliotek, klar til at blive installeret"
 }

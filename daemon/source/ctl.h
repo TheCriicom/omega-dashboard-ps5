@@ -7,3 +7,5 @@ int ctl_start(int port, const char *data_dir);   // data_dir: remote.json (PIN) 
 typedef void (*ctl_system_fn)(char *out, size_t n);
 void ctl_on_system(ctl_system_fn fn);
 const char *ctl_last_request(void);              // per il log dei crash (metodo e percorso, senza query)
+typedef void (*ctl_notify_fn)(const char *msg);   // notifica di sistema (avanzamento dei caricamenti)
+void ctl_on_notify(ctl_notify_fn fn);

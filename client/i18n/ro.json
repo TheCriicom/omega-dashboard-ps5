@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Dosar nevalid: lipsește Title ID",
   "Copia non riuscita": "Copierea nu a reușit",
   "Copia sulla console": "Se copiază pe consolă",
-  "Musica e telecomando usano già la nuova versione": "Muzica și telecomanda folosesc deja noua versiune"
+  "Musica e telecomando usano già la nuova versione": "Muzica și telecomanda folosesc deja noua versiune",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: primesc jocuri de pe telefon sau PC (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s e acum printre homebrew-urile tale",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s e în Biblioteca mea, gata de instalat"
 }

@@ -29,6 +29,9 @@ static void fake_system(char *out, size_t n) {
   const char *lang = getenv("OMEGA_LANG"), *game = getenv("OMEGA_GAME");   // console finta
   snprintf(out, n, "{\"game\":\"%s\",\"title_id\":\"PPSA01325\",\"cpu_t\":58,\"fan\":40,\"friends_online\":2,\"lang\":\"%s\"}", game && *game ? game : "Astro Bot (prova)", lang && *lang ? lang : "it");
 }
+// sul Mac niente cataloghi né notifiche di sistema: testo italiano e una riga nel log
+const char *i18n_tr(const char *m) { return m; }
+static void fake_notify(const char *m) { player_log("notifica: %s", m); }
 static void track(const char *t, const char *a) { player_log("ora suona: %s%s%s", t, a[0] ? " \xE2\x80\x94 " : "", a); }
 
 int main(int argc, char **argv) {
@@ -38,6 +41,7 @@ int main(int argc, char **argv) {
   static char dir[300]; snprintf(dir, sizeof dir, "%s", argc > 1 ? argv[1] : "/tmp/omega-player.json");
   char *sl = strrchr(dir, '/'); if (sl) *sl = 0;
   ctl_on_system(fake_system);
+  ctl_on_notify(fake_notify);
   char lib[400]; snprintf(lib, sizeof lib, "%s/library.json", dir);
   lib_init(lib, curl_fetch);
   if (ctl_start(OMEGA_CTL_PORT, dir) != 0) { fprintf(stderr, "porta %d occupata\n", OMEGA_CTL_PORT); return 1; }

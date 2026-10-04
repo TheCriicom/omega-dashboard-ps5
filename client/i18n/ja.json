@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "無効なフォルダーです：Title ID がありません",
   "Copia non riuscita": "コピーできませんでした",
   "Copia sulla console": "本体にコピー中",
-  "Musica e telecomando usano già la nuova versione": "音楽とリモコンはすでに新しいバージョンで動いています"
+  "Musica e telecomando usano già la nuova versione": "音楽とリモコンはすでに新しいバージョンで動いています",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega：スマホまたはPCからゲームを受信中（%d%%）",
+  "Omega: %s è tra gli homebrew": "Omega：%s を自作ソフトに追加しました",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega：%s がマイライブラリーに追加されました。インストールできます"
 }

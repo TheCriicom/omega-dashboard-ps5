@@ -76,7 +76,9 @@
     "up_unknown": "認識できません: .pkg、.zip、.elf、または sce_sys/param.json、homebrew.js、eboot.elf を含むフォルダーを選んでください",
     "up_drop": "またはここにドラッグ",
     "from_upload": "アップロード済み",
-    "up_nodir": "このブラウザーではフォルダーを選べません: コンピューターを使うか、.zip をアップロードしてください"
+    "up_nodir": "このブラウザーではフォルダーを選べません: コンピューターを使うか、.zip をアップロードしてください",
+    "up_retry": "接続が切れました：{s} 秒後に再試行します（{k}/{m} 回目）。このページは開いたままにしてください。",
+    "up_gaveup": "本体が数分間応答しません。同じファイルをもう一度選ぶと、止まったところから再開します。"
   },
   "fr": {
     "pair": "Saisissez le PIN affiché sur la console dans Omega › Paramètres › Système et outils › Télécommande sur téléphone.",
@@ -155,7 +157,9 @@
     "up_unknown": "Non reconnu : choisissez un .pkg, .zip ou .elf, ou un dossier avec sce_sys/param.json, homebrew.js ou eboot.elf",
     "up_drop": "ou glissez-le ici",
     "from_upload": "envoyé",
-    "up_nodir": "Ce navigateur ne peut pas choisir de dossiers : utilisez un ordinateur ou envoyez un .zip"
+    "up_nodir": "Ce navigateur ne peut pas choisir de dossiers : utilisez un ordinateur ou envoyez un .zip",
+    "up_retry": "Connexion perdue : nouvel essai dans {s} s (tentative {k} sur {m}). Laisse cette page ouverte.",
+    "up_gaveup": "la console ne répond plus depuis plusieurs minutes. Choisis à nouveau les mêmes fichiers pour reprendre là où ça s'est arrêté."
   },
   "es": {
     "pair": "Introduce el PIN que aparece en la consola en Omega › Ajustes › Sistema y herramientas › Mando desde el teléfono.",
@@ -234,7 +238,9 @@
     "up_unknown": "No reconocido: elige un .pkg, .zip o .elf, o una carpeta con sce_sys/param.json, homebrew.js o eboot.elf",
     "up_drop": "o arrástralo aquí",
     "from_upload": "subido",
-    "up_nodir": "Este navegador no puede elegir carpetas: usa un ordenador o sube un .zip"
+    "up_nodir": "Este navegador no puede elegir carpetas: usa un ordenador o sube un .zip",
+    "up_retry": "Conexión perdida: reintento en {s} s (intento {k} de {m}). Mantén esta página abierta.",
+    "up_gaveup": "la consola no responde desde hace varios minutos. Elige de nuevo los mismos archivos para continuar donde se detuvo."
   },
   "de": {
     "pair": "Gib die PIN ein, die auf der Konsole unter Omega › Einstellungen › System und Tools › Fernbedienung per Telefon angezeigt wird.",
@@ -313,7 +319,9 @@
     "up_unknown": "Nicht erkannt: Wähle eine .pkg-, .zip- oder .elf-Datei oder einen Ordner mit sce_sys/param.json, homebrew.js oder eboot.elf",
     "up_drop": "oder hierher ziehen",
     "from_upload": "hochgeladen",
-    "up_nodir": "Dieser Browser kann keine Ordner auswählen: Nutze einen Computer oder lade eine .zip hoch"
+    "up_nodir": "Dieser Browser kann keine Ordner auswählen: Nutze einen Computer oder lade eine .zip hoch",
+    "up_retry": "Verbindung verloren: neuer Versuch in {s} s (Versuch {k} von {m}). Lass diese Seite offen.",
+    "up_gaveup": "die Konsole antwortet seit einigen Minuten nicht. Wähle dieselben Dateien erneut, um dort weiterzumachen, wo es aufgehört hat."
   },
   "nl": {
     "pair": "Voer de PIN in die op de console staat onder Omega › Instellingen › Systeem en tools › Afstandsbediening via telefoon.",
@@ -392,7 +400,9 @@
     "up_unknown": "Niet herkend: kies een .pkg, .zip of .elf, of een map met sce_sys/param.json, homebrew.js of eboot.elf",
     "up_drop": "of sleep het hierheen",
     "from_upload": "geüpload",
-    "up_nodir": "Deze browser kan geen mappen kiezen: gebruik een computer of upload een .zip"
+    "up_nodir": "Deze browser kan geen mappen kiezen: gebruik een computer of upload een .zip",
+    "up_retry": "Verbinding verbroken: opnieuw over {s} s (poging {k} van {m}). Laat deze pagina open.",
+    "up_gaveup": "de console reageert al een paar minuten niet. Kies dezelfde bestanden opnieuw om verder te gaan waar het stopte."
   },
   "pt-PT": {
     "pair": "Introduz o PIN mostrado na consola em Omega › Definições › Sistema e ferramentas › Comando pelo telemóvel.",
@@ -471,7 +481,9 @@
     "up_unknown": "Não reconhecido: escolha um .pkg, .zip ou .elf, ou uma pasta com sce_sys/param.json, homebrew.js ou eboot.elf",
     "up_drop": "ou arraste para aqui",
     "from_upload": "enviado",
-    "up_nodir": "Este navegador não consegue escolher pastas: use um computador ou envie um .zip"
+    "up_nodir": "Este navegador não consegue escolher pastas: use um computador ou envie um .zip",
+    "up_retry": "Ligação perdida: nova tentativa em {s} s (tentativa {k} de {m}). Mantém esta página aberta.",
+    "up_gaveup": "a consola não responde há alguns minutos. Escolhe os mesmos ficheiros outra vez para retomar onde parou."
   },
   "pt-BR": {
     "pair": "Digite o PIN exibido no console em Omega › Configurações › Sistema e ferramentas › Controle remoto pelo celular.",
@@ -550,7 +562,9 @@
     "up_unknown": "Não reconhecido: escolha um .pkg, .zip ou .elf, ou uma pasta com sce_sys/param.json, homebrew.js ou eboot.elf",
     "up_drop": "ou arraste até aqui",
     "from_upload": "enviado",
-    "up_nodir": "Este navegador não consegue escolher pastas: use um computador ou envie um .zip"
+    "up_nodir": "Este navegador não consegue escolher pastas: use um computador ou envie um .zip",
+    "up_retry": "Conexão perdida: tentando de novo em {s} s (tentativa {k} de {m}). Mantenha esta página aberta.",
+    "up_gaveup": "o console não responde há alguns minutos. Escolha os mesmos arquivos de novo para continuar de onde parou."
   },
   "ru": {
     "pair": "Введите PIN, который показан на консоли в Omega › Настройки › Система и инструменты › Пульт на телефоне.",
@@ -629,7 +643,9 @@
     "up_unknown": "Не распознано: выберите .pkg, .zip или .elf либо папку с sce_sys/param.json, homebrew.js или eboot.elf",
     "up_drop": "или перетащите сюда",
     "from_upload": "загружено",
-    "up_nodir": "Этот браузер не может выбирать папки: используйте компьютер или загрузите .zip"
+    "up_nodir": "Этот браузер не может выбирать папки: используйте компьютер или загрузите .zip",
+    "up_retry": "Соединение потеряно: повтор через {s} с (попытка {k} из {m}). Не закрывайте эту страницу.",
+    "up_gaveup": "консоль не отвечает уже несколько минут. Выберите те же файлы снова, чтобы продолжить с места остановки."
   },
   "ko": {
     "pair": "콘솔의 Omega › 설정 › 시스템 및 도구 › 휴대폰 리모컨에 표시된 PIN을 입력하세요.",
@@ -708,7 +724,9 @@
     "up_unknown": "인식할 수 없음: .pkg, .zip, .elf 파일이나 sce_sys/param.json, homebrew.js 또는 eboot.elf가 있는 폴더를 선택하세요",
     "up_drop": "또는 여기로 끌어다 놓기",
     "from_upload": "업로드됨",
-    "up_nodir": "이 브라우저는 폴더를 선택할 수 없습니다: 컴퓨터를 사용하거나 .zip을 업로드하세요"
+    "up_nodir": "이 브라우저는 폴더를 선택할 수 없습니다: 컴퓨터를 사용하거나 .zip을 업로드하세요",
+    "up_retry": "연결이 끊겼습니다: {s}초 후 다시 시도합니다 ({k}/{m}번째). 이 페이지를 열어 두세요.",
+    "up_gaveup": "본체가 몇 분째 응답하지 않습니다. 같은 파일을 다시 선택하면 멈춘 곳부터 이어서 진행합니다."
   },
   "zh-Hans": {
     "pair": "请输入主机上 Omega › 设置 › 系统与工具 › 手机遥控 中显示的 PIN。",
@@ -787,7 +805,9 @@
     "up_unknown": "无法识别:请选择 .pkg、.zip 或 .elf,或包含 sce_sys/param.json、homebrew.js 或 eboot.elf 的文件夹",
     "up_drop": "或拖到此处",
     "from_upload": "已上传",
-    "up_nodir": "此浏览器无法选择文件夹:请使用电脑,或上传 .zip"
+    "up_nodir": "此浏览器无法选择文件夹:请使用电脑,或上传 .zip",
+    "up_retry": "连接中断：{s} 秒后重试（第 {k}/{m} 次）。请保持此页面打开。",
+    "up_gaveup": "主机已几分钟没有响应。重新选择相同的文件即可从中断处继续。"
   },
   "zh-Hant": {
     "pair": "請輸入主機上 Omega › 設定 › 系統與工具 › 手機遙控 中顯示的 PIN。",
@@ -866,7 +886,9 @@
     "up_unknown": "無法辨識:請選擇 .pkg、.zip 或 .elf,或包含 sce_sys/param.json、homebrew.js 或 eboot.elf 的資料夾",
     "up_drop": "或拖曳到此處",
     "from_upload": "已上傳",
-    "up_nodir": "此瀏覽器無法選擇資料夾:請使用電腦,或上傳 .zip"
+    "up_nodir": "此瀏覽器無法選擇資料夾:請使用電腦,或上傳 .zip",
+    "up_retry": "連線中斷：{s} 秒後重試（第 {k}/{m} 次）。請保持此頁面開啟。",
+    "up_gaveup": "主機已數分鐘沒有回應。重新選擇相同的檔案即可從中斷處繼續。"
   },
   "fi": {
     "pair": "Syötä PIN, joka näkyy konsolilla kohdassa Omega › Asetukset › Järjestelmä ja työkalut › Puhelin kaukosäätimenä.",
@@ -945,7 +967,9 @@
     "up_unknown": "Ei tunnistettu: valitse .pkg-, .zip- tai .elf-tiedosto tai kansio, jossa on sce_sys/param.json, homebrew.js tai eboot.elf",
     "up_drop": "tai vedä tähän",
     "from_upload": "ladattu",
-    "up_nodir": "Tämä selain ei voi valita kansioita: käytä tietokonetta tai lataa .zip"
+    "up_nodir": "Tämä selain ei voi valita kansioita: käytä tietokonetta tai lataa .zip",
+    "up_retry": "Yhteys katkesi: yritetään uudelleen {s} s kuluttua (yritys {k}/{m}). Pidä tämä sivu auki.",
+    "up_gaveup": "konsoli ei ole vastannut moneen minuuttiin. Valitse samat tiedostot uudelleen, niin jatketaan siitä mihin jäätiin."
   },
   "sv": {
     "pair": "Ange PIN-koden som visas på konsolen under Omega › Inställningar › System och verktyg › Fjärrkontroll från telefonen.",
@@ -1024,7 +1048,9 @@
     "up_unknown": "Känns inte igen: välj en .pkg, .zip eller .elf, eller en mapp med sce_sys/param.json, homebrew.js eller eboot.elf",
     "up_drop": "eller dra hit",
     "from_upload": "uppladdat",
-    "up_nodir": "Den här webbläsaren kan inte välja mappar: använd en dator eller ladda upp en .zip"
+    "up_nodir": "Den här webbläsaren kan inte välja mappar: använd en dator eller ladda upp en .zip",
+    "up_retry": "Anslutningen bröts: nytt försök om {s} s (försök {k} av {m}). Låt sidan vara öppen.",
+    "up_gaveup": "konsolen har inte svarat på flera minuter. Välj samma filer igen för att fortsätta där det stannade."
   },
   "da": {
     "pair": "Indtast den PIN-kode, der vises på konsollen under Omega › Indstillinger › System og værktøjer › Fjernbetjening fra telefonen.",
@@ -1103,7 +1129,9 @@
     "up_unknown": "Ikke genkendt: vælg en .pkg, .zip eller .elf, eller en mappe med sce_sys/param.json, homebrew.js eller eboot.elf",
     "up_drop": "eller træk den hertil",
     "from_upload": "uploadet",
-    "up_nodir": "Denne browser kan ikke vælge mapper: brug en computer, eller upload en .zip"
+    "up_nodir": "Denne browser kan ikke vælge mapper: brug en computer, eller upload en .zip",
+    "up_retry": "Forbindelsen blev afbrudt: prøver igen om {s} s (forsøg {k} af {m}). Hold siden åben.",
+    "up_gaveup": "konsollen har ikke svaret i flere minutter. Vælg de samme filer igen for at fortsætte, hvor det stoppede."
   },
   "nb": {
     "pair": "Skriv inn PIN-koden som vises på konsollen under Omega › Innstillinger › System og verktøy › Fjernkontroll fra telefonen.",
@@ -1182,7 +1210,9 @@
     "up_unknown": "Ikke gjenkjent: velg en .pkg, .zip eller .elf, eller en mappe med sce_sys/param.json, homebrew.js eller eboot.elf",
     "up_drop": "eller dra den hit",
     "from_upload": "lastet opp",
-    "up_nodir": "Denne nettleseren kan ikke velge mapper: bruk en datamaskin, eller last opp en .zip"
+    "up_nodir": "Denne nettleseren kan ikke velge mapper: bruk en datamaskin, eller last opp en .zip",
+    "up_retry": "Tilkoblingen ble brutt: prøver igjen om {s} s (forsøk {k} av {m}). Hold siden åpen.",
+    "up_gaveup": "konsollen har ikke svart på flere minutter. Velg de samme filene igjen for å fortsette der det stoppet."
   },
   "pl": {
     "pair": "Wpisz PIN widoczny na konsoli w Omega › Ustawienia › System i narzędzia › Pilot w telefonie.",
@@ -1261,7 +1291,9 @@
     "up_unknown": "Nie rozpoznano: wybierz plik .pkg, .zip lub .elf albo folder z sce_sys/param.json, homebrew.js lub eboot.elf",
     "up_drop": "lub przeciągnij tutaj",
     "from_upload": "przesłano",
-    "up_nodir": "Ta przeglądarka nie może wybierać folderów: użyj komputera lub prześlij plik .zip"
+    "up_nodir": "Ta przeglądarka nie może wybierać folderów: użyj komputera lub prześlij plik .zip",
+    "up_retry": "Utracono połączenie: ponowna próba za {s} s (próba {k} z {m}). Nie zamykaj tej strony.",
+    "up_gaveup": "konsola nie odpowiada od kilku minut. Wybierz te same pliki ponownie, aby wznowić od miejsca przerwania."
   },
   "tr": {
     "pair": "Konsolda Omega › Ayarlar › Sistem ve araçlar › Telefondan kumanda bölümünde gösterilen PIN'i girin.",
@@ -1340,7 +1372,9 @@
     "up_unknown": "Tanınmadı: bir .pkg, .zip veya .elf ya da sce_sys/param.json, homebrew.js veya eboot.elf içeren bir klasör seçin",
     "up_drop": "veya buraya sürükleyin",
     "from_upload": "yüklendi",
-    "up_nodir": "Bu tarayıcı klasör seçemiyor: bir bilgisayar kullanın veya bir .zip yükleyin"
+    "up_nodir": "Bu tarayıcı klasör seçemiyor: bir bilgisayar kullanın veya bir .zip yükleyin",
+    "up_retry": "Bağlantı koptu: {s} sn sonra yeniden denenecek ({k}/{m}. deneme). Bu sayfayı açık tut.",
+    "up_gaveup": "konsol birkaç dakikadır yanıt vermiyor. Kaldığı yerden devam etmek için aynı dosyaları yeniden seç."
   },
   "cs": {
     "pair": "Zadejte PIN, který se zobrazuje na konzoli v Omega › Nastavení › Systém a nástroje › Dálkové ovládání z telefonu.",
@@ -1419,7 +1453,9 @@
     "up_unknown": "Nerozpoznáno: vyberte soubor .pkg, .zip nebo .elf, nebo složku se sce_sys/param.json, homebrew.js nebo eboot.elf",
     "up_drop": "nebo ho přetáhněte sem",
     "from_upload": "nahráno",
-    "up_nodir": "Tento prohlížeč neumí vybírat složky: použijte počítač nebo nahrajte .zip"
+    "up_nodir": "Tento prohlížeč neumí vybírat složky: použijte počítač nebo nahrajte .zip",
+    "up_retry": "Spojení se přerušilo: další pokus za {s} s (pokus {k} z {m}). Nech tuto stránku otevřenou.",
+    "up_gaveup": "konzole už několik minut neodpovídá. Vyber znovu stejné soubory a pokračuje se tam, kde se přestalo."
   },
   "hu": {
     "pair": "Írd be a PIN-t, amely a konzolon az Omega › Beállítások › Rendszer és eszközök › Távirányító telefonról menüben látható.",
@@ -1498,7 +1534,9 @@
     "up_unknown": "Nem felismerhető: válassz egy .pkg, .zip vagy .elf fájlt, vagy egy sce_sys/param.json, homebrew.js vagy eboot.elf fájlt tartalmazó mappát",
     "up_drop": "vagy húzd ide",
     "from_upload": "feltöltve",
-    "up_nodir": "Ez a böngésző nem tud mappát választani: használj számítógépet, vagy tölts fel egy .zip fájlt"
+    "up_nodir": "Ez a böngésző nem tud mappát választani: használj számítógépet, vagy tölts fel egy .zip fájlt",
+    "up_retry": "Megszakadt a kapcsolat: újrapróbálás {s} mp múlva ({k}/{m}. próbálkozás). Hagyd nyitva ezt az oldalt.",
+    "up_gaveup": "a konzol percek óta nem válaszol. Válaszd ki újra ugyanazokat a fájlokat, és onnan folytatódik, ahol megállt."
   },
   "el": {
     "pair": "Πληκτρολόγησε το PIN που εμφανίζεται στην κονσόλα στο Omega › Ρυθμίσεις › Σύστημα και εργαλεία › Τηλεχειρισμός από το τηλέφωνο.",
@@ -1577,7 +1615,9 @@
     "up_unknown": "Δεν αναγνωρίστηκε: επιλέξτε ένα .pkg, .zip ή .elf, ή έναν φάκελο με sce_sys/param.json, homebrew.js ή eboot.elf",
     "up_drop": "ή σύρετέ το εδώ",
     "from_upload": "μεταφορτώθηκε",
-    "up_nodir": "Αυτό το πρόγραμμα περιήγησης δεν μπορεί να επιλέξει φακέλους: χρησιμοποιήστε υπολογιστή ή μεταφορτώστε ένα .zip"
+    "up_nodir": "Αυτό το πρόγραμμα περιήγησης δεν μπορεί να επιλέξει φακέλους: χρησιμοποιήστε υπολογιστή ή μεταφορτώστε ένα .zip",
+    "up_retry": "Η σύνδεση χάθηκε: νέα προσπάθεια σε {s} δ (προσπάθεια {k} από {m}). Κράτα αυτή τη σελίδα ανοιχτή.",
+    "up_gaveup": "η κονσόλα δεν απαντά εδώ και λίγα λεπτά. Διάλεξε ξανά τα ίδια αρχεία για να συνεχίσεις από εκεί που σταμάτησε."
   },
   "ro": {
     "pair": "Introdu PIN-ul afișat pe consolă în Omega › Setări › Sistem și instrumente › Telecomandă de pe telefon.",
@@ -1656,7 +1696,9 @@
     "up_unknown": "Nerecunoscut: alege un .pkg, .zip sau .elf, sau un folder cu sce_sys/param.json, homebrew.js sau eboot.elf",
     "up_drop": "sau trage-l aici",
     "from_upload": "încărcat",
-    "up_nodir": "Acest browser nu poate alege foldere: folosește un computer sau încarcă un .zip"
+    "up_nodir": "Acest browser nu poate alege foldere: folosește un computer sau încarcă un .zip",
+    "up_retry": "Conexiune pierdută: reîncerc în {s} s (încercarea {k} din {m}). Ține pagina deschisă.",
+    "up_gaveup": "consola nu răspunde de câteva minute. Alege din nou aceleași fișiere ca să reiei de unde s-a oprit."
   },
   "th": {
     "pair": "ป้อน PIN ที่แสดงบนคอนโซลใน Omega › การตั้งค่า › ระบบและเครื่องมือ › รีโมตจากโทรศัพท์",
@@ -1735,7 +1777,9 @@
     "up_unknown": "ไม่รู้จักไฟล์: เลือก .pkg, .zip หรือ .elf หรือโฟลเดอร์ที่มี sce_sys/param.json, homebrew.js หรือ eboot.elf",
     "up_drop": "หรือลากมาวางที่นี่",
     "from_upload": "อัปโหลดแล้ว",
-    "up_nodir": "เบราว์เซอร์นี้เลือกโฟลเดอร์ไม่ได้: ใช้คอมพิวเตอร์ หรืออัปโหลดไฟล์ .zip"
+    "up_nodir": "เบราว์เซอร์นี้เลือกโฟลเดอร์ไม่ได้: ใช้คอมพิวเตอร์ หรืออัปโหลดไฟล์ .zip",
+    "up_retry": "การเชื่อมต่อขาด: จะลองใหม่ใน {s} วินาที (ครั้งที่ {k} จาก {m}) เปิดหน้านี้ค้างไว้",
+    "up_gaveup": "เครื่องไม่ตอบสนองมาหลายนาทีแล้ว เลือกไฟล์เดิมอีกครั้งเพื่อทำต่อจากจุดที่หยุดไว้"
   },
   "vi": {
     "pair": "Nhập mã PIN hiển thị trên console trong Omega › Cài đặt › Hệ thống và công cụ › Điều khiển từ điện thoại.",
@@ -1814,7 +1858,9 @@
     "up_unknown": "Không nhận dạng được: hãy chọn .pkg, .zip hoặc .elf, hoặc thư mục có sce_sys/param.json, homebrew.js hoặc eboot.elf",
     "up_drop": "hoặc kéo thả vào đây",
     "from_upload": "đã tải lên",
-    "up_nodir": "Trình duyệt này không chọn được thư mục: hãy dùng máy tính hoặc tải lên tệp .zip"
+    "up_nodir": "Trình duyệt này không chọn được thư mục: hãy dùng máy tính hoặc tải lên tệp .zip",
+    "up_retry": "Mất kết nối: thử lại sau {s} giây (lần {k}/{m}). Hãy giữ trang này mở.",
+    "up_gaveup": "máy không phản hồi đã vài phút. Chọn lại đúng các tệp đó để tiếp tục từ chỗ đã dừng."
   },
   "id": {
     "pair": "Masukkan PIN yang tampil di konsol di Omega › Pengaturan › Sistem dan alat › Remote dari ponsel.",
@@ -1893,7 +1939,9 @@
     "up_unknown": "Tidak dikenali: pilih file .pkg, .zip, atau .elf, atau folder berisi sce_sys/param.json, homebrew.js, atau eboot.elf",
     "up_drop": "atau seret ke sini",
     "from_upload": "diunggah",
-    "up_nodir": "Browser ini tidak bisa memilih folder: gunakan komputer, atau unggah file .zip"
+    "up_nodir": "Browser ini tidak bisa memilih folder: gunakan komputer, atau unggah file .zip",
+    "up_retry": "Koneksi terputus: mencoba lagi dalam {s} dtk (percobaan {k} dari {m}). Biarkan halaman ini terbuka.",
+    "up_gaveup": "konsol tidak merespons selama beberapa menit. Pilih lagi file yang sama untuk melanjutkan dari titik berhenti."
   },
   "uk": {
     "pair": "Введіть PIN, показаний на консолі в Omega › Налаштування › Система та інструменти › Пульт на телефоні.",
@@ -1972,6 +2020,8 @@
     "up_unknown": "Не розпізнано: виберіть .pkg, .zip або .elf чи теку з sce_sys/param.json, homebrew.js або eboot.elf",
     "up_drop": "або перетягніть сюди",
     "from_upload": "завантажено",
-    "up_nodir": "Цей браузер не може вибирати теки: скористайтеся комп'ютером або завантажте .zip"
+    "up_nodir": "Цей браузер не може вибирати теки: скористайтеся комп'ютером або завантажте .zip",
+    "up_retry": "З'єднання втрачено: повтор через {s} с (спроба {k} з {m}). Не закривайте цю сторінку.",
+    "up_gaveup": "консоль не відповідає вже кілька хвилин. Виберіть ті самі файли знову, щоб продовжити з місця зупинки."
   }
 }

@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Geçersiz klasör: Title ID eksik",
   "Copia non riuscita": "Kopyalanamadı",
   "Copia sulla console": "Konsola kopyalanıyor",
-  "Musica e telecomando usano già la nuova versione": "Müzik ve kumanda zaten yeni sürümü kullanıyor"
+  "Musica e telecomando usano già la nuova versione": "Müzik ve kumanda zaten yeni sürümü kullanıyor",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: telefondan veya bilgisayardan oyunlar alınıyor (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s artık homebrew'larında",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s Kitaplığım'da, kurulmaya hazır"
 }

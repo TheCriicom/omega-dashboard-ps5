@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Неверная папка: нет Title ID",
   "Copia non riuscita": "Не удалось скопировать",
   "Copia sulla console": "Копирование на консоль",
-  "Musica e telecomando usano già la nuova versione": "Музыка и пульт уже работают на новой версии"
+  "Musica e telecomando usano già la nuova versione": "Музыка и пульт уже работают на новой версии",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: получаю игры с телефона или ПК (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s теперь среди ваших homebrew",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s в «Моей библиотеке», можно устанавливать"
 }

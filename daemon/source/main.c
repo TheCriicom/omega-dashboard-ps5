@@ -456,6 +456,7 @@ int main(void) {
   // possono avviare il demone. La porta di controllo fa da lucchetto: se è già
   // occupata c'è un altro omega_redirect e questo si ritira subito.
   ctl_on_system(system_json);
+  ctl_on_notify(sys_notify);
   if (ctl_start(OMEGA_CTL_PORT, OMEGA_DIR) != 0) { lg("un'altra copia di omega_redirect è già attiva: esco"); return 0; }
   fan_restore();
   // il lettore parte subito: non dipende da websrv

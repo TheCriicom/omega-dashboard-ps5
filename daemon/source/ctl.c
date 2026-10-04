@@ -19,6 +19,7 @@
 //   POST /v1/library/upload?b=<lotto>&p=<percorso>   corpo = un file di un gioco → OMEGA_DIR/uploads/<lotto>/
 //   POST /v1/library/upload/done {"b":"<lotto>","title":""}   chiude il lotto: voce in libreria o homebrew installato
 //   GET  /v1/library/space    spazio libero per i caricamenti
+//   GET  /v1/library/upload/status?b=&p=   byte già arrivati di un file (per riprendere da lì: &o=<byte>)
 //   POST /v1/quit             solo dalla console: chiude il servizio (la UI avvia subito quello aggiornato)
 //   GET  /v1/library/file?b=&p=   immagine dentro un lotto (icona del gioco)
 //   GET  /v1/music/files      file in OMEGA_DIR/Music
@@ -44,7 +45,8 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/statvfs.h>
+#include <sys/mount.h>
+#include <sys/param.h>
 #include <errno.h>
 #include <unistd.h>
 
@@ -294,9 +296,10 @@ static int qparam(const char *qs, const char *key, char *out, size_t n) {
   }
   out[0] = 0; return 0;
 }
+// statfs come il pannello Sistema della UI (sulla console statvfs non è affidabile)
 static long long free_bytes(const char *dir) {
-  struct statvfs v; if (statvfs(dir, &v) != 0) return -1;
-  return (long long)v.f_bavail * (long long)v.f_frsize;
+  struct statfs v; if (statfs(dir, &v) != 0) return -1;
+  return (long long)v.f_bavail * (long long)v.f_bsize;
 }
 static void rm_rf(const char *path) {
   struct stat st; if (lstat(path, &st) != 0) return;
@@ -312,16 +315,38 @@ static void rm_rf(const char *path) {
 }
 static void *rm_thread(void *arg) { rm_rf(arg); player_log("libreria: tolti i file caricati %s", (char *)arg); free(arg); return NULL; }
 
-typedef struct { int s; char dst[1200]; long long clen; char *pre; size_t have; } UpJob;
+// Avanzamento del lotto in corso, per le notifiche sulla console (anche in gioco)
+const char *i18n_tr(const char *msgid) __attribute__((format_arg(1)));
+#define _(x) i18n_tr(x)
+static ctl_notify_fn notify_fn;
+void ctl_on_notify(ctl_notify_fn fn) { notify_fn = fn; }
+static pthread_mutex_t upmx = PTHREAD_MUTEX_INITIALIZER;
+static struct { char batch[40]; int quarter; } UPN;
+static void up_progress(const char *batch, long long done, long long total) {
+  if (!notify_fn || total <= 0) return;
+  int q = (int)(done * 4 / total); if (q > 3) q = 3;   // 0, 25, 50, 75 %
+  char msg[200] = "";
+  pthread_mutex_lock(&upmx);
+  if (strcmp(UPN.batch, batch)) { snprintf(UPN.batch, sizeof UPN.batch, "%s", batch); UPN.quarter = -1; }
+  if (q > UPN.quarter) {
+    UPN.quarter = q;
+    snprintf(msg, sizeof msg, _("Omega: ricevo i giochi dal telefono o dal PC (%d%%)"), q * 25);
+  }
+  pthread_mutex_unlock(&upmx);
+  if (msg[0]) notify_fn(msg);
+}
+
+typedef struct { int s; char dst[1200]; char batch[40]; long long clen, off, base, total; char *pre; size_t have; } UpJob;
 static void *up_thread(void *arg) {
   UpJob *u = arg;
   struct timeval tv = { 60, 0 };
   setsockopt(u->s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
   char tmp[1220]; snprintf(tmp, sizeof tmp, "%s.part", u->dst);
   mkparents(tmp);
-  int fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  int fd = open(tmp, O_WRONLY | O_CREAT | (u->off > 0 ? O_APPEND : O_TRUNC), 0666);
   int ok = fd >= 0;
   long long got = 0;
+  up_progress(u->batch, u->base + u->off, u->total);
   if (ok && u->have) { ok = write(fd, u->pre, u->have) == (ssize_t)u->have; got = (long long)u->have; }
   char *buf = ok ? malloc(512 * 1024) : NULL; if (!buf) ok = 0;
   while (ok && got < u->clen) {
@@ -330,26 +355,35 @@ static void *up_thread(void *arg) {
     if (k <= 0) { ok = 0; break; }
     if (write(fd, buf, (size_t)k) != k) { ok = 0; break; }
     got += k;
+    up_progress(u->batch, u->base + u->off + got, u->total);
   }
   free(buf);
   if (fd >= 0) close(fd);
   if (ok && got == u->clen && rename(tmp, u->dst) == 0) reply_json(u->s, 200, "{\"ok\":true}");
-  else { unlink(tmp); reply_json(u->s, 400, fd < 0 ? "{\"error\":\"write\"}" : "{\"error\":\"incomplete\"}"); }
+  else reply_json(u->s, 400, fd < 0 ? "{\"error\":\"write\"}" : "{\"error\":\"incomplete\"}");   // il .part resta: si riprende da lì
   close(u->s); free(u->pre); free(u);
   return NULL;
 }
 // 1 = la connessione passa al thread (il chiamante non la chiude)
 NOINLINE static int start_upload(int s, const char *qs, const char *pre, size_t have, long long clen) {
-  char b[40], rel[1024], relc[1024], root[300], dst[1200];
+  char b[40], rel[1024], relc[1024], root[300], dst[1200], num[32];
   qparam(qs, "b", b, sizeof b); qparam(qs, "p", rel, sizeof rel);
+  long long off = qparam(qs, "o", num, sizeof num) ? atoll(num) : 0;
+  long long base = qparam(qs, "sb", num, sizeof num) ? atoll(num) : 0;
+  long long total = qparam(qs, "tb", num, sizeof num) ? atoll(num) : 0;
   if (!batch_ok(b) || !clean_rel(rel, relc, sizeof relc)) { reply_json(s, 400, "{\"error\":\"bad_path\"}"); return 0; }
   if (clen <= 0) { reply_json(s, 400, "{\"error\":\"empty\"}"); return 0; }
   up_root(root, sizeof root);
   long long fb = free_bytes(root);
   if (fb >= 0 && clen + 256LL * 1024 * 1024 > fb) { reply_json(s, 507, "{\"error\":\"no_space\"}"); return 0; }
   snprintf(dst, sizeof dst, "%s/%s/%s", root, b, relc);
+  if (off > 0) {   // ripresa: il .part deve avere esattamente i byte che il telefono crede arrivati
+    char tmp[1220]; struct stat st; snprintf(tmp, sizeof tmp, "%s.part", dst);
+    long long have = stat(tmp, &st) == 0 ? (long long)st.st_size : 0;
+    if (have != off) { char o[80]; snprintf(o, sizeof o, "{\"error\":\"offset\",\"have\":%lld}", have); reply_json(s, 409, o); return 0; }
+  }
   UpJob *u = calloc(1, sizeof *u); if (!u) { reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; }
-  u->s = s; u->clen = clen; snprintf(u->dst, sizeof u->dst, "%s", dst);
+  u->s = s; u->clen = clen; u->off = off; u->base = base; u->total = total; snprintf(u->dst, sizeof u->dst, "%s", dst); snprintf(u->batch, sizeof u->batch, "%s", b);
   if (have > (size_t)clen) have = (size_t)clen;
   if (have) { u->pre = malloc(have); if (!u->pre) { free(u); reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; } memcpy(u->pre, pre, have); u->have = have; }
   if (spawn(up_thread, u) != 0) { free(u->pre); free(u); reply_json(s, 500, "{\"error\":\"thread\"}"); return 0; }
@@ -414,6 +448,7 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
     if (lib_add_upload(title, url, kind, "", "", "", "", id, sizeof id)) { reply_json(s, 500, "{\"error\":\"library\"}"); return; }
     char o[160]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"%s\"}", id, kind); reply_json(s, 200, o);
     player_log("libreria: caricato %s (%s)", title, kind);
+  if (notify_fn) { char m[300]; snprintf(m, sizeof m, _("Omega: %s \xC3\xA8 in La mia libreria, pronto da installare"), title); notify_fn(m); }
     return;
   }
   const char *rel = "";
@@ -432,6 +467,7 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
     rm_rf(batch);
     char esc[400], res[500]; json_escape(esc, sizeof esc, strrchr(dst, '/') + 1);
     snprintf(res, sizeof res, "{\"homebrew\":\"%s\"}", esc); reply_json(s, 200, res);
+    if (notify_fn) { char m[300]; snprintf(m, sizeof m, _("Omega: %s \xC3\xA8 tra gli homebrew"), strrchr(dst, '/') + 1); notify_fn(m); }
     player_log("libreria: homebrew caricato in %s", dst);
     return;
   }
@@ -470,6 +506,20 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
   if (lib_add_upload(title, url, "folder", cover, tid, ver, plat, id, sizeof id)) { reply_json(s, 500, "{\"error\":\"library\"}"); return; }
   char o[200]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"folder\",\"title_id\":\"%s\"}", id, tid); reply_json(s, 200, o);
   player_log("libreria: gioco in cartella %s (%s)", title, tid);
+  if (notify_fn) { char m[300]; snprintf(m, sizeof m, _("Omega: %s \xC3\xA8 in La mia libreria, pronto da installare"), title); notify_fn(m); }
+}
+
+// quanto di un file è già arrivato: {"have":byte,"done":true|false}
+NOINLINE static void upload_status(int s, const char *qs) {
+  char b[40], rel[1024], relc[1024], up[300], p[1400], o[96];
+  qparam(qs, "b", b, sizeof b); qparam(qs, "p", rel, sizeof rel);
+  if (!batch_ok(b) || !clean_rel(rel, relc, sizeof relc)) { reply_json(s, 400, "{\"error\":\"bad_path\"}"); return; }
+  up_root(up, sizeof up); snprintf(p, sizeof p, "%s/%s/%s", up, b, relc);
+  struct stat st; long long have = 0; int done = 0;
+  if (stat(p, &st) == 0) { have = (long long)st.st_size; done = 1; }
+  else { char t[1420]; snprintf(t, sizeof t, "%s.part", p); if (stat(t, &st) == 0) have = (long long)st.st_size; }
+  snprintf(o, sizeof o, "{\"have\":%lld,\"done\":%s}", have, done ? "true" : "false");
+  reply_json(s, 200, o);
 }
 
 // icona dentro un lotto (solo immagini)
@@ -618,6 +668,7 @@ static int handle(int s, int local) {
     }
     if (!strcmp(path, "/v1/library/space")) { char up[300], o[96]; up_root(up, sizeof up); snprintf(o, sizeof o, "{\"free\":%lld}", free_bytes(up)); reply_json(s, 200, o); return 0; }
     if (!strcmp(path, "/v1/library/file")) { upload_file(s, qcopy); return 0; }
+    if (!strcmp(path, "/v1/library/upload/status")) { upload_status(s, qcopy); return 0; }
     if (!strcmp(path, "/v1/ping")) { reply_json(s, 200, "{\"ok\":true,\"service\":\"omega\"}"); return 0; }
     reply_json(s, 404, "{\"error\":\"not_found\"}"); return 0;
   }

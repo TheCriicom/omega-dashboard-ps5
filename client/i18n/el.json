@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Μη έγκυρος φάκελος: λείπει το Title ID",
   "Copia non riuscita": "Η αντιγραφή απέτυχε",
   "Copia sulla console": "Αντιγραφή στην κονσόλα",
-  "Musica e telecomando usano già la nuova versione": "Η μουσική και το τηλεχειριστήριο χρησιμοποιούν ήδη τη νέα έκδοση"
+  "Musica e telecomando usano già la nuova versione": "Η μουσική και το τηλεχειριστήριο χρησιμοποιούν ήδη τη νέα έκδοση",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: λήψη παιχνιδιών από κινητό ή PC (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: το %s είναι πλέον στα homebrew σου",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: το %s είναι στη Βιβλιοθήκη μου, έτοιμο για εγκατάσταση"
 }

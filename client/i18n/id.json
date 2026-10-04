@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Folder tidak valid: Title ID tidak ada",
   "Copia non riuscita": "Gagal menyalin",
   "Copia sulla console": "Menyalin ke konsol",
-  "Musica e telecomando usano già la nuova versione": "Musik dan remote sudah memakai versi baru"
+  "Musica e telecomando usano già la nuova versione": "Musik dan remote sudah memakai versi baru",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: menerima game dari ponsel atau PC (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s kini ada di homebrew-mu",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s ada di Pustaka saya, siap dipasang"
 }

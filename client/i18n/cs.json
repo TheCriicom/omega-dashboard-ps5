@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Neplatná složka: chybí Title ID",
   "Copia non riuscita": "Kopírování se nezdařilo",
   "Copia sulla console": "Kopírování do konzole",
-  "Musica e telecomando usano già la nuova versione": "Hudba a ovladač už používají novou verzi"
+  "Musica e telecomando usano già la nuova versione": "Hudba a ovladač už používají novou verzi",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: přijímám hry z telefonu nebo PC (%d %%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s je mezi tvými homebrew",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s je v Mé knihovně, připraveno k instalaci"
 }

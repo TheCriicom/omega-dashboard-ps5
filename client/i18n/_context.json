@@ -915,7 +915,7 @@
   },
   "Attivo dal prossimo riavvio della console": {
     "where": [
-      "omega-ui-src/source/update.c:223"
+      "omega-ui-src/source/update.c:230"
     ],
     "kind": [
       "toast"
@@ -3637,7 +3637,7 @@
   },
   "Musica e telecomando usano già la nuova versione": {
     "where": [
-      "omega-ui-src/source/update.c:222"
+      "omega-ui-src/source/update.c:229"
     ],
     "kind": [
       "toast"
@@ -4133,7 +4133,7 @@
   },
   "Omega %s è stato scaricato e installato. Riavviare ora per usarlo?": {
     "where": [
-      "omega-ui-src/source/update.c:228"
+      "omega-ui-src/source/update.c:235"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -4181,7 +4181,7 @@
   },
   "Omega · %s": {
     "where": [
-      "omega-redirect-src/source/main.c:323"
+      "omega-redirect-src/source/main.c:324"
     ],
     "kind": [
       "notification"
@@ -4190,7 +4190,7 @@
   },
   "Omega · %s: %s": {
     "where": [
-      "omega-redirect-src/source/main.c:322"
+      "omega-redirect-src/source/main.c:323"
     ],
     "kind": [
       "notification"
@@ -4210,6 +4210,25 @@
     "where": [
       "omega-ui-src/source/panels.c:1094"
     ]
+  },
+  "Omega: %s è in La mia libreria, pronto da installare": {
+    "where": [
+      "omega-redirect-src/source/ctl.c:451",
+      "omega-redirect-src/source/ctl.c:509"
+    ],
+    "kind": [
+      "notification"
+    ],
+    "hint": "PS5 system notification; printf format: keep exactly these specifiers in this order: s"
+  },
+  "Omega: %s è tra gli homebrew": {
+    "where": [
+      "omega-redirect-src/source/ctl.c:470"
+    ],
+    "kind": [
+      "notification"
+    ],
+    "hint": "PS5 system notification; printf format: keep exactly these specifiers in this order: s"
   },
   "Omega: download in corso...": {
     "where": [
@@ -4255,6 +4274,15 @@
       "notification"
     ],
     "hint": "PS5 system notification"
+  },
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": {
+    "where": [
+      "omega-redirect-src/source/ctl.c:333"
+    ],
+    "kind": [
+      "notification"
+    ],
+    "hint": "PS5 system notification; printf format: keep exactly these specifiers in this order: d %%"
   },
   "Omega: server non raggiungibile, riprova più tardi": {
     "where": [
@@ -4853,7 +4881,7 @@
   },
   "Riavvia": {
     "where": [
-      "omega-ui-src/source/update.c:229"
+      "omega-ui-src/source/update.c:236"
     ],
     "kind": [
       "confirm"
@@ -4862,7 +4890,7 @@
   },
   "Riavvia Omega per usare la nuova versione": {
     "where": [
-      "omega-ui-src/source/update.c:212"
+      "omega-ui-src/source/update.c:219"
     ],
     "kind": [
       "message"
@@ -5502,7 +5530,7 @@
   "Server Omega non raggiungibile": {
     "where": [
       "omega-ui-src/source/login.c:218",
-      "omega-ui-src/source/main.c:239"
+      "omega-ui-src/source/main.c:240"
     ],
     "kind": [
       "message"
@@ -5574,8 +5602,8 @@
   },
   "Servizio Omega aggiornato": {
     "where": [
-      "omega-ui-src/source/update.c:222",
-      "omega-ui-src/source/update.c:223"
+      "omega-ui-src/source/update.c:229",
+      "omega-ui-src/source/update.c:230"
     ],
     "kind": [
       "toast"

@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "Invalid folder: the Title ID is missing",
   "Copia non riuscita": "Copy failed",
   "Copia sulla console": "Copying to the console",
-  "Musica e telecomando usano già la nuova versione": "Music and the remote already use the new version"
+  "Musica e telecomando usano già la nuova versione": "Music and the remote already use the new version",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: receiving games from your phone or PC (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s is now with your homebrew",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s is in My library, ready to install"
 }

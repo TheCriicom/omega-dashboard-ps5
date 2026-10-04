@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "資料夾無效：缺少 Title ID",
   "Copia non riuscita": "複製失敗",
   "Copia sulla console": "正在複製到主機",
-  "Musica e telecomando usano già la nuova versione": "音樂與遙控已在使用新版本"
+  "Musica e telecomando usano già la nuova versione": "音樂與遙控已在使用新版本",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega：正在從手機或電腦接收遊戲（%d%%）",
+  "Omega: %s è tra gli homebrew": "Omega：%s 已加入你的自製軟體",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega：%s 已在我的遊戲庫中，可以安裝"
 }

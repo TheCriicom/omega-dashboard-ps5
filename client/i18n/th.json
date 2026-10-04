@@ -956,5 +956,8 @@
   "Cartella non valida: manca il Title ID": "โฟลเดอร์ไม่ถูกต้อง: ไม่มี Title ID",
   "Copia non riuscita": "คัดลอกไม่สำเร็จ",
   "Copia sulla console": "กำลังคัดลอกไปยังเครื่อง",
-  "Musica e telecomando usano già la nuova versione": "เพลงและรีโมตใช้เวอร์ชันใหม่แล้ว"
+  "Musica e telecomando usano già la nuova versione": "เพลงและรีโมตใช้เวอร์ชันใหม่แล้ว",
+  "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": "Omega: กำลังรับเกมจากโทรศัพท์หรือ PC (%d%%)",
+  "Omega: %s è tra gli homebrew": "Omega: %s อยู่ในโฮมบรูของคุณแล้ว",
+  "Omega: %s è in La mia libreria, pronto da installare": "Omega: %s อยู่ในคลังของฉันแล้ว พร้อมติดตั้ง"
 }

@@ -388,7 +388,7 @@
           up: 'Upload from this device', up_help: 'Choose a .pkg, .zip or .elf file, or the folder of a game or homebrew: it is copied to the console over Wi-Fi. Homebrew folders (with homebrew.js or eboot.elf) go straight to Omega\'s Home; games appear in My library, ready to install.',
           up_file: 'Choose a file', up_dir: 'Choose a folder', up_dir_s: 'game or homebrew', up_name: 'Name (optional)', up_sending: 'Sending {n} of {t} · {a} of {b}', up_wait: 'Keep this page open until it finishes.',
           up_space: 'Not enough space on the console: {a} free, {b} needed', up_lib: 'Done: it\'s in My library, ready to install', up_hb: 'Done: {name} is now in Omega\'s Home, with your homebrew',
-          up_fail: 'Upload failed: ', up_unknown: 'Not recognised: choose a .pkg, .zip or .elf, or a folder with sce_sys/param.json, homebrew.js or eboot.elf', up_drop: 'or drag it here', from_upload: 'uploaded', up_nodir: 'This browser can\'t pick folders: use a computer, or upload a .zip' },
+          up_fail: 'Upload failed: ', up_unknown: 'Not recognised: choose a .pkg, .zip or .elf, or a folder with sce_sys/param.json, homebrew.js or eboot.elf', up_drop: 'or drag it here', from_upload: 'uploaded', up_nodir: 'This browser can\'t pick folders: use a computer, or upload a .zip', up_retry: 'Connection lost: retrying in {s} s (attempt {k} of {m}). Keep this page open.', up_gaveup: 'the console did not respond for several minutes. Choose the same files again to resume where it stopped.' },
     it: { pair: 'Scrivi il PIN che vedi sulla console in Omega › Impostazioni › Sistema e strumenti › Telecomando.', bad: 'PIN errato', locked: 'Troppi tentativi: aspetta un minuto', off: 'non raggiungibile', on: 'collegato',
           music: 'Musica', lib: 'La mia libreria', console: 'Console', game: 'In gioco', none: 'Home', temp: 'Temperatura', fav: 'Radio preferite', queue: 'In coda', live: 'In diretta', paused: 'In pausa', loading: 'Caricamento…', stopped: 'Fermo', empty: 'La coda è vuota',
           lib_help: 'I backup dei tuoi giochi, salvati solo sulla tua console. Aggiungi un gioco con il link per scaricarlo e la copertina: lo trovi in Omega › Store › Libreria, pronto da installare.',
@@ -401,7 +401,7 @@
           up: 'Carica da questo dispositivo', up_help: 'Scegli un file .pkg, .zip o .elf, oppure la cartella di un gioco o di un homebrew: viene copiato sulla console via Wi-Fi. Le cartelle di homebrew (con homebrew.js o eboot.elf) finiscono subito nella Home di Omega; i giochi compaiono in La mia libreria, pronti da installare.',
           up_file: 'Scegli un file', up_dir: 'Scegli una cartella', up_dir_s: 'gioco o homebrew', up_name: 'Nome (facoltativo)', up_sending: 'Invio {n} di {t} · {a} di {b}', up_wait: 'Tieni aperta questa pagina finché non finisce.',
           up_space: 'Spazio insufficiente sulla console: liberi {a}, servono {b}', up_lib: 'Fatto: lo trovi in La mia libreria, pronto da installare', up_hb: 'Fatto: {name} ora è nella Home di Omega, tra i tuoi homebrew',
-          up_fail: 'Caricamento non riuscito: ', up_unknown: 'Non riconosciuto: scegli un .pkg, .zip o .elf, oppure una cartella con sce_sys/param.json, homebrew.js o eboot.elf', up_drop: 'oppure trascinalo qui', from_upload: 'caricato', up_nodir: 'Questo browser non sceglie le cartelle: usa un computer, o carica uno .zip' }
+          up_fail: 'Caricamento non riuscito: ', up_unknown: 'Non riconosciuto: scegli un .pkg, .zip o .elf, oppure una cartella con sce_sys/param.json, homebrew.js o eboot.elf', up_drop: 'oppure trascinalo qui', from_upload: 'caricato', up_nodir: 'Questo browser non sceglie le cartelle: usa un computer, o carica uno .zip', up_retry: 'Connessione persa: riprovo tra {s} s (tentativo {k} di {m}). Tieni aperta questa pagina.', up_gaveup: 'la console non risponde da alcuni minuti. Scegli di nuovo gli stessi file per riprendere da dove si era fermato.' }
   };
   /*T_MORE*/
   var L = T.en;
@@ -676,46 +676,85 @@
   function fill(t, o) { return t.replace(/\{(\w+)\}/g, function (m, k) { return o[k] !== undefined ? o[k] : m; }); }
   function upMsg(ok, err) { $('upok').textContent = ok || ''; $('uperr').textContent = err || ''; }
   function upEnd() { upX = null; $('upbox').hidden = true; $('up_file').disabled = $('up_dir').disabled = false; }
-  // list: [{file, path}] — path relativo dentro il lotto
+  // list: [{file, path}] — path relativo dentro il lotto.
+  // Ogni file riprende da dove era arrivato (status + &o=): se la rete cade, la
+  // console si blocca o il servizio si riavvia, si riprova con attese crescenti.
+  var RETRY = [2, 4, 8, 15, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60];   // ~12 minuti in tutto
   function upStart(list) {
     if (!list.length || upX) return;
     upMsg('', '');
     var total = list.reduce(function (a, x) { return a + x.file.size; }, 0);
-    var batch = ''; for (var i = 0; i < 12; i++) batch += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
+    // stessi file scelti di nuovo = stesso lotto: riprende da dove si era fermato
+    var sig = list.map(function (x) { return x.path + ':' + x.file.size; }).join('|'), h = 0;
+    for (var c = 0; c < sig.length; c++) h = (h * 31 + sig.charCodeAt(c)) | 0;
+    var key = 'omega-up-' + (h >>> 0).toString(36), batch = '';
+    try { batch = localStorage.getItem(key) || ''; } catch (e) {}
+    if (!/^[a-z0-9]{6,32}$/.test(batch)) {
+      batch = ''; for (var i = 0; i < 12; i++) batch += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
+      try { localStorage.setItem(key, batch); } catch (e) {}
+    }
+    var resumed = false; try { resumed = !!localStorage.getItem(key + '-started'); } catch (e) {}
     api('GET', '/v1/library/space').then(function (sp) {
-      if (sp.free >= 0 && total + 268435456 > sp.free) { upMsg('', fill(tx('up_space'), { a: size(sp.free), b: size(total) })); return; }
+      if (sp.free >= 0 && total + 268435456 > sp.free && !resumed) { upMsg('', fill(tx('up_space'), { a: size(sp.free), b: size(total) })); return; }
       upStop = false; $('upbox').hidden = false; $('up_file').disabled = $('up_dir').disabled = true;
-      var sent = 0;
-      (function next(i) {
+      var sent = 0, fails = 0, timer = null;
+      var show = function (i, done) {
+        $('up_txt').textContent = fill(tx('up_sending'), { n: i + 1, t: list.length, a: size(sent + done), b: size(total) });
+        $('up_prog').style.width = (total ? (sent + done) / total * 100 : 0) + '%';
+      };
+      var retry = function (again) {
         if (upStop) { upEnd(); return; }
-        if (i >= list.length) {
-          api('POST', '/v1/library/upload/done', { b: batch, title: $('up_name').value.trim() }).then(function (r) {
-            upEnd();
-            if (r.homebrew) upMsg(fill(tx('up_hb'), { name: r.homebrew }), '');
-            else if (r.added) { upMsg(tx('up_lib'), ''); $('up_name').value = ''; libseq = -1; loadLib(); }
-            else upMsg('', /unknown|title_id/.test(r.error || '') ? tx('up_unknown') : tx('up_fail') + (r.error || ''));
-          }).catch(function () { upEnd(); upMsg('', tx('up_fail')); });
-          return;
-        }
-        var f = list[i].file, x = new XMLHttpRequest(); upX = x;
-        x.open('POST', '/v1/library/upload?b=' + batch + '&p=' + encodeURIComponent(list[i].path));
-        x.setRequestHeader('x-omega-token', tok);
-        var show = function (done) {
-          $('up_txt').textContent = fill(tx('up_sending'), { n: i + 1, t: list.length, a: size(sent + done), b: size(total) });
-          $('up_prog').style.width = (total ? (sent + done) / total * 100 : 0) + '%';
+        if (fails >= RETRY.length) { upEnd(); upMsg('', tx('up_fail') + tx('up_gaveup')); return; }
+        var wait = RETRY[fails++], left = wait;
+        var tick = function () {
+          if (upStop) return;
+          $('up_txt').textContent = fill(tx('up_retry'), { s: left, k: fails, m: RETRY.length });
+          if (left-- <= 0) again(); else timer = setTimeout(tick, 1000);
         };
-        show(0);
-        x.upload.onprogress = function (e) { show(e.loaded); };
-        x.onload = function () {
-          if (x.status !== 200) { upEnd(); upMsg('', x.status === 507 ? fill(tx('up_space'), { a: '?', b: size(total) }) : tx('up_fail') + f.name); return; }
-          sent += f.size; next(i + 1);
-        };
-        x.onerror = function () { upEnd(); if (!upStop) upMsg('', tx('up_fail') + f.name); };
-        x.send(f);
-      })(0);
+        tick();
+      };
+      var finish = function () {
+        api('POST', '/v1/library/upload/done', { b: batch, title: $('up_name').value.trim() }).then(function (r) {
+          if (r._status === 409) { retry(finish); return; }   // un file non è ancora completo sul disco
+          upEnd();
+          try { localStorage.removeItem(key); localStorage.removeItem(key + '-started'); } catch (e) {}
+          if (r.homebrew) upMsg(fill(tx('up_hb'), { name: r.homebrew }), '');
+          else if (r.added) { upMsg(tx('up_lib'), ''); $('up_name').value = ''; libseq = -1; loadLib(); }
+          else upMsg('', /unknown|title_id/.test(r.error || '') ? tx('up_unknown') : tx('up_fail') + (r.error || ''));
+        }).catch(function () { retry(finish); });
+      };
+      var send = function (i) {
+        if (upStop) { upEnd(); return; }
+        if (i >= list.length) { finish(); return; }
+        var f = list[i].file, path = list[i].path;
+        // prima si chiede quanto è già arrivato (dopo un errore o un riavvio del servizio)
+        api('GET', '/v1/library/upload/status?b=' + batch + '&p=' + encodeURIComponent(path)).then(function (st) {
+          if (st.done && st.have === f.size) { sent += f.size; fails = 0; send(i + 1); return; }
+          var off = st.have > 0 && st.have <= f.size ? st.have : 0;
+          var x = new XMLHttpRequest(); upX = x;
+          x.open('POST', '/v1/library/upload?b=' + batch + '&p=' + encodeURIComponent(path) + '&o=' + off + '&sb=' + sent + '&tb=' + total);
+          x.setRequestHeader('x-omega-token', tok);
+          var last = Date.now();
+          var watch = setInterval(function () { if (Date.now() - last > 30000) { clearInterval(watch); x.abort(); } }, 2000);   // fermo da 30 s: si riprova
+          show(i, off);
+          x.upload.onprogress = function (e) { last = Date.now(); show(i, off + e.loaded); if (e.loaded > 1048576) fails = 0; };
+          x.onload = function () {
+            clearInterval(watch);
+            if (x.status === 200) { sent += f.size; fails = 0; send(i + 1); return; }
+            if (x.status === 507) { upEnd(); upMsg('', fill(tx('up_space'), { a: '?', b: size(total) })); return; }
+            retry(function () { send(i); });
+          };
+          x.onerror = x.onabort = function () { clearInterval(watch); if (upStop) { upEnd(); return; } retry(function () { send(i); }); };
+          x.send(off ? f.slice(off) : f);
+        }).catch(function () { retry(function () { send(i); }); });
+      };
+      upStopTimer = function () { if (timer) clearTimeout(timer); };
+      try { localStorage.setItem(key + '-started', '1'); } catch (e) {}
+      send(0);
     }).catch(function () { upMsg('', tx('up_fail')); });
   }
-  $('up_cancel').onclick = function () { upStop = true; if (upX) upX.abort(); upEnd(); };
+  var upStopTimer = function () {};
+  $('up_cancel').onclick = function () { upStop = true; upStopTimer(); if (upX) upX.abort(); upEnd(); };
   $('up_file').onchange = function () { var f = this.files && this.files[0]; if (f) upStart([{ file: f, path: f.name }]); this.value = ''; };
   $('up_dir').onchange = function () {
     var l = Array.prototype.map.call(this.files || [], function (f) { return { file: f, path: f.webkitRelativePath || f.name }; });

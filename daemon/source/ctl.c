@@ -409,11 +409,17 @@ NOINLINE static int start_upload(int s, const char *qs, const char *pre, size_t 
   long long base = qparam(qs, "sb", num, sizeof num) ? atoll(num) : 0;
   long long total = qparam(qs, "tb", num, sizeof num) ? atoll(num) : 0;
   if (!batch_ok(b) || !clean_rel(rel, relc, sizeof relc)) { reply_json(s, 400, "{\"error\":\"bad_path\"}"); return 0; }
-  if (clen <= 0) { reply_json(s, 400, "{\"error\":\"empty\"}"); return 0; }
+  if (clen < 0) { reply_json(s, 400, "{\"error\":\"length\"}"); return 0; }
   up_root(root, sizeof root);
   long long fb = free_bytes(root);
   if (fb >= 0 && clen + 256LL * 1024 * 1024 > fb) { reply_json(s, 507, "{\"error\":\"no_space\"}"); return 0; }
   snprintf(dst, sizeof dst, "%s/%s/%s", root, b, relc);
+  if (clen == 0 && off == 0) {   // file vuoto (le cartelle dei giochi ne hanno): si crea e basta
+    mkparents(dst);
+    int fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (fd >= 0) { close(fd); reply_json(s, 200, "{\"ok\":true}"); } else reply_json(s, 500, "{\"error\":\"write\"}");
+    return 0;
+  }
   if (off > 0) {   // ripresa: il .part deve avere esattamente i byte che il telefono crede arrivati
     char tmp[1220]; struct stat st; snprintf(tmp, sizeof tmp, "%s.part", dst);
     long long have = stat(tmp, &st) == 0 ? (long long)st.st_size : 0;

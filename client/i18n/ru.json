@@ -955,5 +955,6 @@
   "CARTELLA": "ПАПКА",
   "Cartella non valida: manca il Title ID": "Неверная папка: нет Title ID",
   "Copia non riuscita": "Не удалось скопировать",
-  "Copia sulla console": "Копирование на консоль"
+  "Copia sulla console": "Копирование на консоль",
+  "Musica e telecomando usano già la nuova versione": "Музыка и пульт уже работают на новой версии"
 }

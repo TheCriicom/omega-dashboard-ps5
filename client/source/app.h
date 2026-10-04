@@ -349,6 +349,7 @@ void home_mode_menu(void);
 void setup_tick(void);
 void hen_check(int ask);              // rileva il jailbreak e propone i componenti mancanti
 const char *hen_name(void);           // "OnionHEN", "etaHEN"... per Sistema
+int  hen_daemon_path(char *out, size_t n);   // servizio attivo (1 = trovato)
 int  hen_payload_dir(char *out, size_t n);   // cartella piatta dei payload per l'HEN (0 = Payload Manager)
 void setup_draw(float t); void setup_input(int b);
 void hen_ask_home(void);              // domanda "Omega come Home?" (stessa finestra)

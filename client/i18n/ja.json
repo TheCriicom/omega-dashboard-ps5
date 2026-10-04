@@ -955,5 +955,6 @@
   "CARTELLA": "フォルダー",
   "Cartella non valida: manca il Title ID": "無効なフォルダーです：Title ID がありません",
   "Copia non riuscita": "コピーできませんでした",
-  "Copia sulla console": "本体にコピー中"
+  "Copia sulla console": "本体にコピー中",
+  "Musica e telecomando usano già la nuova versione": "音楽とリモコンはすでに新しいバージョンで動いています"
 }

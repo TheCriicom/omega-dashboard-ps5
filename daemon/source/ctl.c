@@ -19,6 +19,7 @@
 //   POST /v1/library/upload?b=<lotto>&p=<percorso>   corpo = un file di un gioco → OMEGA_DIR/uploads/<lotto>/
 //   POST /v1/library/upload/done {"b":"<lotto>","title":""}   chiude il lotto: voce in libreria o homebrew installato
 //   GET  /v1/library/space    spazio libero per i caricamenti
+//   POST /v1/quit             solo dalla console: chiude il servizio (la UI avvia subito quello aggiornato)
 //   GET  /v1/library/file?b=&p=   immagine dentro un lotto (icona del gioco)
 //   GET  /v1/music/files      file in OMEGA_DIR/Music
 //   POST /v1/music/delete     {"name":"..."}
@@ -66,6 +67,9 @@ static int spawn(void *(*fn)(void *), void *arg) {
 extern const char REMOTE_HTML[]; extern const size_t REMOTE_HTML_LEN;
 
 static char data_dir[200];
+static int lsock = -1;
+static char last_req[160] = "-";
+const char *ctl_last_request(void) { return last_req; }
 static char pin[8], secret[40];
 static int fails; static time_t locked_until;
 static ctl_system_fn system_fn;
@@ -551,6 +555,7 @@ static int handle(int s, int local) {
   char tok[64] = "";
   for (char *l = strstr(hdr, "\r\n"); l && l < end; l = strstr(l + 2, "\r\n"))
     if (!strncasecmp(l + 2, "x-omega-token:", 14)) { const char *v = l + 16; while (*v == ' ') v++; snprintf(tok, sizeof tok, "%.*s", (int)strcspn(v, "\r\n "), v); }
+  snprintf(last_req, sizeof last_req, "%s %.*s", method, (int)strcspn(path, "?"), path);
   char *qs = strchr(path, '?'); static char qcopy[2048]; qcopy[0] = 0;
   if (qs) { snprintf(qcopy, sizeof qcopy, "%s", qs); char *k = strstr(qs, "k="); if (k && !tok[0]) snprintf(tok, sizeof tok, "%.*s", (int)strcspn(k + 2, "&"), k + 2); *qs = 0; }
 
@@ -651,6 +656,16 @@ static int handle(int s, int local) {
     if (!clean_name(jstr(j, "name", ""), name, sizeof name)) reply_json(s, 400, "{\"error\":\"bad_name\"}");
     else { music_dir(dir, sizeof dir); snprintf(full, sizeof full, "%s/%s", dir, name); reply_json(s, unlink(full) == 0 ? 200 : 404, "{}"); }
   }
+  else if (!strcmp(path, "/v1/quit")) {
+    if (!local) reply_json(s, 403, "{\"error\":\"local_only\"}");
+    else {
+      reply_json(s, 200, "{\"ok\":true}");
+      player_log("servizio: chiuso dalla UI per l'aggiornamento");
+      player_stop();
+      close(s); close(lsock);
+      exit(0);
+    }
+  }
   else if (!strcmp(path, "/v1/cmd")) do_cmd(s, j);
   else if (!strcmp(path, "/v1/queue")) do_queue(s, j);
   else reply_json(s, 404, "{\"error\":\"not_found\"}");
@@ -658,7 +673,6 @@ static int handle(int s, int local) {
   return 0;
 }
 
-static int lsock = -1;
 static void *ctl_thread(void *arg) {
   (void)arg;
   for (;;) {

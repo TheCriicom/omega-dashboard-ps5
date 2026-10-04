@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -422,7 +423,32 @@ static void migrate_data_dir(void) {
     lg("cartella dati spostata in %s", OMEGA_DIR);
 }
 
+int main(void);
+
+// Un crash finisce nel log con il segnale, l'indirizzo e l'ultima richiesta servita:
+// sottraendo l'indirizzo di main si ritrova la riga nel file .elf.
+static void on_crash(int sig, siginfo_t *si, void *ucv) {
+  unsigned long rip = 0;
+#if defined(PS5) && defined(__x86_64__)
+  rip = (unsigned long)((ucontext_t *)ucv)->uc_mcontext.mc_rip;
+#else
+  (void)ucv;
+#endif
+  lg("CRASH segnale %d, indirizzo %p, codice %#lx (main %p), ultima richiesta: %s", sig, si ? si->si_addr : NULL, rip, (void *)main, ctl_last_request());
+  _exit(128 + sig);
+}
+static void guard_signals(void) {
+  // il telefono o il browser chiudono spesso la connessione a metà risposta:
+  // senza questo la scrittura sul socket chiuso (SIGPIPE) uccide il servizio
+  signal(SIGPIPE, SIG_IGN);
+  struct sigaction sa; memset(&sa, 0, sizeof sa);
+  sa.sa_sigaction = on_crash; sa.sa_flags = SA_SIGINFO;
+  int sigs[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT };
+  for (unsigned i = 0; i < sizeof sigs / sizeof *sigs; i++) sigaction(sigs[i], &sa, NULL);
+}
+
 int main(void) {
+  guard_signals();
   migrate_data_dir();
   lg("==== omega_redirect avvio ====");
   { int v = sys_lang(); i18n_init(v); lg("lingua: %s (valore di sistema %d)", i18n_code(), v); }

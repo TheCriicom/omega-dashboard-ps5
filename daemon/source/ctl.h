@@ -6,3 +6,4 @@ int ctl_start(int port, const char *data_dir);   // data_dir: remote.json (PIN) 
 // stato del sistema per /v1/system, scritto come oggetto JSON in out
 typedef void (*ctl_system_fn)(char *out, size_t n);
 void ctl_on_system(ctl_system_fn fn);
+const char *ctl_last_request(void);              // per il log dei crash (metodo e percorso, senza query)

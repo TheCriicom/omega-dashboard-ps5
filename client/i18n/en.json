@@ -955,5 +955,6 @@
   "CARTELLA": "FOLDER",
   "Cartella non valida: manca il Title ID": "Invalid folder: the Title ID is missing",
   "Copia non riuscita": "Copy failed",
-  "Copia sulla console": "Copying to the console"
+  "Copia sulla console": "Copying to the console",
+  "Musica e telecomando usano già la nuova versione": "Music and the remote already use the new version"
 }

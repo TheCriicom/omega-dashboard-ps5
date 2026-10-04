@@ -955,5 +955,6 @@
   "CARTELLA": "文件夹",
   "Cartella non valida: manca il Title ID": "文件夹无效：缺少 Title ID",
   "Copia non riuscita": "复制失败",
-  "Copia sulla console": "正在复制到主机"
+  "Copia sulla console": "正在复制到主机",
+  "Musica e telecomando usano già la nuova versione": "音乐和遥控已在使用新版本"
 }

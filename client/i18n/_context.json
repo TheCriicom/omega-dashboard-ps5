@@ -9,20 +9,20 @@
   "%.0f MB": {
     "where": [
       "omega-ui-src/source/store.c:619",
-      "omega-ui-src/source/system.c:188"
+      "omega-ui-src/source/system.c:210"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: f; unit or abbreviation: use the usual short form of your language"
   },
   "%.0f MB liberi": {
     "where": [
-      "omega-ui-src/source/system.c:204"
+      "omega-ui-src/source/system.c:226"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: f; unit or abbreviation: use the usual short form of your language"
   },
   "%.1f GB": {
     "where": [
       "omega-ui-src/source/store.c:618",
-      "omega-ui-src/source/system.c:187"
+      "omega-ui-src/source/system.c:209"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: f; unit or abbreviation: use the usual short form of your language"
   },
@@ -41,7 +41,7 @@
   },
   "%.2f TB": {
     "where": [
-      "omega-ui-src/source/system.c:186"
+      "omega-ui-src/source/system.c:208"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: f"
   },
@@ -201,19 +201,19 @@
   },
   "%d °C": {
     "where": [
-      "omega-ui-src/source/system.c:147"
+      "omega-ui-src/source/system.c:169"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "%d °C — più fresca, più rumorosa": {
     "where": [
-      "omega-ui-src/source/system.c:147"
+      "omega-ui-src/source/system.c:169"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "%d °C — più silenziosa": {
     "where": [
-      "omega-ui-src/source/system.c:147"
+      "omega-ui-src/source/system.c:169"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -261,7 +261,7 @@
   },
   "%lld KB": {
     "where": [
-      "omega-ui-src/source/system.c:484"
+      "omega-ui-src/source/system.c:506"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: lld; unit or abbreviation: use the usual short form of your language"
   },
@@ -323,7 +323,7 @@
   },
   "%s liberi di %s": {
     "where": [
-      "omega-ui-src/source/system.c:220"
+      "omega-ui-src/source/system.c:242"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
@@ -416,7 +416,7 @@
   },
   "Accendere l'avvio automatico di Payload Manager": {
     "where": [
-      "omega-ui-src/source/hen.c:234"
+      "omega-ui-src/source/hen.c:245"
     ]
   },
   "Accesso in corso...": {
@@ -518,7 +518,7 @@
   },
   "Aggiungere la pagina Omega al Toolbox di OnionHEN (menu durante il gioco)": {
     "where": [
-      "omega-ui-src/source/hen.c:241"
+      "omega-ui-src/source/hen.c:252"
     ]
   },
   "Aggiungi": {
@@ -812,7 +812,7 @@
       "omega-ui-src/source/panels.c:186",
       "omega-ui-src/source/panels.c:576",
       "omega-ui-src/source/store.c:1233",
-      "omega-ui-src/source/system.c:489"
+      "omega-ui-src/source/system.c:511"
     ],
     "kind": [
       "hint"
@@ -832,23 +832,23 @@
   },
   "Aprire il Toolbox anche in gioco tenendo premuti L2+R3": {
     "where": [
-      "omega-ui-src/source/hen.c:245"
+      "omega-ui-src/source/hen.c:256"
     ]
   },
   "Archivi": {
     "where": [
-      "omega-ui-src/source/system.c:214"
+      "omega-ui-src/source/system.c:236"
     ]
   },
   "Archivio M.2": {
     "where": [
-      "omega-ui-src/source/system.c:93"
+      "omega-ui-src/source/system.c:115"
     ]
   },
   "Archivio della console": {
     "where": [
-      "omega-ui-src/source/system.c:92",
-      "omega-ui-src/source/system.c:97"
+      "omega-ui-src/source/system.c:114",
+      "omega-ui-src/source/system.c:119"
     ]
   },
   "Archivio esteso": {
@@ -858,7 +858,7 @@
   },
   "Archivio esteso USB": {
     "where": [
-      "omega-ui-src/source/system.c:94"
+      "omega-ui-src/source/system.c:116"
     ]
   },
   "Artisti": {
@@ -895,7 +895,7 @@
   },
   "Attivare la pagina Omega a ogni accensione": {
     "where": [
-      "omega-ui-src/source/hen.c:243"
+      "omega-ui-src/source/hen.c:254"
     ]
   },
   "Attività": {
@@ -915,7 +915,7 @@
   },
   "Attivo dal prossimo riavvio della console": {
     "where": [
-      "omega-ui-src/source/update.c:195"
+      "omega-ui-src/source/update.c:223"
     ],
     "kind": [
       "toast"
@@ -1007,7 +1007,7 @@
   },
   "Avviarlo da solo a ogni accensione (con %s)": {
     "where": [
-      "omega-ui-src/source/hen.c:237"
+      "omega-ui-src/source/hen.c:248"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -1134,7 +1134,7 @@
   },
   "C'è già una copia in corso": {
     "where": [
-      "omega-ui-src/source/system.c:418"
+      "omega-ui-src/source/system.c:440"
     ],
     "kind": [
       "message"
@@ -1249,7 +1249,7 @@
   },
   "Cartella creata": {
     "where": [
-      "omega-ui-src/source/system.c:453"
+      "omega-ui-src/source/system.c:475"
     ],
     "kind": [
       "message",
@@ -1269,7 +1269,7 @@
   },
   "Cartella vuota o non leggibile": {
     "where": [
-      "omega-ui-src/source/system.c:486"
+      "omega-ui-src/source/system.c:508"
     ]
   },
   "Categoria": {
@@ -1387,14 +1387,14 @@
   },
   "Chiavetta USB %d": {
     "where": [
-      "omega-ui-src/source/system.c:95"
+      "omega-ui-src/source/system.c:117"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Chiavetta USB 1": {
     "where": [
       "omega-ui-src/source/music.c:453",
-      "omega-ui-src/source/system.c:98"
+      "omega-ui-src/source/system.c:120"
     ]
   },
   "Chiavetta USB 2": {
@@ -1574,7 +1574,7 @@
   },
   "Componenti per il jailbreak": {
     "where": [
-      "omega-ui-src/source/system.c:246"
+      "omega-ui-src/source/system.c:268"
     ]
   },
   "Conferma": {
@@ -1617,7 +1617,7 @@
   },
   "Console": {
     "where": [
-      "omega-ui-src/source/system.c:231"
+      "omega-ui-src/source/system.c:253"
     ]
   },
   "Contatti e visibilità": {
@@ -1676,12 +1676,12 @@
   },
   "Copia": {
     "where": [
-      "omega-ui-src/source/system.c:520"
+      "omega-ui-src/source/system.c:542"
     ]
   },
   "Copia completata": {
     "where": [
-      "omega-ui-src/source/system.c:400"
+      "omega-ui-src/source/system.c:422"
     ],
     "kind": [
       "message"
@@ -1696,7 +1696,7 @@
   },
   "Copia non riuscita (spazio o permessi)": {
     "where": [
-      "omega-ui-src/source/system.c:400"
+      "omega-ui-src/source/system.c:422"
     ],
     "kind": [
       "message"
@@ -1711,7 +1711,7 @@
   },
   "Copiato: scegli la cartella e premi △": {
     "where": [
-      "omega-ui-src/source/system.c:441"
+      "omega-ui-src/source/system.c:463"
     ],
     "kind": [
       "message"
@@ -1720,7 +1720,7 @@
   },
   "Copio %s": {
     "where": [
-      "omega-ui-src/source/system.c:423"
+      "omega-ui-src/source/system.c:445"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -1824,7 +1824,7 @@
   },
   "Da spostare: scegli la cartella e premi △": {
     "where": [
-      "omega-ui-src/source/system.c:442"
+      "omega-ui-src/source/system.c:464"
     ],
     "kind": [
       "message"
@@ -1849,7 +1849,7 @@
   },
   "Dal telefono, sulla stessa rete: http://%s:9095": {
     "where": [
-      "omega-ui-src/source/system.c:261"
+      "omega-ui-src/source/system.c:283"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -1935,7 +1935,7 @@
   },
   "Ecco cosa è stato fatto:": {
     "where": [
-      "omega-ui-src/source/hen.c:350"
+      "omega-ui-src/source/hen.c:361"
     ]
   },
   "Effetti sonori: attivi": {
@@ -1965,8 +1965,8 @@
       "omega-ui-src/source/home.c:902",
       "omega-ui-src/source/store.c:1300",
       "omega-ui-src/source/store.c:1310",
-      "omega-ui-src/source/system.c:458",
-      "omega-ui-src/source/system.c:520"
+      "omega-ui-src/source/system.c:480",
+      "omega-ui-src/source/system.c:542"
     ],
     "kind": [
       "confirm"
@@ -1999,7 +1999,7 @@
   },
   "Eliminare definitivamente questo elemento?": {
     "where": [
-      "omega-ui-src/source/system.c:458"
+      "omega-ui-src/source/system.c:480"
     ],
     "kind": [
       "confirm"
@@ -2042,7 +2042,7 @@
   "Eliminato": {
     "where": [
       "omega-ui-src/source/community.c:195",
-      "omega-ui-src/source/system.c:433"
+      "omega-ui-src/source/system.c:455"
     ],
     "kind": [
       "message"
@@ -2052,7 +2052,7 @@
   "Eliminazione non riuscita": {
     "where": [
       "omega-ui-src/source/account.c:140",
-      "omega-ui-src/source/system.c:433"
+      "omega-ui-src/source/system.c:455"
     ],
     "kind": [
       "message"
@@ -2194,7 +2194,7 @@
     "where": [
       "omega-ui-src/source/community.c:174",
       "omega-ui-src/source/community.c:285",
-      "omega-ui-src/source/hen.c:339",
+      "omega-ui-src/source/hen.c:350",
       "omega-ui-src/source/social.c:370"
     ],
     "kind": [
@@ -2206,8 +2206,8 @@
     "where": [
       "omega-ui-src/source/music.c:451",
       "omega-ui-src/source/music.c:705",
-      "omega-ui-src/source/system.c:468",
-      "omega-ui-src/source/system.c:521"
+      "omega-ui-src/source/system.c:490",
+      "omega-ui-src/source/system.c:543"
     ],
     "kind": [
       "menu"
@@ -2230,7 +2230,7 @@
   },
   "Firmware %s": {
     "where": [
-      "omega-ui-src/source/system.c:232"
+      "omega-ui-src/source/system.c:254"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -2263,7 +2263,7 @@
   },
   "Gestore dei file": {
     "where": [
-      "omega-ui-src/source/system.c:246"
+      "omega-ui-src/source/system.c:268"
     ]
   },
   "Gioca": {
@@ -2572,7 +2572,7 @@
   },
   "Il lettore musicale non risponde": {
     "where": [
-      "omega-ui-src/source/system.c:271"
+      "omega-ui-src/source/system.c:293"
     ],
     "kind": [
       "message"
@@ -2629,7 +2629,7 @@
   },
   "Il servizio era già attivo.": {
     "where": [
-      "omega-ui-src/source/hen.c:360"
+      "omega-ui-src/source/hen.c:371"
     ]
   },
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": {
@@ -2644,7 +2644,7 @@
   },
   "Il servizio è già partito.": {
     "where": [
-      "omega-ui-src/source/hen.c:360"
+      "omega-ui-src/source/hen.c:371"
     ]
   },
   "Il sito non risponde (tempo scaduto).": {
@@ -2700,7 +2700,7 @@
   },
   "Impossibile creare la cartella": {
     "where": [
-      "omega-ui-src/source/system.c:453"
+      "omega-ui-src/source/system.c:475"
     ],
     "kind": [
       "message",
@@ -2710,12 +2710,12 @@
   },
   "Impossibile impostare la ventola su questa console": {
     "where": [
-      "omega-ui-src/source/system.c:140"
+      "omega-ui-src/source/system.c:162"
     ]
   },
   "Impossibile rinominare": {
     "where": [
-      "omega-ui-src/source/system.c:448"
+      "omega-ui-src/source/system.c:470"
     ],
     "kind": [
       "message"
@@ -2781,7 +2781,7 @@
   },
   "In gioco: tieni premuti L2+R3, poi Toolbox › Plugin › Omega.": {
     "where": [
-      "omega-ui-src/source/hen.c:363"
+      "omega-ui-src/source/hen.c:374"
     ],
     "kind": [
       "wrapped"
@@ -2814,7 +2814,7 @@
   },
   "Incolla qui": {
     "where": [
-      "omega-ui-src/source/system.c:491"
+      "omega-ui-src/source/system.c:513"
     ]
   },
   "Indietro": {
@@ -2835,7 +2835,7 @@
       "omega-ui-src/source/remote.c:123",
       "omega-ui-src/source/store.c:1234",
       "omega-ui-src/source/store.c:1239",
-      "omega-ui-src/source/system.c:265"
+      "omega-ui-src/source/system.c:287"
     ],
     "kind": [
       "hint"
@@ -2855,7 +2855,7 @@
   },
   "Indirizzo IP": {
     "where": [
-      "omega-ui-src/source/system.c:210"
+      "omega-ui-src/source/system.c:232"
     ]
   },
   "Indirizzo del server (es. http://192.168.1.10:4533)": {
@@ -2948,12 +2948,12 @@
   },
   "Installa e attiva": {
     "where": [
-      "omega-ui-src/source/hen.c:371"
+      "omega-ui-src/source/hen.c:382"
     ]
   },
   "Installare il servizio di Omega (musica, notifiche, telecomando) in %s": {
     "where": [
-      "omega-ui-src/source/hen.c:228"
+      "omega-ui-src/source/hen.c:239"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -3136,13 +3136,13 @@
   },
   "Jailbreak rilevato: %s": {
     "where": [
-      "omega-ui-src/source/hen.c:342"
+      "omega-ui-src/source/hen.c:353"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Jailbreak: %s": {
     "where": [
-      "omega-ui-src/source/system.c:234"
+      "omega-ui-src/source/system.c:256"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -3296,12 +3296,12 @@
   },
   "Lettore musicale": {
     "where": [
-      "omega-ui-src/source/system.c:102"
+      "omega-ui-src/source/system.c:124"
     ]
   },
   "Lettore musicale fermato e coda svuotata": {
     "where": [
-      "omega-ui-src/source/system.c:271"
+      "omega-ui-src/source/system.c:293"
     ],
     "kind": [
       "message"
@@ -3442,7 +3442,7 @@
   },
   "Memoria": {
     "where": [
-      "omega-ui-src/source/system.c:209"
+      "omega-ui-src/source/system.c:231"
     ]
   },
   "Memoria insufficiente": {
@@ -3635,6 +3635,15 @@
     ],
     "hint": "PS5 system notification"
   },
+  "Musica e telecomando usano già la nuova versione": {
+    "where": [
+      "omega-ui-src/source/update.c:222"
+    ],
+    "kind": [
+      "toast"
+    ],
+    "hint": "notification popup: one line, truncated with …"
+  },
   "Musica in Omega": {
     "where": [
       "omega-ui-src/source/music.c:455"
@@ -3680,7 +3689,7 @@
   },
   "Nessun archivio leggibile": {
     "where": [
-      "omega-ui-src/source/system.c:227"
+      "omega-ui-src/source/system.c:249"
     ]
   },
   "Nessun brano": {
@@ -3694,7 +3703,7 @@
   },
   "Nessun caricatore rilevato (OnionHEN, etaHEN, Payload Manager)": {
     "where": [
-      "omega-ui-src/source/hen.c:341"
+      "omega-ui-src/source/hen.c:352"
     ]
   },
   "Nessun contenuto da avviare (mancano i file, es. ROM o dati del gioco?)": {
@@ -3871,7 +3880,7 @@
   },
   "No, solo come app": {
     "where": [
-      "omega-ui-src/source/hen.c:327"
+      "omega-ui-src/source/hen.c:338"
     ]
   },
   "Nome del gruppo": {
@@ -3903,7 +3912,7 @@
   },
   "Nome della cartella": {
     "where": [
-      "omega-ui-src/source/system.c:453"
+      "omega-ui-src/source/system.c:475"
     ],
     "kind": [
       "message",
@@ -3927,7 +3936,7 @@
   },
   "Non chiedere più": {
     "where": [
-      "omega-ui-src/source/hen.c:371"
+      "omega-ui-src/source/hen.c:382"
     ]
   },
   "Non disturbare": {
@@ -3970,7 +3979,7 @@
   },
   "Non ora": {
     "where": [
-      "omega-ui-src/source/hen.c:371"
+      "omega-ui-src/source/hen.c:382"
     ]
   },
   "Non puoi aggiungere te stesso": {
@@ -4047,7 +4056,7 @@
   },
   "Nuova cartella": {
     "where": [
-      "omega-ui-src/source/system.c:520"
+      "omega-ui-src/source/system.c:542"
     ]
   },
   "Nuova copertina": {
@@ -4082,7 +4091,7 @@
   },
   "Nuovo nome": {
     "where": [
-      "omega-ui-src/source/system.c:446"
+      "omega-ui-src/source/system.c:468"
     ],
     "kind": [
       "keyboard-title"
@@ -4091,7 +4100,7 @@
   },
   "OK": {
     "where": [
-      "omega-ui-src/source/hen.c:370"
+      "omega-ui-src/source/hen.c:381"
     ]
   },
   "Offline": {
@@ -4124,7 +4133,7 @@
   },
   "Omega %s è stato scaricato e installato. Riavviare ora per usarlo?": {
     "where": [
-      "omega-ui-src/source/update.c:200"
+      "omega-ui-src/source/update.c:228"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -4140,7 +4149,7 @@
   },
   "Omega come Home?": {
     "where": [
-      "omega-ui-src/source/hen.c:323"
+      "omega-ui-src/source/hen.c:334"
     ]
   },
   "Omega non risponde": {
@@ -4154,7 +4163,7 @@
   },
   "Omega resta un'app: la apri tu da websrv quando vuoi": {
     "where": [
-      "omega-ui-src/source/hen.c:391"
+      "omega-ui-src/source/hen.c:402"
     ],
     "kind": [
       "message"
@@ -4163,7 +4172,7 @@
   },
   "Omega sarà la tua Home: si apre all'avvio e quando torni alla Home": {
     "where": [
-      "omega-ui-src/source/hen.c:391"
+      "omega-ui-src/source/hen.c:402"
     ],
     "kind": [
       "message"
@@ -4295,7 +4304,7 @@
       "omega-ui-src/source/community.c:697",
       "omega-ui-src/source/panels.c:399",
       "omega-ui-src/source/store.c:1242",
-      "omega-ui-src/source/system.c:490"
+      "omega-ui-src/source/system.c:512"
     ]
   },
   "Opzioni di alimentazione": {
@@ -4430,7 +4439,7 @@
   },
   "Per far funzionare Omega al meglio installo e attivo:": {
     "where": [
-      "omega-ui-src/source/hen.c:350"
+      "omega-ui-src/source/hen.c:361"
     ]
   },
   "Per nome della stazione": {
@@ -4536,7 +4545,7 @@
   },
   "Prepariamo la console": {
     "where": [
-      "omega-ui-src/source/hen.c:339"
+      "omega-ui-src/source/hen.c:350"
     ]
   },
   "Preparo la coda...": {
@@ -4572,7 +4581,7 @@
   },
   "Processore": {
     "where": [
-      "omega-ui-src/source/system.c:206"
+      "omega-ui-src/source/system.c:228"
     ]
   },
   "Profilo": {
@@ -4656,7 +4665,7 @@
   },
   "Puoi cambiare idea quando vuoi in Impostazioni › Omega come Home.": {
     "where": [
-      "omega-ui-src/source/hen.c:326"
+      "omega-ui-src/source/hen.c:337"
     ],
     "kind": [
       "wrapped"
@@ -4736,7 +4745,7 @@
   },
   "Qui non si possono creare cartelle": {
     "where": [
-      "omega-ui-src/source/system.c:452"
+      "omega-ui-src/source/system.c:474"
     ],
     "kind": [
       "message"
@@ -4745,7 +4754,7 @@
   },
   "Qui non si possono eliminare file": {
     "where": [
-      "omega-ui-src/source/system.c:456"
+      "omega-ui-src/source/system.c:478"
     ],
     "kind": [
       "message"
@@ -4754,7 +4763,7 @@
   },
   "Qui non si possono incollare file": {
     "where": [
-      "omega-ui-src/source/system.c:417"
+      "omega-ui-src/source/system.c:439"
     ],
     "kind": [
       "message"
@@ -4763,7 +4772,7 @@
   },
   "Qui non si possono rinominare file": {
     "where": [
-      "omega-ui-src/source/system.c:444"
+      "omega-ui-src/source/system.c:466"
     ],
     "kind": [
       "message"
@@ -4772,7 +4781,7 @@
   },
   "Qui non si possono spostare file": {
     "where": [
-      "omega-ui-src/source/system.c:442"
+      "omega-ui-src/source/system.c:464"
     ],
     "kind": [
       "message"
@@ -4844,7 +4853,7 @@
   },
   "Riavvia": {
     "where": [
-      "omega-ui-src/source/update.c:201"
+      "omega-ui-src/source/update.c:229"
     ],
     "kind": [
       "confirm"
@@ -4853,7 +4862,7 @@
   },
   "Riavvia Omega per usare la nuova versione": {
     "where": [
-      "omega-ui-src/source/update.c:186"
+      "omega-ui-src/source/update.c:212"
     ],
     "kind": [
       "message"
@@ -4862,12 +4871,12 @@
   },
   "Riavvia il lettore musicale": {
     "where": [
-      "omega-ui-src/source/system.c:246"
+      "omega-ui-src/source/system.c:268"
     ]
   },
   "Riavvia la console per attivare tutto.": {
     "where": [
-      "omega-ui-src/source/hen.c:360"
+      "omega-ui-src/source/hen.c:371"
     ]
   },
   "Ricarica": {
@@ -5024,12 +5033,12 @@
   "Rinomina": {
     "where": [
       "omega-ui-src/source/community.c:320",
-      "omega-ui-src/source/system.c:520"
+      "omega-ui-src/source/system.c:542"
     ]
   },
   "Rinominato": {
     "where": [
-      "omega-ui-src/source/system.c:448"
+      "omega-ui-src/source/system.c:470"
     ],
     "kind": [
       "message"
@@ -5128,11 +5137,11 @@
   },
   "Scegli": {
     "where": [
-      "omega-ui-src/source/hen.c:335",
-      "omega-ui-src/source/hen.c:381",
+      "omega-ui-src/source/hen.c:346",
+      "omega-ui-src/source/hen.c:392",
       "omega-ui-src/source/music.c:839",
       "omega-ui-src/source/store.c:1238",
-      "omega-ui-src/source/system.c:265"
+      "omega-ui-src/source/system.c:287"
     ],
     "kind": [
       "hint"
@@ -5181,7 +5190,7 @@
   },
   "Scegli un'altra cartella": {
     "where": [
-      "omega-ui-src/source/system.c:422"
+      "omega-ui-src/source/system.c:444"
     ],
     "kind": [
       "message"
@@ -5308,7 +5317,7 @@
   },
   "Se preferisci di no, Omega resta un'app come le altre: la apri tu da websrv quando ti serve. Musica, notifiche durante i giochi e telecomando funzionano in tutti e due i casi.": {
     "where": [
-      "omega-ui-src/source/hen.c:325"
+      "omega-ui-src/source/hen.c:336"
     ],
     "kind": [
       "wrapped"
@@ -5317,7 +5326,7 @@
   },
   "Se vuoi, Omega prende il posto della Home della console: si apre all'accensione e ogni volta che torni alla Home.": {
     "where": [
-      "omega-ui-src/source/hen.c:324"
+      "omega-ui-src/source/hen.c:335"
     ],
     "kind": [
       "wrapped"
@@ -5425,7 +5434,7 @@
       "omega-ui-src/source/panels.c:934",
       "omega-ui-src/source/panels.c:1041",
       "omega-ui-src/source/store.c:1233",
-      "omega-ui-src/source/system.c:489"
+      "omega-ui-src/source/system.c:511"
     ],
     "kind": [
       "hint"
@@ -5435,7 +5444,7 @@
   },
   "Senza un caricatore il servizio di Omega non parte da solo all'accensione: musica, notifiche durante i giochi e telecomando funzionano solo dopo averlo avviato a mano. Installa OnionHEN, etaHEN o Payload Manager e riapri questa schermata da Impostazioni › Sistema e strumenti.": {
     "where": [
-      "omega-ui-src/source/hen.c:347"
+      "omega-ui-src/source/hen.c:358"
     ],
     "kind": [
       "wrapped"
@@ -5560,12 +5569,13 @@
   },
   "Servizi": {
     "where": [
-      "omega-ui-src/source/system.c:237"
+      "omega-ui-src/source/system.c:259"
     ]
   },
   "Servizio Omega aggiornato": {
     "where": [
-      "omega-ui-src/source/update.c:195"
+      "omega-ui-src/source/update.c:222",
+      "omega-ui-src/source/update.c:223"
     ],
     "kind": [
       "toast"
@@ -5593,7 +5603,7 @@
   },
   "Si modificano solo i file di Omega e, se serve, l'impostazione del caricatore. Puoi rifarlo quando vuoi da Impostazioni › Sistema e strumenti.": {
     "where": [
-      "omega-ui-src/source/hen.c:365"
+      "omega-ui-src/source/hen.c:376"
     ],
     "kind": [
       "wrapped"
@@ -5621,7 +5631,7 @@
   },
   "Sistema": {
     "where": [
-      "omega-ui-src/source/system.c:197"
+      "omega-ui-src/source/system.c:219"
     ]
   },
   "Sistema e strumenti": {
@@ -5631,7 +5641,7 @@
   },
   "SoC": {
     "where": [
-      "omega-ui-src/source/system.c:207"
+      "omega-ui-src/source/system.c:229"
     ]
   },
   "Software libero — GPL-3.0-or-later": {
@@ -5641,8 +5651,8 @@
   },
   "Soglia della ventola": {
     "where": [
-      "omega-ui-src/source/system.c:152",
-      "omega-ui-src/source/system.c:246"
+      "omega-ui-src/source/system.c:174",
+      "omega-ui-src/source/system.c:268"
     ],
     "kind": [
       "menu"
@@ -5651,7 +5661,7 @@
   },
   "Soglia della ventola: quella di sistema al prossimo riavvio": {
     "where": [
-      "omega-ui-src/source/system.c:135"
+      "omega-ui-src/source/system.c:157"
     ],
     "kind": [
       "message"
@@ -5660,7 +5670,7 @@
   },
   "Sola lettura": {
     "where": [
-      "omega-ui-src/source/system.c:471"
+      "omega-ui-src/source/system.c:493"
     ]
   },
   "Solo amici": {
@@ -5706,17 +5716,17 @@
   },
   "Sposta": {
     "where": [
-      "omega-ui-src/source/system.c:520"
+      "omega-ui-src/source/system.c:542"
     ]
   },
   "Sposta qui": {
     "where": [
-      "omega-ui-src/source/system.c:491"
+      "omega-ui-src/source/system.c:513"
     ]
   },
   "Sposto %s": {
     "where": [
-      "omega-ui-src/source/system.c:423"
+      "omega-ui-src/source/system.c:445"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -5801,7 +5811,7 @@
   },
   "Su di un livello": {
     "where": [
-      "omega-ui-src/source/system.c:492"
+      "omega-ui-src/source/system.c:514"
     ]
   },
   "Suggeriti": {
@@ -5821,13 +5831,13 @@
   },
   "Sì, usa Omega come Home": {
     "where": [
-      "omega-ui-src/source/hen.c:327"
+      "omega-ui-src/source/hen.c:338"
     ]
   },
   "Telecomando dal telefono": {
     "where": [
       "omega-ui-src/source/remote.c:89",
-      "omega-ui-src/source/system.c:246"
+      "omega-ui-src/source/system.c:268"
     ]
   },
   "Tema": {
@@ -5986,7 +5996,7 @@
   },
   "Togliere Omega dagli altri caricatori, perché non parta due volte": {
     "where": [
-      "omega-ui-src/source/hen.c:247"
+      "omega-ui-src/source/hen.c:258"
     ]
   },
   "Togliere questo gioco dalla libreria? Il gioco installato resta.": {
@@ -6110,7 +6120,7 @@
   },
   "Tutto a posto: i componenti di Omega sono già installati e attivi": {
     "where": [
-      "omega-ui-src/source/hen.c:305"
+      "omega-ui-src/source/hen.c:316"
     ],
     "kind": [
       "message"
@@ -6182,7 +6192,7 @@
   },
   "Usa quella di sistema": {
     "where": [
-      "omega-ui-src/source/system.c:150"
+      "omega-ui-src/source/system.c:172"
     ]
   },
   "Usa un avatar Omega (illustrato o colore)": {
@@ -6253,7 +6263,7 @@
   },
   "Va bene: puoi farlo quando vuoi da Impostazioni › Sistema e strumenti": {
     "where": [
-      "omega-ui-src/source/hen.c:404"
+      "omega-ui-src/source/hen.c:415"
     ],
     "kind": [
       "message"
@@ -6272,12 +6282,12 @@
   },
   "Ventola": {
     "where": [
-      "omega-ui-src/source/system.c:208"
+      "omega-ui-src/source/system.c:230"
     ]
   },
   "Ventola: accelera sopra %d °C": {
     "where": [
-      "omega-ui-src/source/system.c:139"
+      "omega-ui-src/source/system.c:161"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },

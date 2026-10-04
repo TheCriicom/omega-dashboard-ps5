@@ -69,6 +69,17 @@ const char *hen_name(void) {
 }
 
 // dove installare un payload dello Store (cartella piatta per i due HEN)
+// il servizio attivo, ovunque l'abbia messo la configurazione (o un'installazione vecchia)
+int hen_daemon_path(char *out, size_t n) {
+  static const char *paths[] = {
+    OMEGA_SYSROOT "/data/OnionHEN/payloads/omega_redirect.elf", OMEGA_SYSROOT "/data/etaHEN/payloads/omega_redirect.elf",
+    OMEGA_SYSROOT "/data/etaHEN/plugins/omega_redirect.elf", OMEGA_PLD_ROOT "/OmegaRedirect/omega_redirect.elf",
+    OMEGA_SYSROOT "/data/ps5_autoloader/omega_redirect.elf", NULL };
+  struct stat st;
+  for (int i = 0; paths[i]; i++) if (stat(paths[i], &st) == 0 && S_ISREG(st.st_mode)) { snprintf(out, n, "%s", paths[i]); return 1; }
+  return 0;
+}
+
 int hen_payload_dir(char *out, size_t n) {
   detect();
   if (owner == OWN_ONION) { snprintf(out, n, ONION "/payloads"); return 1; }

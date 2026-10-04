@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -31,6 +32,7 @@ static void fake_system(char *out, size_t n) {
 static void track(const char *t, const char *a) { player_log("ora suona: %s%s%s", t, a[0] ? " \xE2\x80\x94 " : "", a); }
 
 int main(int argc, char **argv) {
+  signal(SIGPIPE, SIG_IGN);   // come sulla console (main.c)
   player_init(argc > 1 ? argv[1] : "/tmp/omega-player.json");
   player_on_track(track);
   static char dir[300]; snprintf(dir, sizeof dir, "%s", argc > 1 ? argv[1] : "/tmp/omega-player.json");

@@ -186,6 +186,7 @@ static void on_event(const onion_ui_event_v1 *e) {
 
 int main(void) {
   signal(SIGINT, stop); signal(SIGTERM, stop);
+  signal(SIGPIPE, SIG_IGN);   // il servizio può chiudere la connessione: non deve chiudere il plugin
   int lang = -1; if (sceSystemServiceParamGetInt(1, &lang) != 0) lang = -1;
   i18n_init(lang);
   lg("==== Omega per OnionHEN avvio ====");

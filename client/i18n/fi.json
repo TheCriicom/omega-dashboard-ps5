@@ -955,5 +955,6 @@
   "CARTELLA": "KANSIO",
   "Cartella non valida: manca il Title ID": "Virheellinen kansio: Title ID puuttuu",
   "Copia non riuscita": "Kopiointi epäonnistui",
-  "Copia sulla console": "Kopioidaan konsoliin"
+  "Copia sulla console": "Kopioidaan konsoliin",
+  "Musica e telecomando usano già la nuova versione": "Musiikki ja kaukosäädin käyttävät jo uutta versiota"
 }

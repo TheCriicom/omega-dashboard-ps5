@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} zaprasza Cię do znajomych",
+    "friend_accept": "{actor}: zaproszenie do znajomych przyjęte",
+    "party_invite": "{actor} zaprasza Cię na party",
+    "post_like": "{actor} lubi Twój post",
+    "post_comment": "{actor} komentuje Twój post",
+    "store_comment": "{actor} komentuje {app}",
+    "game_invite": "{actor} zaprasza Cię do gry",
+    "game_start": "{actor} gra w {game}",
+    "online": "{actor} jest online",
+    "admin_report": "Zgłoszenie: {title}",
+    "admin_social_report": "Zgłoszenie: {kind} {title}",
+    "report_on_comment": " (komentarz)",
+    "report_hidden": " — ukryto"
+  },
+  "report_kind": {
+    "user": "użytkownik",
+    "post": "post",
+    "post_comment": "komentarz"
+  },
+  "report_reason": {
+    "pirateria": "piractwo",
+    "malware": "złośliwe oprogramowanie",
+    "contenuto_offensivo": "obraźliwe treści",
+    "spam": "spam",
+    "link_rotto": "niedziałający link",
+    "molestie": "nękanie",
+    "impersonificazione": "podszywanie się",
+    "altro": "inne"
+  },
+  "web": {
+    "documents": "Dokumenty",
+    "privacy": "Prywatność",
+    "terms": "Warunki korzystania",
+    "licenses": "Licencje",
+    "source": "Kod źródłowy",
+    "language": "Język",
+    "developed_by": "Twórca: {developer}",
+    "source_intro": "Aplikacja Omega na konsolę jest wolnym oprogramowaniem: GNU General Public License w wersji 3 lub nowszej. Tutaj znajdziesz pełny kod źródłowy aplikacji i towarzyszącego jej demona wraz z instrukcjami kompilacji (build.sh).",
+    "source_download": "Pobierz omega-src.tar.gz",
+    "source_generated": "Archiwum jest generowane na bieżąco z kodu działającego na serwerze.",
+    "source_unavailable": "Archiwum jest chwilowo niedostępne."
+  },
+  "api": {
+    "description": "Konta, funkcje społecznościowe i Store z homebrew na konsolę. Niezależny projekt, niepowiązany z Sony."
+  }
+}

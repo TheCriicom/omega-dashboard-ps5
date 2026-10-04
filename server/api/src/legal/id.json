@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "Tentang terjemahan ini",
+    "body": "Ini adalah terjemahan dari teks asli berbahasa Italia yang disediakan untuk kemudahan. Jika terdapat perbedaan antara terjemahan ini dan versi berbahasa Italia, yang berlaku adalah versi berbahasa Italia."
+  },
+  "missing": "[akan dilengkapi]",
+  "fragments": {
+    "vat": ", Nomor PPN {vat}",
+    "hosting_at": " (penyedia hosting: {hosting})"
+  },
+  "privacy": {
+    "title": "Pemberitahuan privasi",
+    "sections": [
+      { "id": "controller", "title": "Siapa yang memproses data Anda", "body": "Pengendali data: {controller}. Kontak untuk urusan privasi dan untuk laporan: {email}. Omega adalah proyek independen: tidak terkait dengan Sony Interactive Entertainment dan tidak menggunakan akun maupun servernya." },
+      { "id": "data", "title": "Data apa saja yang kami kumpulkan", "body": "Akun: ID online, kata sandi (hanya disimpan sebagai hash scrypt, tidak pernah dalam bentuk teks biasa), email jika Anda memberikannya, avatar dan gambar sampul yang Anda unggah, teks profil, tanggal pendaftaran, dan login terakhir. Fitur sosial: pertemanan dan permintaan pertemanan, status online dan judul yang sedang Anda gunakan (dikirim oleh konsol Anda saat Anda bermain), aktivitas terbaru, pesan langsung, obrolan dan undangan party, notifikasi. Store: homebrew yang Anda publikasikan, komentar, suka/tidak suka, penilaian, laporan, jumlah instalasi. Pustaka pribadi: alamat file JSON Anda dan daftar judul yang ada di dalamnya (nama, gambar, tautan). Data teknis: untuk setiap permintaan ke server, kami mencatat alamat IP, tanggal dan waktu, jalur yang diminta (termasuk alamat halaman yang dibuka dengan browser Omega), hasil, dan waktu pemrosesan. Kata sandi, token, dan cookie disamarkan dan tidak pernah disimpan dalam log." },
+      { "id": "purposes", "title": "Untuk apa dan atas dasar hukum apa", "body": "Untuk menyediakan layanan yang Anda minta (akun, fitur sosial, Store, pustaka): pelaksanaan kontrak, Pasal 6 ayat (1) huruf b GDPR. Untuk keamanan, pencegahan penyalahgunaan, dan penanganan laporan: kepentingan yang sah dan kewajiban hukum terkait konten yang di-hosting, Pasal 6 ayat (1) huruf f dan huruf c. Kami tidak menggunakan data Anda untuk iklan atau pembuatan profil dan tidak menjualnya." },
+      { "id": "retention", "title": "Berapa lama", "body": "Log teknis permintaan dihapus setelah {days} hari. Data akun dan konten tetap tersimpan sampai Anda menghapus akun; sesi berakhir setelah 24 jam. Laporan yang telah ditutup dan catatan tindakan moderasi disimpan selama diperlukan untuk membuktikan cara konten ditangani." },
+      { "id": "recipients", "title": "Siapa yang dapat melihatnya", "body": "Pengguna lain dapat melihat profil publik Anda, apa yang Anda publikasikan, dan, jika Anda berteman dengan mereka, kehadiran serta aktivitas Anda. Pesan hanya dapat dilihat oleh penerimanya. Data disimpan di server yang dikelola oleh pengendali data{hosting_at}, yang bertindak sebagai prosesor data. Saat Anda menginstal homebrew atau membuka halaman web, konsol atau server kami terhubung ke situs yang meng-hosting file atau halaman tersebut: yang berlaku adalah pemberitahuan privasi situs itu." },
+      { "id": "rights", "title": "Hak-hak Anda", "body": "Anda dapat mengakses data Anda dan mengunduhnya (Pengaturan → Privasi dan data → Unduh data saya), memperbaikinya, menghapusnya (Hapus akun), menolak pemrosesannya, atau meminta pembatasannya, dengan menulis ke {email}. Anda juga dapat mengajukan pengaduan kepada otoritas pelindungan data pribadi Italia (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Usia minimum", "body": "Layanan ini hanya diperuntukkan bagi orang yang berusia minimal 14 tahun." },
+      { "id": "version", "title": "Versi", "body": "Terakhir diperbarui pada {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Ketentuan penggunaan",
+    "sections": [
+      { "id": "service", "title": "Layanan", "body": "Omega ({url}) menyediakan secara gratis akun, fitur sosial, dan Store homebrew untuk konsol yang penggunanya telah memasang perangkat lunak pihak ketiga secara sah. Layanan ini dikelola oleh {name}. Omega adalah proyek independen dan tidak berafiliasi dengan, disetujui, atau disponsori oleh Sony Interactive Entertainment. \"PlayStation\" dan \"PS5\" adalah merek dagang dari pemiliknya masing-masing." },
+      { "id": "risk", "title": "Penggunaan atas risiko Anda sendiri", "body": "Layanan dan homebrew di Store disediakan sebagaimana adanya. Memasang perangkat lunak tidak resmi dapat menyebabkan malfungsi, kehilangan data, atau hilangnya garansi konsol, dan sepenuhnya menjadi risiko Anda sendiri. Homebrew merupakan karya para pembuatnya masing-masing, dengan lisensinya sendiri." },
+      { "id": "prohibited", "title": "Apa yang tidak diperbolehkan", "body": "Memublikasikan atau membagikan konten yang haknya tidak Anda miliki — khususnya salinan game atau perangkat lunak komersial, tautan ke materi bajakan, alat untuk menembus perlindungannya demi tujuan pembajakan —, malware atau file berbahaya, konten yang melanggar hukum, menyinggung, atau menghasut kebencian, spam, penggunaan akun orang lain, atau upaya membahayakan keamanannya." },
+      { "id": "publishing", "title": "Memublikasikan di Store", "body": "Dengan memublikasikan, Anda menyatakan bahwa Anda adalah pembuat homebrew tersebut atau bahwa lisensinya mengizinkan pendistribusian ulang, dan bahwa tautannya mengarah ke file yang disebutkan tanpa modifikasi yang merugikan. Anda memberi kami izin untuk menampilkan nama, deskripsi, dan gambar di Store. File tetap berada di situs yang Anda tunjukkan: Omega hanya meng-hosting halaman informasinya." },
+      { "id": "library", "title": "Pustaka pribadi", "body": "Pustaka berfungsi untuk mengatur dan menginstal ulang cadangan judul yang Anda miliki secara sah, untuk penggunaan pribadi. Jangan menggunakannya untuk membagikan salinan kepada orang lain: file tetap berada di tempat Anda menyimpannya dan Omega tidak meng-hosting-nya." },
+      { "id": "moderation", "title": "Laporan dan moderasi", "body": "Anda dapat melaporkan homebrew atau komentar dari Store (Opsi → Laporkan) atau dengan menulis ke {email}. Kami meninjau laporan dan dapat menyembunyikan atau menghapus konten serta menangguhkan atau menutup akun yang melanggar ketentuan ini; konten dengan beberapa laporan disembunyikan sambil menunggu peninjauan." },
+      { "id": "liability", "title": "Tanggung jawab", "body": "Sejauh diizinkan oleh hukum, kami tidak bertanggung jawab atas kerugian yang timbul dari penggunaan homebrew atau dari tidak tersedianya layanan, yang dapat berubah atau dihentikan. Perlindungan bagi konsumen yang bersifat wajib menurut hukum tetap berlaku." },
+      { "id": "changes", "title": "Perubahan dan hukum yang berlaku", "body": "Jika ketentuan berubah, kami akan menanyakannya kembali kepada Anda di aplikasi. Yang berlaku adalah hukum Italia." },
+      { "id": "version", "title": "Versi", "body": "Ketentuan berlaku sejak {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Lisensi sumber terbuka",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Aplikasi Omega untuk konsol adalah perangkat lunak bebas yang didistribusikan dengan lisensi GNU GPL versi 3 atau yang lebih baru, tanpa jaminan apa pun. Kode sumber lengkapnya dapat diunduh dari {url}/source." },
+      { "id": "developer", "title": "Pengembang", "body": "Omega dikembangkan oleh {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Komponen yang digunakan oleh aplikasi", "body": "ps5-payload-sdk (GPL-3.0 atau yang lebih baru) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib dan minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Komponen yang digunakan oleh server", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 atau yang lebih baru) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Homebrew di Store", "body": "Setiap homebrew dalam katalog adalah proyek sumber terbuka dengan lisensinya sendiri, yang tercantum di halaman informasinya bersama situs web proyek tersebut." }
+    ]
+  }
+}

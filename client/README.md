@@ -5,8 +5,10 @@ di homebrew, community (bacheca, gruppi, classifiche), party con chat vocale,
 messaggi e browser. È un'app SDL2 a schermo intero, scritta in C, che parla con
 un server Omega via HTTP(S).
 
+Sviluppato da **TheCriicom** ([outlinedigital.it](https://outlinedigital.it)).
 Licenza GPL-3.0-or-later (`LICENSE`); componenti di terze parti in
-`THIRD-PARTY-NOTICES.md`.
+`THIRD-PARTY-NOTICES.md`. Crediti, versione e sorgente si vedono anche
+nell'app, in Impostazioni → Informazioni su Omega.
 
 ## Compilare per PS5
 
@@ -55,6 +57,40 @@ comando per riga, e cancella il file dopo averlo letto:
 
 Funziona anche sulla console: si carica il file via FTP.
 
+## Lingue
+
+L'app è tradotta in 27 lingue: `it en ja fr es de nl pt-PT pt-BR ru ko zh-Hans
+zh-Hant fi sv da nb pl tr cs hu el ro th vi id uk` (gli stessi codici valgono per
+i file, per le impostazioni e per l'header `Accept-Language`).
+
+- **Testi.** Nel sorgente ogni testo visibile è l'italiano esatto dentro `_()`
+  (`N_()` per gli elenchi statici, tradotti quando si disegnano; `P_("contesto",
+  "testo")` quando la stessa parola italiana ha due significati). `_()` ritorna la
+  traduzione o, se manca, l'italiano. I log (`omega_log`), le chiavi JSON e i
+  valori del server non si traducono.
+- **Cataloghi.** `i18n/<codice>.json` è un oggetto piatto `{ "msgid": "traduzione" }`;
+  `i18n/it.json` è l'elenco dei msgid e `i18n/_context.json` dice per ognuno
+  dove compare, che cos'è (pulsante, voce di menu, messaggio...) e quanto può
+  essere lungo. Una traduzione vuota o assente lascia l'italiano.
+- **Script** (Node, senza dipendenze):
+  - `node tools/i18n-extract.mjs` rilegge i sorgenti (UI, `omega-redirect-src`,
+    `omega-installer-src`), aggiorna `it.json` e `_context.json` e crea `{}` per
+    le lingue nuove (`--prune` toglie le chiavi non più usate);
+  - `node tools/i18n-gen.mjs` scrive `source/i18n_data.c` e gli `i18n_data.c`
+    del demone e dell'installer. Si ferma se un JSON non è valido o se una
+    traduzione non ha gli stessi specificatori printf del msgid (`%s %d %ld
+    %.1f %%`..., stesso ordine e tipo). `build.sh` e `desktop/build-desktop.sh`
+    lo eseguono se c'è Node; altrimenti si usa il file già generato.
+- **Scelta.** Impostazioni → Lingua: "Automatica (console)" segue la lingua di
+  sistema (`sceSystemServiceParamGetInt(1)`, il valore grezzo finisce nel log);
+  le altre voci valgono subito e si salvano in `OMEGA_DIR/lang.txt`. Sul
+  desktop la lingua automatica viene da `OMEGA_LANG` (es. `zh-Hant`) o da `LANG`.
+- **Font.** All'avvio si elencano i font di `/preinst/common/font/`: le stringhe
+  con caratteri che i font SST non hanno (giapponese, cinese, coreano, thai...)
+  si disegnano e si misurano col primo font che li ha; per il thai si imposta
+  lo script di HarfBuzz. Il cinese e il giapponese vanno a capo anche tra un
+  ideogramma e l'altro. Sul desktop si usano i font di macOS.
+
 ## Configurazione
 
 Macro da passare al compilatore (`-D`):
@@ -88,7 +124,7 @@ In `OMEGA_DIR` (sulla console `/data/Omega`):
 - `omega-redirect.log` — log del demone
 - `session.json` — token della sessione (mai la password)
 - `ui-active` — aggiornato ogni 2 s mentre la UI è in primo piano
-- `servers.json`, `theme.txt`, `audio.txt`, `browser-*.txt` — preferenze
+- `servers.json`, `theme.txt`, `audio.txt`, `lang.txt`, `browser-*.txt` — preferenze
 - `update/`, `update.json` — stato degli aggiornamenti (solo build ufficiale)
 
 ## Struttura del sorgente
@@ -101,18 +137,21 @@ In `OMEGA_DIR` (sulla console `/data/Omega`):
 | `net.c` | client HTTP(S) con SceHttp |
 | `async.c` | coda di rete e caricatore di immagini in background |
 | `json.c`, `json.h` | parser JSON minimo |
+| `i18n.c`, `i18n.h` | traduzioni: `_()`, scelta e rilevamento della lingua |
+| `i18n_data.c` | tabelle delle traduzioni, generate da `tools/i18n-gen.mjs` |
 | `util.c` | lettura file, codifica URL, FNV-1a, SHA-256 |
 | `session.c` | sessione salvata |
 | `servers.c`, `servers.h` | elenco dei server |
 | `ime.c` | tastiera di sistema (sceImeDialog) |
-| `gfx.c` | renderer: testo, forme, icone SDF, temi, sfondi, particelle |
+| `gfx.c` | renderer: testo (con i font di ripiego), forme, icone SDF, marchio, temi, sfondi, particelle |
+| `logo_png.c` | marchio di Omega (PNG incorporato) |
 | `avatar.c` | avatar personalizzati e illustrati |
 | `audio.c` | musica generativa ed effetti sintetizzati |
 | `voice.c` | voce del party (Opus su PS5, ADPCM sul desktop) |
 | `social.c` | amici, notifiche, party, chat, profilo, presenza |
 | `login.c` | splash, scelta dell'utente, accesso, registrazione |
 | `home.c` | home: giochi, homebrew, payload, notizie, attività |
-| `panels.c` | Centro di controllo, Game Base, notifiche, profilo, chat, ricerca, impostazioni |
+| `panels.c` | Centro di controllo, Game Base, notifiche, profilo, chat, ricerca, impostazioni, informazioni |
 | `community.c` | bacheca, gruppi, persone, tempo di gioco |
 | `store.c` | Store: homebrew, libreria, dettaglio, pubblicazione |
 | `install.c` | installazione di pkg, zip ed elf |

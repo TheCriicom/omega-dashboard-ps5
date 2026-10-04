@@ -1,36 +1,40 @@
-# Contribuire a Omega
+<sub>**English** · [Italiano](CONTRIBUTING.it.md)</sub>
 
-Grazie per l'interesse. Qualche indicazione per lavorare bene insieme.
+# Contributing to Omega
 
-## Prima di iniziare
+Thanks for your interest. A few guidelines so we can work well together.
 
-- Per un bug apri una issue con i passi per riprodurlo, la versione di Omega
-  (Impostazioni) e, se c'entra la console, le righe utili di
+## Before you start
+
+- For a bug, open an issue with the steps to reproduce it, the Omega version
+  (Settings) and, if the console is involved, the relevant lines of
   `/data/Omega/omega-ui.log`.
-- Per una funzione nuova apri prima una issue: ne parliamo e si evita lavoro
-  buttato.
+- For a new feature, open an issue first: we discuss it and avoid wasted
+  work.
 
-## Codice
+## Code
 
-- **App** (`client/`): C17, stile compatto come il codice esistente, commenti in
-  italiano e solo dove spiegano il perché. Prova le modifiche con la build
-  desktop (`client/desktop/build-desktop.sh`) e, se tocchi chiamate di sistema,
-  anche sulla console.
-- **Server** (`server/api/`): Node.js ≥ 20, CommonJS, nessuna dipendenza nuova
-  senza un buon motivo. Ogni rotta nuova va in `config/endpoints.json`; ogni
-  modifica allo schema è una nuova migrazione (quelle esistenti non si toccano).
-- I testi visibili all'utente sono in italiano.
-- `npm test` in `server/api` deve passare (vedi `server/README.md`).
+- **App** (`client/`): C17, compact style like the existing code, comments in
+  Italian and only where they explain the why. Test your changes with the
+  desktop build (`client/desktop/build-desktop.sh`) and, if you touch system
+  calls, on the console too.
+- **Server** (`server/api/`): Node.js ≥ 20, CommonJS, no new dependencies
+  without a good reason. Every new route goes in `config/endpoints.json`; every
+  schema change is a new migration (existing ones are never modified).
+- User-facing text is written in Italian in the code and wrapped in `_()`; translations live in
+  `client/i18n/<lang>.json`. Run `node client/tools/i18n-extract.mjs` after adding strings and
+  keep printf specifiers identical in every translation. New languages are welcome.
+- `npm test` in `server/api` must pass (see `server/README.md`).
 
-## Pull request
+## Pull requests
 
-- Una PR per argomento, con una descrizione di cosa cambia e perché.
-- Includi screenshot se cambia l'interfaccia (la build desktop ha il comando
-  `shot` nel file comandi).
-- Contribuendo accetti che il tuo codice sia distribuito con licenza
-  GPL-3.0-or-later.
+- One PR per topic, with a description of what changes and why.
+- Include screenshots if the interface changes (the desktop build has the
+  `shot` command in the command file).
+- By contributing, you agree that your code is distributed under the
+  GPL-3.0-or-later license.
 
-## Cosa non accettiamo
+## What we don't accept
 
-Codice per aggirare protezioni dei giochi a fini di pirateria, distribuzione di
-giochi o software commerciale, raccolta di credenziali o dati non necessari.
+Code to circumvent game protections for piracy, distribution of games or
+commercial software, collection of credentials or unnecessary data.

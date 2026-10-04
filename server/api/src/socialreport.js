@@ -7,12 +7,12 @@ const db = require('./db');
 const { HttpError } = require('./http');
 const config = require('./config');
 const { notifyAdmins } = require('./notify');
+const messages = require('./messages');
 const limiter = require('./ratelimit');
 const { multiline } = require('./text');
 
 const USER_REASONS = new Set(['spam', 'molestie', 'contenuto_offensivo', 'impersonificazione', 'altro']);
 const CONTENT_REASONS = new Set(['spam', 'contenuto_offensivo', 'molestie', 'altro']);
-const LABEL = { user: 'utente', post: 'post', post_comment: 'commento' };
 
 function cleanNote(v) {
   const s = multiline(v);
@@ -45,8 +45,8 @@ async function fileReport({ auth, body, target }) {
   }
   await notifyAdmins('admin_social_report', {
     actorId: auth.accountId,
-    title: `Segnalazione: ${LABEL[target.type]} ${target.title}`,
-    body: `${reason}${hidden ? ' — oscurato' : ''}`,
+    title: (l) => messages.t(l, 'notify.admin_social_report', { kind: messages.tOr(l, `report_kind.${target.type}`, target.type), title: target.title }),
+    body: (l) => messages.tOr(l, `report_reason.${reason}`, reason) + (hidden ? messages.t(l, 'notify.report_hidden') : ''),
     ref: `${target.type}:${target.id}`,
   });
   return { status: 201, body: { result: 'reported', hidden } };

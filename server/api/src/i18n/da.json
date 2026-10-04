@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} har sendt dig en venneanmodning",
+    "friend_accept": "{actor} har accepteret din venneanmodning",
+    "party_invite": "{actor} har inviteret dig til et party",
+    "post_like": "{actor} synes godt om dit opslag",
+    "post_comment": "{actor} har kommenteret dit opslag",
+    "store_comment": "{actor} har kommenteret {app}",
+    "game_invite": "{actor} inviterer dig til at spille",
+    "game_start": "{actor} spiller {game}",
+    "online": "{actor} er online",
+    "admin_report": "Anmeldelse: {title}",
+    "admin_social_report": "Anmeldelse: {kind} {title}",
+    "report_on_comment": " (kommentar)",
+    "report_hidden": " — skjult"
+  },
+  "report_kind": {
+    "user": "bruger",
+    "post": "opslag",
+    "post_comment": "kommentar"
+  },
+  "report_reason": {
+    "pirateria": "piratkopiering",
+    "malware": "malware",
+    "contenuto_offensivo": "krænkende indhold",
+    "spam": "spam",
+    "link_rotto": "link virker ikke",
+    "molestie": "chikane",
+    "impersonificazione": "udgiver sig for at være en anden",
+    "altro": "andet"
+  },
+  "web": {
+    "documents": "Dokumenter",
+    "privacy": "Privatliv",
+    "terms": "Brugsvilkår",
+    "licenses": "Licenser",
+    "source": "Kildekode",
+    "language": "Sprog",
+    "developed_by": "Udviklet af {developer}",
+    "source_intro": "Omega-appen til konsollen er fri software: GNU General Public License version 3 eller nyere. Her finder du den komplette kildekode til appen og til den tilhørende dæmon med byggevejledning (build.sh).",
+    "source_download": "Download omega-src.tar.gz",
+    "source_generated": "Arkivet genereres ved forespørgsel ud fra den kode, der kører på serveren.",
+    "source_unavailable": "Arkivet er midlertidigt utilgængeligt."
+  },
+  "api": {
+    "description": "Konti, sociale funktioner og en homebrew-Store til konsollen. Uafhængigt projekt, ikke tilknyttet Sony."
+  }
+}

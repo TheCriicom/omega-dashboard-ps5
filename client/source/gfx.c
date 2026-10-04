@@ -3,8 +3,11 @@
 // angoli, cerchi e ombre come texture riusate a nove fette, icone vettoriali
 // rasterizzate con SDF all'avvio, sfondi già scalati.
 #include "app.h"
+#include <SDL_image.h>
+#include <dirent.h>
 #include <math.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 SDL_Renderer *R;
 float g_dt = 1.0f / 60; double g_time = 0; Uint32 g_frame = 0;
@@ -34,14 +37,18 @@ static const char *FONT_FALLBACK = "/preinst/common/font/n023055ms.ttf";
 typedef struct { int w, size; TTF_Font *f; } FontSlot;
 static FontSlot fonts[MAX_FONTS]; static int nfonts;
 
-TTF_Font *font(int weight, int size) {
-  for (int i = 0; i < nfonts; i++) if (fonts[i].w == weight && fonts[i].size == size) return fonts[i].f;
+static TTF_Font *open_primary(int weight, int size) {
 #ifdef OMEGA_DESKTOP
   static const int HN_IDX[4] = { 7, 0, 10, 1 };   // Helvetica Neue: Light, Regular, Medium, Bold
-  TTF_Font *f = TTF_OpenFontIndex("/System/Library/Fonts/HelveticaNeue.ttc", size, HN_IDX[weight]);
+  return TTF_OpenFontIndex("/System/Library/Fonts/HelveticaNeue.ttc", size, HN_IDX[weight]);
 #else
-  TTF_Font *f = TTF_OpenFont(FONT_FILES[weight], size);
+  return TTF_OpenFont(FONT_FILES[weight], size);
 #endif
+}
+
+TTF_Font *font(int weight, int size) {
+  for (int i = 0; i < nfonts; i++) if (fonts[i].w == weight && fonts[i].size == size) return fonts[i].f;
+  TTF_Font *f = open_primary(weight, size);
   if (!f) { f = TTF_OpenFont(FONT_FALLBACK, size); if (f && weight >= W_MED) TTF_SetFontStyle(f, TTF_STYLE_BOLD); }
   if (!f) { omega_log("font %d/%d: %s", weight, size, TTF_GetError()); return nfonts ? fonts[0].f : NULL; }
   TTF_SetFontHinting(f, TTF_HINTING_LIGHT);
@@ -49,9 +56,148 @@ TTF_Font *font(int weight, int size) {
   return f;
 }
 
+// ---------------------------------------------------------- font di ripiego --
+// I font SST principali non hanno tutti gli alfabeti (giapponese, cinese,
+// coreano, thai...). All'avvio si elencano gli altri font di sistema; per ogni
+// stringa con caratteri che il font principale non ha si sceglie il primo
+// font che li ha tutti (o il maggior numero), della stessa dimensione.
+// La scelta resta in cache per stringa, così misure e disegno usano lo stesso font.
+#define MAX_FACES 24
+typedef struct { char path[200]; int weight; TTF_Font *probe; int bad; } Face;
+static Face faces[MAX_FACES]; static int nfaces;
+typedef struct { int face, w, size, bold, thai; TTF_Font *f; } FbSlot;   // face -1 = font principale (thai)
+#define MAX_FB 64
+static FbSlot fbs[MAX_FB]; static int nfbs;
+
+static int face_weight(const char *name) {
+  if (strstr(name, "Bold") || strstr(name, "Heavy") || strstr(name, "W6") || strstr(name, "W7") || strstr(name, "W8")) return W_BOLD;
+  if (strstr(name, "Medium") || strstr(name, "W5")) return W_MED;
+  if (strstr(name, "Light") || strstr(name, "Thin") || strstr(name, "W0") || strstr(name, "W1") || strstr(name, "W2")) return W_LIGHT;
+  return W_REG;
+}
+static void face_add(const char *path, const char *name) {
+  struct stat st;
+  if (nfaces >= MAX_FACES || stat(path, &st) != 0) return;
+  Face *fc = &faces[nfaces++]; memset(fc, 0, sizeof *fc);
+  snprintf(fc->path, sizeof fc->path, "%s", path); fc->weight = face_weight(name);
+}
+static int name_cmp(const void *a, const void *b) { return strcmp(*(char *const *)a, *(char *const *)b); }
+
+static void fonts_scan(void) {
+#ifdef OMEGA_DESKTOP
+  // equivalenti di macOS, per provare la UI in tutte le lingue
+  static const char *MAC[] = {
+    "/System/Library/Fonts/\xE3\x83\x92\xE3\x83\xA9\xE3\x82\xAE\xE3\x83\x8E\xE8\xA7\x92\xE3\x82\xB4\xE3\x82\xB7\xE3\x83\x83\xE3\x82\xAF W3.ttc",   // Hiragino Sans W3
+    "/System/Library/Fonts/\xE3\x83\x92\xE3\x83\xA9\xE3\x82\xAE\xE3\x83\x8E\xE8\xA7\x92\xE3\x82\xB4\xE3\x82\xB7\xE3\x83\x83\xE3\x82\xAF W6.ttc",   // Hiragino Sans W6
+    "/System/Library/Fonts/Hiragino Sans GB.ttc", "/System/Library/Fonts/STHeiti Light.ttc", "/System/Library/Fonts/STHeiti Medium.ttc",
+    "/System/Library/Fonts/AppleSDGothicNeo.ttc", "/System/Library/Fonts/Supplemental/Thonburi.ttc",
+    "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+  };
+  for (unsigned i = 0; i < sizeof MAC / sizeof MAC[0]; i++) face_add(MAC[i], MAC[i]);
+#else
+  const char *dir = "/preinst/common/font";
+  DIR *d = opendir(dir);
+  char *names[64]; int n = 0;
+  if (d) {
+    struct dirent *e;
+    while ((e = readdir(d)) && n < 64) {
+      const char *x = strrchr(e->d_name, '.');
+      if (!x || (strcasecmp(x, ".otf") && strcasecmp(x, ".ttf") && strcasecmp(x, ".ttc"))) continue;
+      int primary = 0; for (int i = 0; i < 4; i++) if (!strcmp(strrchr(FONT_FILES[i], '/') + 1, e->d_name)) primary = 1;
+      if (!primary) names[n++] = strdup(e->d_name);
+    }
+    closedir(d);
+  }
+  qsort(names, (size_t)n, sizeof names[0], name_cmp);
+  for (int i = 0; i < n; i++) { char p[200]; snprintf(p, sizeof p, "%s/%s", dir, names[i]); face_add(p, names[i]); free(names[i]); }
+#endif
+  (void)name_cmp;
+  char list[1024] = ""; size_t o = 0;
+  for (int i = 0; i < nfaces && o < sizeof list - 1; i++) o += (size_t)snprintf(list + o, sizeof list - o, "%s%s", i ? ", " : "", strrchr(faces[i].path, '/') + 1);
+  omega_log("font di ripiego (%d): %s", nfaces, list);
+}
+
+static TTF_Font *face_probe(int i) {
+  Face *fc = &faces[i];
+  if (!fc->probe && !fc->bad) {
+    fc->probe = TTF_OpenFontIndex(fc->path, 16, 0);
+    if (!fc->probe) { fc->bad = 1; omega_log("font %s: %s", fc->path, TTF_GetError()); }
+  }
+  return fc->probe;
+}
+
+static TTF_Font *fb_get(int face, int weight, int size, int bold, int thai) {
+  for (int i = 0; i < nfbs; i++)
+    if (fbs[i].face == face && fbs[i].size == size && fbs[i].bold == bold && fbs[i].thai == thai && (face >= 0 || fbs[i].w == weight)) return fbs[i].f;
+  if (nfbs >= MAX_FB) return NULL;                    // pieno: si resta sul font principale
+  TTF_Font *f = face >= 0 ? TTF_OpenFontIndex(faces[face].path, size, 0) : open_primary(weight, size);
+  if (!f) return NULL;
+  TTF_SetFontHinting(f, TTF_HINTING_LIGHT);
+  if (face >= 0 && bold) TTF_SetFontStyle(f, TTF_STYLE_BOLD);
+  if (thai) TTF_SetFontScriptName(f, "Thai");      // HarfBuzz: segni vocalici e toni al posto giusto
+  { FbSlot *b = &fbs[nfbs++]; b->face = face; b->w = weight; b->size = size; b->bold = bold; b->thai = thai; b->f = f; }
+  return f;
+}
+
+static int utf8_next(const unsigned char **pp, Uint32 *cp) {   // 0 a fine stringa
+  const unsigned char *p = *pp;
+  if (!*p) return 0;
+  if (*p < 0x80) { *cp = *p; *pp = p + 1; return 1; }
+  if ((*p & 0xE0) == 0xC0 && p[1]) { *cp = ((Uint32)(*p & 0x1F) << 6) | (p[1] & 0x3F); *pp = p + 2; return 1; }
+  if ((*p & 0xF0) == 0xE0 && p[1] && p[2]) { *cp = ((Uint32)(*p & 0x0F) << 12) | ((Uint32)(p[1] & 0x3F) << 6) | (p[2] & 0x3F); *pp = p + 3; return 1; }
+  if ((*p & 0xF8) == 0xF0 && p[1] && p[2] && p[3]) { *cp = ((Uint32)(*p & 0x07) << 18) | ((Uint32)(p[1] & 0x3F) << 12) | ((Uint32)(p[2] & 0x3F) << 6) | (p[3] & 0x3F); *pp = p + 4; return 1; }
+  *cp = 0xFFFD; *pp = p + 1; return 1;
+}
+
+static int font_weight_size(TTF_Font *f, int *w, int *size) {
+  for (int i = 0; i < nfonts; i++) if (fonts[i].f == f) { *w = fonts[i].w; *size = fonts[i].size; return 1; }
+  return 0;
+}
+
+// Font con cui disegnare s: f se ha tutti i caratteri, altrimenti un ripiego.
+#define RC_SIZE 2048
+typedef struct { TTF_Font *f, *rf; Uint32 h; char *s; } RCEntry;
+static RCEntry rc[RC_SIZE];
+static Uint32 fnv(const char *s, TTF_Font *f, Uint32 col);
+static TTF_Font *resolve(TTF_Font *f, const char *s) {
+  if (!f || !s) return f;
+  const unsigned char *p = (const unsigned char *)s;
+  while (*p && *p < 0x80) p++;
+  if (!*p) return f;                                   // solo ASCII: sempre il font principale
+  Uint32 h = fnv(s, f, 0x5EED);
+  RCEntry *e = &rc[h % RC_SIZE];
+  if (e->s && e->f == f && e->h == h && !strcmp(e->s, s)) return e->rf;
+  Uint32 miss[48]; int nmiss = 0, thai = 0; Uint32 cp;
+  p = (const unsigned char *)s;
+  while (utf8_next(&p, &cp)) {
+    if (cp < 0x80 || cp == 0xFE0F || cp == 0x200D) continue;
+    if (cp >= 0x0E00 && cp <= 0x0E7F) thai = 1;
+    if (TTF_GlyphIsProvided32(f, cp)) continue;
+    int dup = 0; for (int i = 0; i < nmiss; i++) if (miss[i] == cp) dup = 1;
+    if (!dup && nmiss < 48) miss[nmiss++] = cp;
+  }
+  TTF_Font *rf = f;
+  int w = W_REG, size = 0;
+  if (font_weight_size(f, &w, &size)) {
+    if (nmiss) {
+      int best = -1, best_cov = 0, best_wd = 99;
+      for (int i = 0; i < nfaces; i++) {
+        TTF_Font *pf = face_probe(i); if (!pf) continue;
+        int cov = 0; for (int k = 0; k < nmiss; k++) cov += TTF_GlyphIsProvided32(pf, miss[k]) != 0;
+        int wd = abs(faces[i].weight - w);
+        if (cov > best_cov || (cov == best_cov && cov > 0 && wd < best_wd)) { best = i; best_cov = cov; best_wd = wd; }
+        if (cov == nmiss && wd == 0) break;
+      }
+      if (best >= 0) { TTF_Font *ff = fb_get(best, w, size, w >= W_MED && faces[best].weight < W_MED, thai); if (ff) rf = ff; }
+    } else if (thai) { TTF_Font *ff = fb_get(-1, w, size, 0, 1); if (ff) rf = ff; }
+  }
+  free(e->s); e->s = strdup(s); e->f = f; e->h = h; e->rf = rf;
+  return rf;
+}
+
 // -------------------------------------------------------------- cache testo --
 #define TC_SIZE 1024
-typedef struct { TTF_Font *f; Uint32 col; Uint32 hash; char *s; SDL_Texture *t; int w, h; Uint32 used; } TCEntry;
+typedef struct { TTF_Font *f; Uint32 col; Uint32 hash; char *s; SDL_Texture *t; int w, h, dy; Uint32 used; } TCEntry;
 static TCEntry tc[TC_SIZE];
 
 static Uint32 fnv(const char *s, TTF_Font *f, Uint32 col) {
@@ -80,6 +226,14 @@ static void sanitize(TTF_Font *f, const char *s, char *out, size_t n) {
   out[o] = 0;
 }
 
+// Larghezza di s col font che lo disegnerà davvero (eventuale ripiego).
+static int measure(TTF_Font *f, const char *s) {
+  TTF_Font *rf = resolve(f, s);
+  char clean[1024]; sanitize(rf, s, clean, sizeof clean);
+  int w = 0, hh = 0; TTF_SizeUTF8(rf, clean, &w, &hh);
+  return w;
+}
+
 static TCEntry *text_get(TTF_Font *f, const char *s, Col c) {
   if (!f || !s || !*s) return NULL;
   Uint32 col = ((Uint32)c.r << 16) | ((Uint32)c.g << 8) | c.b;
@@ -93,15 +247,18 @@ static TCEntry *text_get(TTF_Font *f, const char *s, Col c) {
   }
   TCEntry *e = &tc[victim];
   if (e->t) { SDL_DestroyTexture(e->t); free(e->s); e->t = NULL; }
+  TTF_Font *rf = resolve(f, s);
   char clean[1024];
-  sanitize(f, s, clean, sizeof clean);
+  sanitize(rf, s, clean, sizeof clean);
   if (!clean[0]) return NULL;
-  SDL_Surface *su = TTF_RenderUTF8_Blended(f, clean, c);
+  SDL_Surface *su = TTF_RenderUTF8_Blended(rf, clean, c);
   if (!su) return NULL;
   e->t = SDL_CreateTextureFromSurface(R, su);
   e->w = su->w; e->h = su->h; SDL_FreeSurface(su);
   if (!e->t) return NULL;
   SDL_SetTextureBlendMode(e->t, SDL_BLENDMODE_BLEND);
+  // un font di ripiego si allinea sulla linea di base di quello principale
+  e->dy = rf != f ? TTF_FontAscent(f) - TTF_FontAscent(rf) : 0;
   e->f = f; e->col = col; e->hash = h; e->s = strdup(s); e->used = g_frame;
   return e;
 }
@@ -123,8 +280,7 @@ int text_w(TTF_Font *f, const char *s) {
   Uint32 h = fnv(s, f, 0);
   WCEntry *e = &wc[h % WC_SIZE];
   if (e->s && e->f == f && e->h == h && !strcmp(e->s, s)) return e->w;
-  char clean[1024]; sanitize(f, s, clean, sizeof clean);
-  int w = 0, hh = 0; TTF_SizeUTF8(f, clean, &w, &hh);
+  int w = measure(f, s);
   free(e->s); e->s = strdup(s); e->f = f; e->h = h; e->w = w;
   return w;
 }
@@ -135,7 +291,7 @@ int draw_text(TTF_Font *f, const char *s, int x, int y, Col c, int alpha, int al
   if (!e) return 0;
   if (align == AL_C) x -= e->w / 2; else if (align == AL_R) x -= e->w;
   SDL_SetTextureAlphaMod(e->t, (Uint8)(alpha > 255 ? 255 : alpha));
-  SDL_Rect d = { x, y, e->w, e->h };
+  SDL_Rect d = { x, y + e->dy, e->w, e->h };
   SDL_RenderCopy(R, e->t, NULL, &d);
   return e->w;
 }
@@ -159,8 +315,7 @@ int draw_text_fit(TTF_Font *f, const char *s, int x, int y, int maxw, Col c, int
       size_t mid = (lo + hi + 1) / 2, m = mid;
       while (m > 0 && ((unsigned char)s[m] & 0xC0) == 0x80) m--;
       char tmp[516]; memcpy(tmp, s, m); memcpy(tmp + m, "\xE2\x80\xA6", 4);
-      int tw = 0, th = 0; char clean[1024]; sanitize(f, tmp, clean, sizeof clean); TTF_SizeUTF8(f, clean, &tw, &th);
-      if (tw <= maxw) lo = mid; else hi = mid - 1;
+      if (measure(f, tmp) <= maxw) lo = mid; else hi = mid - 1;
     }
     size_t m = lo; while (m > 0 && ((unsigned char)s[m] & 0xC0) == 0x80) m--;
     while (m > 0 && s[m - 1] == ' ') m--;
@@ -171,32 +326,107 @@ int draw_text_fit(TTF_Font *f, const char *s, int x, int y, int maxw, Col c, int
   return draw_text(f, e->out, x, y, c, alpha, align);
 }
 
-// a capo per parole; ritorna le righe usate
-int draw_text_wrap(TTF_Font *f, const char *s, int x, int y, int maxw, int maxlines, int lineh, Col c, int alpha) {
-  if (!s || !*s) return 0;
-  int lines = 0; const char *p = s;
+// ---------------------------------------------------------------- a capo --
+// Si va a capo agli spazi e, per cinese e giapponese che non li usano, tra un
+// ideogramma e l'altro (mai prima di 。、」 ecc. né dopo 「（). Le righe calcolate
+// restano in cache per stringa, font e larghezza.
+static int is_cjk(Uint32 cp) {
+  return (cp >= 0x2E80 && cp <= 0x9FFF) || (cp >= 0xF900 && cp <= 0xFAFF) || (cp >= 0xFF00 && cp <= 0xFFEF) || (cp >= 0x20000 && cp <= 0x2FFFF);
+}
+static int no_break_before(Uint32 cp) {
+  static const Uint32 L[] = { 0x3001, 0x3002, 0xFF0C, 0xFF0E, 0xFF01, 0xFF1F, 0xFF1A, 0xFF1B, 0xFF09, 0x300D, 0x300F, 0x3011, 0x3015,
+                              0x3009, 0x300B, 0x30FC, 0x2026, 0x3005, 0x30FB, 0x0021, 0x003F, 0x002C, 0x002E, 0x003A, 0x0029 };
+  for (unsigned i = 0; i < sizeof L / sizeof L[0]; i++) if (L[i] == cp) return 1;
+  return 0;
+}
+static int no_break_after(Uint32 cp) { return cp == 0x300C || cp == 0x300E || cp == 0xFF08 || cp == 0x3010 || cp == 0x3014 || cp == 0x3008 || cp == 0x300A || cp == 0x0028; }
+
+#define WR_SIZE 256
+typedef struct { TTF_Font *f; Uint32 h; int maxw, maxlines, n, fit; char *s; char *lines; } WREntry;
+static WREntry wr[WR_SIZE];
+
+// Righe di s separate da '\0'; con fit l'ultima va troncata con draw_text_fit.
+static int wrap_lines(TTF_Font *f, const char *s, int maxw, int maxlines, char *out, size_t outn, int *fit) {
+  int lines = 0; size_t o = 0; const char *p = s;
   char line[512];
+  *fit = 0;
   while (*p && lines < maxlines) {
     while (*p == ' ') p++;
     size_t best = 0; const char *q = p;
     for (;;) {
-      const char *sp = q; while (*sp && *sp != ' ' && *sp != '\n') sp++;
-      size_t len = (size_t)(sp - p); if (len >= sizeof line) len = sizeof line - 1;
+      // prossimo punto in cui si può andare a capo dopo q
+      const unsigned char *r = (const unsigned char *)q; Uint32 prev = 0, cp = 0; const char *e = NULL; int last = 0;
+      if (q > p) { const unsigned char *b = (const unsigned char *)q; do b--; while (b > (const unsigned char *)p && (*b & 0xC0) == 0x80); utf8_next(&b, &prev); }
+      for (;;) {
+        const unsigned char *at = r;
+        if (!*r || *r == '\n') { e = (const char *)r; last = 1; break; }
+        utf8_next(&r, &cp);
+        if ((const char *)at > p && (const char *)at > q) {
+          if (cp == ' ') { e = (const char *)at; break; }
+          if ((is_cjk(cp) || is_cjk(prev)) && prev != ' ' && !no_break_before(cp) && !no_break_after(prev)) { e = (const char *)at; break; }
+        }
+        prev = cp;
+      }
+      size_t len = (size_t)(e - p); if (len >= sizeof line) len = sizeof line - 1;
       memcpy(line, p, len); line[len] = 0;
+      while (len > 0 && line[len - 1] == ' ') line[--len] = 0;
       if (text_w(f, line) > maxw && best) break;
+      if (!best && text_w(f, line) > maxw) {
+        // parola più larga della riga: per thai e CJK si spezza tra i caratteri
+        int wide = 0; const unsigned char *u = (const unsigned char *)line; Uint32 c2;
+        while (utf8_next(&u, &c2)) if (c2 >= 0x0E00) wide = 1;
+        if (wide) {
+          size_t cut = 0; const unsigned char *v = (const unsigned char *)line;
+          while (*v) {
+            const unsigned char *nx = v; utf8_next(&nx, &c2);
+            char tmp[512]; size_t l2 = (size_t)(nx - (const unsigned char *)line); memcpy(tmp, line, l2); tmp[l2] = 0;
+            if (cut && text_w(f, tmp) > maxw) break;
+            cut = l2; v = nx;
+          }
+          best = cut; break;
+        }
+      }
       best = len;
-      if (!*sp || *sp == '\n') break;
-      q = sp + 1;
+      if (last) break;
+      q = e; while (*q == ' ') q++;
+      if (!*q || *q == '\n') break;
     }
     if (!best) break;
-    memcpy(line, p, best); line[best] = 0;
-    lines++;
     const char *next = p + best;
-    if (lines == maxlines && *next && *next != '\n') draw_text_fit(f, s + (p - s), x, y, maxw, c, alpha, AL_L);
-    else draw_text(f, line, x, y, c, alpha, AL_L);
-    y += lineh; p = next; if (*p == '\n') p++;
+    if (lines + 1 == maxlines && *next && *next != '\n' && strspn(next, " ") != strlen(next)) {
+      *fit = 1; size_t l = strlen(p); if (o + l + 1 > outn) break; memcpy(out + o, p, l); out[o + l] = 0; o += l + 1;
+    } else {
+      size_t l = best; if (o + l + 1 > outn) break; memcpy(out + o, p, l); out[o + l] = 0; o += l + 1;
+    }
+    lines++;
+    p = next; while (*p == ' ') p++; if (*p == '\n') p++;
   }
   return lines;
+}
+
+// a capo per parole; ritorna le righe usate. Con AL_C x è il centro di ogni riga.
+int draw_text_wrap_al(TTF_Font *f, const char *s, int x, int y, int maxw, int maxlines, int lineh, Col c, int alpha, int align) {
+  if (!s || !*s) return 0;
+  Uint32 h = fnv(s, f, (Uint32)(maxw * 64 + maxlines));
+  WREntry *e = &wr[h % WR_SIZE];
+  if (!(e->s && e->f == f && e->h == h && e->maxw == maxw && e->maxlines == maxlines && !strcmp(e->s, s))) {
+    // le righe sono pezzi di s: bastano strlen(s) byte più un terminatore per riga
+    size_t cap = strlen(s) + (size_t)maxlines + 2; int fit = 0, n = 0;
+    free(e->s); free(e->lines);
+    e->lines = malloc(cap);
+    if (e->lines) n = wrap_lines(f, s, maxw, maxlines, e->lines, cap, &fit);
+    e->s = strdup(s); e->f = f; e->h = h; e->maxw = maxw; e->maxlines = maxlines; e->n = n; e->fit = fit;
+  }
+  const char *l = e->lines;
+  for (int i = 0; i < e->n; i++) {
+    if (i == e->n - 1 && e->fit) draw_text_fit(f, l, x, y, maxw, c, alpha, align);
+    else draw_text(f, l, x, y, c, alpha, align);
+    y += lineh; l += strlen(l) + 1;
+  }
+  return e->n;
+}
+int draw_text_wrap(TTF_Font *f, const char *s, int x, int y, int maxw, int maxlines, int lineh, Col c, int alpha) {
+  return draw_text_wrap_al(f, s, x, y, maxw, maxlines, lineh, c, alpha, AL_L);
 }
 
 // -------------------------------------------------------------------- forme --
@@ -522,7 +752,6 @@ static const Prim ICONS[IC_COUNT][12] = {
   [IC_SEND]    = { P_TRI(0.14f, 0.16f, 0.9f, 0.5f, 0.14f, 0.84f), P_SUBB(0.1f, 0.47f, 0.4f, 0.06f, 0.0f), P_END },
   [IC_EXIT]    = { P_BOX(0.14f, 0.14f, 0.42f, 0.72f, 0.06f), P_SUBB(0.22f, 0.22f, 0.26f, 0.56f, 0.02f), P_SEG(0.44f, 0.5f, 0.86f, 0.5f, 0.05f), P_SEG(0.7f, 0.34f, 0.86f, 0.5f, 0.05f), P_SEG(0.7f, 0.66f, 0.86f, 0.5f, 0.05f), P_END },
   [IC_CLOCK]   = { P_RING(0.5f, 0.5f, 0.36f, 0.08f), P_SEG(0.5f, 0.5f, 0.5f, 0.28f, 0.045f), P_SEG(0.5f, 0.5f, 0.66f, 0.58f, 0.045f), P_END },
-  [IC_OMEGA]   = { P_ARC(0.5f, 0.45f, 0.3f, 0.07f, 2.2f, 7.225f), P_SEG(0.17f, 0.712f, 0.355f, 0.712f, 0.035f), P_SEG(0.645f, 0.712f, 0.83f, 0.712f, 0.035f), P_END },
   [IC_GLOBE]   = { P_RING(0.5f, 0.5f, 0.36f, 0.06f), P_SEG(0.16f, 0.5f, 0.84f, 0.5f, 0.03f), P_SEG(0.5f, 0.15f, 0.5f, 0.85f, 0.03f),
                    P_ARC(0.86f, 0.5f, 0.43f, 0.05f, 2.45f, 3.83f), P_ARC(0.14f, 0.5f, 0.43f, 0.05f, -0.69f, 0.69f), P_SEG(0.24f, 0.3f, 0.76f, 0.3f, 0.025f), P_SEG(0.24f, 0.7f, 0.76f, 0.7f, 0.025f), P_END },
   [IC_BACK]    = { P_SEG(0.64f, 0.2f, 0.34f, 0.5f, 0.06f), P_SEG(0.34f, 0.5f, 0.64f, 0.8f, 0.06f), P_END },
@@ -533,6 +762,19 @@ static const Prim ICONS[IC_COUNT][12] = {
   [IC_DOWNLOAD] = { P_SEG(0.5f, 0.12f, 0.5f, 0.6f, 0.06f), P_SEG(0.3f, 0.42f, 0.5f, 0.64f, 0.06f), P_SEG(0.7f, 0.42f, 0.5f, 0.64f, 0.06f), P_SEG(0.2f, 0.82f, 0.8f, 0.82f, 0.05f), P_END },
   [IC_LIKE]    = { P_BOX(0.34f, 0.44f, 0.5f, 0.44f, 0.08f), P_BOX(0.46f, 0.12f, 0.2f, 0.4f, 0.1f), P_BOX(0.12f, 0.5f, 0.17f, 0.38f, 0.04f), P_END },
   [IC_DISLIKE] = { P_BOX(0.34f, 0.12f, 0.5f, 0.44f, 0.08f), P_BOX(0.46f, 0.48f, 0.2f, 0.4f, 0.1f), P_BOX(0.12f, 0.12f, 0.17f, 0.38f, 0.04f), P_END },
+  [IC_MUSIC]   = { P_DISC(0.3f, 0.74f, 0.12f), P_DISC(0.72f, 0.66f, 0.12f), P_SEG(0.4f, 0.74f, 0.4f, 0.22f, 0.04f), P_SEG(0.82f, 0.66f, 0.82f, 0.14f, 0.04f), P_SEG(0.4f, 0.22f, 0.82f, 0.14f, 0.06f), P_END },
+  [IC_PAUSE]   = { P_BOX(0.24f, 0.18f, 0.18f, 0.64f, 0.05f), P_BOX(0.58f, 0.18f, 0.18f, 0.64f, 0.05f), P_END },
+  [IC_NEXT]    = { P_TRI(0.16f, 0.2f, 0.16f, 0.8f, 0.64f, 0.5f), P_BOX(0.68f, 0.2f, 0.13f, 0.6f, 0.03f), P_END },
+  [IC_PREV]    = { P_TRI(0.84f, 0.2f, 0.84f, 0.8f, 0.36f, 0.5f), P_BOX(0.19f, 0.2f, 0.13f, 0.6f, 0.03f), P_END },
+  [IC_SHUFFLE] = { P_SEG(0.12f, 0.3f, 0.36f, 0.3f, 0.045f), P_SEG(0.36f, 0.3f, 0.62f, 0.7f, 0.045f), P_SEG(0.62f, 0.7f, 0.8f, 0.7f, 0.045f),
+                   P_SEG(0.12f, 0.7f, 0.36f, 0.7f, 0.045f), P_SEG(0.36f, 0.7f, 0.62f, 0.3f, 0.045f), P_SEG(0.62f, 0.3f, 0.8f, 0.3f, 0.045f),
+                   P_TRI(0.76f, 0.18f, 0.92f, 0.3f, 0.76f, 0.42f), P_TRI(0.76f, 0.58f, 0.92f, 0.7f, 0.76f, 0.82f), P_END },
+  [IC_REPEAT]  = { P_SEG(0.2f, 0.62f, 0.2f, 0.36f, 0.045f), P_SEG(0.2f, 0.36f, 0.74f, 0.36f, 0.045f), P_TRI(0.7f, 0.22f, 0.86f, 0.36f, 0.7f, 0.5f),
+                   P_SEG(0.8f, 0.38f, 0.8f, 0.64f, 0.045f), P_SEG(0.8f, 0.64f, 0.26f, 0.64f, 0.045f), P_TRI(0.3f, 0.5f, 0.14f, 0.64f, 0.3f, 0.78f), P_END },
+  [IC_RADIO]   = { P_BOX(0.12f, 0.36f, 0.76f, 0.5f, 0.08f), P_SUBD(0.35f, 0.61f, 0.12f), P_SEG(0.24f, 0.34f, 0.7f, 0.12f, 0.035f), P_SUBB(0.56f, 0.5f, 0.2f, 0.05f, 0.02f), P_SUBB(0.56f, 0.64f, 0.2f, 0.05f, 0.02f), P_END },
+  [IC_FOLDER]  = { P_BOX(0.1f, 0.3f, 0.8f, 0.52f, 0.06f), P_BOX(0.1f, 0.2f, 0.32f, 0.16f, 0.05f), P_END },
+  [IC_VOLUME]  = { P_BOX(0.12f, 0.38f, 0.16f, 0.24f, 0.02f), P_TRI(0.2f, 0.5f, 0.5f, 0.16f, 0.5f, 0.84f), P_ARC(0.5f, 0.5f, 0.16f, 0.045f, -0.9f, 0.9f), P_ARC(0.5f, 0.5f, 0.3f, 0.045f, -0.9f, 0.9f), P_END },
+  [IC_ALBUM]   = { P_RING(0.5f, 0.5f, 0.3f, 0.12f), P_DISC(0.5f, 0.5f, 0.06f), P_END },
 };
 
 float sd_seg(float px, float py, float ax, float ay, float bx, float by) {
@@ -606,6 +848,55 @@ void draw_icon(int id, int cx, int cy, int size, Col c, int alpha) {
   SDL_RenderCopy(R, icon_tex[id], NULL, &d);
 }
 
+// ------------------------------------------------------------------ marchio --
+// Il logo di Omega è un PNG incorporato (logo_png.c). Si preparano metà,
+// quarti e ottavi con un filtro a box: si disegna dal livello più piccolo non
+// inferiore alla dimensione chiesta, così resta nitido anche a 100 px.
+extern const unsigned char omega_logo_png[];
+extern const size_t omega_logo_png_len;
+#define LOGO_MIPS 4
+static SDL_Texture *logo_mip[LOGO_MIPS]; static int logo_size[LOGO_MIPS], logo_ready;
+
+static SDL_Surface *half(SDL_Surface *s) {
+  int w = s->w / 2, h = s->h / 2;
+  SDL_Surface *d = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ARGB8888);
+  if (!d) return NULL;
+  const Uint32 *sp = s->pixels; Uint32 *dp = d->pixels; int sw = s->pitch / 4, dw = d->pitch / 4;
+  for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) {
+    Uint32 q[4] = { sp[(2 * y) * sw + 2 * x], sp[(2 * y) * sw + 2 * x + 1], sp[(2 * y + 1) * sw + 2 * x], sp[(2 * y + 1) * sw + 2 * x + 1] };
+    Uint32 A = 0, Rr = 0, G = 0, B = 0;
+    for (int k = 0; k < 4; k++) { Uint32 a = q[k] >> 24; A += a; Rr += ((q[k] >> 16) & 255) * a; G += ((q[k] >> 8) & 255) * a; B += (q[k] & 255) * a; }
+    // media pesata sull'alpha: niente aloni scuri sui bordi
+    dp[y * dw + x] = A ? ((A / 4) << 24) | ((Rr / A) << 16) | ((G / A) << 8) | (B / A) : 0;
+  }
+  return d;
+}
+
+static void logo_init(void) {
+  logo_ready = 1;
+  SDL_RWops *rw = SDL_RWFromConstMem(omega_logo_png, (int)omega_logo_png_len);
+  SDL_Surface *raw = rw ? IMG_Load_RW(rw, 1) : NULL;
+  if (!raw) { omega_log("logo: %s", IMG_GetError()); return; }
+  SDL_Surface *s = SDL_ConvertSurfaceFormat(raw, SDL_PIXELFORMAT_ARGB8888, 0);
+  SDL_FreeSurface(raw);
+  for (int i = 0; i < LOGO_MIPS && s; i++) {
+    logo_mip[i] = SDL_CreateTextureFromSurface(R, s); logo_size[i] = s->w;
+    if (logo_mip[i]) { SDL_SetTextureBlendMode(logo_mip[i], SDL_BLENDMODE_BLEND); SDL_SetTextureScaleMode(logo_mip[i], SDL_ScaleModeLinear); }
+    SDL_Surface *n = i + 1 < LOGO_MIPS ? half(s) : NULL;
+    SDL_FreeSurface(s); s = n;
+  }
+}
+
+void draw_logo(int cx, int cy, int size, int alpha) {
+  if (!logo_ready) logo_init();
+  if (alpha <= 0 || size <= 0) return;
+  int k = 0;
+  while (k + 1 < LOGO_MIPS && logo_mip[k + 1] && logo_size[k + 1] >= size) k++;
+  if (!logo_mip[k]) return;
+  SDL_SetTextureColorMod(logo_mip[k], 255, 255, 255);
+  draw_tex(logo_mip[k], cx - size / 2, cy - size / 2, size, size, alpha);
+}
+
 // --------------------------------------------------------------- animazioni --
 float clampf(float v, float a, float b) { return v < a ? a : v > b ? b : v; }
 float approach(float cur, float target, float speed) {
@@ -652,12 +943,12 @@ static void bg_loaded(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) 
 // --------------------------------------------------------------------- temi --
 typedef struct { const char *name; Col base, acc, acc2, particle; } Theme;
 static const Theme THEMES[N_THEMES] = {
-  { "Omega blu", { 20, 70, 200, 255 },  { 0, 112, 243, 255 },  { 56, 160, 255, 255 }, { 120, 180, 255, 255 } },
-  { "Notte",     { 30, 30, 60, 255 },   { 90, 100, 255, 255 }, { 150, 160, 255, 255 }, { 170, 170, 230, 255 } },
-  { "Aurora",    { 0, 140, 120, 255 },  { 0, 170, 140, 255 },  { 60, 230, 190, 255 }, { 120, 255, 210, 255 } },
-  { "Tramonto",  { 200, 70, 40, 255 },  { 235, 90, 50, 255 },  { 255, 150, 90, 255 }, { 255, 190, 140, 255 } },
-  { "Ametista",  { 120, 40, 200, 255 }, { 140, 70, 240, 255 }, { 190, 130, 255, 255 }, { 210, 170, 255, 255 } },
-  { "Carbone",   { 60, 64, 72, 255 },   { 110, 120, 140, 255 }, { 180, 190, 210, 255 }, { 200, 205, 215, 255 } },
+  { N_("Omega blu"), { 20, 70, 200, 255 },  { 0, 112, 243, 255 },  { 56, 160, 255, 255 }, { 120, 180, 255, 255 } },
+  { N_("Notte"),     { 30, 30, 60, 255 },   { 90, 100, 255, 255 }, { 150, 160, 255, 255 }, { 170, 170, 230, 255 } },
+  { N_("Aurora"),    { 0, 140, 120, 255 },  { 0, 170, 140, 255 },  { 60, 230, 190, 255 }, { 120, 255, 210, 255 } },
+  { N_("Tramonto"),  { 200, 70, 40, 255 },  { 235, 90, 50, 255 },  { 255, 150, 90, 255 }, { 255, 190, 140, 255 } },
+  { N_("Ametista"),  { 120, 40, 200, 255 }, { 140, 70, 240, 255 }, { 190, 130, 255, 255 }, { 210, 170, 255, 255 } },
+  { N_("Carbone"),   { 60, 64, 72, 255 },   { 110, 120, 140, 255 }, { 180, 190, 210, 255 }, { 200, 205, 215, 255 } },
 };
 int g_theme = 0;
 Col g_theme_base = { 20, 70, 200, 255 };
@@ -668,7 +959,7 @@ void theme_tint(int alpha) {
   grad_v(0, SCREEN_H * 70 / 100, SCREEN_W, SCREEN_H * 30 / 100, g_theme_base, 0, g_theme_base, alpha * 26 / 100);
 }
 static Col g_particle = { 120, 180, 255, 255 };
-const char *theme_name(int i) { return THEMES[(i < 0 ? 0 : i) % N_THEMES].name; }
+const char *theme_name(int i) { return _(THEMES[(i < 0 ? 0 : i) % N_THEMES].name); }
 
 void theme_apply(int i, int save) {
   if (i < 0 || i >= N_THEMES) i = 0;
@@ -753,6 +1044,8 @@ void particles_draw(int alpha) {
 
 void gfx_init(void) {
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+  fonts_scan();
+  logo_init();
   for (int i = 0; i < IC_COUNT; i++) build_icon(i);
   for (int i = 0; i < 16; i++) avatar_base(i);
   bg_init();

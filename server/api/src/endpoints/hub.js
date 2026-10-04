@@ -4,7 +4,8 @@
 // notizie e la scheda di un gioco.
 const db = require('../db');
 const { HttpError, readJson } = require('../http');
-const { notify } = require('../notify');
+const { notify, rememberLang } = require('../notify');
+const messages = require('../messages');
 const { effective } = require('./social');
 const feeds = require('../feeds');
 const limiter = require('../ratelimit');
@@ -143,14 +144,17 @@ async function leaveParty(accountId, onlineId) {
 
 // ------------------------------------------------------------------- sync --
 // GET /api/v1/sync?since=<notification_id>
-async function sync({ auth, url }) {
+async function sync(ctx) {
+  const { auth, url } = ctx;
   const since = Number(url.searchParams.get('since') || 0) || 0;
   // un tratto di gioco rimasto aperto da una console sparita si chiude qui
   await playtime.onHeartbeat(auth.accountId);
   // heartbeat: rinfresca la presenza senza cambiarne lo stato
   await db.query(`UPDATE lab_presence SET last_seen=now() WHERE account_id=$1 AND status<>'offline'`, [auth.accountId]);
 
-  const me = (await db.query('SELECT online_id, avatar, about_me, avatar_media, avatar_frames, cover_media, cover_frames, status_mode, status_message FROM lab_account WHERE account_id=$1', [auth.accountId])).rows[0];
+  const me = (await db.query('SELECT online_id, avatar, about_me, avatar_media, avatar_frames, cover_media, cover_frames, status_mode, status_message, lang FROM lab_account WHERE account_id=$1', [auth.accountId])).rows[0];
+  // lingua delle notifiche: si aggiorna solo se l'app ne chiede un'altra
+  await rememberLang(auth.accountId, ctx, me.lang);
   const counts = (await db.query(
     `SELECT
        (SELECT count(*)::int FROM lab_notification WHERE account_id=$1 AND NOT read) AS unread_notifications,
@@ -396,7 +400,7 @@ async function partyInvite({ req, auth }) {
      ON CONFLICT (party_id, to_id) DO UPDATE SET created_at=now(), from_id=EXCLUDED.from_id`,
     [p.party_id, auth.accountId, other.account_id]);
   await notify(other.account_id, 'party_invite', {
-    actorId: auth.accountId, title: `${auth.onlineId} ti ha invitato a un party`, body: p.name, ref: String(p.party_id) });
+    actorId: auth.accountId, title: (l) => messages.t(l, 'notify.party_invite', { actor: auth.onlineId }), body: p.name, ref: String(p.party_id) });
   return { status: 201, body: { result: 'invited', online_id: other.online_id } };
 }
 

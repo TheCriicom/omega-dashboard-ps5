@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "Tietoa tästä käännöksestä",
+    "body": "Tämä on käännös alkuperäisestä italiankielisestä tekstistä, ja se on tarkoitettu helpottamaan lukemista. Jos tämän käännöksen ja italiankielisen version välillä on eroja, italiankielinen versio on ratkaiseva."
+  },
+  "missing": "[täydennetään]",
+  "fragments": {
+    "vat": ", ALV-numero {vat}",
+    "hosting_at": " (palveluntarjoaja: {hosting})"
+  },
+  "privacy": {
+    "title": "Tietosuojaseloste",
+    "sections": [
+      { "id": "controller", "title": "Kuka käsittelee tietojasi", "body": "Rekisterinpitäjä: {controller}. Yhteystieto tietosuoja-asioissa ja sisältöilmoituksissa: {email}. Omega on itsenäinen projekti: se ei liity Sony Interactive Entertainment -yhtiöön eikä käytä sen tilejä tai palvelimia." },
+      { "id": "data", "title": "Mitä tietoja keräämme", "body": "Tili: online-tunnus, salasana (tallennetaan vain scrypt-tiivisteenä, ei koskaan selväkielisenä), sähköpostiosoite, jos annat sen, lataamasi avatar ja kansikuva, profiiliteksti, rekisteröitymispäivä ja viimeisin kirjautuminen. Sosiaaliset toiminnot: kaveruudet ja kaveripyynnöt, online-tila ja käyttämäsi nimike (konsolisi lähettää sen pelatessasi), viimeaikainen toiminta, yksityisviestit, partyjen keskustelut ja kutsut, ilmoitukset. Store: julkaisemasi homebrew-ohjelmat, kommentit, tykkäykset/ei-tykkäykset, arviot, sisältöilmoitukset, asennusten määrä. Henkilökohtainen kirjasto: JSON-tiedostosi osoite ja sen sisältämien nimikkeiden luettelo (nimi, kuvat, linkit). Tekniset tiedot: jokaisesta palvelimelle tehdystä pyynnöstä tallennamme IP-osoitteen, päivämäärän ja kellonajan, pyydetyn polun (myös Omega-selaimella avattujen sivujen osoitteen), lopputuloksen ja vasteajat. Salasanat, tunnisteet (tokenit) ja evästeet peitetään, eikä niitä koskaan tallenneta lokeihin." },
+      { "id": "purposes", "title": "Miksi ja millä perusteella", "body": "Pyytämäsi palvelun tarjoaminen (tili, sosiaaliset toiminnot, Store, kirjasto): sopimuksen täytäntöönpano, EU:n yleisen tietosuoja-asetuksen 6 artiklan 1 kohdan b alakohta. Tietoturva, väärinkäytösten estäminen ja sisältöilmoitusten käsittely: oikeutettu etu ja isännöityä sisältöä koskevat lakisääteiset velvoitteet, 6 artiklan 1 kohdan f ja c alakohta. Emme käytä tietojasi mainontaan tai profilointiin emmekä myy niitä." },
+      { "id": "retention", "title": "Kuinka kauan", "body": "Pyyntöjen tekniset lokit poistetaan {days} päivän kuluttua. Tilin tiedot ja sisällöt säilyvät, kunnes poistat tilisi; istunnot vanhenevat 24 tunnin kuluttua. Suljetut sisältöilmoitukset ja moderointitoimien loki säilytetään niin kauan kuin niitä tarvitaan osoittamaan, miten sisältöjä on käsitelty." },
+      { "id": "recipients", "title": "Kuka voi nähdä tiedot", "body": "Muut käyttäjät näkevät julkisen profiilisi, julkaisemasi sisällön ja, jos olette kavereita, läsnäolosi ja toimintasi. Viestit näkevät vain niiden vastaanottajat. Tiedot säilytetään palvelimella, jota hallinnoi rekisterinpitäjä{hosting_at}, joka toimii henkilötietojen käsittelijänä. Kun asennat homebrew-ohjelman tai avaat verkkosivun, konsoli tai palvelimemme muodostaa yhteyden sivustoon, jolla kyseinen tiedosto tai sivu sijaitsee: tällöin sovelletaan kyseisen sivuston tietosuojaselostetta." },
+      { "id": "rights", "title": "Oikeutesi", "body": "Voit tarkastaa tietosi ja ladata ne (Asetukset → Yksityisyys ja tiedot → Lataa tietoni), oikaista ne, poistaa ne (Poista tili), vastustaa niiden käsittelyä tai pyytää käsittelyn rajoittamista kirjoittamalla osoitteeseen {email}. Voit myös tehdä valituksen Italian tietosuojaviranomaiselle (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Vähimmäisikä", "body": "Palvelu on tarkoitettu vain vähintään 14-vuotiaille." },
+      { "id": "version", "title": "Versio", "body": "Päivitetty {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Käyttöehdot",
+    "sections": [
+      { "id": "service", "title": "Palvelu", "body": "Omega ({url}) tarjoaa maksutta tilit, sosiaaliset toiminnot ja homebrew-ohjelmien Storen konsoleille, joihin käyttäjä on laillisesti asentanut kolmannen osapuolen ohjelmistoja. Palvelua ylläpitää {name}. Omega on itsenäinen projekti, eikä se ole Sony Interactive Entertainment -yhtiöön sidoksissa oleva, sen hyväksymä tai sponsoroima. \"PlayStation\" ja \"PS5\" ovat omistajiensa tavaramerkkejä." },
+      { "id": "risk", "title": "Käyttö omalla vastuulla", "body": "Palvelu ja Storen homebrew-ohjelmat tarjotaan sellaisinaan. Epävirallisten ohjelmistojen asentaminen voi aiheuttaa toimintahäiriöitä, tietojen menetyksen tai konsolin takuun raukeamisen, ja se tapahtuu omalla vastuullasi. Homebrew-ohjelmat ovat tekijöidensä teoksia, ja niihin sovelletaan niiden omia lisenssejä." },
+      { "id": "prohibited", "title": "Mikä ei ole sallittua", "body": "Sellaisen sisällön julkaiseminen tai jakaminen, johon sinulla ei ole oikeuksia — erityisesti kaupallisten pelien tai ohjelmistojen kopiot, linkit piraattimateriaaliin, työkalut niiden suojausten kiertämiseen piratismitarkoituksessa —, haittaohjelmat tai vaaralliset tiedostot, laiton, loukkaava tai vihaan yllyttävä sisältö, roskaposti, muiden tilien käyttäminen tai yritys vaarantaa niiden tietoturva." },
+      { "id": "publishing", "title": "Julkaiseminen Storessa", "body": "Julkaisemalla vakuutat, että olet homebrew-ohjelman tekijä tai että sen lisenssi sallii sen edelleenlevittämisen ja että linkki johtaa ilmoitettuun tiedostoon ilman haitallisia muutoksia. Annat meille luvan näyttää nimen, kuvauksen ja kuvat Storessa. Tiedostot pysyvät ilmoittamallasi sivustolla: Omega isännöi vain niiden esittelysivua." },
+      { "id": "library", "title": "Henkilökohtainen kirjasto", "body": "Kirjasto on tarkoitettu laillisesti omistamiesi nimikkeiden varmuuskopioiden järjestämiseen ja uudelleenasentamiseen henkilökohtaista käyttöä varten. Älä käytä sitä kopioiden jakamiseen muille: tiedostot pysyvät siellä, missä itse säilytät niitä, eikä Omega isännöi niitä." },
+      { "id": "moderation", "title": "Sisältöilmoitukset ja moderointi", "body": "Voit ilmoittaa homebrew-ohjelmasta tai kommentista Storessa (Valinnat → Ilmoita) tai kirjoittamalla osoitteeseen {email}. Tarkastamme ilmoitukset ja voimme piilottaa tai poistaa sisältöjä sekä jäädyttää tai sulkea tilejä, jotka rikkovat näitä ehtoja; sisällöt, joista on tehty useita ilmoituksia, piilotetaan tarkastuksen ajaksi." },
+      { "id": "liability", "title": "Vastuu", "body": "Lain sallimissa rajoissa emme vastaa vahingoista, jotka johtuvat homebrew-ohjelmien käytöstä tai siitä, ettei palvelu ole käytettävissä; palvelu voi muuttua tai sen tarjoaminen voi päättyä. Kuluttajille säädetty pakottava suoja säilyy ennallaan." },
+      { "id": "changes", "title": "Muutokset ja sovellettava laki", "body": "Jos ehdot muuttuvat, pyydämme hyväksyntääsi uudelleen sovelluksessa. Sovelletaan Italian lakia." },
+      { "id": "version", "title": "Versio", "body": "Ehdot ovat voimassa {version} alkaen." }
+    ]
+  },
+  "licenses": {
+    "title": "Avoimen lähdekoodin lisenssit",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Omega-konsolisovellus on vapaa ohjelmisto, jota levitetään GNU GPL -lisenssin version 3 tai minkä tahansa myöhemmän version ehdoin ilman minkäänlaista takuuta. Täydellisen lähdekoodin voi ladata osoitteesta {url}/source." },
+      { "id": "developer", "title": "Kehittäjä", "body": "Omegan kehittäjä: {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Sovelluksen käyttämät komponentit", "body": "ps5-payload-sdk (GPL-3.0 tai myöhempi) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib ja minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Palvelimen käyttämät komponentit", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 tai myöhempi) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Storen homebrew-ohjelmat", "body": "Jokainen luettelon homebrew-ohjelma on avoimen lähdekoodin projekti, jolla on oma lisenssinsä; lisenssi näkyy ohjelman esittelysivulla yhdessä projektin verkkosivuston kanssa." }
+    ]
+  }
+}

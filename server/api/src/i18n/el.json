@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} σας έστειλε αίτημα φιλίας",
+    "friend_accept": "{actor} αποδέχτηκε το αίτημα φιλίας σας",
+    "party_invite": "{actor} σας προσκάλεσε σε party",
+    "post_like": "{actor} έκανε «Μου αρέσει» στην ανάρτησή σας",
+    "post_comment": "{actor} σχολίασε την ανάρτησή σας",
+    "store_comment": "{actor} σχολίασε το {app}",
+    "game_invite": "{actor} σας προσκαλεί να παίξετε",
+    "game_start": "{actor} παίζει {game}",
+    "online": "{actor} είναι σε σύνδεση",
+    "admin_report": "Αναφορά: {title}",
+    "admin_social_report": "Αναφορά: {kind} {title}",
+    "report_on_comment": " (σχόλιο)",
+    "report_hidden": " — σε απόκρυψη"
+  },
+  "report_kind": {
+    "user": "χρήστης",
+    "post": "ανάρτηση",
+    "post_comment": "σχόλιο"
+  },
+  "report_reason": {
+    "pirateria": "πειρατεία",
+    "malware": "κακόβουλο λογισμικό",
+    "contenuto_offensivo": "προσβλητικό περιεχόμενο",
+    "spam": "spam",
+    "link_rotto": "μη λειτουργικός σύνδεσμος",
+    "molestie": "παρενόχληση",
+    "impersonificazione": "πλαστοπροσωπία",
+    "altro": "άλλο"
+  },
+  "web": {
+    "documents": "Έγγραφα",
+    "privacy": "Απόρρητο",
+    "terms": "Όροι χρήσης",
+    "licenses": "Άδειες",
+    "source": "Πηγαίος κώδικας",
+    "language": "Γλώσσα",
+    "developed_by": "Ανάπτυξη: {developer}",
+    "source_intro": "Η εφαρμογή Omega για κονσόλα είναι ελεύθερο λογισμικό: GNU General Public License έκδοση 3 ή μεταγενέστερη. Εδώ θα βρείτε τον πλήρη πηγαίο κώδικα της εφαρμογής και της υπηρεσίας παρασκηνίου (daemon) που τη συνοδεύει, με οδηγίες μεταγλώττισης (build.sh).",
+    "source_download": "Λήψη omega-src.tar.gz",
+    "source_generated": "Το αρχείο δημιουργείται εκείνη τη στιγμή από τον κώδικα που εκτελείται στον διακομιστή.",
+    "source_unavailable": "Το αρχείο δεν είναι προσωρινά διαθέσιμο."
+  },
+  "api": {
+    "description": "Λογαριασμοί, κοινωνικές λειτουργίες και Store με homebrew για την κονσόλα. Ανεξάρτητο έργο, χωρίς σχέση με τη Sony."
+  }
+}

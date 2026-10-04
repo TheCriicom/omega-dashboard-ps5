@@ -14,7 +14,7 @@
 #endif
 
 // i componenti di Omega stessa non si elencano
-static int own(const char *name) { return !strncmp(name, "Omega", 5); }
+static int own(const char *name) { return !strncmp(name, "Omega", 5) || !strncmp(name, "omega_", 6) || !strncmp(name, "OMGA", 4); }
 
 static int has_suffix(const char *s, const char *suf) {
   size_t a = strlen(s), b = strlen(suf);
@@ -23,7 +23,7 @@ static int has_suffix(const char *s, const char *suf) {
 
 // nome da mostrare: "name" del .elf.json di Payload Manager, altrimenti la cartella
 static void sidecar_name(const char *elf, const char *fallback, char *out, size_t n) {
-  char p[600]; snprintf(p, sizeof p, "%s.json", elf);
+  char p[720]; snprintf(p, sizeof p, has_suffix(elf, ".omega.json") ? "%s" : "%s.json", elf);
   snprintf(out, n, "%s", fallback);
   char *buf = file_read(p, 8191, NULL);
   if (!buf) return;
@@ -51,11 +51,29 @@ int payload_scan(AppEntry *list, int n, int max) {
     snprintf(a->dir, sizeof a->dir, "%s", elf);
     sidecar_name(elf, e->d_name, a->name, sizeof a->name);
     snprintf(a->tid, sizeof a->tid, "PL%08x", fnv1a(e->d_name));
-    snprintf(a->sub, sizeof a->sub, "Payload \xC2\xB7 in background");
+    snprintf(a->sub, sizeof a->sub, "%s", N_("Payload \xC2\xB7 in background"));   // tradotto quando si disegna
     a->avg = g_theme_base;
     n++;
   }
   closedir(dp);
+  // OnionHEN / etaHEN 2: cartella piatta di .elf (lì li mette anche lo Store)
+  char flat[300];
+  if (hen_payload_dir(flat, sizeof flat) && (dp = opendir(flat))) {
+    while ((e = readdir(dp)) && n < max) {
+      if (e->d_name[0] == '.' || own(e->d_name) || !has_suffix(e->d_name, ".elf")) continue;
+      AppEntry *a = &list[n]; memset(a, 0, sizeof *a);
+      a->pld = 1;
+      snprintf(a->dir, sizeof a->dir, "%s/%s", flat, e->d_name);
+      char base[96]; snprintf(base, sizeof base, "%.*s", (int)(strlen(e->d_name) - 4), e->d_name);
+      char side[700]; snprintf(side, sizeof side, "%s.omega.json", a->dir);   // nome dato dallo Store
+      sidecar_name(side, base, a->name, sizeof a->name);
+      snprintf(a->tid, sizeof a->tid, "PL%08x", fnv1a(e->d_name));
+      snprintf(a->sub, sizeof a->sub, "%s", N_("Payload \xC2\xB7 in background"));
+      a->avg = g_theme_base;
+      n++;
+    }
+    closedir(dp);
+  }
   return n;
 }
 
@@ -86,7 +104,7 @@ static int send_elfldr(const char *elf) {
 
 int payload_run(const char *elf, char *err, size_t en) {
   struct stat st;
-  if (stat(elf, &st) != 0) { snprintf(err, en, "File del payload non trovato"); return -1; }
+  if (stat(elf, &st) != 0) { snprintf(err, en, "%s", _("File del payload non trovato")); return -1; }
 #ifdef PS5
   if (send_elfldr(elf) == 0) { omega_log("payload %s inviato a elfldr :%d", elf, ELFLDR_PORT); return 0; }
   char cwd[400]; snprintf(cwd, sizeof cwd, "%s", elf);
@@ -96,7 +114,7 @@ int payload_run(const char *elf, char *err, size_t en) {
   snprintf(url, sizeof url, WEBSRV_URL "/hbldr?pipe=0&daemon=1&path=%s&cwd=%s", ep, ec);
   unsigned char b[16];
   if (omega_url_peek(url, b, sizeof b) >= 0) { omega_log("payload %s avviato via websrv", elf); return 0; }
-  snprintf(err, en, "Nessun loader disponibile: serve elfldr (porta 9021) o websrv (porta 8080)");
+  snprintf(err, en, "%s", _("Nessun loader disponibile: serve elfldr (porta 9021) o websrv (porta 8080)"));
   return -1;
 #else
   omega_log("(desktop) avvio simulato del payload %s", elf);
@@ -105,6 +123,14 @@ int payload_run(const char *elf, char *err, size_t en) {
 }
 
 int payload_remove(const char *elf) {
+  char flat[300];
+  if (hen_payload_dir(flat, sizeof flat) && !strncmp(elf, flat, strlen(flat)) && elf[strlen(flat)] == '/') {
+    char p[720];
+    snprintf(p, sizeof p, "%s.omega.json", elf); unlink(p);
+    snprintf(p, sizeof p, "%s.auto_start", elf); unlink(p);
+    snprintf(p, sizeof p, "%s.json", elf); unlink(p);
+    return unlink(elf);
+  }
   char dir[400]; snprintf(dir, sizeof dir, "%s", elf);
   char *slash = strrchr(dir, '/');
   if (!slash) return -1;

@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "Om denne oversættelse",
+    "body": "Dette er en oversættelse af den oprindelige italienske tekst, som stilles til rådighed for nemheds skyld. I tilfælde af uoverensstemmelser mellem denne oversættelse og den italienske version har den italienske version forrang."
+  },
+  "missing": "[skal udfyldes]",
+  "fragments": {
+    "vat": ", momsnr. {vat}",
+    "hosting_at": " hos hostingudbyderen {hosting}"
+  },
+  "privacy": {
+    "title": "Privatlivspolitik",
+    "sections": [
+      { "id": "controller", "title": "Hvem behandler dine data", "body": "Dataansvarlig: {controller}. Kontakt vedrørende privatliv og anmeldelser: {email}. Omega er et uafhængigt projekt: det er ikke forbundet med Sony Interactive Entertainment og bruger hverken dets konti eller dets servere." },
+      { "id": "data", "title": "Hvilke data vi indsamler", "body": "Konto: online-id, adgangskode (gemmes kun som scrypt-hash, aldrig i klartekst), e-mail, hvis du oplyser den, den avatar og det coverbillede, du uploader, profiltekst, tilmeldingsdato og seneste login. Sociale funktioner: venskaber og venneanmodninger, onlinestatus og den titel, du bruger (sendt af din konsol, mens du spiller), seneste aktivitet, direkte beskeder, partychats og -invitationer, notifikationer. Store: de homebrews, du udgiver, kommentarer, synes godt om/synes ikke om, bedømmelser, anmeldelser, antal installationer. Personligt bibliotek: adressen på din JSON-fil og listen over de titler, den indeholder (navn, billeder, links). Tekniske data: for hver anmodning til serveren registrerer vi IP-adresse, dato og klokkeslæt, den anmodede sti (herunder adressen på sider, der åbnes med Omega-browseren), resultat og svartider. Adgangskoder, tokens og cookies sløres og gemmes aldrig i logfilerne." },
+      { "id": "purposes", "title": "Hvorfor og på hvilket retsgrundlag", "body": "For at levere den tjeneste, du har bedt om (konto, sociale funktioner, Store, bibliotek): opfyldelse af en kontrakt, jf. databeskyttelsesforordningens (GDPR) artikel 6, stk. 1, litra b. Af hensyn til sikkerheden, for at forebygge misbrug og for at håndtere anmeldelser: legitim interesse og retlige forpligtelser vedrørende hostet indhold, jf. artikel 6, stk. 1, litra f og litra c. Vi bruger ikke dine data til reklame eller profilering, og vi sælger dem ikke." },
+      { "id": "retention", "title": "Hvor længe", "body": "Tekniske logfiler over anmodninger slettes efter {days} dage. Kontodata og indhold opbevares, indtil du sletter din konto; sessioner udløber efter 24 timer. Afsluttede anmeldelser og loggen over moderationshandlinger opbevares, så længe de er nødvendige for at dokumentere, hvordan indholdet er blevet håndteret." },
+      { "id": "recipients", "title": "Hvem kan se dem", "body": "Andre brugere kan se din offentlige profil, det, du udgiver, og, hvis I er venner, din tilstedeværelse og aktivitet. Beskeder kan kun ses af modtagerne. Dataene ligger på en server, der administreres af den dataansvarlige{hosting_at}, som fungerer som databehandler. Når du installerer et homebrew eller åbner en webside, opretter konsollen eller vores server forbindelse til det websted, der hoster den pågældende fil eller side: her gælder det pågældende websteds privatlivspolitik." },
+      { "id": "rights", "title": "Dine rettigheder", "body": "Du kan få indsigt i dine data og downloade dem (Indstillinger → Privatliv og data → Download mine data), berigtige dem, slette dem (Slet konto), gøre indsigelse mod behandlingen eller anmode om begrænsning af den ved at skrive til {email}. Du kan også indgive en klage til det italienske datatilsyn (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Minimumsalder", "body": "Tjenesten er forbeholdt personer på mindst 14 år." },
+      { "id": "version", "title": "Version", "body": "Opdateret den {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Brugsvilkår",
+    "sections": [
+      { "id": "service", "title": "Tjenesten", "body": "Omega ({url}) tilbyder gratis konti, sociale funktioner og en homebrew-Store til konsoller, hvor brugeren lovligt har installeret tredjepartssoftware. Tjenesten drives af {name}. Omega er et uafhængigt projekt og er ikke tilknyttet, godkendt eller sponsoreret af Sony Interactive Entertainment. \"PlayStation\" og \"PS5\" er varemærker tilhørende deres respektive ejere." },
+      { "id": "risk", "title": "Brug på egen risiko", "body": "Tjenesten og homebrews i Store leveres, som de er. Installation af uofficiel software kan medføre funktionsfejl, datatab eller bortfald af konsollens garanti og sker på din egen risiko. Homebrews er værker af deres respektive ophavspersoner og er underlagt deres egne licenser." },
+      { "id": "prohibited", "title": "Hvad der ikke er tilladt", "body": "At udgive eller dele indhold, som du ikke har rettighederne til — navnlig kopier af kommercielle spil eller software, links til piratkopieret materiale, værktøjer til at omgå deres beskyttelse med henblik på piratkopiering —, malware eller farlige filer, ulovligt eller krænkende indhold eller indhold, der tilskynder til had, spam, brug af andres konti eller forsøg på at kompromittere deres sikkerhed." },
+      { "id": "publishing", "title": "Udgivelse i Store", "body": "Ved at udgive erklærer du, at du er ophavsperson til homebrewet, eller at dets licens tillader videredistribution, og at linket fører til den angivne fil uden skadelige ændringer. Du giver os tilladelse til at vise navn, beskrivelse og billeder i Store. Filerne forbliver på det websted, du angiver: Omega hoster kun opslaget." },
+      { "id": "library", "title": "Personligt bibliotek", "body": "Biblioteket bruges til at organisere og geninstallere sikkerhedskopier af titler, som du lovligt ejer, til personlig brug. Brug det ikke til at dele kopier med andre: filerne forbliver der, hvor du opbevarer dem, og Omega hoster dem ikke." },
+      { "id": "moderation", "title": "Anmeldelser og moderation", "body": "Du kan anmelde et homebrew eller en kommentar fra Store (Valgmuligheder → Anmeld) eller ved at skrive til {email}. Vi gennemgår anmeldelser og kan skjule eller fjerne indhold samt suspendere eller lukke konti, der overtræder disse vilkår; indhold med flere anmeldelser skjules, indtil det er blevet kontrolleret." },
+      { "id": "liability", "title": "Ansvar", "body": "I det omfang loven tillader det, er vi ikke ansvarlige for skader, der opstår som følge af brugen af homebrews eller af, at tjenesten ikke er tilgængelig; tjenesten kan ændres eller ophøre. Ufravigelige forbrugerbeskyttelsesregler berøres ikke heraf." },
+      { "id": "changes", "title": "Ændringer og gældende lov", "body": "Hvis vilkårene ændres, spørger vi dig igen i appen. Italiensk ret finder anvendelse." },
+      { "id": "version", "title": "Version", "body": "Vilkår gældende fra den {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Open source-licenser",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Omega-appen til konsollen er fri software, der distribueres under GNU GPL version 3 eller nyere uden nogen form for garanti. Den komplette kildekode kan downloades fra {url}/source." },
+      { "id": "developer", "title": "Udvikler", "body": "Omega er udviklet af {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Komponenter, som appen bruger", "body": "ps5-payload-sdk (GPL-3.0 eller nyere) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib og minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Komponenter, som serveren bruger", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 eller nyere) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Homebrews i Store", "body": "Hvert homebrew i kataloget er et open source-projekt med sin egen licens, som er angivet på dets side sammen med projektets websted." }
+    ]
+  }
+}

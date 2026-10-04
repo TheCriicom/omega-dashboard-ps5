@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} barátkérelmet küldött neked",
+    "friend_accept": "{actor} elfogadta a barátkérelmedet",
+    "party_invite": "{actor} meghívott egy partyba",
+    "post_like": "{actor} kedveli a bejegyzésedet",
+    "post_comment": "{actor} hozzászólt a bejegyzésedhez",
+    "store_comment": "{actor} hozzászólt ehhez: {app}",
+    "game_invite": "{actor} játszani hív",
+    "game_start": "{actor} most ezzel játszik: {game}",
+    "online": "{actor} most online",
+    "admin_report": "Bejelentés: {title}",
+    "admin_social_report": "Bejelentés: {kind} {title}",
+    "report_on_comment": " (hozzászólás)",
+    "report_hidden": " — elrejtve"
+  },
+  "report_kind": {
+    "user": "felhasználó",
+    "post": "bejegyzés",
+    "post_comment": "hozzászólás"
+  },
+  "report_reason": {
+    "pirateria": "kalózkodás",
+    "malware": "kártevő",
+    "contenuto_offensivo": "sértő tartalom",
+    "spam": "spam",
+    "link_rotto": "nem működő hivatkozás",
+    "molestie": "zaklatás",
+    "impersonificazione": "megszemélyesítés",
+    "altro": "egyéb"
+  },
+  "web": {
+    "documents": "Dokumentumok",
+    "privacy": "Adatvédelem",
+    "terms": "Felhasználási feltételek",
+    "licenses": "Licencek",
+    "source": "Forráskód",
+    "language": "Nyelv",
+    "developed_by": "Fejlesztő: {developer}",
+    "source_intro": "Az Omega konzolalkalmazás szabad szoftver: GNU General Public License 3-as vagy újabb verzió. Itt megtalálod az alkalmazás és a hozzá tartozó démon (daemon) teljes forráskódját, a fordítási útmutatóval (build.sh) együtt.",
+    "source_download": "omega-src.tar.gz letöltése",
+    "source_generated": "Az archívum a szerveren futó kódból, a letöltés pillanatában készül.",
+    "source_unavailable": "Az archívum átmenetileg nem érhető el."
+  },
+  "api": {
+    "description": "Fiókok, közösségi funkciók és homebrew Store a konzolhoz. Független projekt, nem áll kapcsolatban a Sony vállalattal."
+  }
+}

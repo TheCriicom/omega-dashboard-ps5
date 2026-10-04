@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Server di Omega: account, funzioni social e Store di homebrew per l'app console",
+  "author": "TheCriicom (https://outlinedigital.it)",
   "license": "GPL-3.0-or-later",
   "main": "src/server.js",
   "scripts": {

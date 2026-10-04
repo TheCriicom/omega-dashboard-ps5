@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "Over deze vertaling",
+    "body": "Dit is een vertaling van de oorspronkelijke Italiaanse tekst, die voor het gemak wordt aangeboden. Bij verschillen tussen deze vertaling en de Italiaanse versie heeft de Italiaanse versie voorrang."
+  },
+  "missing": "[nog aan te vullen]",
+  "fragments": {
+    "vat": ", btw-nr. {vat}",
+    "hosting_at": " bij de hostingprovider {hosting}"
+  },
+  "privacy": {
+    "title": "Privacyverklaring",
+    "sections": [
+      { "id": "controller", "title": "Wie je gegevens verwerkt", "body": "Verwerkingsverantwoordelijke: {controller}. Contact voor privacyzaken en voor meldingen: {email}. Omega is een onafhankelijk project: het is niet verbonden met Sony Interactive Entertainment en gebruikt geen accounts of servers van Sony Interactive Entertainment." },
+      { "id": "data", "title": "Welke gegevens we verzamelen", "body": "Account: online-ID, wachtwoord (alleen opgeslagen als scrypt-hash, nooit als platte tekst), e-mailadres als je dat opgeeft, de avatar en omslagafbeelding die je uploadt, profieltekst, registratiedatum en laatste aanmelding. Sociale functies: vriendschappen en vriendschapsverzoeken, onlinestatus en de titel die je gebruikt (verzonden door je console terwijl je speelt), recente activiteit, directe berichten, partychats en -uitnodigingen, notificaties. Store: de homebrew die je publiceert, reacties, likes/dislikes, beoordelingen, meldingen, aantal installaties. Persoonlijke bibliotheek: het adres van je JSON-bestand en de lijst met titels die het bevat (naam, afbeeldingen, links). Technische gegevens: bij elk verzoek aan de server registreren we IP-adres, datum en tijd, het opgevraagde pad (inclusief het adres van pagina's die met de Omega-browser worden geopend), het resultaat en de responstijden. Wachtwoorden, tokens en cookies worden afgeschermd en nooit in de logbestanden opgeslagen." },
+      { "id": "purposes", "title": "Waarom en op welke grondslag", "body": "Om je de dienst te leveren waarom je hebt gevraagd (account, sociale functies, Store, bibliotheek): uitvoering van een overeenkomst, artikel 6, lid 1, onder b, AVG. Voor de beveiliging, om misbruik te voorkomen en om meldingen af te handelen: gerechtvaardigd belang en wettelijke verplichtingen met betrekking tot gehoste inhoud, artikel 6, lid 1, onder f en onder c, AVG. We gebruiken je gegevens niet voor reclame of profilering en we verkopen ze niet." },
+      { "id": "retention", "title": "Hoe lang", "body": "Technische logbestanden van verzoeken worden na {days} dagen verwijderd. Accountgegevens en inhoud blijven bewaard totdat je je account verwijdert; sessies verlopen na 24 uur. Afgehandelde meldingen en het logboek van moderatieacties worden bewaard zolang ze nodig zijn om aan te tonen hoe met de inhoud is omgegaan." },
+      { "id": "recipients", "title": "Wie ze kan zien", "body": "Andere gebruikers zien je openbare profiel, wat je publiceert en, als jullie vrienden zijn, je aanwezigheid en activiteit. Berichten zijn alleen zichtbaar voor de ontvangers. De gegevens staan op een server die wordt beheerd door de verwerkingsverantwoordelijke{hosting_at}, die optreedt als verwerker. Wanneer je een homebrew installeert of een webpagina opent, maakt de console of onze server verbinding met de site waarop dat bestand of die pagina staat: daarvoor geldt de privacyverklaring van die site." },
+      { "id": "rights", "title": "Je rechten", "body": "Je kunt je gegevens inzien en downloaden (Instellingen → Privacy en gegevens → Mijn gegevens downloaden), ze laten corrigeren, ze wissen (Account verwijderen), bezwaar maken tegen de verwerking of om beperking ervan verzoeken door te schrijven naar {email}. Je kunt ook een klacht indienen bij de Italiaanse toezichthouder voor gegevensbescherming (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Minimumleeftijd", "body": "De dienst is voorbehouden aan personen van ten minste 14 jaar." },
+      { "id": "version", "title": "Versie", "body": "Bijgewerkt op {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Gebruiksvoorwaarden",
+    "sections": [
+      { "id": "service", "title": "De dienst", "body": "Omega ({url}) biedt gratis accounts, sociale functies en een homebrew-Store voor consoles waarop de gebruiker rechtmatig software van derden heeft geïnstalleerd. Omega wordt beheerd door {name}. Omega is een onafhankelijk project en is niet gelieerd aan, goedgekeurd door of gesponsord door Sony Interactive Entertainment. \"PlayStation\" en \"PS5\" zijn handelsmerken van hun respectieve eigenaars." },
+      { "id": "risk", "title": "Gebruik op eigen risico", "body": "De dienst en de homebrew in de Store worden geleverd zoals ze zijn. Het installeren van niet-officiële software kan storingen, gegevensverlies of het verlies van de garantie op de console veroorzaken en gebeurt op eigen risico. Homebrew zijn werken van hun respectieve auteurs, onder hun eigen licenties." },
+      { "id": "prohibited", "title": "Wat niet is toegestaan", "body": "Het publiceren of delen van inhoud waarop je geen rechten hebt — met name kopieën van commerciële games of software, links naar illegaal gekopieerd materiaal, tools om de beveiliging daarvan te omzeilen voor piraterijdoeleinden —, malware of gevaarlijke bestanden, onrechtmatige of beledigende inhoud of inhoud die aanzet tot haat, spam, het gebruik van accounts van anderen of pogingen om de beveiliging daarvan te ondermijnen." },
+      { "id": "publishing", "title": "Publiceren in de Store", "body": "Door te publiceren verklaar je dat je de auteur van de homebrew bent of dat de licentie ervan herdistributie toestaat, en dat de link zonder schadelijke wijzigingen naar het opgegeven bestand leidt. Je geeft ons toestemming om de naam, beschrijving en afbeeldingen in de Store te tonen. De bestanden blijven op de site die je opgeeft: Omega host alleen de bijbehorende vermelding." },
+      { "id": "library", "title": "Persoonlijke bibliotheek", "body": "De bibliotheek dient om back-ups van titels die je rechtmatig bezit te organiseren en opnieuw te installeren, voor persoonlijk gebruik. Gebruik haar niet om kopieën met anderen te delen: de bestanden blijven waar jij ze bewaart en Omega host ze niet." },
+      { "id": "moderation", "title": "Meldingen en moderatie", "body": "Je kunt een homebrew of een reactie melden vanuit de Store (Opties → Melden) of door te schrijven naar {email}. We beoordelen meldingen en kunnen inhoud verbergen of verwijderen en accounts die deze voorwaarden schenden opschorten of sluiten; inhoud met meerdere meldingen wordt verborgen in afwachting van controle." },
+      { "id": "liability", "title": "Aansprakelijkheid", "body": "Voor zover de wet dat toestaat, zijn we niet aansprakelijk voor schade die voortvloeit uit het gebruik van homebrew of uit het niet beschikbaar zijn van de dienst, die kan veranderen of worden stopgezet. De dwingendrechtelijke bescherming van consumenten blijft onverlet." },
+      { "id": "changes", "title": "Wijzigingen en toepasselijk recht", "body": "Als de voorwaarden veranderen, vragen we het je opnieuw in de app. Italiaans recht is van toepassing." },
+      { "id": "version", "title": "Versie", "body": "Voorwaarden van kracht vanaf {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Opensourcelicenties",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "De Omega-app voor de console is vrije software die wordt verspreid onder de GNU GPL versie 3 of later, zonder enige garantie. De volledige broncode kan worden gedownload via {url}/source." },
+      { "id": "developer", "title": "Ontwikkelaar", "body": "Omega wordt ontwikkeld door {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Componenten die de app gebruikt", "body": "ps5-payload-sdk (GPL-3.0 of later) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib en minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Componenten die de server gebruikt", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 of later) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Homebrew in de Store", "body": "Elke homebrew in de catalogus is een opensourceproject met een eigen licentie, die samen met de website van het project op de bijbehorende pagina wordt vermeld." }
+    ]
+  }
+}

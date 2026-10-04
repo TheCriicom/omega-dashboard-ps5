@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} heeft je een vriendschapsverzoek gestuurd",
+    "friend_accept": "{actor} heeft je vriendschapsverzoek geaccepteerd",
+    "party_invite": "{actor} heeft je uitgenodigd voor een party",
+    "post_like": "{actor} vindt je bericht leuk",
+    "post_comment": "{actor} heeft op je bericht gereageerd",
+    "store_comment": "{actor} heeft gereageerd op {app}",
+    "game_invite": "{actor} nodigt je uit om te spelen",
+    "game_start": "{actor} speelt {game}",
+    "online": "{actor} is online",
+    "admin_report": "Melding: {title}",
+    "admin_social_report": "Melding: {kind} {title}",
+    "report_on_comment": " (reactie)",
+    "report_hidden": " — verborgen"
+  },
+  "report_kind": {
+    "user": "gebruiker",
+    "post": "bericht",
+    "post_comment": "reactie"
+  },
+  "report_reason": {
+    "pirateria": "piraterij",
+    "malware": "malware",
+    "contenuto_offensivo": "beledigende inhoud",
+    "spam": "spam",
+    "link_rotto": "niet-werkende link",
+    "molestie": "intimidatie",
+    "impersonificazione": "zich voordoen als een ander",
+    "altro": "overig"
+  },
+  "web": {
+    "documents": "Documenten",
+    "privacy": "Privacy",
+    "terms": "Gebruiksvoorwaarden",
+    "licenses": "Licenties",
+    "source": "Broncode",
+    "language": "Taal",
+    "developed_by": "Ontwikkeld door {developer}",
+    "source_intro": "De Omega-app voor de console is vrije software: GNU General Public License versie 3 of later. Hier vind je de volledige broncode van de app en van de bijbehorende daemon, met bouwinstructies (build.sh).",
+    "source_download": "omega-src.tar.gz downloaden",
+    "source_generated": "Archief ter plekke gegenereerd uit de code die op de server draait.",
+    "source_unavailable": "Archief tijdelijk niet beschikbaar."
+  },
+  "api": {
+    "description": "Accounts, sociale functies en een homebrew-Store voor de console. Onafhankelijk project, niet gelieerd aan Sony."
+  }
+}

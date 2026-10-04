@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "Uživatel {actor} vám poslal žádost o přátelství",
+    "friend_accept": "Uživatel {actor} přijal vaši žádost o přátelství",
+    "party_invite": "Uživatel {actor} vás pozval do party",
+    "post_like": "Uživateli {actor} se líbí váš příspěvek",
+    "post_comment": "Uživatel {actor} okomentoval váš příspěvek",
+    "store_comment": "Uživatel {actor} přidal komentář: {app}",
+    "game_invite": "Uživatel {actor} vás zve ke hře",
+    "game_start": "Uživatel {actor} právě hraje: {game}",
+    "online": "Uživatel {actor} je online",
+    "admin_report": "Hlášení: {title}",
+    "admin_social_report": "Hlášení: {kind} {title}",
+    "report_on_comment": " (komentář)",
+    "report_hidden": " — skryto"
+  },
+  "report_kind": {
+    "user": "uživatel",
+    "post": "příspěvek",
+    "post_comment": "komentář"
+  },
+  "report_reason": {
+    "pirateria": "pirátství",
+    "malware": "malware",
+    "contenuto_offensivo": "urážlivý obsah",
+    "spam": "spam",
+    "link_rotto": "nefunkční odkaz",
+    "molestie": "obtěžování",
+    "impersonificazione": "vydávání se za jinou osobu",
+    "altro": "jiné"
+  },
+  "web": {
+    "documents": "Dokumenty",
+    "privacy": "Soukromí",
+    "terms": "Podmínky užívání",
+    "licenses": "Licence",
+    "source": "Zdrojový kód",
+    "language": "Jazyk",
+    "developed_by": "Vyvíjí {developer}",
+    "source_intro": "Aplikace Omega pro konzoli je svobodný software: GNU General Public License verze 3 nebo novější. Najdete zde kompletní zdrojový kód aplikace a démona, který ji doprovází, včetně pokynů ke kompilaci (build.sh).",
+    "source_download": "Stáhnout omega-src.tar.gz",
+    "source_generated": "Archiv se vytváří na vyžádání z kódu, který právě běží na serveru.",
+    "source_unavailable": "Archiv je dočasně nedostupný."
+  },
+  "api": {
+    "description": "Účty, sociální funkce a Store s homebrew pro konzoli. Nezávislý projekt, který není přidružen ke společnosti Sony."
+  }
+}

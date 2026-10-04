@@ -22,7 +22,7 @@ static float scene_t = 1;           // dissolvenza tra scene
 static Scene scene_prev = SC_SPLASH;
 static int running = 1;
 char f_user[64], f_pass[128], f_email[96], f_confirm[128];
-static char g_msg[256]; static int g_msg_err; static float g_msg_t;
+static char g_msg[512]; static int g_msg_err; static float g_msg_t;
 
 // ----------------------------------------------------------------- pannelli --
 typedef struct { Overlay o; float t; int closing; } OvSlot;
@@ -75,6 +75,12 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_STORE: store_draw(t); break;
     case OV_DOC: doc_draw(t); break;
     case OV_COMMUNITY: community_draw(t); break;
+    case OV_ABOUT: about_draw(t); break;
+    case OV_MUSIC: music_draw(t); break;
+    case OV_SYSTEM: system_draw(t); break;
+    case OV_FILES: files_draw(t); break;
+    case OV_REMOTE: remote_draw(t); break;
+    case OV_SETUP: setup_draw(t); break;
     default: break;
   }
 }
@@ -230,7 +236,7 @@ static void on_me(int st, JVal *j, const char *raw, void *ud) {
   } else {
     if (st == 401) session_clear();
     g_token[0] = 0; g_boot_state = 2;
-    if (st < 0) set_msg("Server Omega non raggiungibile", 1);
+    if (st < 0) set_msg(_("Server Omega non raggiungibile"), 1);
   }
 }
 void boot_session(void) {
@@ -282,6 +288,12 @@ static void dispatch(int b) {
       case OV_STORE: store_input(b); break;
       case OV_DOC: doc_input(b); break;
       case OV_COMMUNITY: community_input(b); break;
+      case OV_ABOUT: about_input(b); break;
+      case OV_MUSIC: music_input(b); break;
+      case OV_SYSTEM: system_input(b); break;
+      case OV_FILES: files_input(b); break;
+      case OV_REMOTE: remote_input(b); break;
+      case OV_SETUP: setup_input(b); break;
       default: break;
     }
     return;
@@ -447,7 +459,7 @@ void render_frame(void) {
     for (int i = 0; i < novs; i++) { hint_ok = i == top; ov_draw_one(ovs[i].o, ovs[i].t); }
     hint_ok = 1;
   }
-  upload_overlay();
+  upload_overlay(); files_overlay();
   install_overlay();
   toasts_draw();
   msg_draw();
@@ -469,6 +481,7 @@ int main(int argc, char **argv) {
   migrate_data_dir();
 #endif
   omega_log("Omega UI avvio");
+  i18n_init();
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) { omega_log("SDL_Init: %s", SDL_GetError()); return 1; }
 #ifdef PS5
   SDL_Window *win = SDL_CreateWindow("Omega", 0, 0, SCREEN_W, SCREEN_H, SDL_WINDOW_FULLSCREEN);
@@ -520,6 +533,9 @@ int main(int argc, char **argv) {
     social_tick();
     gallery_tick();
     install_tick();
+    music_tick();
+    files_tick();
+    setup_tick();
     foreground_tick();
     ov_update();
     scene_t = approach(scene_t, 1, 6.0f);
@@ -541,6 +557,7 @@ int main(int argc, char **argv) {
       if (now - since > 15000) { if (since) omega_log("frame: media %.1f ms, peggiore %u ms (%u frame)", (double)acc / frames, worst, frames); acc = frames = worst = 0; since = now; } }
     if (spent < FRAME_MS) SDL_Delay(FRAME_MS - spent);
   }
+  voice_shutdown(); system_shutdown();
   TTF_Quit(); SDL_Quit();
   return 0;
 }

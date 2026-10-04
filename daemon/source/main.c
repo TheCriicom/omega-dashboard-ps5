@@ -1,24 +1,34 @@
 // omega_redirect — demone avviato da Payload Manager che fa di Omega la shell:
-//  · all'avvio lancia la UI tramite websrv, appena risponde;
-//  · quando si torna alla Home di sistema, rilancia la UI;
+//  · se l'utente ha scelto Omega come Home (home-mode.txt = 1, domanda della UI
+//    al primo avvio): all'avvio lancia la UI tramite websrv e la rilancia quando
+//    si torna alla Home di sistema. Altrimenti Omega resta un'app qualsiasi;
 //  · ogni 30 s comunica al server il gioco in primo piano, anche se avviato
 //    dalla Home di sistema;
 //  · durante il gioco controlla ogni 8 s le notifiche nuove e le mostra come
-//    notifiche di sistema.
+//    notifiche di sistema;
+//  · suona la musica (player.c) anche mentre si gioca, comandato dalla UI
+//    attraverso il server di controllo locale (ctl.c).
 // Quando la UI è in primo piano (ui-active recente) presenza e notifiche le
 // gestisce lei. Usa solo lo stato del primo piano e /hbldr di websrv.
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "ctl.h"
+#include "lib.h"
+#include "json.h"
+#include "player.h"
 
 #ifndef OMEGA_BASE_URL
 #define OMEGA_BASE_URL "https://play.omegasuite.it"
@@ -31,6 +41,10 @@
 #define OMEGA_DIR        "/data/Omega"
 #define OMEGA_DIR_LEGACY "/data/OmegaPSNLab"   // nome delle prime versioni, migrato all'avvio
 #define LOG              OMEGA_DIR "/omega-redirect.log"
+#define PLAYER_STATE     OMEGA_DIR "/player.json"
+#define LIBRARY_FILE     OMEGA_DIR "/library.json"   // "La mia libreria" (lib.c)
+#define FAN_FILE         OMEGA_DIR "/fan.txt"      // soglia della ventola scelta in Sistema
+#define HOME_MODE_FILE   OMEGA_DIR "/home-mode.txt" // "1" = Omega come Home (scelta nella UI)
 #define OMEGA_SESSION    OMEGA_DIR "/session.json"
 #define OMEGA_UI_ACTIVE  OMEGA_DIR "/ui-active"
 #define OMEGA_ELF        "/data/homebrew/OmegaUI/OmegaUI.elf"
@@ -50,12 +64,28 @@
 
 int sceSystemServiceGetAppIdOfRunningBigApp(void);
 int sceSystemServiceGetAppTitleId(int appId, char *titleId);
+int sceSystemServiceParamGetInt(int paramId, int *value);
+
+// Traduzioni (i18n_data.c, generato da omega-ui-src/tools/i18n-gen.mjs con gli
+// stessi cataloghi della UI): lingua scelta nella UI o, se manca, della console.
+const char *i18n_tr(const char *msgid) __attribute__((format_arg(1)));
+void i18n_init(int sys_lang);
+const char *i18n_code(void);
+#define _(s) i18n_tr(s)
+
+// SCE_SYSTEM_SERVICE_PARAM_ID_LANG = 1; -1 se non disponibile
+static int sys_lang(void) { int v = -1; return sceSystemServiceParamGetInt(1, &v) == 0 ? v : -1; }
 
 static void lg(const char *fmt, ...) {
   int fd = open(LOG, O_WRONLY | O_CREAT | O_APPEND, 0666); if (fd < 0) return;
   char b[512]; int n = snprintf(b, sizeof b, "[%lu] ", (unsigned long)time(NULL));
   va_list ap; va_start(ap, fmt); n += vsnprintf(b + n, sizeof b - n, fmt, ap); va_end(ap);
   if (n < (int)sizeof b - 1) b[n++] = '\n'; write(fd, b, (size_t)n); close(fd);
+}
+
+void player_log(const char *fmt, ...) {
+  char b[400]; va_list ap; va_start(ap, fmt); vsnprintf(b, sizeof b, fmt, ap); va_end(ap);
+  lg("%s", b);
 }
 
 // Chiede a websrv (GET /hbldr) di avviare la UI. 0 = richiesta inviata.
@@ -72,6 +102,18 @@ static int launch_omega(void) {
   char tmp[256]; read(s, tmp, sizeof tmp);
   close(s);
   return 0;
+}
+
+// Omega come Home? Si rilegge ogni 5 s: la scelta si cambia dalla UI in qualsiasi momento.
+static int home_mode_on(void) {
+  static int cached = 0; static time_t at;
+  time_t now = time(NULL);
+  if (at && now - at < 5) return cached;
+  at = now;
+  char b[8] = ""; int fd = open(HOME_MODE_FILE, O_RDONLY);
+  if (fd >= 0) { if (read(fd, b, sizeof b - 1) < 0) b[0] = 0; close(fd); }
+  cached = b[0] == '1';
+  return cached;
 }
 
 static int is_home(void) {
@@ -101,6 +143,7 @@ int sceHttpSendRequest(int req, const void *data, size_t size);
 int sceHttpGetStatusCode(int req, int *status);
 int sceHttpReadData(int req, void *data, size_t size);
 int sceHttpDeleteRequest(int req);
+int sceHttpSetAutoRedirect(int id, int onOff);
 int sceHttpDeleteConnection(int conn);
 
 // Come nella UI, i certificati non vengono verificati.
@@ -130,6 +173,7 @@ static int post_json(const char *path, const char *token, const char *body) {
   char auth[760]; snprintf(auth, sizeof auth, "Bearer %s", token);
   sceHttpAddRequestHeader(req, "Authorization", auth, 1);
   sceHttpAddRequestHeader(req, "Content-Type", "application/json", 1);
+  sceHttpAddRequestHeader(req, "Accept-Language", i18n_code(), 1);
   int status = -1;
   if (sceHttpSendRequest(req, body, strlen(body)) >= 0) {
     sceHttpGetStatusCode(req, &status);
@@ -148,6 +192,7 @@ static int get_json(const char *path, const char *token, char *out, size_t n) {
   if (req < 0) { sceHttpDeleteConnection(conn); return req; }
   char auth[760]; snprintf(auth, sizeof auth, "Bearer %s", token);
   sceHttpAddRequestHeader(req, "Authorization", auth, 1);
+  sceHttpAddRequestHeader(req, "Accept-Language", i18n_code(), 1);   // titoli delle notifiche nella lingua dell'utente
   int status = -1;
   if (sceHttpSendRequest(req, NULL, 0) >= 0) {
     sceHttpGetStatusCode(req, &status);
@@ -157,6 +202,34 @@ static int get_json(const char *path, const char *token, char *out, size_t n) {
   }
   sceHttpDeleteRequest(req); sceHttpDeleteConnection(conn);
   return status;
+}
+
+// Un URL qualsiasi (JSON della libreria), seguendo i redirect sulla connessione:
+// il template è condiviso con presenza e notifiche.
+static pthread_mutex_t http_mx = PTHREAD_MUTEX_INITIALIZER;
+static long fetch_url(const char *url, char *buf, size_t max) {
+  pthread_mutex_lock(&http_mx);
+  long got = -1;
+  if (http_ready()) {
+    int conn = sceHttpCreateConnectionWithURL(tmpl, url, 0);
+    if (conn >= 0) {
+      sceHttpSetAutoRedirect(conn, 1);
+      int req = sceHttpCreateRequestWithURL(conn, HTTP_GET, url, 0);
+      if (req >= 0) {
+        sceHttpSetAutoRedirect(req, 1);
+        int status = 0;
+        if (sceHttpSendRequest(req, NULL, 0) >= 0 && sceHttpGetStatusCode(req, &status) >= 0 && status == 200) {
+          size_t total = 0; int k;
+          while (total < max && (k = sceHttpReadData(req, buf + total, max - total)) > 0) total += (size_t)k;
+          got = (long)total;
+        }
+        sceHttpDeleteRequest(req);
+      }
+      sceHttpDeleteConnection(conn);
+    }
+  }
+  pthread_mutex_unlock(&http_mx);
+  return got;
 }
 
 // valore di "key":"..." in un JSON piatto
@@ -211,7 +284,7 @@ typedef struct {
 int sceKernelSendNotificationRequest(int device, NotifyReq *req, size_t size, int blocking);
 
 static void sys_notify(const char *msg) {
-  static NotifyReq r;
+  NotifyReq r;   // sullo stack: la chiamano anche i thread del lettore
   memset(&r, 0, sizeof r);
   r.type = 0; r.targetId = -1;
   snprintf(r.message, sizeof r.message, "%s", msg);
@@ -219,12 +292,20 @@ static void sys_notify(const char *msg) {
 }
 
 static long notif_last; static int notif_baseline;
+static int friends_online = -1;          // dall'ultima sincronizzazione, per il telecomando e il plugin
 static char sync_buf[64 * 1024];
 
 static void notify_tick(const char *token, int ui_fresh) {
   if (ui_fresh) { notif_baseline = 0; return; }        // la UI le mostra come toast
   char path[96]; snprintf(path, sizeof path, OMEGA_API "/sync?since=%ld", notif_baseline ? notif_last : 0L);
   if (get_json(path, token, sync_buf, sizeof sync_buf) != 200) return;
+  // amici connessi: chi ha una presenza diversa da offline
+  JVal *sj = json_parse(sync_buf);
+  if (sj) {
+    int n = 0;
+    JFOR(f, jget(sj, "friends")) { const char *st = jstr(jget(f, "presence"), "status", "offline"); if (strcmp(st, "offline")) n++; }
+    friends_online = n; json_free(sj);
+  }
   char tmp[32];
   if (json_get(sync_buf, "last_notification_id", tmp, sizeof tmp) == 0) {
     long last = atol(tmp);
@@ -238,8 +319,8 @@ static void notify_tick(const char *token, int ui_fresh) {
       memcpy(item, p, len); item[len] = 0;
       char title[300] = "", body[400] = "", type[32] = "", msg[800];
       json_get(item, "title", title, sizeof title); json_get(item, "body", body, sizeof body); json_get(item, "type", type, sizeof type);
-      if (!strcmp(type, "message")) snprintf(msg, sizeof msg, "Omega \xC2\xB7 %s: %s", title, body);
-      else snprintf(msg, sizeof msg, "Omega \xC2\xB7 %s", title);
+      if (!strcmp(type, "message")) snprintf(msg, sizeof msg, _("Omega \xC2\xB7 %s: %s"), title, body);
+      else snprintf(msg, sizeof msg, _("Omega \xC2\xB7 %s"), title);
       sys_notify(msg); shown++;
       p = end;
     }
@@ -269,6 +350,7 @@ static void notify_from_loop(void) {
 }
 
 static void presence_tick(void) {
+  i18n_init(sys_lang());     // la lingua si può cambiare dalla UI in qualunque momento
   char token[700];
   if (!session_token(token, sizeof token)) return;
   int ui_fresh = ui_in_foreground();
@@ -295,6 +377,44 @@ static void presence_tick(void) {
   }
 }
 
+// Brano nuovo: se si sta giocando lo si dice con una notifica di sistema
+// (nella UI lo mostra già il mini lettore).
+static void on_track(const char *title, const char *artist) {
+  if (!title || !title[0] || ui_in_foreground() || is_home()) return;
+  char msg[600];
+  if (artist && artist[0]) snprintf(msg, sizeof msg, "\xE2\x99\xAA %s \xE2\x80\x94 %s", title, artist);
+  else snprintf(msg, sizeof msg, "\xE2\x99\xAA %s", title);
+  sys_notify(msg);
+}
+
+// /v1/system per il telecomando: cosa sta girando e quanto scalda
+int sceKernelGetCpuTemperature(int *t);
+int sceKernelGetCurrentFanDuty(int *unk, int *duty);
+static void system_json(char *out, size_t n) {
+  char tid[64] = "", name[128] = "", esc[260] = "";
+  int appId = sceSystemServiceGetAppIdOfRunningBigApp();
+  if (appId >= 0 && sceSystemServiceGetAppTitleId(appId, tid) == 0 && strncmp(tid, "NPXS", 4) && strcmp(tid, host_tid) && !ui_in_foreground()) {
+    game_name(tid, name, sizeof name); json_esc(esc, sizeof esc, name);
+  }
+  int t = -1, unk = 0, fan = -1;
+  if (sceKernelGetCpuTemperature(&t) != 0) t = -1;
+  if (sceKernelGetCurrentFanDuty(&unk, &fan) != 0) fan = -1;
+  snprintf(out, n, "{\"game\":\"%s\",\"title_id\":\"%s\",\"cpu_t\":%d,\"fan\":%d,\"friends_online\":%d,\"lang\":\"%s\"}", esc, esc[0] ? tid : "", t, fan, friends_online, i18n_code());
+}
+
+// La soglia della ventola si perde a ogni riavvio: se l'utente ne ha scelta
+// una in Omega, la si riapplica (stesso comando di etaHEN, 55-80 °C).
+static void fan_restore(void) {
+  char b[16];
+  if (read_small(FAN_FILE, b, sizeof b) <= 0) return;
+  int t = atoi(b); if (t < 55 || t > 80) return;
+  int fd = open("/dev/icc_fan", O_RDONLY, 0);
+  if (fd < 0) { lg("ventola: /dev/icc_fan non disponibile"); return; }
+  char data[10] = { 0, 0, 0, 0, 0, (char)t, 0, 0, 0, 0 };
+  int rc = ioctl(fd, 0xC01C8F07, data); close(fd);
+  lg("ventola: soglia %d C -> %d", t, rc);
+}
+
 // Stesso controllo della UI (main.c): chi parte per primo rinomina la cartella.
 static void migrate_data_dir(void) {
   struct stat st;
@@ -305,19 +425,32 @@ static void migrate_data_dir(void) {
 int main(void) {
   migrate_data_dir();
   lg("==== omega_redirect avvio ====");
+  { int v = sys_lang(); i18n_init(v); lg("lingua: %s (valore di sistema %d)", i18n_code(), v); }
+  // Una sola copia: più caricatori (OnionHEN, etaHEN, Payload Manager, autoloader)
+  // possono avviare il demone. La porta di controllo fa da lucchetto: se è già
+  // occupata c'è un altro omega_redirect e questo si ritira subito.
+  ctl_on_system(system_json);
+  if (ctl_start(OMEGA_CTL_PORT, OMEGA_DIR) != 0) { lg("un'altra copia di omega_redirect è già attiva: esco"); return 0; }
+  fan_restore();
+  // il lettore parte subito: non dipende da websrv
+  player_init(PLAYER_STATE);
+  lib_init(LIBRARY_FILE, fetch_url);
+  player_on_track(on_track);
   sleep(BOOT_DELAY_S);
 
-  for (int i = 0; i < BOOT_TRIES; i++) {
-    if (launch_omega() == 0) { lg("avvio iniziale: Omega lanciata"); break; }
-    lg("websrv non pronto (tentativo %d)", i + 1); sleep(3);
-  }
+  if (home_mode_on()) {
+    for (int i = 0; i < BOOT_TRIES; i++) {
+      if (launch_omega() == 0) { lg("avvio iniziale: Omega lanciata"); break; }
+      lg("websrv non pronto (tentativo %d)", i + 1); sleep(3);
+    }
+  } else lg("Omega non è impostata come Home: nessun avvio automatico della UI");
 
   int last_home = 1; time_t last = time(NULL), last_presence = 0, last_notify = 0;
   for (;;) {
     int home = is_home();
     time_t now = time(NULL);
     // si rilancia solo al ritorno alla Home, non finché ci si resta
-    if (home && !last_home && (now - last) > RELAUNCH_COOLDOWN_S) {
+    if (home && !last_home && (now - last) > RELAUNCH_COOLDOWN_S && home_mode_on()) {
       if (launch_omega() == 0) { lg("redirect: tornato alla Home -> Omega"); last = now; }
     }
     last_home = home;

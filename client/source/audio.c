@@ -15,6 +15,7 @@ static Voice sfx[MAXV];
 static SDL_AudioDeviceID dev;
 static int music_on = 1, sfx_on = 1; static float music_vol = 0.55f, sfx_vol = 0.8f;
 static int paused;
+static volatile int ext_music;            // il lettore musicale del demone sta suonando
 
 // -------------------------------------------------------- musica generativa --
 static const float CHORDS[4][4] = {      // frequenze (Hz): Cmaj9, Am9, Fmaj7#11, G6/9 — morbide, sospese
@@ -64,7 +65,7 @@ static void callback(void *ud, Uint8 *stream, int len) {
   for (int i = 0; i < frames; i++) {
     float l = 0, r = 0;
     duck += ((talking ? 0.25f : 1.0f) - duck) * 0.0005f;
-    if (music_on && !paused) {
+    if (music_on && !paused && !ext_music) {
       // accordo corrente con dissolvenza incrociata di 2 s ogni 9 s
       double cyc = 9.0;
       int ci = (int)(mtime / cyc) % 4, cn = (ci + 1) % 4;
@@ -151,6 +152,7 @@ void audio_init(void) {
 }
 
 void audio_pause(int p) { paused = p; }
+void audio_external_music(int on) { ext_music = on; }
 void audio_lock(int on) { if (dev) { if (on) SDL_LockAudioDevice(dev); else SDL_UnlockAudioDevice(dev); } }
 int  audio_music_on(void) { return music_on; }
 int  audio_sfx_on(void) { return sfx_on; }

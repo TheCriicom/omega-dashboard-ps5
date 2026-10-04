@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} vous a envoyé une demande d'ami",
+    "friend_accept": "{actor} a accepté votre demande d'ami",
+    "party_invite": "{actor} vous a invité à un groupe",
+    "post_like": "{actor} aime votre publication",
+    "post_comment": "{actor} a commenté votre publication",
+    "store_comment": "{actor} a commenté {app}",
+    "game_invite": "{actor} vous invite à jouer",
+    "game_start": "{actor} joue à {game}",
+    "online": "{actor} est en ligne",
+    "admin_report": "Signalement : {title}",
+    "admin_social_report": "Signalement : {kind} {title}",
+    "report_on_comment": " (commentaire)",
+    "report_hidden": " — masqué"
+  },
+  "report_kind": {
+    "user": "utilisateur",
+    "post": "publication",
+    "post_comment": "commentaire"
+  },
+  "report_reason": {
+    "pirateria": "piratage",
+    "malware": "logiciel malveillant",
+    "contenuto_offensivo": "contenu offensant",
+    "spam": "spam",
+    "link_rotto": "lien qui ne fonctionne pas",
+    "molestie": "harcèlement",
+    "impersonificazione": "usurpation d'identité",
+    "altro": "autre"
+  },
+  "web": {
+    "documents": "Documents",
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "licenses": "Licences",
+    "source": "Code source",
+    "language": "Langue",
+    "developed_by": "Développé par {developer}",
+    "source_intro": "L'application Omega pour console est un logiciel libre : GNU General Public License version 3 ou ultérieure. Vous trouverez ici le code source complet de l'application et du démon qui l'accompagne, avec les instructions de compilation (build.sh).",
+    "source_download": "Télécharger omega-src.tar.gz",
+    "source_generated": "Archive générée à la volée à partir du code utilisé sur le serveur.",
+    "source_unavailable": "Archive momentanément indisponible."
+  },
+  "api": {
+    "description": "Comptes, fonctions sociales et Store de homebrew pour la console. Projet indépendant, non affilié à Sony."
+  }
+}

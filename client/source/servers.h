@@ -11,6 +11,7 @@ int  srv_current(void);
 const Server *srv_get(int i);
 const char *srv_key(void);                  // "omega" o l'URL: lega la sessione salvata al suo server
 const char *srv_host(const Server *s);      // host senza schema, da mostrare
+const char *srv_name(const Server *s);      // nome da mostrare ("Omega" tradotto)
 void srv_select(int i);
 int  srv_normalize(const char *in, char *out, size_t on);
 int  srv_add(const char *name, const char *url);   // indice, -1 URL non valido, -2 elenco pieno

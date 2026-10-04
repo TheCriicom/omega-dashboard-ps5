@@ -14,6 +14,9 @@ URL="${OMEGA_URL:-https://play.omegasuite.it}"
 DATA="${OMEGA_DATA:-$HERE/data}"
 mkdir -p "$DATA"
 
+# tabelle delle traduzioni (source/i18n_data.c è già nel sorgente: Node serve solo per rigenerarle)
+if command -v node >/dev/null 2>&1; then node "$HERE/../tools/i18n-gen.mjs" || { echo "traduzioni non valide"; exit 1; }; fi
+
 # net.c e ime.c sono solo per la console (qui li sostituisce desktop.c);
 # update.c c'è solo nella build ufficiale.
 FILES=()

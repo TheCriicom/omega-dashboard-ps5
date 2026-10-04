@@ -12,7 +12,7 @@
 #define MAX_ITEMS 200
 #define VIDEO_HEAD (12u * 1024 * 1024)   // dei video bastano i primi secondi; WebM/MP4 si leggono anche troncati
 #define UPLOAD_MAX (96u * 1024 * 1024)
-typedef struct { char path[300]; char ext[8]; int video; char tid[16]; char date[24]; long size; char sort[32]; } GItem;
+typedef struct { char path[300]; char ext[8]; int video; char tid[16]; char date[48]; long size; char sort[32]; } GItem;
 static GItem items[MAX_ITEMS]; static int nitems, gsel;
 static float ganim, gscroll;
 static int gkind;                       // 0 avatar, 1 copertina
@@ -40,8 +40,8 @@ static void add_file(const char *path, const char *name, const char *tid) {
   // nome tipo 20261002_170728_xxx → data leggibile
   int Y, M, D, h, m;
   if (sscanf(name, "%4d%2d%2d_%2d%2d", &Y, &M, &D, &h, &m) == 5) {
-    static const char *MM[12] = { "gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic" };
-    snprintf(g->date, sizeof g->date, "%d %s %d, %02d:%02d", D, MM[(M - 1) % 12], Y, h, m);
+    char dt[48]; date_short(dt, sizeof dt, D, (M - 1) % 12, Y);
+    snprintf(g->date, sizeof g->date, "%s, %02d:%02d", dt, h, m);
     snprintf(g->sort, sizeof g->sort, "%04d%02d%02d%02d%02d", Y, M, D, h, m);
   } else {
     snprintf(g->date, sizeof g->date, "%s", name);
@@ -117,10 +117,10 @@ static void start_upload(const GItem *g, int kind) {
   if (SDL_AtomicGet(&up_state) == 1) return;
   UpJob *j = calloc(1, sizeof *j);
   snprintf(j->path, sizeof j->path, "%s", g->path); snprintf(j->ext, sizeof j->ext, "%s", g->ext); j->kind = kind;
-  snprintf(up_label, sizeof up_label, "%s", kind ? "Nuova copertina" : "Nuovo avatar");
+  snprintf(up_label, sizeof up_label, "%s", kind ? _("Nuova copertina") : _("Nuovo avatar"));
   SDL_AtomicSet(&up_state, 1); up_started = SDL_GetTicks();
   SDL_Thread *t = SDL_CreateThread(upload_thread, "upload", j);
-  if (t) SDL_DetachThread(t); else { free(j); SDL_AtomicSet(&up_state, 0); set_msg("Impossibile avviare il caricamento", 1); }
+  if (t) SDL_DetachThread(t); else { free(j); SDL_AtomicSet(&up_state, 0); set_msg(_("Impossibile avviare il caricamento"), 1); }
 }
 
 // dal ciclo principale: chiude il caricamento quando il thread ha finito
@@ -128,16 +128,16 @@ void gallery_tick(void) {
   if (SDL_AtomicGet(&up_state) != 2) return;
   SDL_AtomicSet(&up_state, 0);
   if (up_status == 201) {
-    set_msg(gkind ? "Copertina aggiornata" : "Avatar aggiornato", 0);
+    set_msg(gkind ? _("Copertina aggiornata") : _("Avatar aggiornato"), 0);
     social_sync_now();
     if (PR.loaded) profile_open(PR.oid);
   } else {
     JVal *j = json_parse(up_result);
     const char *e = jstr(j, "error", "");
-    set_msg(up_status == 413 || !strcmp(e, "file_too_large") ? "File troppo grande (massimo 96 MB)" :
-            !strcmp(e, "too_many_uploads") ? "Troppi caricamenti: riprova tra qualche minuto" :
-            !strcmp(e, "conversion_failed") ? "Il server non è riuscito a convertire il file" :
-            up_status < 0 ? "Caricamento non riuscito (rete)" : "Caricamento non riuscito", 1);
+    set_msg(up_status == 413 || !strcmp(e, "file_too_large") ? _("File troppo grande (massimo 96 MB)") :
+            !strcmp(e, "too_many_uploads") ? _("Troppi caricamenti: riprova tra qualche minuto") :
+            !strcmp(e, "conversion_failed") ? _("Il server non è riuscito a convertire il file") :
+            up_status < 0 ? _("Caricamento non riuscito (rete)") : _("Caricamento non riuscito"), 1);
     json_free(j);
   }
 }
@@ -150,8 +150,8 @@ void upload_overlay(void) {
   fill_rrect(x, y, w, h, 24, C_PANEL, 245);
   draw_spinner(x + 60, y + h / 2, 20, 255);
   draw_text(font(W_MED, 28), up_label, x + 110, y + 26, C_TXT, 255, AL_L);
-  char m[80]; Uint32 s = (SDL_GetTicks() - up_started) / 1000;
-  snprintf(m, sizeof m, "Caricamento e conversione... %us", s);
+  char m[160]; Uint32 s = (SDL_GetTicks() - up_started) / 1000;
+  snprintf(m, sizeof m, _("Caricamento e conversione... %us"), s);
   draw_text(font(W_REG, 22), m, x + 110, y + 68, C_DIM, 255, AL_L);
 }
 
@@ -164,7 +164,7 @@ void gallery_open(int kind) {
 
 static const char *game_name(const char *tid) {
   for (int i = 0; i < napps; i++) if (!strcmp(apps[i].tid, tid)) return apps[i].name;
-  return tid[0] ? tid : "Chiavetta USB";
+  return tid[0] ? tid : _("Chiavetta USB");
 }
 
 void gallery_draw(float t) {
@@ -173,8 +173,8 @@ void gallery_draw(float t) {
   int w = 1200, h = 920, x = SCREEN_W / 2 - w / 2, y = SCREEN_H / 2 - h / 2 + (int)((1 - ease_out(t)) * 50);
   shadow_rrect(x, y, w, h, 34, 50, a * 70 / 100);
   fill_rrect(x, y, w, h, 34, C_PANEL, a);
-  draw_text(font(W_LIGHT, 46), gkind ? "Scegli la copertina" : "Scegli il tuo avatar", x + 60, y + 44, C_WHITE, a, AL_L);
-  draw_text(font(W_REG, 24), "Foto e video catturati con la console o presenti su chiavetta USB. Dei video si usano i primi 3 secondi.", x + 62, y + 110, C_DIM, a, AL_L);
+  draw_text(font(W_LIGHT, 46), gkind ? _("Scegli la copertina") : _("Scegli il tuo avatar"), x + 60, y + 44, C_WHITE, a, AL_L);
+  draw_text_fit(font(W_REG, 24), _("Foto e video catturati con la console o presenti su chiavetta USB. Dei video si usano i primi 3 secondi."), x + 62, y + 110, w - 124, C_DIM, a, AL_L);
   int ly = y + 170, rh = 100, lh = h - 210;
   int total = nitems + 1;   // la prima riga ripristina il predefinito
   if (gsel >= total) gsel = total - 1;
@@ -190,28 +190,28 @@ void gallery_draw(float t) {
     int cx = x + 110, cy = ry + (rh - 12) / 2;
     if (i == 0) {
       fill_circle(cx, cy, 32, RGB(60, 66, 86), a); draw_icon(IC_RELOAD, cx, cy, 32, C_TXT, a);
-      draw_text(font(W_MED, 28), gkind ? "Usa la copertina predefinita" : "Usa un avatar Omega (illustrato o colore)", x + 170, ry + 26, C_TXT, a, AL_L);
+      draw_text(font(W_MED, 28), gkind ? _("Usa la copertina predefinita") : _("Usa un avatar Omega (illustrato o colore)"), x + 170, ry + 26, C_TXT, a, AL_L);
       continue;
     }
     GItem *g = &items[i - 1];
     fill_circle(cx, cy, 32, g->video ? RGB(140, 60, 255) : C_ACC, a);
     draw_icon(g->video ? IC_PLAY : IC_STAR, cx + (g->video ? 2 : 0), cy, 30, C_WHITE, a);
-    char l1[160]; snprintf(l1, sizeof l1, "%s \xC2\xB7 %s", g->video ? "Video" : "Foto", game_name(g->tid));
+    char l1[200]; snprintf(l1, sizeof l1, "%s \xC2\xB7 %s", g->video ? _("Video") : _("Foto"), game_name(g->tid));
     draw_text_fit(font(W_MED, 27), l1, x + 170, ry + 14, w - 420, C_TXT, a, AL_L);
     draw_text(font(W_REG, 22), g->date, x + 170, ry + 52, C_DIM, a, AL_L);
-    char sz[32]; snprintf(sz, sizeof sz, "%.1f MB", g->size / 1048576.0);
+    char sz[48]; snprintf(sz, sizeof sz, _("%.1f MB"), g->size / 1048576.0);
     draw_text(font(W_REG, 22), sz, x + w - 80, ry + 32, C_FAINT, a, AL_R);
   }
-  if (!nitems) draw_text(font(W_REG, 26), "Nessuna cattura trovata. Usa il tasto Create per fare uno screenshot o un video.", x + w / 2, ly + 180, C_FAINT, a, AL_C);
+  if (!nitems) draw_text(font(W_REG, 26), _("Nessuna cattura trovata. Usa il tasto Create per fare uno screenshot o un video."), x + w / 2, ly + 180, C_FAINT, a, AL_C);
   SDL_RenderSetClipRect(R, NULL);
   const int ic[] = { IC_BTN_X, IC_BTN_O };
-  const char *lb[] = { "Usa", "Indietro" };
+  const char *lb[] = { _("Usa"), _("Indietro") };
   hints(ic, lb, 2, a);
 }
 
 static void clear_done(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw;
-  set_msg(st == 200 ? ((intptr_t)ud ? "Copertina predefinita ripristinata" : "Avatar personalizzato rimosso") : "Operazione non riuscita", st != 200);
+  set_msg(st == 200 ? ((intptr_t)ud ? _("Copertina predefinita ripristinata") : _("Avatar personalizzato rimosso")) : _("Operazione non riuscita"), st != 200);
   social_sync_now();
   if (PR.loaded) profile_open(PR.oid);
 }
@@ -229,7 +229,7 @@ void gallery_input(int b) {
       ov_pop();
       return;
     }
-    if (SDL_AtomicGet(&up_state) == 1) { set_msg("C'è già un caricamento in corso", 1); return; }
+    if (SDL_AtomicGet(&up_state) == 1) { set_msg(_("C'è già un caricamento in corso"), 1); return; }
     start_upload(&items[gsel - 1], gkind);
     ov_pop();
   }

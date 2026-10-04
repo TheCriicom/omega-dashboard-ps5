@@ -82,6 +82,7 @@ typedef struct {
 
 static Speaker spk[MAXSPK];
 static SDL_atomic_t run_gen;         // cambia a ogni avvio/arresto: i thread vecchi escono
+static SDL_atomic_t live_threads;    // thread della voce ancora in giro (per la chiusura dell'app)
 static int state;                    // 0 spenta, 1 attiva, 2 solo ascolto
 static Uint32 me_spoke;
 
@@ -147,6 +148,7 @@ static int cap_thread(void *arg) {
     mic_push(buf, MIC_BLOCK);
   }
   in_close(mic_handle); mic_handle = -1;
+  SDL_AtomicAdd(&live_threads, -1);
   return 0;
 }
 static void mic_close(void) {}
@@ -205,6 +207,7 @@ static int tx_thread(void *arg) {
 #ifdef HAVE_OPUS
   if (enc) opus_encoder_destroy(enc);
 #endif
+  SDL_AtomicAdd(&live_threads, -1);
   return 0;
 }
 
@@ -283,6 +286,7 @@ static int rx_thread(void *arg) {
     }
     free(b);
   }
+  SDL_AtomicAdd(&live_threads, -1);
   return 0;
 }
 
@@ -321,16 +325,23 @@ static void stop(void) {
   omega_log("voce: spenta");
 }
 
+static void spawn(SDL_ThreadFunction fn, const char *name, int gen) {
+  SDL_AtomicAdd(&live_threads, 1);
+  SDL_Thread *t = SDL_CreateThread(fn, name, (void *)(intptr_t)gen);
+  if (t) SDL_DetachThread(t); else SDL_AtomicAdd(&live_threads, -1);
+}
+
 static void start(void) {
   if (!mic_mx) mic_mx = SDL_CreateMutex();
   mic_w = mic_r = 0;
   int gen = SDL_AtomicAdd(&run_gen, 1) + 1;
   int has_mic = mic_open();
+  // staccati: escono da soli al cambio di generazione; live_threads li conta
 #ifdef PS5
-  if (has_mic) SDL_CreateThread(cap_thread, "mic", (void *)(intptr_t)gen);
+  if (has_mic) spawn(cap_thread, "mic", gen);
 #endif
-  if (has_mic) SDL_CreateThread(tx_thread, "voice-tx", (void *)(intptr_t)gen);
-  SDL_CreateThread(rx_thread, "voice-rx", (void *)(intptr_t)gen);
+  if (has_mic) spawn(tx_thread, "voice-tx", gen);
+  spawn(rx_thread, "voice-rx", gen);
   state = has_mic ? 1 : 2;
   omega_log("voce: %s", has_mic ? "attiva" : "solo ascolto (microfono non disponibile)");
 }
@@ -339,6 +350,15 @@ void voice_tick(void) {
   int want = S.party.active && g_token[0] && g_scene == SC_HOME;
   if (want && !state) start();
   else if (!want && state) stop();
+}
+
+// Alla chiusura dell'app: ferma la voce e aspetta (al massimo 3 s) che i thread
+// escano, prima che SDL e la rete vengano chiusi sotto i loro piedi.
+void voice_shutdown(void) {
+  stop();
+  Uint32 t0 = SDL_GetTicks();
+  while (SDL_AtomicGet(&live_threads) > 0 && SDL_GetTicks() - t0 < 3000) SDL_Delay(20);
+  if (SDL_AtomicGet(&live_threads) > 0) omega_log("voce: %d thread ancora attivi alla chiusura", SDL_AtomicGet(&live_threads));
 }
 
 int voice_state(void) { return state; }

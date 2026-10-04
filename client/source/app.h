@@ -2,6 +2,7 @@
 #pragma once
 #include "omega.h"
 #include "json.h"
+#include "i18n.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdio.h>
@@ -13,6 +14,10 @@ char *file_read(const char *path, size_t max, size_t *len);     // malloc, termi
 void  url_encode(char *dst, size_t n, const char *src, const char *keep);
 int   file_sha256(const char *path, char out[65]);              // 0 = ok
 uint32_t fnv1a(const char *s);
+// Date tradotte (mesi 0..11, giorni della settimana 0 = domenica).
+void tmpl_fill(char *out, size_t n, const char *tmpl, const char *const *kv, int nkv);   // {chiave} → valore
+void date_long(char *out, size_t n, int wday, int day, int mon);    // "lunedì 3 ottobre"
+void date_short(char *out, size_t n, int day, int mon, int year);   // "3 ott 2026"
 
 // ----------------------------------------------------- lavoro in background --
 // Coda di rete: le callback girano sul thread principale (netq_pump).
@@ -59,6 +64,7 @@ int  text_w(TTF_Font *f, const char *s);
 int  draw_text(TTF_Font *f, const char *s, int x, int y, Col c, int alpha, int align);
 int  draw_text_fit(TTF_Font *f, const char *s, int x, int y, int maxw, Col c, int alpha, int align);
 int  draw_text_wrap(TTF_Font *f, const char *s, int x, int y, int maxw, int maxlines, int lineh, Col c, int alpha);
+int  draw_text_wrap_al(TTF_Font *f, const char *s, int x, int y, int maxw, int maxlines, int lineh, Col c, int alpha, int align);
 void fill_rect(int x, int y, int w, int h, Col c, int alpha);
 void fill_rrect(int x, int y, int w, int h, int r, Col c, int alpha);
 void stroke_rrect(int x, int y, int w, int h, int r, int t, Col c, int alpha);
@@ -80,10 +86,12 @@ enum {
   IC_SEARCH, IC_GEAR, IC_BELL, IC_FRIENDS, IC_CHAT, IC_PARTY, IC_POWER, IC_PLUS, IC_CHECK,
   IC_CLOSE, IC_ADDUSER, IC_GAMEPAD, IC_NEWS, IC_MORE, IC_MIC, IC_MICOFF, IC_PLAY, IC_USER,
   IC_BTN_X, IC_BTN_O, IC_BTN_TRI, IC_BTN_SQ, IC_BTN_OPT, IC_ARROW_R, IC_SEND, IC_EXIT,
-  IC_CLOCK, IC_STAR, IC_OMEGA, IC_GLOBE, IC_BACK, IC_FWD, IC_RELOAD,
-  IC_STORE, IC_DOWNLOAD, IC_LIKE, IC_DISLIKE, IC_COUNT
+  IC_CLOCK, IC_STAR, IC_GLOBE, IC_BACK, IC_FWD, IC_RELOAD,
+  IC_STORE, IC_DOWNLOAD, IC_LIKE, IC_DISLIKE,
+  IC_MUSIC, IC_PAUSE, IC_NEXT, IC_PREV, IC_SHUFFLE, IC_REPEAT, IC_RADIO, IC_FOLDER, IC_VOLUME, IC_ALBUM, IC_COUNT
 };
 void draw_icon(int id, int cx, int cy, int size, Col c, int alpha);
+void draw_logo(int cx, int cy, int size, int alpha);   // marchio di Omega (PNG incorporato)
 // distanze con segno (coordinate 0..1) per icone e avatar disegnati a vettori
 float sd_seg(float px, float py, float ax, float ay, float bx, float by);
 float sd_box(float px, float py, float x, float y, float w, float h, float r);
@@ -124,9 +132,12 @@ int  audio_sfx_on(void);
 int  audio_music_level(void);
 void audio_set(int music, int effects, int level);      // -1 = invariato
 void audio_lock(int on);
+void audio_external_music(int on);   // il lettore del demone suona: la musica d'ambiente tace
 
 int  voice_fill(float *out48k, int frames);   // dalla callback audio: 1 se c'è voce da mescolare
 void voice_tick(void);                        // avvia/ferma la voce insieme al party
+void voice_shutdown(void);                    // chiusura dell'app: ferma e aspetta i thread
+void system_shutdown(void);                   // ferma il thread di monitoraggio di Sistema
 int  voice_state(void);                       // 0 spenta, 1 attiva, 2 solo ascolto
 int  voice_speaking(const char *oid);
 void mic_probe(void);                         // comando di debug "micprobe"
@@ -274,7 +285,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);
@@ -283,7 +294,8 @@ int  ov_depth(void);
 void ov_clear(void);
 
 typedef void (*MenuFn)(int idx, void *ud);
-void menu_open(const char *title, const char **items, int n, MenuFn fn, void *ud);
+void menu_open(const char *title, const char **items, int n, MenuFn fn, void *ud);   // al massimo 32 voci
+void menu_select(int i);              // voce a fuoco del menu appena aperto
 void confirm_open(const char *msg, const char *yes, MenuFn fn, void *ud);
 void toast(int icon, const char *actor, int avatar, const char *title, const char *body);
 void hints(const int *icons, const char **labels, int n, int alpha);   // barra dei comandi in basso
@@ -309,12 +321,37 @@ void menu_draw(float t); void menu_input(int b);
 void confirm_draw(float t); void confirm_input(int b);
 void avatar_draw(float t); void avatar_input(int b);
 void settings_draw(float t); void settings_input(int b);
+void about_draw(float t); void about_input(int b);   // Informazioni su Omega
 void news_open(const News *n); void news_draw(float t); void news_input(int b);
 void news_art(const News *n, int x, int y, int w, int h, int radius, int alpha);
 void gallery_open(int kind); void gallery_draw(float t); void gallery_input(int b);
 void gallery_tick(void); void upload_overlay(void);
 void browser_open(const char *url); void browser_draw(float t); void browser_input(int b);
 void store_open(void); void store_draw(float t); void store_input(int b);
+// Musica (music.c): la suona il demone, anche durante i giochi
+void music_open(void); void music_draw(float t); void music_input(int b);
+void music_tick(void);
+int  music_playing(void);
+const char *music_now_line(void);     // "Titolo · Artista" del brano in corso, NULL se fermo
+void music_toggle(void);
+void music_mini(int x, int y, int alpha);
+// Sistema e gestore dei file (system.c)
+void system_open(void); void system_draw(float t); void system_input(int b);
+void files_open(const char *start); void files_draw(float t); void files_input(int b);
+void files_tick(void); void files_overlay(void);
+// Telecomando dal telefono (remote.c)
+void remote_open(void); void remote_draw(float t); void remote_input(int b);
+int  console_ip(char *out, size_t n);
+// Prima configurazione (setup.c) e jailbreak/componenti (hen.c)
+int  home_mode(void);                 // 1 Omega come Home, 0 solo app, -1 non ancora scelto
+void home_mode_set(int on);
+void home_mode_menu(void);
+void setup_tick(void);
+void hen_check(int ask);              // rileva il jailbreak e propone i componenti mancanti
+const char *hen_name(void);           // "OnionHEN", "etaHEN"... per Sistema
+int  hen_payload_dir(char *out, size_t n);   // cartella piatta dei payload per l'HEN (0 = Payload Manager)
+void setup_draw(float t); void setup_input(int b);
+void hen_ask_home(void);              // domanda "Omega come Home?" (stessa finestra)
 void community_open(int tab); void community_open_post(const char *post_id);
 void community_draw(float t); void community_input(int b);
 void doc_open(const char *kind); void doc_draw(float t); void doc_input(int b);   // "privacy" | "terms" | "licenses"

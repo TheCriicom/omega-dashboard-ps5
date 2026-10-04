@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} хоче додати вас у друзі",
+    "friend_accept": "{actor}: запит у друзі прийнято",
+    "party_invite": "{actor} запрошує вас до паті",
+    "post_like": "{actor}: подобається ваш допис",
+    "post_comment": "{actor}: новий коментар до вашого допису",
+    "store_comment": "{actor}: коментар до {app}",
+    "game_invite": "{actor} запрошує вас пограти",
+    "game_start": "{actor} грає в {game}",
+    "online": "{actor} у мережі",
+    "admin_report": "Скарга: {title}",
+    "admin_social_report": "Скарга: {kind} {title}",
+    "report_on_comment": " (коментар)",
+    "report_hidden": " — приховано"
+  },
+  "report_kind": {
+    "user": "користувач",
+    "post": "допис",
+    "post_comment": "коментар"
+  },
+  "report_reason": {
+    "pirateria": "піратство",
+    "malware": "шкідливе ПЗ",
+    "contenuto_offensivo": "образливий контент",
+    "spam": "спам",
+    "link_rotto": "неробоче посилання",
+    "molestie": "переслідування",
+    "impersonificazione": "видавання себе за іншу особу",
+    "altro": "інше"
+  },
+  "web": {
+    "documents": "Документи",
+    "privacy": "Конфіденційність",
+    "terms": "Умови використання",
+    "licenses": "Ліцензії",
+    "source": "Вихідний код",
+    "language": "Мова",
+    "developed_by": "Розробник: {developer}",
+    "source_intro": "Застосунок Omega для консолі — вільне програмне забезпечення: GNU General Public License версії 3 або новішої. Тут ви знайдете повний вихідний код застосунку та демона, що його супроводжує, з інструкціями зі збирання (build.sh).",
+    "source_download": "Завантажити omega-src.tar.gz",
+    "source_generated": "Архів створюється в момент запиту з коду, що працює на сервері.",
+    "source_unavailable": "Архів тимчасово недоступний."
+  },
+  "api": {
+    "description": "Акаунти, соціальні функції та Store з homebrew для консолі. Незалежний проєкт, не афілійований із Sony."
+  }
+}

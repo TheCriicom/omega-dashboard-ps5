@@ -16,6 +16,7 @@ const config = require('../config');
 const db = require('../db');
 const { HttpError, readJson } = require('../http');
 const { notify, notifyAdmins } = require('../notify');
+const messages = require('../messages');
 const { safeFetch, readLimited } = require('../safefetch');
 const limiter = require('../ratelimit');
 const { userCard } = require('../relations');
@@ -120,10 +121,20 @@ function dropCachedImages(prefix) {
   for (const k of [...imgCache.keys()]) if (k.startsWith(prefix)) imgCache.delete(k);
 }
 
-// Scheda per l'elenco: campi brevi, senza descrizione.
-function appCard(row, me) {
+// Testi della scheda nella lingua della richiesta: le voci del catalogo curato
+// hanno le traduzioni in i18n, gli homebrew degli utenti restano come scritti.
+function localized(row, lang) {
+  const tr = row.i18n && lang && row.i18n[lang];
   return {
-    app_id: String(row.app_id), title: row.title, tagline: row.tagline, category: row.category,
+    tagline: (tr && tr.tagline) || row.tagline,
+    description: (tr && tr.description) || row.description,
+  };
+}
+
+// Scheda per l'elenco: campi brevi, senza descrizione.
+function appCard(row, me, lang) {
+  return {
+    app_id: String(row.app_id), title: row.title, tagline: localized(row, lang).tagline, category: row.category,
     version: row.version, title_id: row.title_id, platform: row.platform, file_kind: row.file_kind, size_bytes: row.size_bytes ? Number(row.size_bytes) : null,
     has_icon: !!row.icon_url, has_cover: !!row.cover_url, hashtags: row.hashtags || [],
     downloads: Number(row.downloads || 0),
@@ -144,7 +155,7 @@ const AGG = `
 
 // ------------------------------------------------------------- homebrew --
 // GET /api/v1/store/apps?sort=recent|top|downloads&q=&tag=&mine=1
-async function listApps({ auth, url }) {
+async function listApps({ auth, url, lang }) {
   const sort = url.searchParams.get('sort') || 'recent';
   const q = String(url.searchParams.get('q') || '').trim().slice(0, 48);
   const tag = String(url.searchParams.get('tag') || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 24);
@@ -152,7 +163,12 @@ async function listApps({ auth, url }) {
   const where = ['a.published'];
   const args = [];
   if (mine) { args.push(auth.accountId); where.push(`a.author_id=$${args.length}`); }
-  if (q) { args.push(likePattern(q)); where.push(`(a.title ILIKE $${args.length} OR a.tagline ILIKE $${args.length})`); }
+  if (q) {
+    // si cerca anche nel sottotitolo tradotto mostrato all'utente
+    args.push(likePattern(q), lang);
+    const p = `$${args.length - 1}`;
+    where.push(`(a.title ILIKE ${p} OR a.tagline ILIKE ${p} OR a.i18n->$${args.length}->>'tagline' ILIKE ${p})`);
+  }
   if (tag) { args.push(tag); where.push(`$${args.length} = ANY(a.hashtags)`); }
   const order = sort === 'downloads' ? 'a.downloads DESC, a.created_at DESC'
     : sort === 'top' ? 'likes DESC, rating DESC, a.created_at DESC'
@@ -162,7 +178,7 @@ async function listApps({ auth, url }) {
        FROM lab_store_app a JOIN lab_account acc ON acc.account_id=a.author_id
       WHERE ${where.join(' AND ')}
       ORDER BY ${order} LIMIT 80`, args);
-  return { status: 200, body: { apps: r.rows.map((row) => appCard(row, auth.accountId)) } };
+  return { status: 200, body: { apps: r.rows.map((row) => appCard(row, auth.accountId, lang)) } };
 }
 
 async function appById(appId) {
@@ -174,7 +190,7 @@ async function appById(appId) {
 }
 
 // GET /api/v1/store/apps/:id
-async function getApp({ auth, params }) {
+async function getApp({ auth, params, lang }) {
   const row = await appById(params.id);
   if (!row || (!row.published && String(row.author_id) !== String(auth.accountId))) throw new HttpError(404, 'app_not_found');
   const myVote = (await db.query('SELECT value FROM lab_store_vote WHERE app_id=$1 AND account_id=$2', [row.app_id, auth.accountId])).rows[0];
@@ -186,11 +202,11 @@ async function getApp({ auth, params }) {
       WHERE c.app_id=$1 AND NOT c.hidden ORDER BY c.comment_id DESC LIMIT 50`, [row.app_id, auth.accountId])).rows;
   const screens = Array.isArray(row.screenshots) ? row.screenshots : [];
   const mine = String(row.author_id) === String(auth.accountId);
-  const card = appCard(row, auth.accountId);
+  const card = appCard(row, auth.accountId, lang);
   const body = {
     ...card,
     comment_count: card.comments, // qui "comments" è l'elenco, il conteggio passa in comment_count
-    description: row.description,
+    description: localized(row, lang).description,
     title_id: row.title_id,
     homepage_url: row.homepage_url,
     license: row.license,
@@ -253,7 +269,7 @@ async function updateApp({ req, auth, params }) {
   await db.query(
     `UPDATE lab_store_app SET title=$2, tagline=$3, description=$4, category=$5, version=$6, title_id=$7,
        icon_url=$8, cover_url=$9, screenshots=$10::jsonb, hashtags=$11, download_url=$12, file_kind=$13, size_bytes=$14,
-       platform=$15, homepage_url=$16, license=$17, updated_at=now()
+       platform=$15, homepage_url=$16, license=$17, i18n=NULL, updated_at=now()   -- le traduzioni non valgono più
      WHERE app_id=$1`,
     [row.app_id, a.title, a.tagline, a.description, a.category, a.version, a.title_id, a.icon_url, a.cover_url, a.screenshots, a.hashtags, a.download_url, a.file_kind, a.size_bytes, a.platform, a.homepage_url, a.license]);
   dropCachedImages(`app:${row.app_id}:`);
@@ -340,7 +356,7 @@ async function addComment({ req, auth, params }) {
     'INSERT INTO lab_store_comment (app_id, account_id, body) VALUES ($1,$2,$3) RETURNING comment_id::text, created_at',
     [row.app_id, auth.accountId, text]);
   if (String(row.author_id) !== String(auth.accountId)) {
-    await notify(row.author_id, 'store_comment', { actorId: auth.accountId, title: `${auth.onlineId} ha commentato ${row.title}`, body: text, ref: String(row.app_id) });
+    await notify(row.author_id, 'store_comment', { actorId: auth.accountId, title: (l) => messages.t(l, 'notify.store_comment', { actor: auth.onlineId, app: row.title }), body: text, ref: String(row.app_id) });
   }
   return { status: 201, body: { comment_id: r.rows[0].comment_id, created_at: r.rows[0].created_at } };
 }
@@ -382,7 +398,7 @@ async function resolveDownload(download_url, declaredKind) {
 }
 
 // GET /api/v1/store/apps/:id/download
-async function appDownload({ auth, params }) {
+async function appDownload({ auth, params, lang }) {
   const row = await appById(params.id);
   if (!row || (!row.published && String(row.author_id) !== String(auth.accountId))) throw new HttpError(404, 'app_not_found');
   await db.query('UPDATE lab_store_app SET downloads=downloads+1 WHERE app_id=$1', [row.app_id]);
@@ -391,7 +407,7 @@ async function appDownload({ auth, params }) {
     status: 200,
     body: {
       ...info, title: row.title, title_id: row.title_id, version: row.version, category: PLD_CATEGORY[row.category] || 'Utilities',
-      summary: row.tagline || String(row.description || '').slice(0, 180), homepage_url: row.homepage_url,
+      summary: localized(row, lang).tagline || String(localized(row, lang).description || '').slice(0, 180), homepage_url: row.homepage_url,
       size: info.size || (row.size_bytes ? Number(row.size_bytes) : null),
     },
   };
@@ -584,8 +600,8 @@ async function report({ req, auth, params }) {
   }
   await notifyAdmins('admin_report', {
     actorId: auth.accountId,
-    title: `Segnalazione: ${row.title}`,
-    body: `${reason}${commentId ? ' (commento)' : ''}${hidden ? ' — oscurato' : ''}`,
+    title: (l) => messages.t(l, 'notify.admin_report', { title: row.title }),
+    body: (l) => messages.tOr(l, `report_reason.${reason}`, reason) + (commentId ? messages.t(l, 'notify.report_on_comment') : '') + (hidden ? messages.t(l, 'notify.report_hidden') : ''),
     ref: String(row.app_id),
   });
   return { status: 201, body: { result: 'reported', hidden } };

@@ -5,6 +5,7 @@
 const db = require('../db');
 const { HttpError, readJson } = require('../http');
 const { notify, notifyFriends } = require('../notify');
+const messages = require('../messages');
 const rel = require('../relations');
 const playtime = require('../playtime');
 
@@ -103,7 +104,7 @@ async function friendRequest({ req, auth }) {
     await db.query(`UPDATE lab_friendship SET status='accepted', responded_at=now()
                     WHERE requester_id=$1 AND addressee_id=$2`, [target.account_id, auth.accountId]);
     await notify(target.account_id, 'friend_accept', {
-      actorId: auth.accountId, title: `${auth.onlineId} ha accettato la tua richiesta di amicizia`, ref: auth.onlineId });
+      actorId: auth.accountId, title: (l) => messages.t(l, 'notify.friend_accept', { actor: auth.onlineId }), ref: auth.onlineId });
     return { status: 200, body: { result: 'accepted', online_id: target.online_id } };
   }
   const existing = await db.query(
@@ -125,7 +126,7 @@ async function friendRequest({ req, auth }) {
      ON CONFLICT (requester_id, addressee_id) DO NOTHING`, [auth.accountId, target.account_id]);
   if (ins.rowCount) {
     await notify(target.account_id, 'friend_request', {
-      actorId: auth.accountId, title: `${auth.onlineId} ti ha inviato una richiesta di amicizia`, ref: auth.onlineId });
+      actorId: auth.accountId, title: (l) => messages.t(l, 'notify.friend_request', { actor: auth.onlineId }), ref: auth.onlineId });
   }
   return { status: 201, body: { result: 'pending', online_id: target.online_id } };
 }
@@ -141,7 +142,7 @@ async function friendAccept({ req, auth }) {
     [other.account_id, auth.accountId]);
   if (!r.rowCount) throw new HttpError(404, 'no_pending_request');
   await notify(other.account_id, 'friend_accept', {
-    actorId: auth.accountId, title: `${auth.onlineId} ha accettato la tua richiesta di amicizia`, ref: auth.onlineId });
+    actorId: auth.accountId, title: (l) => messages.t(l, 'notify.friend_accept', { actor: auth.onlineId }), ref: auth.onlineId });
   return { status: 200, body: { result: 'accepted', online_id: other.online_id } };
 }
 
@@ -216,10 +217,10 @@ async function presenceSet({ req, auth }) {
       `INSERT INTO lab_activity (account_id, type, game_id, game_name, detail)
        VALUES ($1,'game_start',$2,$3,$4)`, [auth.accountId, gameId, gameName, 'ha iniziato a giocare']);
     await notifyFriends(auth.accountId, 'game_start', {
-      title: `${auth.onlineId} sta giocando a ${gameName || gameId}`, body: gameName || gameId, ref: gameId });
+      title: (l) => messages.t(l, 'notify.game_start', { actor: auth.onlineId, game: gameName || gameId }), body: gameName || gameId, ref: gameId });
   } else if (status !== 'offline' && (!prev || prev.status === 'offline')) {
     await db.query(`INSERT INTO lab_activity (account_id, type, detail) VALUES ($1,'online','è online')`, [auth.accountId]);
-    await notifyFriends(auth.accountId, 'online', { title: `${auth.onlineId} è online`, ref: auth.onlineId });
+    await notifyFriends(auth.accountId, 'online', { title: (l) => messages.t(l, 'notify.online', { actor: auth.onlineId }), ref: auth.onlineId });
   }
   return { status: 200, body: { result: 'ok', presence: await presenceOf(auth.accountId) } };
 }

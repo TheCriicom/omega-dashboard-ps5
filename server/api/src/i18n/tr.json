@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} sana arkadaşlık isteği gönderdi",
+    "friend_accept": "{actor} arkadaşlık isteğini kabul etti",
+    "party_invite": "{actor} seni bir partiye davet etti",
+    "post_like": "{actor} gönderini beğendi",
+    "post_comment": "{actor} gönderine yorum yaptı",
+    "store_comment": "{actor} yorum yaptı: {app}",
+    "game_invite": "{actor} seni oynamaya davet ediyor",
+    "game_start": "{actor} şu an oynuyor: {game}",
+    "online": "{actor} çevrimiçi",
+    "admin_report": "Şikâyet: {title}",
+    "admin_social_report": "Şikâyet: {kind} {title}",
+    "report_on_comment": " (yorum)",
+    "report_hidden": " — gizlendi"
+  },
+  "report_kind": {
+    "user": "kullanıcı",
+    "post": "gönderi",
+    "post_comment": "yorum"
+  },
+  "report_reason": {
+    "pirateria": "korsanlık",
+    "malware": "kötü amaçlı yazılım",
+    "contenuto_offensivo": "saldırgan içerik",
+    "spam": "spam",
+    "link_rotto": "çalışmayan bağlantı",
+    "molestie": "taciz",
+    "impersonificazione": "kimliğe bürünme",
+    "altro": "diğer"
+  },
+  "web": {
+    "documents": "Belgeler",
+    "privacy": "Gizlilik",
+    "terms": "Kullanım koşulları",
+    "licenses": "Lisanslar",
+    "source": "Kaynak kodu",
+    "language": "Dil",
+    "developed_by": "Geliştiren: {developer}",
+    "source_intro": "Omega konsol uygulaması özgür yazılımdır: GNU General Public License sürüm 3 veya sonraki sürümleri. Burada uygulamanın ve ona eşlik eden arka plan hizmetinin (daemon) kaynak kodunun tamamını, derleme talimatlarıyla (build.sh) birlikte bulabilirsiniz.",
+    "source_download": "omega-src.tar.gz dosyasını indir",
+    "source_generated": "Arşiv, sunucuda çalışan koddan o anda oluşturulur.",
+    "source_unavailable": "Arşiv geçici olarak kullanılamıyor."
+  },
+  "api": {
+    "description": "Konsol için hesaplar, sosyal özellikler ve homebrew Store'u. Bağımsız bir projedir, Sony ile bağlantılı değildir."
+  }
+}

@@ -165,13 +165,13 @@ static void on_page(int st, JVal *j, const char *raw, void *ud) {
   if (st != 200 || !j) {
     const char *e = jstr(j, "error", "");
     snprintf(err_msg, sizeof err_msg, "%s",
-      !strcmp(e, "dns_failed") ? "Indirizzo non trovato. Controlla di averlo scritto bene." :
-      !strcmp(e, "address_not_allowed") ? "Questo indirizzo non è raggiungibile dal browser Omega." :
-      !strcmp(e, "timeout") ? "Il sito non risponde (tempo scaduto)." :
-      !strcmp(e, "too_many_requests") ? "Troppe pagine in poco tempo: attendi qualche secondo." :
-      !strcmp(e, "invalid_url") ? "Indirizzo non valido." :
-      st < 0 ? "Server Omega non raggiungibile." : "Impossibile aprire la pagina.");
-    snprintf(pg_title, sizeof pg_title, "Errore");
+      !strcmp(e, "dns_failed") ? _("Indirizzo non trovato. Controlla di averlo scritto bene.") :
+      !strcmp(e, "address_not_allowed") ? _("Questo indirizzo non è raggiungibile dal browser Omega.") :
+      !strcmp(e, "timeout") ? _("Il sito non risponde (tempo scaduto).") :
+      !strcmp(e, "too_many_requests") ? _("Troppe pagine in poco tempo: attendi qualche secondo.") :
+      !strcmp(e, "invalid_url") ? _("Indirizzo non valido.") :
+      st < 0 ? _("Server Omega non raggiungibile.") : _("Impossibile aprire la pagina."));
+    snprintf(pg_title, sizeof pg_title, "%s", _("Errore"));
     return;
   }
   jcpy(pg_title, sizeof pg_title, j, "title");
@@ -233,7 +233,7 @@ static void navigate(const char *url) {
   snprintf(hist[nhist].url, sizeof hist[nhist].url, "%s", url);
   hist[nhist].scroll = 0; hist[nhist].focus = -1;
   hidx = nhist++;
-  free_page(); snprintf(pg_title, sizeof pg_title, "Caricamento..."); pg_site[0] = 0;
+  free_page(); snprintf(pg_title, sizeof pg_title, "%s", _("Caricamento...")); pg_site[0] = 0;
   fetch_current();
 }
 
@@ -288,13 +288,13 @@ static int home_sel;    // 0 barra di ricerca, 1.. segnalibri
 static void draw_home(int a) {
   int cx = SCREEN_W / 2;
   draw_icon(IC_GLOBE, cx, 250, 110, C_ACC2, a);
-  draw_text(font(W_LIGHT, 56), "Browser Omega", cx, 320, C_WHITE, a, AL_C);
+  draw_text(font(W_LIGHT, 56), _("Browser Omega"), cx, 320, C_WHITE, a, AL_C);
   int fw = 1000, fx = cx - fw / 2, fy = 430, foc = home_sel == 0;
   fill_rrect(fx, fy, fw, 90, 45, foc ? RGB(52, 60, 84) : RGB(36, 42, 60), a);
   if (foc) stroke_rrect(fx - 4, fy - 4, fw + 8, 98, 49, 3, C_WHITE, a);
   draw_icon(IC_SEARCH, fx + 52, fy + 45, 36, C_TXT, a);
-  draw_text(font(W_LIGHT, 30), "Cerca sul web o scrivi un indirizzo", fx + 92, fy + 26, C_DIM, a, AL_L);
-  draw_text(font(W_MED, 28), "Segnalibri", cx - 600, 580, C_DIM, a, AL_L);
+  draw_text(font(W_LIGHT, 30), _("Cerca sul web o scrivi un indirizzo"), fx + 92, fy + 26, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 28), _("Segnalibri"), cx - 600, 580, C_DIM, a, AL_L);
   for (int i = 0; i < nbm; i++) {
     int col = i % 4, row = i / 4;
     int w = 280, h = 150, x = cx - 600 + col * (w + 26), y = 630 + row * (h + 24);
@@ -371,9 +371,9 @@ void browser_draw(float t) {
   if (hidx < 0) draw_home(a);
   else if (err_msg[0]) {
     draw_icon(IC_GLOBE, SCREEN_W / 2, 380, 100, C_FAINT, a);
-    draw_text(font(W_MED, 36), "Pagina non disponibile", SCREEN_W / 2, 470, C_TXT, a, AL_C);
+    draw_text(font(W_MED, 36), _("Pagina non disponibile"), SCREEN_W / 2, 470, C_TXT, a, AL_C);
     draw_text(font(W_REG, 28), err_msg, SCREEN_W / 2, 530, C_DIM, a, AL_C);
-    draw_text(font(W_REG, 24), "Torna indietro oppure scrivi un altro indirizzo", SCREEN_W / 2, 600, C_FAINT, a, AL_C);
+    draw_text(font(W_REG, 24), _("Torna indietro oppure scrivi un altro indirizzo"), SCREEN_W / 2, 600, C_FAINT, a, AL_C);
   } else {
     int base = BR_TOP + 40 - (int)scroll + oy;
     for (int i = 0; i < nblk; i++) {
@@ -401,7 +401,7 @@ void browser_draw(float t) {
   int ux = 270, uw = SCREEN_W - 270 - 220;
   fill_rrect(ux, 34, uw, 72, 36, RGB(36, 42, 60), a);
   draw_icon(hidx < 0 ? IC_SEARCH : IC_GLOBE, ux + 40, 70, 30, C_DIM, a);
-  const char *shown = hidx < 0 ? "Cerca o scrivi un indirizzo" : (!strncmp(pg_url, SEARCH_PREFIX, sizeof SEARCH_PREFIX - 1) ? pg_title : pg_url);
+  const char *shown = hidx < 0 ? _("Cerca o scrivi un indirizzo") : (!strncmp(pg_url, SEARCH_PREFIX, sizeof SEARCH_PREFIX - 1) ? pg_title : pg_url);
   draw_text_fit(font(W_REG, 27), shown, ux + 76, 52, uw - 110, hidx < 0 ? C_DIM : C_TXT, a, AL_L);
   int starred = 0; for (int i = 0; i < nbm; i++) if (hidx >= 0 && !strcmp(bm_url[i], pg_url)) starred = 1;
   draw_icon(IC_STAR, SCREEN_W - 180, 70, 36, starred ? C_WARN : C_FAINT, a);
@@ -416,7 +416,7 @@ void browser_draw(float t) {
   grad_v(0, SCREEN_H - 140, SCREEN_W, 60, RGB(14, 16, 24), 0, RGB(14, 16, 24), a);
   fill_rect(0, SCREEN_H - 80, SCREEN_W, 80, RGB(14, 16, 24), a);
   const int ic[] = { IC_BTN_X, IC_BTN_O, IC_BTN_TRI, IC_BTN_SQ };
-  const char *lb[] = { "Apri", "Indietro", "Indirizzo", "Menu" };
+  const char *lb[] = { _("Apri"), _("Indietro"), _("Indirizzo"), _("Menu") };
   hints(ic, lb, 4, a);
 }
 
@@ -461,12 +461,12 @@ static void bm_toggle(void) {
   for (int i = 0; i < nbm; i++) if (!strcmp(bm_url[i], pg_url)) {
     memmove(bm_title + i, bm_title + i + 1, sizeof bm_title[0] * (size_t)(nbm - i - 1));
     memmove(bm_url + i, bm_url + i + 1, sizeof bm_url[0] * (size_t)(nbm - i - 1));
-    nbm--; bm_save(); set_msg("Segnalibro rimosso", 0); return;
+    nbm--; bm_save(); set_msg(_("Segnalibro rimosso"), 0); return;
   }
-  if (nbm >= MAX_BM) { set_msg("Troppi segnalibri", 1); return; }
+  if (nbm >= MAX_BM) { set_msg(_("Troppi segnalibri"), 1); return; }
   snprintf(bm_title[nbm], sizeof bm_title[0], "%s", pg_title[0] ? pg_title : pg_url);
   snprintf(bm_url[nbm], sizeof bm_url[0], "%s", pg_url);
-  nbm++; bm_save(); set_msg("Aggiunto ai segnalibri", 0);
+  nbm++; bm_save(); set_msg(_("Aggiunto ai segnalibri"), 0);
 }
 
 static char hist_urls[16][600]; static int nhist_items;
@@ -486,17 +486,17 @@ static void open_history(void) {
     snprintf(hist_urls[nhist_items], sizeof hist_urls[0], "%s", tab + 1);
     items[nhist_items] = titles[nhist_items]; nhist_items++;
   }
-  if (!nhist_items) { set_msg("Cronologia vuota", 0); return; }
-  menu_open("Cronologia", items, nhist_items, history_pick, NULL);
+  if (!nhist_items) { set_msg(_("Cronologia vuota"), 0); return; }
+  menu_open(_("Cronologia"), items, nhist_items, history_pick, NULL);
 }
 static void bm_pick(int idx, void *ud) { (void)ud; if (idx >= 0 && idx < nbm) navigate(bm_url[idx]); }
 static void open_bookmarks(void) {
   static const char *items[MAX_BM];
   for (int i = 0; i < nbm; i++) items[i] = bm_title[i];
-  if (!nbm) { set_msg("Nessun segnalibro", 0); return; }
-  menu_open("Segnalibri", items, nbm > 16 ? 16 : nbm, bm_pick, NULL);
+  if (!nbm) { set_msg(_("Nessun segnalibro"), 0); return; }
+  menu_open(_("Segnalibri"), items, nbm > 16 ? 16 : nbm, bm_pick, NULL);
 }
-static void clear_history(void) { FILE *f = fopen(HIST_FILE, "w"); if (f) fclose(f); set_msg("Cronologia cancellata", 0); }
+static void clear_history(void) { FILE *f = fopen(HIST_FILE, "w"); if (f) fclose(f); set_msg(_("Cronologia cancellata"), 0); }
 
 static void menu_pick(int idx, void *ud) {
   (void)ud;
@@ -513,16 +513,16 @@ static void menu_pick(int idx, void *ud) {
 
 static void address_bar(void) {
   char buf[600]; snprintf(buf, sizeof buf, "%s", (hidx >= 0 && strncmp(pg_url, "omega://", 8)) ? pg_url : "");
-  if (edit_text("Cerca o scrivi un indirizzo", buf, sizeof buf, 0)) go_input(buf);
+  if (edit_text(_("Cerca o scrivi un indirizzo"), buf, sizeof buf, 0)) go_input(buf);
 }
 
 void browser_input(int b) {
   if (b == B_TRI) { address_bar(); return; }
   if (b == B_SQ) {
     int starred = 0; for (int i = 0; i < nbm; i++) if (hidx >= 0 && !strcmp(bm_url[i], pg_url)) starred = 1;
-    static const char *it1[] = { "Aggiungi ai segnalibri", "Segnalibri", "Cronologia", "Pagina iniziale", "Ricarica", "Cancella cronologia", "Chiudi browser" };
-    static const char *it2[] = { "Rimuovi dai segnalibri", "Segnalibri", "Cronologia", "Pagina iniziale", "Ricarica", "Cancella cronologia", "Chiudi browser" };
-    menu_open("Browser", starred ? it2 : it1, 7, menu_pick, NULL);
+    const char *it1[] = { _("Aggiungi ai segnalibri"), _("Segnalibri"), _("Cronologia"), _("Pagina iniziale"), _("Ricarica"), _("Cancella cronologia"), _("Chiudi browser") };
+    const char *it2[] = { _("Rimuovi dai segnalibri"), _("Segnalibri"), _("Cronologia"), _("Pagina iniziale"), _("Ricarica"), _("Cancella cronologia"), _("Chiudi browser") };
+    menu_open(_("Browser"), starred ? it2 : it1, 7, menu_pick, NULL);
     return;
   }
   if (b == B_L1 || (b == B_O && hidx >= 0)) {

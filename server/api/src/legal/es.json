@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "Acerca de esta traducción",
+    "body": "Esta es una traducción del texto original en italiano, ofrecida para su comodidad. En caso de discrepancia entre esta traducción y la versión italiana, prevalecerá la versión italiana."
+  },
+  "missing": "[por completar]",
+  "fragments": {
+    "vat": ", NIF-IVA {vat}",
+    "hosting_at": " en las instalaciones de {hosting}"
+  },
+  "privacy": {
+    "title": "Política de privacidad",
+    "sections": [
+      { "id": "controller", "title": "Quién trata tus datos", "body": "Responsable del tratamiento: {controller}. Contacto para cuestiones de privacidad y para denuncias: {email}. Omega es un proyecto independiente: no está vinculado a Sony Interactive Entertainment y no utiliza sus cuentas ni sus servidores." },
+      { "id": "data", "title": "Qué datos recopilamos", "body": "Cuenta: ID online, contraseña (conservada solo como hash scrypt, nunca en texto plano), correo electrónico si lo indicas, avatar e imagen de portada que subas, texto del perfil, fecha de registro y último acceso. Funciones sociales: amistades y solicitudes de amistad, estado en línea y título que estás usando (enviado por tu consola mientras juegas), actividades recientes, mensajes directos, chats e invitaciones de las parties, notificaciones. Store: los homebrew que publicas, comentarios, «me gusta»/«no me gusta», valoraciones, denuncias, número de instalaciones. Biblioteca personal: la dirección de tu archivo JSON y la lista de títulos que contiene (nombre, imágenes, enlaces). Datos técnicos: por cada solicitud al servidor registramos la dirección IP, la fecha y la hora, la ruta solicitada (incluida la dirección de las páginas abiertas con el navegador de Omega), el resultado y los tiempos. Las contraseñas, los tokens y las cookies se ocultan y nunca se guardan en los registros." },
+      { "id": "purposes", "title": "Por qué y con qué base jurídica", "body": "Para prestarte el servicio que has solicitado (cuenta, funciones sociales, Store, biblioteca): ejecución del contrato, art. 6.1.b) del RGPD. Para la seguridad, la prevención de abusos y la gestión de denuncias: interés legítimo y obligaciones legales relativas a los contenidos alojados, art. 6.1.f) y 6.1.c). No utilizamos tus datos con fines publicitarios ni de elaboración de perfiles y no los vendemos." },
+      { "id": "retention", "title": "Durante cuánto tiempo", "body": "Los registros técnicos de las solicitudes se eliminan transcurridos {days} días. Los datos de la cuenta y los contenidos se conservan hasta que elimines la cuenta; las sesiones caducan a las 24 horas. Las denuncias cerradas y el registro de las acciones de moderación se conservan mientras sean necesarios para demostrar cómo se gestionaron los contenidos." },
+      { "id": "recipients", "title": "Quién puede verlos", "body": "Los demás usuarios ven tu perfil público, lo que publicas y, si sois amigos, tu presencia y tu actividad. Los mensajes solo los ven sus destinatarios. Los datos se almacenan en un servidor gestionado por el responsable del tratamiento{hosting_at}, que actúa como encargado del tratamiento. Cuando instalas un homebrew o abres una página web, la consola o nuestro servidor se conectan al sitio que aloja ese archivo o esa página: se aplica la política de privacidad de ese sitio." },
+      { "id": "rights", "title": "Tus derechos", "body": "Puedes acceder a tus datos y descargarlos (Ajustes → Privacidad y datos → Descargar mis datos), rectificarlos, suprimirlos (Eliminar cuenta), oponerte a su tratamiento o solicitar su limitación, escribiendo a {email}. También puedes presentar una reclamación ante la autoridad italiana de protección de datos (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Edad mínima", "body": "El servicio está reservado a personas de al menos 14 años." },
+      { "id": "version", "title": "Versión", "body": "Actualizada el {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Condiciones de uso",
+    "sections": [
+      { "id": "service", "title": "El servicio", "body": "Omega ({url}) ofrece de forma gratuita cuentas, funciones sociales y una Store de homebrew para consolas en las que el usuario ha instalado legítimamente software de terceros. Está gestionado por {name}. Omega es un proyecto independiente y no está afiliado a Sony Interactive Entertainment ni ha sido aprobado o patrocinado por ella. «PlayStation» y «PS5» son marcas de sus respectivos titulares." },
+      { "id": "risk", "title": "Uso bajo tu responsabilidad", "body": "El servicio y los homebrew de la Store se proporcionan tal cual. Instalar software no oficial puede provocar fallos de funcionamiento, pérdida de datos o la pérdida de la garantía de la consola, y se hace bajo tu responsabilidad. Los homebrew son obras de sus respectivos autores, con sus propias licencias." },
+      { "id": "prohibited", "title": "Qué no está permitido", "body": "Publicar o compartir contenidos sobre los que no tienes los derechos —en particular, copias de juegos o software comerciales, enlaces a material pirateado, herramientas para eludir sus protecciones con fines de piratería—, malware o archivos peligrosos, contenidos ilícitos, ofensivos o que inciten al odio, spam, usar cuentas ajenas o intentar comprometer su seguridad." },
+      { "id": "publishing", "title": "Publicar en la Store", "body": "Al publicar, declaras que eres el autor del homebrew o que su licencia permite su redistribución, y que el enlace lleva al archivo indicado sin modificaciones dañinas. Nos autorizas a mostrar el nombre, la descripción y las imágenes en la Store. Los archivos permanecen en el sitio que indiques: Omega solo aloja su ficha." },
+      { "id": "library", "title": "Biblioteca personal", "body": "La biblioteca sirve para organizar y reinstalar las copias de seguridad de los títulos que posees legítimamente, para uso personal. No la utilices para compartir copias con otras personas: los archivos permanecen donde tú los guardas y Omega no los aloja." },
+      { "id": "moderation", "title": "Denuncias y moderación", "body": "Puedes denunciar un homebrew o un comentario desde la Store (Opciones → Denunciar) o escribiendo a {email}. Examinamos las denuncias y podemos ocultar o eliminar contenidos y suspender o cerrar las cuentas que infrinjan estas condiciones; los contenidos con varias denuncias se ocultan a la espera de revisión." },
+      { "id": "liability", "title": "Responsabilidad", "body": "En la medida en que lo permita la ley, no respondemos de los daños derivados del uso de los homebrew ni de la falta de disponibilidad del servicio, que puede cambiar o interrumpirse. Quedan a salvo las protecciones imperativas previstas para los consumidores." },
+      { "id": "changes", "title": "Modificaciones y ley aplicable", "body": "Si las condiciones cambian, te volveremos a pedir que las aceptes en la app. Se aplica la ley italiana." },
+      { "id": "version", "title": "Versión", "body": "Condiciones vigentes desde el {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Licencias de código abierto",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "La app Omega para consola es software libre distribuido bajo la licencia GNU GPL versión 3 o posterior, sin ninguna garantía. El código fuente completo se puede descargar desde {url}/source." },
+      { "id": "developer", "title": "Desarrollador", "body": "Omega está desarrollado por {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Componentes utilizados por la app", "body": "ps5-payload-sdk (GPL-3.0 o posterior) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib y minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Componentes utilizados por el servidor", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 o posterior) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Homebrew de la Store", "body": "Cada homebrew del catálogo es un proyecto de código abierto con su propia licencia, indicada en su ficha junto con el sitio web del proyecto." }
+    ]
+  }
+}

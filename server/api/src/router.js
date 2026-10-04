@@ -3,6 +3,7 @@
 // autenticazione e il gestore come "<modulo>.<funzione>" di src/endpoints/.
 const fs = require('node:fs');
 const path = require('node:path');
+const { CODES } = require('./lang');
 
 const handlers = {
   info: require('./endpoints/info'),
@@ -17,6 +18,7 @@ const handlers = {
   voice: require('./endpoints/voice'),
   media: require('./endpoints/media'),
   browse: require('./endpoints/browse'),
+  radio: require('./endpoints/radio'),
   store: require('./endpoints/store'),
   legal: require('./endpoints/legal'),
   site: require('./endpoints/site'),
@@ -31,11 +33,15 @@ function canonicalPath(pathname) {
   return pathname.startsWith(LEGACY_PREFIX) ? API_PREFIX + pathname.slice(LEGACY_PREFIX.length) : pathname;
 }
 
-// "/api/v1/users/:onlineId" → regex con gruppi nominati.
+// "/api/v1/users/:onlineId" → regex con gruppi nominati. Il parametro ":lang"
+// accetta solo i codici delle lingue supportate (lang.CODES), così "/:lang/"
+// non cattura altri percorsi di un solo segmento.
+const LANG_SOURCE = CODES.map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
 function compile(pattern) {
   const source = pattern
     .split('/')
-    .map((seg) => (seg.startsWith(':') ? `(?<${seg.slice(1)}>[^/]+)` : seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    .map((seg) => (seg === ':lang' ? `(?<lang>${LANG_SOURCE})`
+      : seg.startsWith(':') ? `(?<${seg.slice(1)}>[^/]+)` : seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
     .join('/');
   return new RegExp(`^${source}/?$`);
 }

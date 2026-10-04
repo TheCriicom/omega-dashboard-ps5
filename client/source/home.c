@@ -50,7 +50,7 @@ static Uint32 last_feed;
 static Uint32 entered_at;
 static int launching = -1; static float launch_t; static Uint32 launch_done_at;
 
-#define TOP_N 9   // Giochi, Esplora, Store, Cerca, Browser, Notifiche, Game Base, Impostazioni, Profilo
+#define TOP_N 10  // Giochi, Esplora, Store, Musica, Cerca, Browser, Notifiche, Game Base, Impostazioni, Profilo
 #define META_MAX (128 * 1024 - 1)
 #define FOCUS_MS 300   // il fuoco deve restare fermo tanto prima di caricare sfondo e scheda
 
@@ -129,7 +129,7 @@ static int pron_title(const char *path, char *out, size_t n) {
 }
 #endif
 
-// param.json (giochi PS5): titolo in italiano se c'è, altrimenti lingua predefinita
+// param.json (giochi PS5): titolo nella lingua dell'app se c'è, altrimenti lingua predefinita
 static int json_title(const char *path, char *out, size_t n) {
   char *b = file_read(path, META_MAX, NULL);
   if (!b) return 0;
@@ -138,7 +138,7 @@ static int json_title(const char *path, char *out, size_t n) {
   JVal *lp = jget(j, "localizedParameters");
   if (lp) {
     const char *def = jstr(lp, "defaultLanguage", "en-US");
-    const char *langs[3] = { "it-IT", def, "en-US" };
+    const char *langs[3] = { i18n_locale(), def, "en-US" };
     for (int i = 0; i < 3 && !ok; i++) {
       const char *t = jstr(jget(lp, langs[i]), "titleName", NULL);
       if (t && *t) { snprintf(out, n, "%s", t); ok = 1; }
@@ -272,11 +272,11 @@ static int kill_running_game(const char *except_tid) {
 static void do_launch(int idx) {
   if (apps[idx].hb) {
     // parametri già risolti da hb_step: qui parte solo la richiesta a websrv
-    char err[200];
+    char err[400];
     int r = hb_launch(apps[idx].dir, -1, 0, err, sizeof err, NULL, 0, NULL);
     if (r < 0) { set_msg(err, 1); social_presence("online", NULL, NULL); return; }
     if (r == 2) {              // demone (es. Transmission): Omega resta aperta
-      char m[160]; snprintf(m, sizeof m, "%s avviato in background", apps[idx].name);
+      char m[256]; snprintf(m, sizeof m, _("%s avviato in background"), apps[idx].name);
       set_msg(m, 0); social_presence("online", NULL, NULL); return;
     }
 #ifdef PS5
@@ -300,12 +300,12 @@ static void do_launch(int idx) {
     rc = sceLncUtilLaunchApp(apps[idx].tid, argv, &p);
     omega_log("LncLaunch (riprova) %s rc=0x%x", apps[idx].tid, rc);
   }
-  if (rc == (int)0x80940031) { set_msg("Questo titolo non è registrato nel sistema e non può partire", 1); social_presence("online", NULL, NULL); return; }
+  if (rc == (int)0x80940031) { set_msg(_("Questo titolo non è registrato nel sistema e non può partire"), 1); social_presence("online", NULL, NULL); return; }
 #else
   int rc = 0;
   omega_log("(desktop) avvio simulato di %s", apps[idx].tid);
 #endif
-  if (rc < 0) { char e[96]; snprintf(e, sizeof e, "Avvio non riuscito (0x%x)", rc); set_msg(e, 1); social_presence("online", NULL, NULL); return; }
+  if (rc < 0) { char e[160]; snprintf(e, sizeof e, _("Avvio non riuscito (0x%x)"), rc); set_msg(e, 1); social_presence("online", NULL, NULL); return; }
 #ifdef PS5
   // Omega si chiude e lascia tutta la memoria al gioco; al ritorno alla Home
   // il demone omega_redirect la riapre
@@ -322,7 +322,7 @@ static char hb_names[HB_MENU_N][64]; static const char *hb_items[HB_MENU_N]; sta
 static SDL_atomic_t hb_state;    // 0 libero, 1 al lavoro, 2 finito
 static void hb_pick(int i, void *ud);
 static int hb_rc, hb_nn, hb_arg, hb_shown; static Uint32 hb_t0;
-static char hb_err[200], hb_dir[256], hb_tid[16];
+static char hb_err[400], hb_dir[256], hb_tid[16];
 static int hb_thread(void *ud) {
   (void)ud;
   hb_nn = 0;
@@ -341,7 +341,7 @@ static void hb_step(int idx, int choice) {
 }
 static void hb_poll(void) {
   int s = SDL_AtomicGet(&hb_state);
-  if (s == 1 && !hb_shown && SDL_GetTicks() - hb_t0 > 500) { hb_shown = 1; set_msg("Caricamento dell'homebrew...", 0); }
+  if (s == 1 && !hb_shown && SDL_GetTicks() - hb_t0 > 500) { hb_shown = 1; set_msg(_("Caricamento dell'homebrew..."), 0); }
   if (s != 2) return;
   SDL_AtomicSet(&hb_state, 0);
   int idx = -1;
@@ -371,9 +371,9 @@ void launch_app(int idx) {
   if (idx < 0 || idx >= napps || launching >= 0 || SDL_AtomicGet(&hb_state)) return;
   if (apps[idx].hb) { hb_step(idx, -1); return; }
   if (apps[idx].pld) {
-    char err[200];
+    char err[400];
     if (payload_run(apps[idx].dir, err, sizeof err) != 0) { set_msg(err, 1); return; }
-    char m[160]; snprintf(m, sizeof m, "%s avviato in background", apps[idx].name);
+    char m[256]; snprintf(m, sizeof m, _("%s avviato in background"), apps[idx].name);
     sfx_play(SFX_LAUNCH); set_msg(m, 0);
     return;
   }
@@ -477,7 +477,7 @@ static void top_bar(int alpha) {
   sel_anim_top = approach(sel_anim_top, (float)top_sel, 18.0f);
   int focus = zone == Z_TOP;
   int x = 110, y = 44;
-  const char *tabs[2] = { "Giochi", "Esplora" };
+  const char *tabs[2] = { _("Giochi"), _("Esplora") };
   for (int i = 0; i < 2; i++) {
     int on = tab == i;
     TTF_Font *f = font(on ? W_MED : W_LIGHT, 38);
@@ -493,23 +493,27 @@ static void top_bar(int alpha) {
   TTF_Font *cf = font(W_REG, 32);
   int rx = SCREEN_W - 80;
   rx -= draw_text(cf, clock, rx, y + 6, C_TXT, alpha, AL_R) + 40;
-  const int icons[7] = { IC_STORE, IC_SEARCH, IC_GLOBE, IC_BELL, IC_FRIENDS, IC_GEAR, -1 };
-  int badges[7] = { 0, 0, 0, S.unread_notif, S.in_req + S.unread_msg + S.ninv, 0, 0 };
-  int pos[7];
-  // da destra: avatar, impostazioni, amici, notifiche, browser, cerca, store
+  const int icons[8] = { IC_STORE, IC_MUSIC, IC_SEARCH, IC_GLOBE, IC_BELL, IC_FRIENDS, IC_GEAR, -1 };
+  int badges[8] = { 0, 0, 0, 0, S.unread_notif, S.in_req + S.unread_msg + S.ninv, 0, 0 };
+  int pos[8];
+  // da destra: avatar, impostazioni, amici, notifiche, browser, cerca, musica, store
   int cx = rx - 30;
-  for (int k = 6; k >= 0; k--) { pos[k] = cx; cx -= k == 6 ? 96 : 84; }
-  for (int k = 0; k < 7; k++) {
+  for (int k = 7; k >= 0; k--) { pos[k] = cx; cx -= k == 7 ? 96 : 84; }
+  for (int k = 0; k < 8; k++) {
     int idx = 2 + k, foc = focus && top_sel == idx;
     int px = pos[k], py = y + 24;
-    if (k == 6) {
+    if (k == 7) {
       if (foc) ring(px, py, 38, 3, C_WHITE, alpha);
       draw_avatar(S.me, S.my_avatar, px, py, 60, alpha);
       fill_circle(px + 22, py + 22, 9, RGB(10, 14, 24), alpha);
       fill_circle(px + 22, py + 22, 6, C_OK, alpha);
     } else {
       if (foc) fill_circle(px, py, 36, C_WHITE, alpha);
-      draw_icon(icons[k], px, py, 38, foc ? RGB(10, 12, 20) : C_TXT, alpha);
+      // musica in corso: barrette al posto della nota, e il titolo sotto quando è a fuoco
+      if (icons[k] == IC_MUSIC && music_now_line()) {
+        music_mini(px - 12, py - 14, alpha);
+        if (foc) draw_text_fit(font(W_REG, 22), music_now_line(), px, py + 46, 420, C_TXT, alpha, AL_C);
+      } else draw_icon(icons[k], px, py, 38, foc ? RGB(10, 12, 20) : C_TXT, alpha);
       if (badges[k]) draw_badge(px + 22, py - 20, badges[k], alpha);
     }
   }
@@ -520,12 +524,13 @@ static void top_activate(void) {
     case 0: tab = T_GAMES; tab_anim = 0; break;
     case 1: tab = T_EXPLORE; tab_anim = 0; social_load_news(); social_load_activity(); break;
     case 2: store_open(); break;
-    case 3: search_open(); break;
-    case 4: browser_open(NULL); break;
-    case 5: social_load_notifications(); ov_push(OV_NOTIF); break;
-    case 6: gb_open(0); break;
-    case 7: ov_push(OV_SETTINGS); break;
-    case 8: profile_open(S.me); break;
+    case 3: music_open(); break;
+    case 4: search_open(); break;
+    case 5: browser_open(NULL); break;
+    case 6: social_load_notifications(); ov_push(OV_NOTIF); break;
+    case 7: gb_open(0); break;
+    case 8: ov_push(OV_SETTINGS); break;
+    case 9: profile_open(S.me); break;
   }
 }
 
@@ -535,8 +540,8 @@ static void game_row(int y0, int alpha) {
     int w = 900, h = 220, x = 110;
     fill_rrect(x, y0, w, h, 26, C_PANEL, alpha * 80 / 100);
     draw_icon(IC_GAMEPAD, x + 110, y0 + h / 2, 90, C_DIM, alpha);
-    draw_text(font(W_MED, 34), "Nessun gioco installato", x + 200, y0 + 64, C_TXT, alpha, AL_L);
-    draw_text(font(W_REG, 26), "I giochi e le app installati compariranno qui.", x + 200, y0 + 116, C_DIM, alpha, AL_L);
+    draw_text(font(W_MED, 34), _("Nessun gioco installato"), x + 200, y0 + 64, C_TXT, alpha, AL_L);
+    draw_text(font(W_REG, 26), _("I giochi e le app installati compariranno qui."), x + 200, y0 + 116, C_DIM, alpha, AL_L);
     return;
   }
   for (int i = 0; i < napps; i++) {
@@ -590,10 +595,10 @@ static void game_info(int y0, int alpha) {
   AppEntry *ap = &apps[app_sel];
   TTF_Font *tf = font(W_LIGHT, 72);
   draw_text_fit(tf, ap->name, 110, y0, 1300, C_WHITE, alpha, AL_L);
-  char sub[160]; int np = count_playing(ap->tid);
-  if (np) snprintf(sub, sizeof sub, "%s  \xC2\xB7  %d %s", ap->tid, np, np == 1 ? "amico sta giocando" : "amici stanno giocando");
-  else if (ap->hb) snprintf(sub, sizeof sub, "Homebrew%s%s", ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
-  else snprintf(sub, sizeof sub, "%s  \xC2\xB7  Installato", ap->tid);
+  char sub[256], pl[96]; int np = count_playing(ap->tid);
+  if (np) { snprintf(pl, sizeof pl, np == 1 ? _("%d amico sta giocando") : _("%d amici stanno giocando"), np); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, pl); }
+  else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
+  else snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, _("Installato"));
   int sx = 114;
   if (np) { fill_circle(sx + 8, y0 + 112, 7, C_OK, alpha); sx += 26; }
   draw_text(font(W_REG, 28), sub, sx, y0 + 96, np ? C_TXT : C_DIM, alpha, AL_L);
@@ -601,7 +606,7 @@ static void game_info(int y0, int alpha) {
   sel_anim_act = approach(sel_anim_act, zone == Z_ACT ? (float)act_sel : -1.0f, 16.0f);
   int by = y0 + 168;
   float f0 = clampf(1 - fabsf(sel_anim_act - 0), 0, 1), f1 = clampf(1 - fabsf(sel_anim_act - 1), 0, 1);
-  int w0 = pill(110, by, 84, "Gioca", IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
+  int w0 = pill(110, by, 84, _("Gioca"), IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
   pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
   if (zone == Z_ACT) focus_ring(act_sel == 0 ? 110 : 110 + w0 + 20, by, act_sel == 0 ? w0 : 84, 84, 42, 0.5f + 0.5f * sinf((float)g_time * 3.2f), (int)(alpha * (act_sel == 0 ? f0 : f1)));
 }
@@ -621,10 +626,10 @@ static void card_people(int x, int y, int w, int h, const char *title, UserRef *
   draw_icon(now ? IC_GAMEPAD : IC_CLOCK, x + 44, y + 44, 30, now ? C_OK : C_DIM, alpha);
   draw_text(font(W_MED, 26), title, x + 74, y + 28, C_TXT, alpha, AL_L);
   if (!n) {
-    const char *empty = now ? "Nessun amico sta giocando ora" : "Nessun amico ci ha ancora giocato";
+    const char *empty = now ? _("Nessun amico sta giocando ora") : _("Nessun amico ci ha ancora giocato");
     draw_text_wrap(font(W_REG, 24), empty, x + 32, y + 100, w - 64, 2, 32, C_DIM, alpha);
     if (now && S.game_players > 0) {
-      char m[80]; snprintf(m, sizeof m, "%d %s su Omega in questo momento", S.game_players, S.game_players == 1 ? "giocatore" : "giocatori");
+      char m[160]; snprintf(m, sizeof m, S.game_players == 1 ? _("%d giocatore su Omega in questo momento") : _("%d giocatori su Omega in questo momento"), S.game_players);
       draw_text_fit(font(W_REG, 22), m, x + 32, y + h - 56, w - 64, C_FAINT, alpha, AL_L);
     }
     return;
@@ -634,7 +639,7 @@ static void card_people(int x, int y, int w, int h, const char *title, UserRef *
     draw_avatar(u[i].oid, u[i].avatar, x + 58, yy + 26, 52, alpha);
     if (now) { fill_circle(x + 78, yy + 46, 9, C_PANEL, alpha); fill_circle(x + 78, yy + 46, 6, C_OK, alpha); }
     draw_text_fit(font(W_MED, 25), u[i].oid, x + 100, yy + 2, w - 130, C_TXT, alpha, AL_L);
-    char t[48]; if (now) play_time(u[i].when, t, sizeof t); else rel_time(u[i].when, t, sizeof t);
+    char t[64]; if (now) play_time(u[i].when, t, sizeof t); else rel_time(u[i].when, t, sizeof t);
     draw_text(font(W_REG, 21), t, x + 100, yy + 32, C_DIM, alpha, AL_L);
     yy += 66;
   }
@@ -647,13 +652,13 @@ static void card_news(int x, int y, int w, int h, const News *n, int focused, fl
   fill_rrect(x + 22, y + 22, text_w(font(W_BOLD, 18), n->tag) + 26, 32, 16, RGB(0, 0, 0), alpha * 45 / 100);
   draw_text(font(W_BOLD, 18), n->tag, x + 35, y + 27, C_WHITE, alpha, AL_L);
   draw_text_wrap(font(W_MED, 26), n->title, x + 26, y + 142, w - 52, 2, 32, C_TXT, alpha);
-  char t[32]; rel_time(n->when, t, sizeof t);
+  char t[64]; rel_time(n->when, t, sizeof t);
   draw_text(font(W_REG, 20), t, x + 26, y + h - 40, C_FAINT, alpha, AL_L);
 }
 
 static void game_cards(int y0, int alpha) {
   sel_anim_card = approach(sel_anim_card, zone == Z_CARDS ? (float)card_sel : -5.0f, 16.0f);
-  draw_text(font(W_MED, 30), "Amici e notizie", 110, y0 - 56, C_TXT, alpha, AL_L);
+  draw_text(font(W_MED, 30), _("Amici e notizie"), 110, y0 - 56, C_TXT, alpha, AL_L);
   if (S.game_loading && !S.ngame_now && !S.ngame_played) draw_spinner(380, y0 - 38, 10, alpha);
   int x = 110, h = 330;
   int widths[2] = { 470, 420 };
@@ -668,8 +673,8 @@ static void game_cards(int y0, int alpha) {
     float fa = clampf(1 - fabsf(sel_anim_card - i), 0, 1);
     int foc = zone == Z_CARDS && card_sel == i;
     if (x < SCREEN_W && x + w > 0) {
-      if (i == 0) card_people(x, y0, w, h, "Stanno giocando ora", S.game_now, S.ngame_now, 1, foc, fa, alpha);
-      else if (i == 1) card_people(x, y0, w, h, "Hanno giocato di recente", S.game_played, S.ngame_played, 0, foc, fa, alpha);
+      if (i == 0) card_people(x, y0, w, h, _("Stanno giocando ora"), S.game_now, S.ngame_now, 1, foc, fa, alpha);
+      else if (i == 1) card_people(x, y0, w, h, _("Hanno giocato di recente"), S.game_played, S.ngame_played, 0, foc, fa, alpha);
       else card_news(x, y0, w, h, &S.game_news[i - 2], foc, fa, alpha);
     }
     x += w + 26;
@@ -678,21 +683,21 @@ static void game_cards(int y0, int alpha) {
 
 // attività degli amici
 static void act_line(const Activity *a, char *out, size_t n) {
-  if (!strcmp(a->type, "game_start")) snprintf(out, n, "ha iniziato a giocare a %s", a->game_name[0] ? a->game_name : a->game_id);
-  else if (!strcmp(a->type, "online")) snprintf(out, n, "è online");
+  if (!strcmp(a->type, "game_start")) snprintf(out, n, _("ha iniziato a giocare a %s"), a->game_name[0] ? a->game_name : a->game_id);
+  else if (!strcmp(a->type, "online")) snprintf(out, n, "%s", _("è online"));
   else snprintf(out, n, "%s", a->detail[0] ? a->detail : a->type);
 }
 
 static void feed_row(int y0, int alpha, int *sel, float *anim, int focused_zone) {
   *anim = approach(*anim, focused_zone ? (float)*sel : -5.0f, 16.0f);
-  draw_text(font(W_MED, 30), "Cosa fanno i tuoi amici", 110, y0 - 56, C_TXT, alpha, AL_L);
+  draw_text(font(W_MED, 30), _("Cosa fanno i tuoi amici"), 110, y0 - 56, C_TXT, alpha, AL_L);
   int n = 0; const Activity *list[MAX_ACT];
   for (int i = 0; i < S.nact; i++) if (strcasecmp(S.act[i].oid, S.me)) list[n++] = &S.act[i];
   if (!n) {
     fill_rrect(110, y0, 900, 150, 24, C_PANEL, alpha * 80 / 100);
     draw_icon(IC_FRIENDS, 190, y0 + 75, 54, C_DIM, alpha);
-    draw_text(font(W_MED, 28), "Nessuna attività recente", 260, y0 + 40, C_TXT, alpha, AL_L);
-    draw_text(font(W_REG, 23), "Aggiungi amici per vedere cosa giocano.", 260, y0 + 82, C_DIM, alpha, AL_L);
+    draw_text(font(W_MED, 28), _("Nessuna attività recente"), 260, y0 + 40, C_TXT, alpha, AL_L);
+    draw_text(font(W_REG, 23), _("Aggiungi amici per vedere cosa giocano."), 260, y0 + 82, C_DIM, alpha, AL_L);
     return;
   }
   if (*sel >= n) *sel = n - 1;
@@ -707,7 +712,7 @@ static void feed_row(int y0, int alpha, int *sel, float *anim, int focused_zone)
     card_frame(x, y0, w, h, focused_zone && *sel == i, fa, alpha);
     draw_avatar(list[i]->oid, list[i]->avatar, x + 62, y0 + 62, 72, alpha);
     draw_text_fit(font(W_MED, 26), list[i]->oid, x + 114, y0 + 32, w - 140, C_TXT, alpha, AL_L);
-    char t[32]; rel_time(list[i]->when, t, sizeof t);
+    char t[64]; rel_time(list[i]->when, t, sizeof t);
     draw_text(font(W_REG, 21), t, x + 114, y0 + 66, C_FAINT, alpha, AL_L);
     char l[200]; act_line(list[i], l, sizeof l);
     draw_text_wrap(font(W_REG, 24), l, x + 28, y0 + 112, w - 56, 2, 30, C_DIM, alpha);
@@ -730,7 +735,7 @@ static void explore_draw(int alpha) {
   int y = 150 - (int)ex_scroll;
   // notizie: la prima grande, le altre in fila
   ex_anim_news = approach(ex_anim_news, zone != Z_TOP && ex_zone == 1 ? (float)ex_news_sel : -5.0f, 16.0f);
-  draw_text(font(W_MED, 30), "Notizie dal mondo dei videogiochi", 110, y, C_TXT, alpha, AL_L);
+  draw_text(font(W_MED, 30), _("Notizie dal mondo dei videogiochi"), 110, y, C_TXT, alpha, AL_L);
   y += 60;
   if (!S.nnews) { draw_spinner(140, y + 40, 14, alpha); }
   static float nsx; float nt = 0;
@@ -754,7 +759,7 @@ static void explore_draw(int alpha) {
         draw_text_wrap(font(W_MED, 27), S.news[i].title, x + 26, y + ah + 6, w - 52, 2, 34, C_TXT, alpha);
         draw_text_wrap(font(W_REG, 22), S.news[i].body, x + 26, y + ah + 84, w - 52, 2, 28, C_DIM, alpha);
       }
-      char t[32]; rel_time(S.news[i].when, t, sizeof t);
+      char t[64]; rel_time(S.news[i].when, t, sizeof t);
       draw_text(font(W_REG, 20), t, x + w - 28, y + h - 40, C_FAINT, alpha, AL_R);
     }
     x += w + 26;
@@ -762,7 +767,7 @@ static void explore_draw(int alpha) {
   y += 470;
   // amici online
   ex_anim_fr = approach(ex_anim_fr, zone != Z_TOP && ex_zone == 2 ? (float)ex_fr_sel : -5.0f, 16.0f);
-  char hdr[64]; snprintf(hdr, sizeof hdr, "Amici  \xC2\xB7  %d online", friends_online_count());
+  char hdr[128]; snprintf(hdr, sizeof hdr, _("Amici  \xC2\xB7  %d online"), friends_online_count());
   draw_text(font(W_MED, 30), hdr, 110, y, C_TXT, alpha, AL_L);
   y += 64;
   int nf = 0;
@@ -774,12 +779,12 @@ static void explore_draw(int alpha) {
     draw_avatar(f->oid, f->avatar, cx, y + 70, 120, friend_online(f) ? alpha : alpha * 55 / 100);
     if (friend_online(f)) { fill_circle(cx + 42, y + 112, 13, RGB(10, 14, 24), alpha); fill_circle(cx + 42, y + 112, 9, f->game_id[0] ? C_ACC2 : C_OK, alpha); }
     draw_text_fit(font(W_MED, 24), f->oid, cx, y + 150, 170, friend_online(f) ? C_TXT : C_DIM, alpha, AL_C);
-    draw_text_fit(font(W_REG, 20), f->game_id[0] ? f->game_name : friend_online(f) ? "Online" : "Offline", cx, y + 182, 170, C_FAINT, alpha, AL_C);
+    draw_text_fit(font(W_REG, 20), f->game_id[0] ? f->game_name : friend_online(f) ? _("Online") : _("Offline"), cx, y + 182, 170, C_FAINT, alpha, AL_C);
     nf++;
     if (cx > SCREEN_W) break;
   }
   if (!S.nfriends) {
-    draw_text(font(W_REG, 26), "Nessun amico ancora: apri la Game Base per aggiungerne.", 110, y + 30, C_DIM, alpha, AL_L);
+    draw_text(font(W_REG, 26), _("Nessun amico ancora: apri la Game Base per aggiungerne."), 110, y + 30, C_DIM, alpha, AL_L);
   }
   y += 290;
   feed_row(y, alpha, &ex_act_sel, &ex_anim_act, zone != Z_TOP && ex_zone == 3);
@@ -840,10 +845,10 @@ void home_draw(void) {
   if (ps > 20 || tab == T_EXPLORE) grad_v(0, 118, SCREEN_W, 70, RGB(4, 8, 18), (int)(170 * clampf(page_scroll / 200.0f + (tab == T_EXPLORE), 0, 1)), RGB(4, 8, 18), 0);
   top_bar(255);
   int ic[4]; const char *lb[4]; int n = 0;
-  ic[n] = IC_BTN_X; lb[n++] = tab == T_GAMES && zone <= Z_ACT ? "Gioca" : "Seleziona";
-  ic[n] = IC_BTN_TRI; lb[n++] = "Game Base";
-  ic[n] = IC_BTN_SQ; lb[n++] = "Notifiche";
-  ic[n] = IC_BTN_OPT; lb[n++] = "Centro di controllo";
+  ic[n] = IC_BTN_X; lb[n++] = tab == T_GAMES && zone <= Z_ACT ? _("Gioca") : _("Seleziona");
+  ic[n] = IC_BTN_TRI; lb[n++] = _("Game Base");
+  ic[n] = IC_BTN_SQ; lb[n++] = _("Notifiche");
+  ic[n] = IC_BTN_OPT; lb[n++] = _("Centro di controllo");
   // i comandi si vedono solo nei primi secondi, poi la home resta pulita
   Uint32 since = SDL_GetTicks() - entered_at;
   int ha = since < 9000 ? 255 : since < 10000 ? (int)(255 * (10000 - since) / 1000) : 0;
@@ -876,13 +881,13 @@ static void delete_confirmed(int idx, void *ud) {
   char name[96]; snprintf(name, sizeof name, "%s", ap->name);
   int rc = ap->hb ? hb_remove(ap->dir, OMEGA_HB_ROOT) : ap->pld ? payload_remove(ap->dir) : store_uninstall(ap->tid);
   omega_log("elimina %s (%s): rc=0x%x", name, ap->hb ? ap->dir : ap->tid, (unsigned)rc);
-  if (rc != 0) { char m[120]; snprintf(m, sizeof m, "Eliminazione non riuscita (0x%x)", (unsigned)rc); set_msg(m, 1); return; }
+  if (rc != 0) { char m[160]; snprintf(m, sizeof m, _("Eliminazione non riuscita (0x%x)"), (unsigned)rc); set_msg(m, 1); return; }
   scan_apps();
   for (int i = 0; i < napps; i++) tile_size[i] = 150;
   if (app_sel >= napps) app_sel = napps ? napps - 1 : 0;
   focus_at = SDL_GetTicks(); focus_loaded = -1;
   if (!napps) bg_set_default();
-  char m[160]; snprintf(m, sizeof m, "%s eliminato dalla console", name);
+  char m[256]; snprintf(m, sizeof m, _("%s eliminato dalla console"), name);
   set_msg(m, 0);
 }
 
@@ -892,24 +897,24 @@ static void game_more_menu(int idx, void *ud) {
   AppEntry *ap = &apps[app_sel];
   if (idx == 4) { invite_to_game_menu(ap->tid, ap->name); return; }
   if (idx == 3) {
-    static char q[220];
-    snprintf(q, sizeof q, ap->hb ? "Eliminare l'homebrew %s dalla console?" : "Eliminare %s dalla console? Il gioco verrà disinstallato.", ap->name);
-    confirm_open(q, "Elimina", delete_confirmed, NULL);
+    static char q[512];
+    snprintf(q, sizeof q, ap->hb ? _("Eliminare l'homebrew %s dalla console?") : _("Eliminare %s dalla console? Il gioco verrà disinstallato."), ap->name);
+    confirm_open(q, _("Elimina"), delete_confirmed, NULL);
     return;
   }
   if (idx == 0) launch_app(app_sel);
   else if (idx == 1) {
-    if (!S.party.active) { set_msg("Non sei in un party: creane uno dalla Game Base", 1); return; }
-    char m[200]; snprintf(m, sizeof m, "Giochiamo a %s?", ap->name);
-    social_party_send(m); set_msg("Invito a giocare inviato al party", 0);
-  } else if (idx == 2) { S.game_loading = 0; social_load_game(ap->tid); set_msg("Informazioni aggiornate", 0); }
+    if (!S.party.active) { set_msg(_("Non sei in un party: creane uno dalla Game Base"), 1); return; }
+    char m[200]; snprintf(m, sizeof m, _("Giochiamo a %s?"), ap->name);
+    social_party_send(m); set_msg(_("Invito a giocare inviato al party"), 0);
+  } else if (idx == 2) { S.game_loading = 0; social_load_game(ap->tid); set_msg(_("Informazioni aggiornate"), 0); }
 }
 
 static UserRef pick_list[16]; static int npick;
 static void pick_friend(int idx, void *ud) { (void)ud; if (idx >= 0 && idx < npick) profile_open(pick_list[idx].oid); }
 
 static void open_people(UserRef *u, int n, const char *title) {
-  if (!n) { set_msg("Nessun amico da mostrare", 0); return; }
+  if (!n) { set_msg(_("Nessun amico da mostrare"), 0); return; }
   static const char *items[16]; static char names[16][40];
   npick = n > 16 ? 16 : n;
   for (int i = 0; i < npick; i++) { pick_list[i] = u[i]; snprintf(names[i], sizeof names[i], "%s", u[i].oid); items[i] = names[i]; }
@@ -968,7 +973,7 @@ void home_input(int b) {
       else if (b == B_DOWN) { zone = Z_CARDS; card_sel = 0; }
       else if (b == B_X) {
         if (act_sel == 0) launch_app(app_sel);
-        else { static const char *it[] = { "Gioca", "Proponi al party", "Aggiorna informazioni", "Elimina dalla console", "Invita un amico a giocare" }; menu_open(apps[app_sel].name, it, 5, game_more_menu, NULL); }
+        else { const char *it[] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Elimina dalla console"), _("Invita un amico a giocare") }; menu_open(apps[app_sel].name, it, 5, game_more_menu, NULL); }
       }
       break;
     case Z_CARDS:
@@ -977,8 +982,8 @@ void home_input(int b) {
       else if (b == B_UP || b == B_O) zone = Z_ACT;
       else if (b == B_DOWN) { zone = Z_FEED; feed_sel = 0; }
       else if (b == B_X) {
-        if (card_sel == 0) open_people(S.game_now, S.ngame_now, "Stanno giocando ora");
-        else if (card_sel == 1) open_people(S.game_played, S.ngame_played, "Hanno giocato di recente");
+        if (card_sel == 0) open_people(S.game_now, S.ngame_now, _("Stanno giocando ora"));
+        else if (card_sel == 1) open_people(S.game_played, S.ngame_played, _("Hanno giocato di recente"));
         else news_open(&S.game_news[card_sel - 2]);
       }
       break;

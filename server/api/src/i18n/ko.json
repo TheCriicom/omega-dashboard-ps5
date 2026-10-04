@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor}님이 친구 요청을 보냈습니다",
+    "friend_accept": "{actor}님이 친구 요청을 수락했습니다",
+    "party_invite": "{actor}님이 파티에 초대했습니다",
+    "post_like": "{actor}님이 회원님의 게시물을 좋아합니다",
+    "post_comment": "{actor}님이 회원님의 게시물에 댓글을 남겼습니다",
+    "store_comment": "{actor}님이 {app}에 댓글을 남겼습니다",
+    "game_invite": "{actor}님이 함께 플레이하자고 초대했습니다",
+    "game_start": "{actor}님이 {game} 플레이 중",
+    "online": "{actor}님이 온라인 상태입니다",
+    "admin_report": "신고: {title}",
+    "admin_social_report": "신고: {kind} {title}",
+    "report_on_comment": " (댓글)",
+    "report_hidden": " — 숨겨짐"
+  },
+  "report_kind": {
+    "user": "사용자",
+    "post": "게시물",
+    "post_comment": "댓글"
+  },
+  "report_reason": {
+    "pirateria": "불법 복제",
+    "malware": "악성코드",
+    "contenuto_offensivo": "불쾌한 콘텐츠",
+    "spam": "스팸",
+    "link_rotto": "작동하지 않는 링크",
+    "molestie": "괴롭힘",
+    "impersonificazione": "사칭",
+    "altro": "기타"
+  },
+  "web": {
+    "documents": "문서",
+    "privacy": "개인정보",
+    "terms": "이용약관",
+    "licenses": "라이선스",
+    "source": "소스 코드",
+    "language": "언어",
+    "developed_by": "개발: {developer}",
+    "source_intro": "콘솔용 Omega 앱은 자유 소프트웨어입니다(GNU General Public License 버전 3 또는 그 이후 버전). 여기에서 앱 및 앱과 함께 제공되는 데몬의 전체 소스 코드를 빌드 방법(build.sh)과 함께 받을 수 있습니다.",
+    "source_download": "omega-src.tar.gz 다운로드",
+    "source_generated": "서버에서 실행 중인 코드로 즉시 생성된 아카이브입니다.",
+    "source_unavailable": "아카이브를 일시적으로 사용할 수 없습니다."
+  },
+  "api": {
+    "description": "콘솔용 계정, 소셜 기능 및 홈브루 스토어. Sony와 제휴하지 않은 독립 프로젝트입니다."
+  }
+}

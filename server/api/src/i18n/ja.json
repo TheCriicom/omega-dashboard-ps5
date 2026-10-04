@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor}さんからフレンドリクエストが届きました",
+    "friend_accept": "{actor}さんがフレンドリクエストを承認しました",
+    "party_invite": "{actor}さんからパーティーに招待されました",
+    "post_like": "{actor}さんがあなたの投稿に「いいね」しました",
+    "post_comment": "{actor}さんがあなたの投稿にコメントしました",
+    "store_comment": "{actor}さんが{app}にコメントしました",
+    "game_invite": "{actor}さんからゲームに誘われています",
+    "game_start": "{actor}さんが{game}をプレイ中です",
+    "online": "{actor}さんがオンラインになりました",
+    "admin_report": "通報: {title}",
+    "admin_social_report": "通報: {kind} {title}",
+    "report_on_comment": "（コメント）",
+    "report_hidden": " — 非表示"
+  },
+  "report_kind": {
+    "user": "ユーザー",
+    "post": "投稿",
+    "post_comment": "コメント"
+  },
+  "report_reason": {
+    "pirateria": "海賊版",
+    "malware": "マルウェア",
+    "contenuto_offensivo": "不快なコンテンツ",
+    "spam": "スパム",
+    "link_rotto": "リンク切れ",
+    "molestie": "嫌がらせ",
+    "impersonificazione": "なりすまし",
+    "altro": "その他"
+  },
+  "web": {
+    "documents": "ドキュメント",
+    "privacy": "プライバシー",
+    "terms": "利用規約",
+    "licenses": "ライセンス",
+    "source": "ソースコード",
+    "language": "言語",
+    "developed_by": "開発: {developer}",
+    "source_intro": "コンソール向けOmegaアプリは自由ソフトウェアです（GNU General Public License バージョン3またはそれ以降）。ここでは、アプリと付属のデーモンの完全なソースコードを、ビルド手順（build.sh）とともに入手できます。",
+    "source_download": "omega-src.tar.gz をダウンロード",
+    "source_generated": "サーバーで稼働中のコードから、その場で生成されたアーカイブです。",
+    "source_unavailable": "アーカイブは現在ご利用いただけません。"
+  },
+  "api": {
+    "description": "コンソール向けのアカウント、ソーシャル機能、ホームブリューのストア。Sonyとは提携していない独立したプロジェクトです。"
+  }
+}

@@ -1,6 +1,6 @@
 # Omega — avvisi sui componenti di terze parti
 
-Omega (app console, `omega-ui-src`) — Copyright (C) 2026 gli autori di Omega.
+Omega (app console, `omega-ui-src`) — Copyright (C) 2026 TheCriicom (outlinedigital.it) e i contributori di Omega.
 
 Questo programma è software libero: puoi ridistribuirlo e/o modificarlo secondo
 i termini della GNU General Public License, versione 3 o (a tua scelta)
@@ -35,8 +35,12 @@ Entertainment. "PlayStation" e "PS5" sono marchi dei rispettivi titolari.
 
 I testi delle licenze di ciascun componente si trovano nei rispettivi progetti
 e nell'SDK (`ps5-payload-sdk`). Le librerie di sistema della console (`libSce*`,
-font in `/preinst`) non sono incluse né ridistribuite: si usano quelle già
-presenti sulla console.
+font in `/preinst`, compresi quelli per giapponese, cinese, coreano e thai) non
+sono incluse né ridistribuite: si usano quelle già presenti sulla console. La
+build desktop di prova usa allo stesso modo i font di macOS.
+
+Il marchio di Omega (`source/logo_png.c`, `sce_sys/icon0.png`) è un disegno
+originale del progetto.
 
 ## Contenuti dello Store
 

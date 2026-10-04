@@ -10,7 +10,7 @@
 
 // ------------------------------------------------------------- coda di rete --
 typedef struct NetJob {
-  int method; char path[512]; char *body; char token[700];
+  int method; char path[1400]; char *body; char token[700];
   int gen; NetCb cb; void *ud;
   int status; char *raw; JVal *json;
   struct NetJob *next;
@@ -80,7 +80,7 @@ void netq_pump(void) {
 
 // ------------------------------------------------------ caricatore immagini --
 typedef struct LoadJob {
-  int kind; char key[48]; char path[256]; int w, h, radius;
+  int kind; char key[48]; char path[1024]; int w, h, radius;
   SDL_Surface *out; SDL_Color avg;
   LoadCb cb; void *ud;
   struct LoadJob *next;

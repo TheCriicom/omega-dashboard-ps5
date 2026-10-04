@@ -2,6 +2,7 @@
 // passa da libcurl e la tastiera di sistema non c'è (si usa il comando di debug
 // "text"). Serve a provare la UI senza console.
 #include "../source/omega.h"
+#include "../source/i18n.h"
 #include <curl/curl.h>
 #include <fcntl.h>
 #include <stdarg.h>
@@ -22,6 +23,12 @@ void omega_log(const char *fmt, ...) {
 
 #define UA "OmegaUI/1.00"
 
+// Accept-Language su ogni richiesta alle API, come net.c sulla console
+static struct curl_slist *lang_hdr(struct curl_slist *h) {
+  char l[48]; snprintf(l, sizeof l, "Accept-Language: %s", i18n_code());
+  return curl_slist_append(h, l);
+}
+
 int net_setup(void) { curl_global_init(CURL_GLOBAL_ALL); return 0; }
 
 typedef struct { char *out; size_t len, cap; } Buf;
@@ -32,14 +39,25 @@ static size_t wr(char *p, size_t s, size_t n, void *u) {
   return s * n;
 }
 
+// come net.c: percorso del server in uso o URL completo (token solo a Omega)
+static const char *full_url(const char *path, const char **token, char *url, size_t n) {
+  if (!strncmp(path, "http://", 7) || !strncmp(path, "https://", 8)) {
+    size_t bl = strlen(omega_base());
+    if (strncmp(path, omega_base(), bl) != 0) *token = NULL;
+    snprintf(url, n, "%s", path);
+  } else snprintf(url, n, "%s%s", omega_base(), path);
+  return url;
+}
+
 int omega_http(int method, const char *path, const char *token, const char *body, char *out, size_t outlen) {
-  char url[640]; snprintf(url, sizeof url, "%s%s", omega_base(), path);
+  char url[1400]; full_url(path, &token, url, sizeof url);
   CURL *c = curl_easy_init(); if (!c) return -1;
   Buf b = { out, 0, outlen }; out[0] = 0;
   struct curl_slist *h = NULL;
   char auth[760];
   if (token) { snprintf(auth, sizeof auth, "Authorization: Bearer %s", token); h = curl_slist_append(h, auth); }
   if (body) h = curl_slist_append(h, "Content-Type: application/json");
+  h = lang_hdr(h);
   curl_easy_setopt(c, CURLOPT_URL, url);
   curl_easy_setopt(c, CURLOPT_USERAGENT, UA);
   curl_easy_setopt(c, CURLOPT_HTTPHEADER, h);
@@ -69,11 +87,12 @@ static size_t wrb(char *p, size_t s, size_t n, void *u) {
   memcpy(b->b + b->len, p, k); b->len += k; return k;
 }
 int omega_http_bin(const char *path, const char *token, unsigned char **out, size_t *len, size_t max) {
-  char url[640]; snprintf(url, sizeof url, "%s%s", omega_base(), path);
+  char url[1400]; full_url(path, &token, url, sizeof url);
   CURL *c = curl_easy_init(); if (!c) return -1;
   BBuf b = { malloc(65536), 0, 65536, max };
   struct curl_slist *h = NULL; char auth[760];
   if (token) { snprintf(auth, sizeof auth, "Authorization: Bearer %s", token); h = curl_slist_append(h, auth); }
+  h = lang_hdr(h);
   curl_easy_setopt(c, CURLOPT_URL, url);
   curl_easy_setopt(c, CURLOPT_USERAGENT, UA); curl_easy_setopt(c, CURLOPT_HTTPHEADER, h);
   curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, wrb); curl_easy_setopt(c, CURLOPT_WRITEDATA, &b);
@@ -131,6 +150,7 @@ int omega_http_upload(const char *path, const char *token, const void *data, siz
   struct curl_slist *h = NULL; char auth[760];
   if (token) { snprintf(auth, sizeof auth, "Authorization: Bearer %s", token); h = curl_slist_append(h, auth); }
   h = curl_slist_append(h, "Content-Type: application/octet-stream");
+  h = lang_hdr(h);
   curl_easy_setopt(c, CURLOPT_URL, url);
   curl_easy_setopt(c, CURLOPT_USERAGENT, UA); curl_easy_setopt(c, CURLOPT_HTTPHEADER, h);
   curl_easy_setopt(c, CURLOPT_POST, 1L); curl_easy_setopt(c, CURLOPT_POSTFIELDS, data); curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)len);

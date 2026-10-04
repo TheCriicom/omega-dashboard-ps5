@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Omega</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='96 96 320 320'%3E%3Cpath d='M366.3 236.6A112 112 0 1 1 275.4 145.7' fill='none' stroke='%237b82ff' stroke-width='54' stroke-linecap='round'/%3E%3Ccircle cx='353.6' cy='158.4' r='28' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg:#0c0e14; --bg2:#10131b; --s:#151924; --s2:#1c2130; --s3:#252b3d; --line:#232939; --line2:#30374b;
+    --ink:#eceef4; --ink2:#aab0c0; --ink3:#7d8497; --acc:#7b82ff; --acc2:#a9adff; --ok:#3ccf87; --warn:#f2b84b; --err:#f0596a;
+    --r:14px; --gap:14px;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text","Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font:15px/1.45 var(--font); -webkit-font-smoothing:antialiased; }
+  svg { width:20px; height:20px; flex:none; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
+  ::selection { background:rgba(123,130,255,.4); }
+  [hidden] { display:none !important; }
+
+  /* ---------- barra in alto ---------- */
+  .top { position:sticky; top:0; z-index:10; background:rgba(12,14,20,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); padding-top:env(safe-area-inset-top); }
+  .top__in { max-width:1180px; margin:0 auto; padding:10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left)); display:flex; align-items:center; gap:12px; min-height:58px; }
+  .brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:17px; letter-spacing:-.01em; }
+  .brand svg { width:26px; height:26px; }
+  .conn { margin-left:auto; display:flex; align-items:center; gap:7px; font-size:13px; color:var(--ink3); white-space:nowrap; }
+  .conn::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--ink3); }
+  .conn.on::before { background:var(--ok); box-shadow:0 0 0 3px rgba(60,207,135,.16); }
+  .conn.off::before { background:var(--err); }
+  .tabs { display:flex; gap:4px; padding:4px; background:var(--s); border:1px solid var(--line); border-radius:12px; }
+  .tabs button { display:flex; align-items:center; justify-content:center; gap:8px; min-height:38px; padding:0 16px; border:0; border-radius:9px; background:transparent; color:var(--ink3); font-weight:600; cursor:pointer; white-space:nowrap; }
+  .tabs button svg { width:18px; height:18px; }
+  .tabs button.on { background:var(--s3); color:var(--ink); }
+  .top .tabs { display:none; }
+  .subtabs { max-width:1180px; margin:0 auto; padding:12px 16px 0; }
+  .subtabs .tabs button { flex:1; }
+
+  main { max-width:1180px; margin:0 auto; padding:14px max(16px, env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+
+  /* ---------- schede ---------- */
+  .card { background:var(--s); border:1px solid var(--line); border-radius:var(--r); padding:18px; margin-bottom:var(--gap); min-width:0; }
+  .card > :last-child { margin-bottom:0; }
+  h2 { display:flex; align-items:center; gap:8px; margin:0 0 12px; font-size:13px; font-weight:650; letter-spacing:.04em; text-transform:uppercase; color:var(--ink3); }
+  h2 svg { width:17px; height:17px; color:var(--ink3); }
+  h2 small { margin-left:auto; text-transform:none; letter-spacing:0; font-weight:500; }
+  .help { margin:0 0 14px; color:var(--ink2); font-size:14px; }
+  .note { font-size:13px; min-height:18px; margin-top:8px; }
+  .note.ok { color:var(--ok); } .note.err { color:var(--err); }
+  .note:empty { display:none; }
+
+  /* ---------- pulsanti e campi ---------- */
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:0 16px; border-radius:11px; border:1px solid var(--line2); background:var(--s2); color:var(--ink); font-weight:600; cursor:pointer; white-space:nowrap; transition:background .15s, border-color .15s; }
+  .btn:hover { background:var(--s3); }
+  .btn:active { transform:translateY(1px); }
+  .btn svg { width:18px; height:18px; }
+  .btn.primary { background:var(--acc); border-color:var(--acc); color:#fff; }
+  .btn.primary:hover { background:#8b91ff; }
+  .btn.ghost { background:transparent; }
+  .ibtn { display:grid; place-items:center; width:40px; height:40px; flex:none; border:0; border-radius:10px; background:transparent; color:var(--ink3); cursor:pointer; }
+  .ibtn:hover { background:var(--s3); color:var(--ink); }
+  .ibtn.danger:hover { color:var(--err); background:rgba(240,89,106,.1); }
+  .ibtn svg { width:18px; height:18px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  label.f { display:block; margin:14px 0 6px; font-size:13px; font-weight:600; color:var(--ink2); }
+  input[type=text], input[type=url], textarea, select { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--line2); border-radius:10px; background:var(--bg2); color:var(--ink); font-size:16px; }
+  input::placeholder, textarea::placeholder { color:#5b6275; }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--acc); box-shadow:0 0 0 3px rgba(123,130,255,.18); }
+  textarea { min-height:96px; resize:vertical; }
+  .row { display:flex; gap:10px; }
+  .row > * { flex:1; min-width:0; }
+  .row > .btn { flex:none; }
+  details { margin-top:14px; border-top:1px solid var(--line); padding-top:12px; }
+  details summary { display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--ink2); font-weight:600; font-size:14px; list-style:none; min-height:32px; }
+  details summary::-webkit-details-marker { display:none; }
+  details summary svg { width:16px; height:16px; transition:transform .2s; }
+  details[open] summary svg { transform:rotate(90deg); }
+
+  /* file: zona dove trascinare o toccare */
+  .drop { position:relative; display:flex; align-items:center; gap:14px; padding:16px; border:1.5px dashed var(--line2); border-radius:12px; background:var(--bg2); cursor:pointer; transition:border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color:var(--acc); background:rgba(123,130,255,.06); }
+  .drop input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+  .drop .ico { display:grid; place-items:center; width:44px; height:44px; border-radius:11px; background:var(--s3); color:var(--acc2); flex:none; }
+  .drop b { display:block; font-weight:600; }
+  .drop span { color:var(--ink3); font-size:13px; }
+
+  /* ---------- PIN ---------- */
+  .pair { width:calc(100% - 32px); max-width:420px; margin:8vh auto 0; text-align:center; padding:28px 22px; }
+  .pair .logo { width:56px; height:56px; margin:0 auto 14px; }
+  .pair p { color:var(--ink2); margin:0 0 18px; }
+  .pin { width:100%; font:600 30px/1 ui-monospace,"SF Mono",Menlo,monospace; letter-spacing:.42em; text-indent:.42em; text-align:center; padding:16px 8px; border-radius:12px; border:1px solid var(--line2); background:var(--bg2); color:var(--ink); }
+  .pin:focus { outline:none; border-color:var(--acc); box-shadow:0 0 0 3px rgba(123,130,255,.18); }
+  .pair .btn { width:100%; margin-top:12px; }
+  .pair .note { text-align:center; }
+
+  /* ---------- in ascolto ---------- */
+  .np { display:grid; grid-template-columns:96px 1fr; gap:16px; align-items:center; }
+  .cover { position:relative; aspect-ratio:1; border-radius:12px; background:linear-gradient(145deg,#232a44,#141826) center/cover no-repeat; display:grid; place-items:center; color:#4c5470; overflow:hidden; box-shadow:0 10px 30px -12px rgba(0,0,0,.6); }
+  .cover svg { width:40%; height:40%; }
+  .cover.has svg { display:none; }
+  .meta { min-width:0; }
+  .t { font-weight:700; font-size:18px; line-height:1.25; letter-spacing:-.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .a { color:var(--ink2); font-size:14px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .st { display:inline-flex; align-items:center; gap:6px; color:var(--ink3); font-size:13px; margin-top:8px; font-variant-numeric:tabular-nums; }
+  .st.live { color:var(--err); font-weight:650; font-size:12px; letter-spacing:.05em; text-transform:uppercase; }
+  .st.live::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--err); }
+  .bar { height:4px; background:var(--s3); border-radius:2px; margin-top:18px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--ink); border-radius:2px; transition:width .4s linear; }
+  .ctl { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+  .ctl button { display:grid; place-items:center; width:48px; height:48px; border:0; border-radius:50%; background:transparent; color:var(--ink2); cursor:pointer; position:relative; }
+  .ctl button:hover { background:var(--s2); color:var(--ink); }
+  .ctl button svg { width:22px; height:22px; }
+  .ctl button.on { color:var(--acc2); }
+  .ctl button.on::after { content:""; position:absolute; bottom:5px; width:4px; height:4px; border-radius:50%; background:currentColor; }
+  .ctl button.one::before { content:"1"; position:absolute; top:7px; right:7px; font-size:10px; font-weight:800; }
+  .ctl .play { width:64px; height:64px; background:var(--ink); color:var(--bg); }
+  .ctl .play:hover { background:#fff; color:var(--bg); }
+  .ctl .play svg { width:26px; height:26px; }
+  .vol { display:flex; align-items:center; gap:12px; margin-top:12px; color:var(--ink3); }
+  .vol svg { width:18px; height:18px; }
+  input[type=range] { -webkit-appearance:none; appearance:none; flex:1; height:22px; background:transparent; cursor:pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height:4px; border-radius:2px; background:linear-gradient(var(--ink2),var(--ink2)) 0/var(--p,50%) 100% no-repeat, var(--s3); }
+  input[type=range]::-moz-range-track { height:4px; border-radius:2px; background:var(--s3); }
+  input[type=range]::-moz-range-progress { height:4px; border-radius:2px; background:var(--ink2); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; margin-top:-6px; border-radius:50%; background:var(--ink); border:0; }
+  input[type=range]::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--ink); border:0; }
+
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .stat { display:flex; gap:12px; align-items:center; padding:12px; border-radius:11px; background:var(--bg2); min-width:0; }
+  .stat .ico { display:grid; place-items:center; width:38px; height:38px; border-radius:10px; background:var(--s2); color:var(--ink2); flex:none; }
+  .stat div { min-width:0; }
+  .stat b { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:15px; line-height:1.3; overflow-wrap:anywhere; }
+  .stat span { color:var(--ink3); font-size:12px; }
+
+  /* ---------- elenchi ---------- */
+  ul { list-style:none; margin:0; padding:0; }
+  .list li { display:flex; align-items:center; gap:12px; min-height:48px; padding:6px 8px; margin:0 -8px; border-radius:10px; cursor:pointer; }
+  .list li:hover { background:var(--s2); }
+  .list li.empty { color:var(--ink3); cursor:default; }
+  .list li.empty:hover { background:none; }
+  .list .n { width:22px; text-align:center; color:var(--ink3); font-size:13px; font-variant-numeric:tabular-nums; flex:none; }
+  .list .x { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .list small { color:var(--ink3); font-size:13px; font-variant-numeric:tabular-nums; }
+  .list li.cur { color:var(--acc2); }
+  .list li.cur .n { color:var(--acc2); }
+  .eq { display:inline-flex; gap:2px; align-items:flex-end; height:12px; }
+  .eq i { width:3px; background:currentColor; border-radius:1px; animation:eq 1s ease-in-out infinite; }
+  .eq i:nth-child(2) { animation-delay:-.4s; } .eq i:nth-child(3) { animation-delay:-.7s; }
+  @keyframes eq { 0%,100% { height:30%; } 50% { height:100%; } }
+  @media (prefers-reduced-motion: reduce) { .eq i { animation:none; height:70%; } .bar i { transition:none; } }
+
+  .favs { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+  .favs li { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:11px; background:var(--bg2); border:1px solid var(--line); cursor:pointer; min-width:0; }
+  .favs li:hover { border-color:var(--line2); background:var(--s2); }
+  .favs li svg { width:18px; height:18px; color:var(--acc2); }
+  .favs li span { min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:14px; font-weight:550; line-height:1.3; }
+
+  /* ---------- libreria ---------- */
+  .intro { display:flex; gap:16px; align-items:flex-start; }
+  .intro .ico { display:grid; place-items:center; width:46px; height:46px; border-radius:12px; background:rgba(123,130,255,.14); color:var(--acc2); flex:none; }
+  .intro .ico svg { width:22px; height:22px; }
+  .intro h1 { margin:2px 0 6px; font-size:19px; letter-spacing:-.01em; }
+  .intro .help { margin:0; }
+  .games { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .game { position:relative; border-radius:12px; background:var(--bg2); border:1px solid var(--line); overflow:hidden; min-width:0; }
+  .game .cv { aspect-ratio:1; background:linear-gradient(145deg,#232a44,#141826) center/cover no-repeat; display:grid; place-items:center; color:#4c5470; }
+  .game .cv svg { width:34%; height:34%; }
+  .game .cv.has svg { display:none; }
+  .game .info { padding:10px 12px 12px; }
+  .game .info b { display:block; font-size:14px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .game .info span { display:block; color:var(--ink3); font-size:12px; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .game .tag { position:absolute; top:8px; left:8px; font-size:11px; font-weight:650; padding:2px 7px; border-radius:6px; background:rgba(12,14,20,.86); color:var(--ink2); }
+  .game .tools { position:absolute; top:6px; right:6px; display:flex; gap:4px; }
+  .game .tools .ibtn { width:34px; height:34px; background:rgba(12,14,20,.86); color:var(--ink); }
+  @media (hover: hover) and (pointer: fine) { .game .tools { opacity:0; transition:opacity .15s; } .game:hover .tools, .game:focus-within .tools { opacity:1; } }
+  .games .none { grid-column:1/-1; color:var(--ink3); padding:22px 4px; text-align:center; }
+
+  /* ---------- telefono piccolo ---------- */
+  @media (max-width: 759px) { .actions .btn { flex:1; } }
+  @media (max-width: 380px) {
+    .np { grid-template-columns:76px 1fr; gap:12px; }
+    .ctl button { width:42px; height:42px; }
+    .ctl .play { width:58px; height:58px; }
+    .games { grid-template-columns:1fr 1fr; gap:10px; }
+  }
+
+  /* ---------- tablet e PC ---------- */
+  @media (min-width: 760px) {
+    .top .tabs { display:flex; margin-left:28px; }
+    .subtabs { display:none; }
+    main { padding-top:24px; }
+    .cols { display:grid; grid-template-columns:340px minmax(0,1fr); gap:20px; align-items:start; }
+    .cols > .side { position:sticky; top:82px; }
+    .np { grid-template-columns:1fr; }
+    .cover { border-radius:14px; }
+    .cover svg { width:30%; height:30%; }
+    .t { font-size:21px; }
+    .card { padding:22px; }
+    .games { grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:14px; }
+    .lib-forms { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); column-gap:var(--gap); align-items:start; }
+  }
+  @media (min-width: 760px) and (max-width: 1079px) { .side .stats { grid-template-columns:1fr; } }
+  @media (min-width: 1080px) {
+    .cols { grid-template-columns:380px minmax(0,1fr); gap:24px; }
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); align-items:start; }
+    .two .card { margin-bottom:0; }
+    .two { margin-bottom:var(--gap); }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><linearGradient id="omg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2fd6ff"/><stop offset=".55" stop-color="#6a72ff"/><stop offset="1" stop-color="#c45bff"/></linearGradient></defs>
+  <symbol id="i-mark" viewBox="96 96 320 320"><path d="M366.3 236.6A112 112 0 1 1 275.4 145.7" fill="none" stroke="url(#omg)" stroke-width="54" stroke-linecap="round"/><circle cx="353.6" cy="158.4" r="28" fill="#fff"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.2" fill="currentColor"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M18 6.2v11.6a.9.9 0 0 1-1.4.75L8.4 12.75a.9.9 0 0 1 0-1.5l8.2-5.8A.9.9 0 0 1 18 6.2z" fill="currentColor"/><rect x="5" y="5.5" width="2.4" height="13" rx="1" fill="currentColor"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M6 6.2v11.6a.9.9 0 0 0 1.4.75l8.2-5.8a.9.9 0 0 0 0-1.5L7.4 5.45A.9.9 0 0 0 6 6.2z" fill="currentColor"/><rect x="16.6" y="5.5" width="2.4" height="13" rx="1" fill="currentColor"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M4 7h3.2c2 0 3.1 1 4.2 2.8l1.2 2.4c1 1.8 2.2 2.8 4.2 2.8H20M4 17h3.2c1.5 0 2.5-.6 3.4-1.7M13.4 8.7C14.3 7.6 15.3 7 16.8 7H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M5 11.5V10a3 3 0 0 1 3-3h11M16.5 4.5 19 7l-2.5 2.5M19 12.5V14a3 3 0 0 1-3 3H5M7.5 19.5 5 17l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-vol-lo" viewBox="0 0 24 24"><path d="M4 9.5h3l4.5-4v13L7 14.5H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-vol-hi" viewBox="0 0 24 24"><path d="M4 9.5h3l4.5-4v13L7 14.5H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 9a4 4 0 0 1 0 6M17.8 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-games" viewBox="0 0 24 24"><path d="M7.5 7.5h9a4.5 4.5 0 0 1 4.4 5.5l-.8 3.4a2.4 2.4 0 0 1-4 1.2L14 16h-4l-2.1 1.6a2.4 2.4 0 0 1-4-1.2L3.1 13a4.5 4.5 0 0 1 4.4-5.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 10.5v3M6.5 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.5" cy="11" r="1.1" fill="currentColor"/><circle cx="17" cy="13.3" r="1.1" fill="currentColor"/></symbol>
+  <symbol id="i-console" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-temp" viewBox="0 0 24 24"><path d="M10 4.5a2 2 0 0 1 4 0v9.2a4 4 0 1 1-4 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M8.2 15.8a5.4 5.4 0 0 1 0-7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 18.6a9.3 9.3 0 0 1 0-13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4m0 0L8 8m4-4 4 4M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10.5 13.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M13.5 10.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 19h3.5L19 8.5 15.5 5 5 15.5zM13.5 7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l.8 12a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L17 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="top__in">
+    <div class="brand"><svg aria-hidden="true"><use href="#i-mark"/></svg>Omega</div>
+    <nav class="tabs" id="tabs_top" hidden><button type="button" data-tab="music"><svg aria-hidden="true"><use href="#i-music"/></svg><span class="l_music"></span></button><button type="button" data-tab="lib"><svg aria-hidden="true"><use href="#i-games"/></svg><span class="l_lib"></span></button></nav>
+    <span class="conn" id="conn"></span>
+  </div>
+</header>
+
+<section class="card pair" id="pair" hidden>
+  <svg class="logo" aria-hidden="true"><use href="#i-mark"/></svg>
+  <p id="t_pair"></p>
+  <input class="pin" id="pinin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="••••••" aria-label="PIN">
+  <div class="note err" id="perr"></div>
+  <button class="btn primary" id="pairbtn" type="button">OK</button>
+</section>
+
+<div id="app" hidden>
+  <div class="subtabs"><nav class="tabs"><button type="button" data-tab="music"><svg aria-hidden="true"><use href="#i-music"/></svg><span class="l_music"></span></button><button type="button" data-tab="lib"><svg aria-hidden="true"><use href="#i-games"/></svg><span class="l_lib"></span></button></nav></div>
+
+  <main>
+    <div id="music" class="cols">
+      <div class="side">
+        <section class="card">
+          <div class="np">
+            <div class="cover" id="cover"><svg aria-hidden="true"><use href="#i-music"/></svg></div>
+            <div class="meta"><div class="t" id="title">—</div><div class="a" id="artist"></div><div class="st" id="state"></div></div>
+          </div>
+          <div class="bar"><i id="prog"></i></div>
+          <div class="ctl">
+            <button type="button" id="shuffle" aria-label="Shuffle"><svg><use href="#i-shuffle"/></svg></button>
+            <button type="button" id="prev" aria-label="Previous"><svg><use href="#i-prev"/></svg></button>
+            <button type="button" class="play" id="toggle" aria-label="Play"><svg><use href="#i-play"/></svg></button>
+            <button type="button" id="next" aria-label="Next"><svg><use href="#i-next"/></svg></button>
+            <button type="button" id="repeat" aria-label="Repeat"><svg><use href="#i-repeat"/></svg></button>
+          </div>
+          <div class="vol"><svg aria-hidden="true"><use href="#i-vol-lo"/></svg><input type="range" id="vol" min="0" max="100" step="5" aria-label="Volume"><svg aria-hidden="true"><use href="#i-vol-hi"/></svg></div>
+        </section>
+        <section class="card">
+          <h2><svg aria-hidden="true"><use href="#i-console"/></svg><span id="t_console"></span></h2>
+          <div class="stats">
+            <div class="stat"><span class="ico"><svg aria-hidden="true"><use href="#i-games"/></svg></span><div><b id="game">—</b><span id="t_game"></span></div></div>
+            <div class="stat"><span class="ico"><svg aria-hidden="true"><use href="#i-temp"/></svg></span><div><b id="temp">—</b><span id="t_temp"></span></div></div>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="card" id="favbox" hidden><h2><svg aria-hidden="true"><use href="#i-radio"/></svg><span id="t_fav"></span></h2><ul class="favs" id="favs"></ul></section>
+        <div class="two">
+          <section class="card">
+            <h2><svg aria-hidden="true"><use href="#i-up"/></svg><span id="t_addmusic"></span></h2>
+            <p class="help" id="t_addmusic_help"></p>
+            <label class="drop" id="m_drop"><span class="ico"><svg aria-hidden="true"><use href="#i-up"/></svg></span><span><b id="l_mfiles"></b><span>MP3 · FLAC · OGG · M4A · WAV</span></span><input type="file" id="m_files" multiple accept="audio/*,.mp3,.flac,.ogg,.opus,.m4a,.aac,.wav,.wma,.ape,.wv,.aiff,.mka"></label>
+            <div class="bar" id="upbar" hidden><i id="upprog"></i></div>
+            <div class="note ok" id="mok"></div><div class="note err" id="merr"></div>
+            <label class="f" for="m_link" id="l_mlink"></label>
+            <div class="row"><input type="url" id="m_link" placeholder="https://…/stream.mp3"><button class="btn" type="button" id="m_link_go"></button></div>
+            <details id="mfiles_box"><summary><svg aria-hidden="true"><use href="#i-chev"/></svg><span id="t_mfiles"></span></summary><ul class="list" id="mfiles"></ul></details>
+          </section>
+          <section class="card"><h2><svg aria-hidden="true"><use href="#i-list"/></svg><span id="t_queue"></span><small id="qn"></small></h2><ul class="list" id="queue"></ul></section>
+        </div>
+      </div>
+    </div>
+
+    <div id="lib" hidden>
+      <section class="card">
+        <div class="intro">
+          <span class="ico"><svg aria-hidden="true"><use href="#i-games"/></svg></span>
+          <div><h1 id="t_lib"></h1><p class="help" id="t_lib_help"></p></div>
+        </div>
+        <div class="actions"><button class="btn primary" type="button" id="add_open_b"><svg aria-hidden="true"><use href="#i-plus"/></svg><span id="add_open"></span></button><button class="btn" type="button" id="imp_open_b"><svg aria-hidden="true"><use href="#i-code"/></svg><span id="imp_open"></span></button></div>
+      </section>
+
+      <div class="lib-forms">
+        <section class="card" id="form" hidden>
+          <h2><svg aria-hidden="true"><use href="#i-edit"/></svg><span id="f_title"></span></h2>
+          <label class="f" for="g_title" id="l_title"></label><input type="text" id="g_title" maxlength="120">
+          <label class="f" for="g_url" id="l_url"></label><input type="url" id="g_url" placeholder="https://…/game.pkg">
+          <label class="f" for="g_cover" id="l_cover"></label><input type="url" id="g_cover" placeholder="https://…/cover.jpg">
+          <div class="row">
+            <div><label class="f" for="g_plat" id="l_plat"></label><select id="g_plat"><option value="">—</option><option>PS5</option><option>PS4</option></select></div>
+            <div><label class="f" for="g_tid" id="l_tid"></label><input type="text" id="g_tid" maxlength="9" placeholder="CUSA00000"></div>
+            <div><label class="f" for="g_ver" id="l_ver"></label><input type="text" id="g_ver" maxlength="24" placeholder="1.00"></div>
+          </div>
+          <label class="f" for="g_desc" id="l_desc"></label><textarea id="g_desc" maxlength="1200"></textarea>
+          <div class="note err" id="ferr"></div>
+          <div class="actions"><button class="btn primary" type="button" id="save"></button><button class="btn ghost" type="button" id="cancel"></button></div>
+        </section>
+
+        <section class="card" id="imp" hidden>
+          <h2><svg aria-hidden="true"><use href="#i-code"/></svg><span id="i_title"></span></h2>
+          <p class="help" id="i_help"></p>
+          <label class="drop"><span class="ico"><svg aria-hidden="true"><use href="#i-folder"/></svg></span><span><b id="l_file"></b><span>.json</span></span><input type="file" id="i_file" accept=".json,application/json,text/plain"></label>
+          <label class="f" for="i_link" id="l_link"></label>
+          <div class="row"><input type="url" id="i_link" placeholder="https://…/library.json"><button class="btn" type="button" id="i_link_go"></button></div>
+          <button class="btn ghost" type="button" id="i_unlink" hidden style="margin-top:10px"></button>
+          <details><summary><svg aria-hidden="true"><use href="#i-chev"/></svg><span id="i_paste_s"></span></summary><textarea id="i_text" placeholder='[{"title":"…","url":"https://…"}]'></textarea><div class="actions"><button class="btn" type="button" id="i_paste_go"></button></div></details>
+          <div class="note ok" id="iok"></div><div class="note err" id="ierr"></div>
+        </section>
+      </div>
+
+      <section class="card"><h2><svg aria-hidden="true"><use href="#i-games"/></svg><span id="t_games"></span><small id="gn"></small></h2><ul class="games" id="games"></ul></section>
+    </div>
+  </main>
+</div>
+<script>
+(function () {
+  'use strict';
+  // Testi: italiano e inglese qui; le altre lingue nel blocco T_MORE (generato).
+  var T = {
+    en: { pair: 'Enter the PIN shown on the console in Omega › Settings › System and tools › Phone remote.', bad: 'Wrong PIN', locked: 'Too many attempts: wait a minute', off: 'offline', on: 'connected',
+          music: 'Music', lib: 'My library', console: 'Console', game: 'Playing', none: 'Home', temp: 'Temperature', fav: 'Favourite radios', queue: 'Queue', live: 'Live', paused: 'Paused', loading: 'Loading…', stopped: 'Stopped', empty: 'Nothing in the queue',
+          lib_help: 'Your own game backups, kept only on your console. Add a game with its download link and cover: it appears in Omega › Store › Library, ready to install.',
+          add: 'Add a game', imp: 'Import JSON', f_new: 'New game', f_edit: 'Edit game', title: 'Title *', url: 'Download link (pkg, zip or elf) *', cover: 'Cover image link', plat: 'Platform', tid: 'Title ID', ver: 'Version', desc: 'Description',
+          save: 'Save', cancel: 'Cancel', need: 'Title and an http(s) link are required', saved: 'Saved', games: 'Games', nogames: 'No games yet: add the first one above.', del: 'Delete', edit: 'Edit', delq: 'Delete this game from the library?',
+          i_help: 'A JSON list of games: an array, or an object with "items"/"games". Accepted fields: title/name, url/download/link, cover/image, platform, title_id, version, description.',
+          addmusic: 'Add music', addmusic_help: 'Send audio files from this phone or PC to the console: they go to Omega › Music › Files › Music in Omega. Or play any audio or radio link right away.',
+          mfiles: 'Choose audio files', mlink: 'Play a link (MP3, AAC, radio stream…)', play: 'Play', uploading: 'Sending ', uploaded: 'Sent: ', upfail: 'Upload failed: ', onconsole: 'Music on the console',
+          file: 'From a file', paste: 'Paste JSON text', import_go: 'Import', link: 'From a link (kept in sync)', link_go: 'Link and sync', unlink: 'Unlink', added: 'Games added: ', syncing: 'Syncing… the games appear in a moment', badjson: 'This is not a valid games JSON', linked: 'Linked: ', from_link: 'link', from_import: 'imported' },
+    it: { pair: 'Scrivi il PIN che vedi sulla console in Omega › Impostazioni › Sistema e strumenti › Telecomando.', bad: 'PIN errato', locked: 'Troppi tentativi: aspetta un minuto', off: 'non raggiungibile', on: 'collegato',
+          music: 'Musica', lib: 'La mia libreria', console: 'Console', game: 'In gioco', none: 'Home', temp: 'Temperatura', fav: 'Radio preferite', queue: 'In coda', live: 'In diretta', paused: 'In pausa', loading: 'Caricamento…', stopped: 'Fermo', empty: 'La coda è vuota',
+          lib_help: 'I backup dei tuoi giochi, salvati solo sulla tua console. Aggiungi un gioco con il link per scaricarlo e la copertina: lo trovi in Omega › Store › Libreria, pronto da installare.',
+          add: 'Aggiungi un gioco', imp: 'Importa JSON', f_new: 'Nuovo gioco', f_edit: 'Modifica gioco', title: 'Titolo *', url: 'Link per scaricarlo (pkg, zip o elf) *', cover: 'Link dell\'immagine di copertina', plat: 'Piattaforma', tid: 'Title ID', ver: 'Versione', desc: 'Descrizione',
+          save: 'Salva', cancel: 'Annulla', need: 'Servono il titolo e un link http(s)', saved: 'Salvato', games: 'Giochi', nogames: 'Ancora nessun gioco: aggiungi il primo qui sopra.', del: 'Elimina', edit: 'Modifica', delq: 'Togliere questo gioco dalla libreria?',
+          i_help: 'Un elenco di giochi in JSON: un array, oppure un oggetto con "items"/"games". Campi accettati: title/name, url/download/link, cover/image, platform, title_id, version, description.',
+          addmusic: 'Aggiungi musica', addmusic_help: 'Manda file audio da questo telefono o PC alla console: finiscono in Omega › Musica › File › Musica in Omega. Oppure ascolta subito un link audio o di una radio.',
+          mfiles: 'Scegli i file audio', mlink: 'Ascolta un link (MP3, AAC, radio in streaming…)', play: 'Ascolta', uploading: 'Invio ', uploaded: 'Inviati: ', upfail: 'Invio non riuscito: ', onconsole: 'Musica sulla console',
+          file: 'Da un file', paste: 'Incolla il testo JSON', import_go: 'Importa', link: 'Da un link (resta sincronizzato)', link_go: 'Collega e sincronizza', unlink: 'Scollega', added: 'Giochi aggiunti: ', syncing: 'Sincronizzo… i giochi compaiono tra poco', badjson: 'Non è un JSON di giochi valido', linked: 'Collegato: ', from_link: 'link', from_import: 'importato' }
+  };
+  /*T_MORE*/
+  var L = T.en;
+  var libseq = -1;
+  function pickLang(code) {
+    if (!code) return;
+    var c = T[code] || T[code.split('-')[0]];
+    if (c && c !== L) { L = c; document.documentElement.lang = code; texts(); libseq = -1; if (typeof loadLib === 'function' && !$('lib').hidden) loadLib(); }
+  }
+  function $(id) { return document.getElementById(id); }
+  function tx(k) { return L[k] || T.en[k]; }
+  function texts() {
+    var map = { t_pair: 'pair', t_console: 'console', t_game: 'game', t_temp: 'temp', t_fav: 'fav', t_queue: 'queue', t_lib: 'lib', t_lib_help: 'lib_help',
+      add_open: 'add', imp_open: 'imp', l_title: 'title', l_url: 'url', l_cover: 'cover', l_plat: 'plat', l_tid: 'tid', l_ver: 'ver', l_desc: 'desc', save: 'save', cancel: 'cancel',
+      i_title: 'imp', i_help: 'i_help', l_file: 'file', i_paste_s: 'paste', i_paste_go: 'import_go', l_link: 'link', i_link_go: 'link_go', i_unlink: 'unlink', t_games: 'games',
+      t_addmusic: 'addmusic', t_addmusic_help: 'addmusic_help', l_mfiles: 'mfiles', l_mlink: 'mlink', m_link_go: 'play', t_mfiles: 'onconsole' };
+    Object.keys(map).forEach(function (k) { var el = $(k); if (el) el.textContent = tx(map[k]); });
+    each('.l_music', function (el) { el.textContent = tx('music'); });
+    each('.l_lib', function (el) { el.textContent = tx('lib'); });
+    $('toggle').title = tx('play');
+  }
+  function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+  function icon(id) { return '<svg aria-hidden="true"><use href="#' + id + '"/></svg>'; }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+  function bg(url) { return 'url("' + url.replace(/["\\\n]/g, encodeURIComponent) + '")'; }
+  pickLang((navigator.language || 'en'));
+  texts();
+
+  var tok = ''; try { tok = localStorage.getItem('omega-remote') || ''; } catch (e) {}
+  var st = null, qseq = -1, games = [], editId = '';
+
+  function api(method, path, body) {
+    return fetch(path, { method: method, headers: { 'content-type': 'application/json', 'x-omega-token': tok }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
+      .then(function (r) { if (r.status === 401) { tok = ''; showPair(); throw new Error('auth'); } return r.json().then(function (j) { j._status = r.status; return j; }); });
+  }
+  function showPair() { $('pair').hidden = false; $('app').hidden = true; $('tabs_top').hidden = true; setTimeout(function () { $('pinin').focus(); }, 50); }
+  function showApp() { $('pair').hidden = true; $('app').hidden = false; $('tabs_top').hidden = false; }
+  function conn(on) { var c = $('conn'); c.textContent = on ? L.on : L.off; c.className = 'conn ' + (on ? 'on' : 'off'); }
+
+  function pair() {
+    var pin = $('pinin').value.replace(/\D/g, '');
+    if (pin.length < 6) { $('pinin').focus(); return; }
+    fetch('/v1/pair', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ pin: pin }) })
+      .then(function (r) { return r.json().then(function (j) { return [r.status, j]; }); })
+      .then(function (x) {
+        if (x[0] === 200 && x[1].token) { tok = x[1].token; try { localStorage.setItem('omega-remote', tok); } catch (e) {} showApp(); tab(saved); loadFavs(); loadMusicFiles(); poll(); }
+        else { $('perr').textContent = x[1].error === 'locked' ? L.locked : L.bad; $('pinin').select(); }
+      }).catch(function () { $('perr').textContent = L.off; });
+  }
+  $('pairbtn').onclick = pair;
+  $('pinin').addEventListener('input', function () { $('perr').textContent = ''; if (this.value.replace(/\D/g, '').length === 6) pair(); });
+  $('pinin').addEventListener('keydown', function (e) { if (e.key === 'Enter') pair(); });
+
+  // ------------------------------------------------------------- schede --
+  function tab(which) {
+    $('music').hidden = which !== 'music'; $('lib').hidden = which !== 'lib';
+    each('[data-tab]', function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === which); });
+    try { localStorage.setItem('omega-remote-tab', which); } catch (e) {}
+    if (which === 'lib') loadLib();
+  }
+  each('[data-tab]', function (b) { b.onclick = function () { tab(b.getAttribute('data-tab')); window.scrollTo(0, 0); }; });
+
+  // ------------------------------------------------------------- musica --
+  function fmt(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
+  function render() {
+    if (!st) return;
+    $('title').textContent = st.stream_title || st.title || '—';
+    $('artist').textContent = st.stream_title ? st.title : [st.artist, st.album].filter(Boolean).join(' · ');
+    var s = $('state'), live = st.state === 'playing' && st.live;
+    s.textContent = st.state === 'playing' ? (st.live ? L.live : fmt(st.pos) + ' / ' + fmt(st.dur)) : (L[st.state] || st.state);
+    s.className = 'st' + (live ? ' live' : '');
+    $('prog').style.width = (!st.live && st.dur > 0 ? Math.min(100, st.pos / st.dur * 100) : 0) + '%';
+    var playing = st.state === 'playing' || st.state === 'loading';
+    var tg = $('toggle'), want = playing ? 'i-pause' : 'i-play';
+    if (tg.getAttribute('data-i') !== want) { tg.innerHTML = icon(want); tg.setAttribute('data-i', want); }
+    $('shuffle').classList.toggle('on', !!st.shuffle);
+    $('repeat').classList.toggle('on', st.repeat > 0);
+    $('repeat').classList.toggle('one', st.repeat === 2);
+    if (document.activeElement !== $('vol')) { $('vol').value = st.volume; volFill(); }
+    var c = $('cover');
+    var art = st.has_cover ? '/v1/cover?i=' + st.index + '&t=' + encodeURIComponent(st.title) + '&k=' + encodeURIComponent(tok) : (/^https?:\/\/(?!127\.)/.test(st.cover) && st.cover.indexOf('/api/v1/') < 0 ? st.cover : '');
+    if (c.getAttribute('data-art') !== art) { c.style.backgroundImage = art ? bg(art) : ''; c.classList.toggle('has', !!art); c.setAttribute('data-art', art); }
+    if (st.seq !== qseq) { qseq = st.seq; api('GET', '/v1/queue').then(renderQueue).catch(function () {}); }
+    else markCurrent();
+  }
+  var qcur = -1;
+  function markCurrent() {
+    if (!st || st.index === qcur) return;
+    var items = $('queue').children;
+    for (var i = 0; i < items.length; i++) setCur(items[i], i === st.index);
+    qcur = st.index;
+  }
+  function setCur(li, on) {
+    if (!li.querySelector('.n')) return;
+    li.classList.toggle('cur', on);
+    var n = li.querySelector('.n');
+    n.innerHTML = on ? '<span class="eq"><i></i><i></i><i></i></span>' : '';
+    if (!on) n.textContent = n.getAttribute('data-n');
+  }
+  function renderQueue(q) {
+    var ul = $('queue'); ul.textContent = ''; qcur = -1;
+    $('qn').textContent = q.items.length ? q.items.length : '';
+    if (!q.items.length) { ul.appendChild(el('li', 'empty', L.empty)); return; }
+    q.items.forEach(function (it, i) {
+      var li = el('li');
+      var n = el('span', 'n', String(i + 1)); n.setAttribute('data-n', String(i + 1)); li.appendChild(n);
+      li.appendChild(el('span', 'x', it.title + (it.artist ? ' · ' + it.artist : '')));
+      if (it.dur > 0) li.appendChild(el('small', '', fmt(it.dur)));
+      li.onclick = function () { cmd('jump', i); };
+      ul.appendChild(li);
+      if (i === q.index) setCur(li, true);
+    });
+    qcur = q.index;
+  }
+  function cmd(c, v) { api('POST', '/v1/cmd', { cmd: c, value: v === undefined ? 0 : v }).then(function (j) { st = j; render(); }).catch(function () {}); }
+  $('toggle').onclick = function () { cmd('toggle'); };
+  $('next').onclick = function () { cmd('next'); };
+  $('prev').onclick = function () { cmd('prev'); };
+  $('shuffle').onclick = function () { cmd('shuffle', st && st.shuffle ? 0 : 1); };
+  $('repeat').onclick = function () { cmd('repeat', st ? (st.repeat + 1) % 3 : 1); };
+  function volFill() { $('vol').style.setProperty('--p', $('vol').value + '%'); }
+  $('vol').oninput = volFill;
+  $('vol').onchange = function () { cmd('volume', +$('vol').value); };
+
+  function loadFavs() {
+    api('GET', '/v1/favorites').then(function (j) {
+      var ul = $('favs'); ul.textContent = '';
+      $('favbox').hidden = !j.fav || !j.fav.length;
+      (j.fav || []).forEach(function (f, i) {
+        var li = el('li'); li.innerHTML = icon('i-radio'); li.appendChild(el('span', '', f.name)); li.title = f.name;
+        li.onclick = function () { api('POST', '/v1/queue', { mode: 'replace', start: i, items: j.fav.map(function (x) { return { url: x.url, title: x.name, album: 'Radio', source: 'radio', id: x.id }; }) }).then(function (s) { st = s; render(); }); };
+        ul.appendChild(li);
+      });
+    }).catch(function () {});
+  }
+
+  // ------------------------------------------------- musica dal telefono --
+  var musicDir = '';
+  function loadMusicFiles() {
+    api('GET', '/v1/music/files').then(function (j) {
+      musicDir = j.dir || '';
+      var ul = $('mfiles'); ul.textContent = '';
+      (j.files || []).forEach(function (f, i) {
+        var li = el('li');
+        li.appendChild(el('span', 'x', f.name));
+        li.appendChild(el('small', '', (f.size / 1048576).toFixed(1) + ' MB'));
+        var del = el('button', 'ibtn danger'); del.type = 'button'; del.innerHTML = icon('i-trash'); del.title = L.del;
+        del.onclick = function (ev) { ev.stopPropagation(); if (confirm(L.del + ': ' + f.name + '?')) api('POST', '/v1/music/delete', { name: f.name }).then(loadMusicFiles); };
+        li.appendChild(del);
+        li.onclick = function () {
+          var items = j.files.map(function (x) { return { url: musicDir + '/' + x.name, title: x.name.replace(/\.[^.]+$/, ''), source: 'file' }; });
+          api('POST', '/v1/queue', { mode: 'replace', start: i, items: items }).then(function (s2) { st = s2; render(); });
+        };
+        ul.appendChild(li);
+      });
+      $('mfiles_box').hidden = !(j.files || []).length;
+    }).catch(function () {});
+  }
+  function upload(files, i, done) {
+    if (i >= files.length) { $('upbar').hidden = true; $('mok').textContent = L.uploaded + done; loadMusicFiles(); return; }
+    var f = files[i], x = new XMLHttpRequest();
+    $('upbar').hidden = false; $('upprog').style.width = '0'; $('mok').textContent = L.uploading + f.name + ' (' + (i + 1) + '/' + files.length + ')';
+    x.open('POST', '/v1/music/upload?name=' + encodeURIComponent(f.name));
+    x.setRequestHeader('x-omega-token', tok);
+    x.upload.onprogress = function (e) { if (e.lengthComputable) $('upprog').style.width = (e.loaded / e.total * 100) + '%'; };
+    x.onload = function () { if (x.status !== 200) $('merr').textContent = L.upfail + f.name; upload(files, i + 1, done + (x.status === 200 ? 1 : 0)); };
+    x.onerror = function () { $('merr').textContent = L.upfail + f.name; upload(files, i + 1, done); };
+    x.send(f);
+  }
+  function sendFiles(list) { $('merr').textContent = ''; upload(Array.prototype.slice.call(list || []), 0, 0); }
+  $('m_files').onchange = function () { sendFiles(this.files); this.value = ''; };
+  // dal PC si possono anche trascinare i file sul riquadro
+  var drop = $('m_drop');
+  ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function () { drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) sendFiles(e.dataTransfer.files); });
+  function playLink() {
+    var u = $('m_link').value.trim(); if (!/^https?:\/\//i.test(u)) { $('merr').textContent = L.need; return; }
+    $('merr').textContent = '';
+    var name = u.split('?')[0].split('/').pop() || u; try { name = decodeURIComponent(name); } catch (e) {}
+    api('POST', '/v1/queue', { mode: 'next', play: true, items: [{ url: u, title: name, source: 'link' }] }).then(function (s2) { st = s2; render(); $('m_link').value = ''; });
+  }
+  $('m_link_go').onclick = playLink;
+  $('m_link').addEventListener('keydown', function (e) { if (e.key === 'Enter') playLink(); });
+
+  // ----------------------------------------------------------- libreria --
+  function loadLib() {
+    api('GET', '/v1/library').then(function (j) {
+      games = j.items || [];
+      var src = j.source || {};
+      $('i_unlink').hidden = !src.url;
+      if (src.url && !$('i_link').value) $('i_link').value = src.url;
+      if (j.seq === libseq) return;
+      libseq = j.seq;
+      $('gn').textContent = games.length ? games.length : '';
+      var ul = $('games'); ul.textContent = '';
+      if (!games.length) { ul.appendChild(el('li', 'none', L.nogames)); return; }
+      games.forEach(function (g) {
+        var li = el('li', 'game');
+        var cv = el('div', 'cv'); cv.innerHTML = icon('i-games');
+        if (g.cover) { cv.style.backgroundImage = bg(g.cover); cv.classList.add('has'); }
+        li.appendChild(cv);
+        if (g.origin !== 'manual') li.appendChild(el('span', 'tag', g.origin === 'json' ? L.from_link : L.from_import));
+        var tools = el('div', 'tools');
+        var ed = el('button', 'ibtn'); ed.type = 'button'; ed.innerHTML = icon('i-edit'); ed.title = L.edit; ed.setAttribute('aria-label', L.edit);
+        ed.onclick = function () { openForm(g); };
+        var del = el('button', 'ibtn danger'); del.type = 'button'; del.innerHTML = icon('i-trash'); del.title = L.del; del.setAttribute('aria-label', L.del);
+        del.onclick = function () { if (confirm(L.delq)) api('POST', '/v1/library/remove', { id: g.id }).then(loadLib); };
+        tools.appendChild(ed); tools.appendChild(del); li.appendChild(tools);
+        var info = el('div', 'info');
+        info.appendChild(el('b', '', g.title));
+        info.appendChild(el('span', '', [g.platform, g.title_id, g.version, (g.kind || '').toUpperCase()].filter(Boolean).join(' · ') || ' '));
+        li.appendChild(info);
+        ul.appendChild(li);
+      });
+    }).catch(function () {});
+  }
+  function openForm(g) {
+    editId = g ? g.id : '';
+    $('f_title').textContent = g ? L.f_edit : L.f_new;
+    $('g_title').value = g ? g.title : ''; $('g_url').value = g ? g.url : ''; $('g_cover').value = g ? g.cover : '';
+    $('g_plat').value = g ? g.platform : ''; $('g_tid').value = g ? g.title_id : ''; $('g_ver').value = g ? g.version : ''; $('g_desc').value = g ? g.description : '';
+    $('ferr').textContent = ''; $('form').hidden = false; $('imp').hidden = true;
+    $('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('g_title').focus({ preventScroll: true });
+  }
+  $('add_open_b').onclick = function () { openForm(null); };
+  $('cancel').onclick = function () { $('form').hidden = true; };
+  $('save').onclick = function () {
+    var g = { title: $('g_title').value.trim(), url: $('g_url').value.trim(), cover: $('g_cover').value.trim(), platform: $('g_plat').value,
+              title_id: $('g_tid').value.trim().toUpperCase(), version: $('g_ver').value.trim(), description: $('g_desc').value.trim() };
+    if (editId) g.id = editId;
+    if (!g.title || !/^https?:\/\//i.test(g.url)) { $('ferr').textContent = L.need; return; }
+    api('POST', '/v1/library/item', g).then(function (j) {
+      if (j._status === 200) { $('form').hidden = true; libseq = -1; loadLib(); }
+      else $('ferr').textContent = L.need;
+    });
+  };
+
+  // importazione JSON
+  $('imp_open_b').onclick = function () { $('imp').hidden = false; $('form').hidden = true; $('iok').textContent = $('ierr').textContent = ''; $('imp').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  function imported(j) {
+    if (j._status === 200) { $('iok').textContent = L.added + j.added; $('ierr').textContent = ''; libseq = -1; loadLib(); }
+    else { $('ierr').textContent = L.badjson; $('iok').textContent = ''; }
+  }
+  function importText(txt) {
+    try { JSON.parse(txt); } catch (e) { $('ierr').textContent = L.badjson; $('iok').textContent = ''; return; }
+    api('POST', '/v1/library/import', { json: txt }).then(imported).catch(function () {});
+  }
+  $('i_file').onchange = function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function () { importText(String(r.result)); }; r.readAsText(f);
+    this.value = '';
+  };
+  $('i_paste_go').onclick = function () { importText($('i_text').value); };
+  $('i_link_go').onclick = function () {
+    var u = $('i_link').value.trim();
+    if (!/^https?:\/\//i.test(u)) { $('ierr').textContent = L.need; return; }
+    api('POST', '/v1/library/source', { url: u }).then(function () { $('iok').textContent = L.syncing; $('ierr').textContent = ''; setTimeout(function () { libseq = -1; loadLib(); }, 2500); setTimeout(function () { libseq = -1; loadLib(); }, 7000); });
+  };
+  $('i_unlink').onclick = function () { api('POST', '/v1/library/source', { url: '' }).then(function () { $('i_link').value = ''; libseq = -1; loadLib(); }); };
+
+  // ------------------------------------------------------------- ciclo --
+  function poll() {
+    if (!tok) { showPair(); return; }
+    api('GET', '/v1/state').then(function (j) { st = j; conn(true); showApp(); render(); })
+      .catch(function (e) { if (e.message !== 'auth') conn(false); });
+    api('GET', '/v1/system').then(function (j) {
+      if (j.lang) pickLang(j.lang);
+      $('game').textContent = j.game || L.none;
+      $('temp').textContent = j.cpu_t > 0 ? j.cpu_t + ' °C' : '—';
+    }).catch(function () {});
+  }
+  var saved = 'music'; try { saved = localStorage.getItem('omega-remote-tab') || 'music'; } catch (e) {}
+  if (tok) { showApp(); tab(saved); loadFavs(); loadMusicFiles(); poll(); } else showPair();
+  setInterval(poll, 2000);
+  setInterval(function () { if (!$('app').hidden) loadFavs(); }, 30000);
+})();
+</script>
+</body>
+</html>

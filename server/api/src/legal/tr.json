@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "Bu çeviri hakkında",
+    "body": "Bu metin, İtalyanca orijinal metnin kolaylık sağlamak amacıyla sunulan bir çevirisidir. Bu çeviri ile İtalyanca sürüm arasında herhangi bir farklılık olması hâlinde İtalyanca sürüm geçerlidir."
+  },
+  "missing": "[tamamlanacak]",
+  "fragments": {
+    "vat": ", KDV no. {vat}",
+    "hosting_at": " (barındırma sağlayıcısı: {hosting})"
+  },
+  "privacy": {
+    "title": "Gizlilik bildirimi",
+    "sections": [
+      { "id": "controller", "title": "Verilerinizi kim işliyor", "body": "Veri sorumlusu: {controller}. Gizlilik konuları ve şikâyetler için iletişim: {email}. Omega bağımsız bir projedir: Sony Interactive Entertainment ile bağlantılı değildir ve onun hesaplarını ya da sunucularını kullanmaz." },
+      { "id": "data", "title": "Hangi verileri topluyoruz", "body": "Hesap: çevrimiçi kimlik, parola (yalnızca scrypt özeti olarak saklanır, asla düz metin olarak saklanmaz), belirtirseniz e-posta adresiniz, yüklediğiniz avatar ve kapak görseli, profil metni, kayıt tarihi ve son giriş. Sosyal özellikler: arkadaşlıklar ve arkadaşlık istekleri, çevrimiçi durum ve kullanmakta olduğunuz oyun ya da uygulama (siz oynarken konsolunuz tarafından gönderilir), son etkinlikler, doğrudan mesajlar, parti sohbetleri ve davetleri, bildirimler. Store: yayımladığınız homebrew'ler, yorumlar, beğeniler/beğenmemeler, puanlar, şikâyetler, yükleme sayısı. Kişisel kütüphane: JSON dosyanızın adresi ve içerdiği oyunların listesi (ad, görseller, bağlantılar). Teknik veriler: sunucuya yapılan her istek için IP adresini, tarih ve saati, istenen yolu (Omega tarayıcısıyla açılan sayfaların adresi dahil), sonucu ve süreleri kaydederiz. Parolalar, token'lar ve çerezler maskelenir ve kayıtlara asla kaydedilmez." },
+      { "id": "purposes", "title": "Neden ve hangi hukuki dayanakla", "body": "Talep ettiğiniz hizmeti (hesap, sosyal özellikler, Store, kütüphane) sunmak için: sözleşmenin ifası, GDPR madde 6(1)(b). Güvenlik, kötüye kullanımın önlenmesi ve şikâyetlerin yönetimi için: meşru menfaat ve barındırılan içeriklere ilişkin yasal yükümlülükler, madde 6(1)(f) ve 6(1)(c). Verilerinizi reklam veya profilleme amacıyla kullanmayız ve satmayız." },
+      { "id": "retention", "title": "Ne kadar süreyle", "body": "İsteklere ait teknik kayıtlar {days} gün sonra silinir. Hesap verileri ve içerikler, hesabınızı silene kadar saklanır; oturumların süresi 24 saat sonra dolar. Kapatılan şikâyetler ve moderasyon işlemleri kaydı, içeriklerin nasıl yönetildiğini kanıtlamak için gerekli oldukları sürece saklanır." },
+      { "id": "recipients", "title": "Kimler görebilir", "body": "Diğer kullanıcılar herkese açık profilinizi, yayımladıklarınızı ve arkadaşsanız çevrimiçi varlığınızı ve etkinliklerinizi görür. Mesajları yalnızca alıcıları görür. Veriler, veri sorumlusu{hosting_at} tarafından yönetilen bir sunucuda saklanır; barındırma sağlayıcısı veri işleyen sıfatıyla hareket eder. Bir homebrew yüklediğinizde veya bir web sayfası açtığınızda, konsol ya da sunucumuz o dosyayı veya sayfayı barındıran siteye bağlanır: bu durumda o sitenin gizlilik bildirimi geçerlidir." },
+      { "id": "rights", "title": "Haklarınız", "body": "{email} adresine yazarak verilerinize erişebilir ve bunları indirebilir (Ayarlar → Gizlilik ve veriler → Verilerimi indir), düzeltebilir, silebilir (Hesabı sil), işlenmelerine itiraz edebilir veya işlemenin kısıtlanmasını talep edebilirsiniz. Ayrıca İtalya Kişisel Verileri Koruma Kurumuna (Garante per la protezione dei dati personali, www.garanteprivacy.it) şikâyette bulunabilirsiniz." },
+      { "id": "age", "title": "Asgari yaş", "body": "Hizmet yalnızca en az 14 yaşında olan kişilere yöneliktir." },
+      { "id": "version", "title": "Sürüm", "body": "Son güncelleme: {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Kullanım koşulları",
+    "sections": [
+      { "id": "service", "title": "Hizmet", "body": "Omega ({url}), kullanıcının üçüncü taraf yazılımları yasal olarak yüklediği konsollar için ücretsiz olarak hesaplar, sosyal özellikler ve bir homebrew Store'u sunar. Hizmeti işleten: {name}. Omega bağımsız bir projedir; Sony Interactive Entertainment ile bağlantılı değildir, onun tarafından onaylanmamış veya desteklenmemektedir. \"PlayStation\" ve \"PS5\", ilgili sahiplerinin ticari markalarıdır." },
+      { "id": "risk", "title": "Kullanım riski size aittir", "body": "Hizmet ve Store'daki homebrew'ler olduğu gibi sunulur. Resmî olmayan yazılım yüklemek arızalara, veri kaybına veya konsol garantisinin kaybına yol açabilir ve riski size aittir. Homebrew'ler, ilgili yazarlarının kendi lisanslarına tabi eserleridir." },
+      { "id": "prohibited", "title": "Neye izin verilmez", "body": "Haklarına sahip olmadığınız içerikleri yayımlamak veya paylaşmak — özellikle ticari oyunların veya yazılımların kopyaları, korsan materyale bağlantılar, bunların korumalarını korsanlık amacıyla aşmaya yönelik araçlar —, kötü amaçlı yazılımlar veya tehlikeli dosyalar, yasa dışı, saldırgan ya da nefreti kışkırtan içerikler, spam, başkalarının hesaplarını kullanmak veya bu hesapların güvenliğini tehlikeye atmaya çalışmak." },
+      { "id": "publishing", "title": "Store'da yayımlama", "body": "Yayımlayarak, homebrew'in yazarı olduğunuzu veya lisansının yeniden dağıtımına izin verdiğini ve bağlantının, zararlı değişiklikler içermeyen belirtilen dosyaya götürdüğünü beyan edersiniz. Adı, açıklamayı ve görselleri Store'da göstermemize izin verirsiniz. Dosyalar belirttiğiniz sitede kalır: Omega yalnızca tanıtım sayfasını barındırır." },
+      { "id": "library", "title": "Kişisel kütüphane", "body": "Kütüphane, yasal olarak sahip olduğunuz oyunların yedeklerini kişisel kullanım için düzenlemeye ve yeniden yüklemeye yarar. Kopyaları başkalarıyla paylaşmak için kullanmayın: dosyalar sizin tuttuğunuz yerde kalır ve Omega onları barındırmaz." },
+      { "id": "moderation", "title": "Şikâyetler ve moderasyon", "body": "Bir homebrew'i veya yorumu Store'dan (Seçenekler → Bildir) ya da {email} adresine yazarak şikâyet edebilirsiniz. Şikâyetleri inceleriz; bu koşulları ihlal eden içerikleri gizleyebilir veya kaldırabilir, bu koşulları ihlal eden hesapları askıya alabilir veya kapatabiliriz. Birden fazla şikâyet alan içerikler, inceleme tamamlanana kadar gizlenir." },
+      { "id": "liability", "title": "Sorumluluk", "body": "Yasanın izin verdiği ölçüde, homebrew'lerin kullanımından veya değişebilecek ya da sona erebilecek olan hizmetin kullanılamamasından doğan zararlardan sorumlu değiliz. Tüketiciler için öngörülen emredici korumalar saklıdır." },
+      { "id": "changes", "title": "Değişiklikler ve uygulanacak hukuk", "body": "Koşullar değişirse bunu uygulamada size yeniden soracağız. İtalyan hukuku uygulanır." },
+      { "id": "version", "title": "Sürüm", "body": "Yürürlük tarihi: {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Açık kaynak lisansları",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Omega konsol uygulaması, GNU GPL sürüm 3 veya sonraki sürümleri kapsamında, hiçbir garanti verilmeksizin dağıtılan özgür bir yazılımdır. Kaynak kodunun tamamı şu adresten indirilebilir: {url}/source." },
+      { "id": "developer", "title": "Geliştirici", "body": "Omega'yı geliştiren: {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Uygulamanın kullandığı bileşenler", "body": "ps5-payload-sdk (GPL-3.0 veya sonraki sürümleri) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib ve minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Sunucunun kullandığı bileşenler", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 veya sonraki sürümleri) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Store'daki homebrew'ler", "body": "Katalogdaki her homebrew, kendi lisansına sahip bir açık kaynak projesidir; lisans, projenin web sitesiyle birlikte homebrew'in sayfasında belirtilir." }
+    ]
+  }
+}

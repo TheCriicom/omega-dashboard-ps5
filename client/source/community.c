@@ -49,9 +49,9 @@ static void parse_user(JVal *u, URef *r) {
 }
 
 static void hours(long secs, char *out, size_t n) {
-  if (secs < 3600) snprintf(out, n, "%ld min", secs / 60);
-  else if (secs < 36000) snprintf(out, n, "%.1f h", secs / 3600.0);
-  else snprintf(out, n, "%ld h", secs / 3600);
+  if (secs < 3600) snprintf(out, n, _("%ld min"), secs / 60);
+  else if (secs < 36000) snprintf(out, n, _("%.1f h"), secs / 3600.0);
+  else snprintf(out, n, _("%ld h"), secs / 3600);
 }
 
 static int list_count(void);
@@ -87,7 +87,7 @@ static void on_feed(int st, JVal *j, const char *raw, void *ud) {
   (void)raw;
   int more = ud != NULL;
   loading = 0;
-  if (st != 200) { if (!more) set_msg("Bacheca non disponibile", 1); return; }
+  if (st != 200) { if (!more) set_msg(_("Bacheca non disponibile"), 1); return; }
   if (!more) nposts = 0;
   int got = 0;
   JFOR(o, jget(j, "posts")) { if (nposts >= MAXP) break; parse_post(o, &posts[nposts++]); got++; }
@@ -104,13 +104,13 @@ static void load_feed(int more) {
 
 static void on_posted(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 201 || st == 200) { set_msg("Pubblicato sulla bacheca", 0); load_feed(0); reset_sel(); }
-  else if (st == 429) set_msg("Hai scritto molto: riprova più tardi", 1);
-  else set_msg("Pubblicazione non riuscita", 1);
+  if (st == 201 || st == 200) { set_msg(_("Pubblicato sulla bacheca"), 0); load_feed(0); reset_sel(); }
+  else if (st == 429) set_msg(_("Hai scritto molto: riprova più tardi"), 1);
+  else set_msg(_("Pubblicazione non riuscita"), 1);
 }
 static void write_post(void) {
   char t[520] = "";
-  if (!edit_text("Cosa vuoi condividere con i tuoi amici?", t, sizeof t, 0) || !t[0]) return;
+  if (!edit_text(_("Cosa vuoi condividere con i tuoi amici?"), t, sizeof t, 0) || !t[0]) return;
   char e[1100], body[1200];
   json_escape(e, sizeof e, t);
   snprintf(body, sizeof body, "{\"text\":\"%s\"}", e);
@@ -155,11 +155,11 @@ static void open_post(const Post *p) { cur = *p; ncoms = 0; sub = SUB_POST; rese
 static void on_commented(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
   if (st == 201 || st == 200) load_comments();
-  else set_msg(st == 403 ? "Non puoi commentare questo post" : "Commento non inviato", 1);
+  else set_msg(st == 403 ? _("Non puoi commentare questo post") : _("Commento non inviato"), 1);
 }
 static void write_comment(void) {
   char t[320] = "";
-  if (!edit_text("Scrivi un commento", t, sizeof t, 0) || !t[0]) return;
+  if (!edit_text(_("Scrivi un commento"), t, sizeof t, 0) || !t[0]) return;
   char e[700], body[760], path[64];
   json_escape(e, sizeof e, t);
   snprintf(body, sizeof body, "{\"text\":\"%s\"}", e);
@@ -171,8 +171,8 @@ static void write_comment(void) {
 static char act_post[16], act_comment[16];
 static void on_done_reload(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw;
-  if (st >= 200 && st < 300) { set_msg(ud ? (const char *)ud : "Fatto", 0); if (sub == SUB_POST) load_comments(); else load_feed(0); }
-  else set_msg("Operazione non riuscita", 1);
+  if (st >= 200 && st < 300) { set_msg(ud ? (const char *)ud : _("Fatto"), 0); if (sub == SUB_POST) load_comments(); else load_feed(0); }
+  else set_msg(_("Operazione non riuscita"), 1);
 }
 static const char *REASONS[] = { "spam", "contenuto_offensivo", "molestie", "altro" };
 static void report_pick(int idx, void *ud) {
@@ -181,33 +181,33 @@ static void report_pick(int idx, void *ud) {
   if (act_comment[0]) snprintf(path, sizeof path, OMEGA_API "/posts/%s/comments/%s/report", act_post, act_comment);
   else snprintf(path, sizeof path, OMEGA_API "/posts/%s/report", act_post);
   snprintf(body, sizeof body, "{\"reason\":\"%s\"}", REASONS[idx]);
-  net_req(HTTP_POST, path, body, on_done_reload, "Grazie, la segnalazione è stata inviata");
+  net_req(HTTP_POST, path, body, on_done_reload, (void *)_("Grazie, la segnalazione è stata inviata"));
 }
 static void ask_report(void) {
-  static const char *items[] = { "Spam", "Contenuto offensivo", "Molestie", "Altro" };
-  menu_open("Segnala", items, 4, report_pick, NULL);
+  const char *items[] = { _("Spam"), _("Contenuto offensivo"), _("Molestie"), _("Altro") };
+  menu_open(_("Segnala"), items, 4, report_pick, NULL);
 }
 static void delete_yes(int idx, void *ud) {
   (void)idx; (void)ud;
   char path[96];
   if (act_comment[0]) snprintf(path, sizeof path, OMEGA_API "/posts/%s/comments/%s", act_post, act_comment);
   else { snprintf(path, sizeof path, OMEGA_API "/posts/%s", act_post); if (sub == SUB_POST) sub = SUB_NONE; }
-  net_req(HTTP_DELETE, path, NULL, on_done_reload, "Eliminato");
+  net_req(HTTP_DELETE, path, NULL, on_done_reload, (void *)_("Eliminato"));
 }
 static char opt_oid[32]; static int opt_mine;
 static void post_opt_pick(int idx, void *ud) {
   (void)ud;
   if (idx == 0) profile_open(opt_oid);
-  else if (idx == 1) { if (opt_mine) confirm_open("Eliminare definitivamente?", "Elimina", delete_yes, NULL); else ask_report(); }
+  else if (idx == 1) { if (opt_mine) confirm_open(_("Eliminare definitivamente?"), _("Elimina"), delete_yes, NULL); else ask_report(); }
 }
 static void post_options(const char *post_id, const char *comment_id, const char *author, int can_delete) {
   snprintf(act_post, sizeof act_post, "%s", post_id);
   snprintf(act_comment, sizeof act_comment, "%s", comment_id ? comment_id : "");
   snprintf(opt_oid, sizeof opt_oid, "%s", author);
   opt_mine = can_delete;
-  static const char *mine[] = { "Visualizza profilo", "Elimina" };
-  static const char *other[] = { "Visualizza profilo", "Segnala" };
-  menu_open(comment_id ? "Commento" : "Post", can_delete ? mine : other, 2, post_opt_pick, NULL);
+  const char *mine[] = { _("Visualizza profilo"), _("Elimina") };
+  const char *other[] = { _("Visualizza profilo"), _("Segnala") };
+  menu_open(comment_id ? _("Commento") : _("Post"), can_delete ? mine : other, 2, post_opt_pick, NULL);
 }
 
 // ------------------------------------------------------------------- gruppi --
@@ -267,7 +267,7 @@ static void open_chat(const Group *g) {
 static void on_gsent(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
   if (st == 201 || st == 200) poll_chat();
-  else set_msg(st == 429 ? "Stai scrivendo troppo in fretta" : "Messaggio non inviato", 1);
+  else set_msg(st == 429 ? _("Stai scrivendo troppo in fretta") : _("Messaggio non inviato"), 1);
 }
 static void write_gmsg(void) {
   char t[520] = "";
@@ -282,21 +282,21 @@ static void write_gmsg(void) {
 static void on_group_changed(int st, JVal *j, const char *raw, void *ud) {
   (void)raw;
   if (st >= 200 && st < 300) {
-    set_msg(ud ? (const char *)ud : "Fatto", 0);
+    set_msg(ud ? (const char *)ud : _("Fatto"), 0);
     load_groups();
     if (sub == SUB_CHAT) poll_chat();
     const char *gid = jstr(jget(j, "group"), "group_id", "");
     if (gid[0] && sub == SUB_NONE) { Group g; memset(&g, 0, sizeof g); snprintf(g.id, sizeof g.id, "%s", gid); jcpy(g.name, sizeof g.name, jget(j, "group"), "name"); snprintf(g.owner, sizeof g.owner, "%s", S.me); open_chat(&g); }
   } else {
     const char *e = jstr(j, "error", "");
-    set_msg(!strcmp(e, "blocked") ? "Uno degli utenti non è disponibile" : !strcmp(e, "not_friends") ? "Puoi aggiungere solo i tuoi amici" : "Operazione non riuscita", 1);
+    set_msg(!strcmp(e, "blocked") ? _("Uno degli utenti non è disponibile") : !strcmp(e, "not_friends") ? _("Puoi aggiungere solo i tuoi amici") : _("Operazione non riuscita"), 1);
   }
 }
 static void leave_yes(int idx, void *ud) {
   (void)idx; (void)ud;
   char path[64]; snprintf(path, sizeof path, OMEGA_API "/groups/%s/leave", chat_id);
   sub = SUB_NONE; reset_sel();
-  net_req(HTTP_POST, path, "{}", on_group_changed, "Sei uscito dal gruppo");
+  net_req(HTTP_POST, path, "{}", on_group_changed, (void *)_("Sei uscito dal gruppo"));
 }
 static void start_pick(int mode) {
   memset(picked, 0, sizeof picked);
@@ -308,41 +308,41 @@ static void chat_opt_pick(int idx, void *ud) {
   if (idx == 0) start_pick(1);
   else if (idx == 1 && owner) {
     char n[48]; snprintf(n, sizeof n, "%s", chat_name);
-    if (!edit_text("Nome del gruppo", n, sizeof n, 0) || !n[0]) return;
+    if (!edit_text(_("Nome del gruppo"), n, sizeof n, 0) || !n[0]) return;
     char e[120], body[160], path[64];
     json_escape(e, sizeof e, n); snprintf(body, sizeof body, "{\"name\":\"%s\"}", e);
     snprintf(path, sizeof path, OMEGA_API "/groups/%s", chat_id);
     snprintf(chat_name, sizeof chat_name, "%s", n);
-    net_req(HTTP_POST, path, body, on_group_changed, "Gruppo rinominato");
-  } else confirm_open("Uscire dal gruppo? Non riceverai più i suoi messaggi.", "Esci", leave_yes, NULL);
+    net_req(HTTP_POST, path, body, on_group_changed, (void *)_("Gruppo rinominato"));
+  } else confirm_open(_("Uscire dal gruppo? Non riceverai più i suoi messaggi."), P_("gruppo", "Esci"), leave_yes, NULL);
 }
 static void chat_options(void) {
-  static const char *own[] = { "Aggiungi amici", "Rinomina", "Esci dal gruppo" };
-  static const char *mem[] = { "Aggiungi amici", "Esci dal gruppo" };
+  const char *own[] = { _("Aggiungi amici"), _("Rinomina"), _("Esci dal gruppo") };
+  const char *mem[] = { _("Aggiungi amici"), _("Esci dal gruppo") };
   if (!strcasecmp(chat_owner, S.me)) menu_open(chat_name, own, 3, chat_opt_pick, NULL);
   else menu_open(chat_name, mem, 2, chat_opt_pick, NULL);
 }
 static void finish_pick(void) {
   char list[MAX_FRIENDS * 40] = ""; size_t o = 0; int n = 0;
   for (int i = 0; i < S.nfriends; i++) if (picked[i]) { o += (size_t)snprintf(list + o, sizeof list - o, "%s\"%s\"", n ? "," : "", S.friends[i].oid); n++; }
-  if (!n) { set_msg("Scegli almeno un amico", 1); return; }
+  if (!n) { set_msg(_("Scegli almeno un amico"), 1); return; }
   static char body[MAX_FRIENDS * 40 + 160]; char path[64];
   if (pick_mode == 0) {
     char e[120]; json_escape(e, sizeof e, pick_name);
     snprintf(body, sizeof body, "{\"name\":\"%s\",\"members\":[%s]}", e, list);
     sub = SUB_NONE; reset_sel();
-    net_req(HTTP_POST, OMEGA_API "/groups", body, on_group_changed, "Gruppo creato");
+    net_req(HTTP_POST, OMEGA_API "/groups", body, on_group_changed, (void *)_("Gruppo creato"));
   } else {
     snprintf(body, sizeof body, "{\"add\":[%s]}", list);
     snprintf(path, sizeof path, OMEGA_API "/groups/%s/members", chat_id);
     sub = SUB_CHAT; reset_sel();
-    net_req(HTTP_POST, path, body, on_group_changed, n == 1 ? "Amico aggiunto" : "Amici aggiunti");
+    net_req(HTTP_POST, path, body, on_group_changed, (void *)(n == 1 ? _("Amico aggiunto") : _("Amici aggiunti")));
   }
 }
 static void new_group(void) {
-  if (!S.nfriends) { set_msg("Aggiungi qualche amico per creare un gruppo", 0); return; }
-  snprintf(pick_name, sizeof pick_name, "Gruppo di %s", S.me);
-  if (!edit_text("Nome del nuovo gruppo", pick_name, sizeof pick_name, 0) || !pick_name[0]) return;
+  if (!S.nfriends) { set_msg(_("Aggiungi qualche amico per creare un gruppo"), 0); return; }
+  snprintf(pick_name, sizeof pick_name, _("Gruppo di %s"), S.me);
+  if (!edit_text(_("Nome del nuovo gruppo"), pick_name, sizeof pick_name, 0) || !pick_name[0]) return;
   start_pick(0);
 }
 
@@ -408,7 +408,7 @@ void community_open(int t) {
 // apre direttamente un post (dalle notifiche di "mi piace" e commenti)
 static void on_one_post(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
-  if (st != 200) { set_msg(st == 404 ? "Il post non c'è più" : "Post non disponibile", 1); return; }
+  if (st != 200) { set_msg(st == 404 ? _("Il post non c'è più") : _("Post non disponibile"), 1); return; }
   Post p; parse_post(jget(j, "post"), &p);
   open_post(&p);
 }
@@ -434,7 +434,7 @@ static void draw_post(const Post *p, int x, int y, int w, int foc, int a, int fu
   if (!full) card(x, y, w, h, foc, a);
   draw_avatar(p->au.oid, p->au.avatar, x + 66, y + 66, 76, a);
   draw_text(font(W_MED, 29), p->au.oid, x + 124, y + 30, C_TXT, a, AL_L);
-  char tm[32]; rel_time(p->when, tm, sizeof tm);
+  char tm[64]; rel_time(p->when, tm, sizeof tm);
   draw_text(font(W_REG, 22), tm, x + 124, y + 68, C_FAINT, a, AL_L);
   int ty = y + 120;
   if (p->game[0]) { chip(x + 40, ty - 6, p->game, C_ACC2, a); ty += 44; }
@@ -450,9 +450,9 @@ static void draw_post(const Post *p, int x, int y, int w, int foc, int a, int fu
 }
 
 static void draw_header(int a) {
-  static const char *names[NTABS] = { "Bacheca", "Gruppi", "Persone", "Tempo di gioco" };
+  const char *names[NTABS] = { _("Bacheca"), _("Gruppi"), _("Persone"), _("Tempo di gioco") };
   draw_icon(IC_FRIENDS, CX + 24, 84, 46, C_ACC2, a);
-  draw_text(font(W_LIGHT, 48), "Community", CX + 66, 54, C_WHITE, a, AL_L);
+  draw_text(font(W_LIGHT, 48), _("Community"), CX + 66, 54, C_WHITE, a, AL_L);
   tab_anim = approach(tab_anim, (float)tab, 14.0f);
   int x = CX + 460;
   for (int i = 0; i < NTABS; i++) {
@@ -487,7 +487,7 @@ static void draw_feed(int a) {
   y = TOP - (int)scroll;
   card(CX, y, CW, 96, sel == 0, a);
   draw_avatar(S.me, S.my_avatar, CX + 56, y + 48, 58, a);
-  draw_text(font(W_REG, 28), "Scrivi qualcosa ai tuoi amici...", CX + 104, y + 30, C_DIM, a, AL_L);
+  draw_text(font(W_REG, 28), _("Scrivi qualcosa ai tuoi amici..."), CX + 104, y + 30, C_DIM, a, AL_L);
   draw_icon(IC_SEND, CX + CW - 50, y + 48, 30, sel == 0 ? C_WHITE : C_FAINT, a);
   y += heights[0];
   for (int i = 0; i < nposts; i++) {
@@ -496,8 +496,8 @@ static void draw_feed(int a) {
   }
   if (!nposts && !loading) {
     draw_icon(IC_NEWS, SCREEN_W / 2, y + 120, 80, C_FAINT, a);
-    draw_text(font(W_MED, 32), "La bacheca è vuota", SCREEN_W / 2, y + 190, C_DIM, a, AL_C);
-    draw_text(font(W_REG, 25), "Scrivi il primo post o aggiungi qualche amico.", SCREEN_W / 2, y + 240, C_FAINT, a, AL_C);
+    draw_text(font(W_MED, 32), _("La bacheca è vuota"), SCREEN_W / 2, y + 190, C_DIM, a, AL_C);
+    draw_text(font(W_REG, 25), _("Scrivi il primo post o aggiungi qualche amico."), SCREEN_W / 2, y + 240, C_FAINT, a, AL_C);
   }
   if (loading) draw_spinner(SCREEN_W / 2, y + 60, 18, a);
   SDL_RenderSetClipRect(R, NULL);
@@ -515,14 +515,14 @@ static void draw_post_detail(int a) {
   card(CX, y, CW, ph, sel == 0, a);
   draw_post(&cur, CX, y, CW, 0, a, 1);
   y += y0;
-  draw_text(font(W_MED, 26), ncoms ? "Commenti" : "Ancora nessun commento: premi Triangolo e scrivi il primo", CX + 10, y - 2, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 26), ncoms ? _("Commenti") : _("Ancora nessun commento: premi Triangolo e scrivi il primo"), CX + 10, y - 2, C_DIM, a, AL_L);
   y += 50;
   for (int i = 0; i < ncoms; i++, y += 132) {
     if (y + 120 < TOP - 20 || y > TOP + view) continue;
     PComment *c = &coms[i];
     card(CX + 60, y, CW - 60, 120, sel == i + 1, a);
     draw_avatar(c->au.oid, c->au.avatar, CX + 116, y + 60, 60, a);
-    char tm[32]; rel_time(c->when, tm, sizeof tm);
+    char tm[64]; rel_time(c->when, tm, sizeof tm);
     int nw = draw_text(font(W_MED, 24), c->au.oid, CX + 164, y + 18, C_TXT, a, AL_L);
     draw_text(font(W_REG, 20), tm, CX + 180 + nw, y + 22, C_FAINT, a, AL_L);
     draw_text_wrap(font(W_REG, 25), c->text, CX + 164, y + 54, CW - 260, 2, 30, C_TXT, a);
@@ -539,8 +539,8 @@ static void draw_groups(int a) {
   card(CX, y, CW, rh - 20, sel == 0, a);
   fill_circle(CX + 64, y + 58, 38, sel == 0 ? C_WHITE : C_ACC, a);
   draw_icon(IC_PLUS, CX + 64, y + 58, 34, sel == 0 ? RGB(12, 14, 22) : C_WHITE, a);
-  draw_text(font(W_MED, 30), "Nuovo gruppo", CX + 130, y + 26, C_TXT, a, AL_L);
-  draw_text(font(W_REG, 23), "Una chat che resta, con gli amici che scegli tu", CX + 130, y + 66, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 30), _("Nuovo gruppo"), CX + 130, y + 26, C_TXT, a, AL_L);
+  draw_text(font(W_REG, 23), _("Una chat che resta, con gli amici che scegli tu"), CX + 130, y + 66, C_DIM, a, AL_L);
   y += rh;
   for (int i = 0; i < ngroups; i++, y += rh) {
     if (y + rh < TOP - 20 || y > TOP + view) continue;
@@ -550,9 +550,9 @@ static void draw_groups(int a) {
     int tx = CX + 180;
     draw_text_fit(font(W_MED, 30), g->name, tx, y + 22, CW - 420, C_TXT, a, AL_L);
     char ln[260];
-    if (g->last[0]) snprintf(ln, sizeof ln, "%s: %s", g->last_from, g->last); else snprintf(ln, sizeof ln, "%d membri \xC2\xB7 nessun messaggio", g->count);
+    if (g->last[0]) snprintf(ln, sizeof ln, "%s: %s", g->last_from, g->last); else snprintf(ln, sizeof ln, g->count == 1 ? _("%d membro \xC2\xB7 nessun messaggio") : _("%d membri \xC2\xB7 nessun messaggio"), g->count);
     draw_text_fit(font(W_REG, 23), ln, tx, y + 66, CW - 420, g->unread ? C_TXT : C_DIM, a, AL_L);
-    if (g->when[0]) { char tm[32]; rel_time(g->when, tm, sizeof tm); draw_text(font(W_REG, 21), tm, CX + CW - 40, y + 26, C_FAINT, a, AL_R); }
+    if (g->when[0]) { char tm[64]; rel_time(g->when, tm, sizeof tm); draw_text(font(W_REG, 21), tm, CX + CW - 40, y + 26, C_FAINT, a, AL_R); }
     if (g->unread) draw_badge(CX + CW - 56, y + 76, g->unread, a);
   }
   SDL_RenderSetClipRect(R, NULL);
@@ -579,14 +579,14 @@ static void draw_chat(int a) {
     if (!m->mine) { draw_text(font(W_MED, 21), m->from.oid, bx + 22, ty, C_ACC2, a, AL_L); ty += 30; }
     draw_text_wrap(f, m->text, bx + 22, ty, bw - 44, 6, 34, C_WHITE, a);
   }
-  if (!ngm) draw_text(font(W_REG, 26), "Nessun messaggio: scrivi tu per primo con X", CX + CW / 2, (top + bottom) / 2, C_DIM, a, AL_C);
+  if (!ngm) draw_text(font(W_REG, 26), _("Nessun messaggio: scrivi tu per primo con X"), CX + CW / 2, (top + bottom) / 2, C_DIM, a, AL_C);
   SDL_RenderSetClipRect(R, NULL);
   if (SDL_GetTicks() - chat_poll_at > GROUP_POLL_MS) poll_chat();
 }
 
 static void draw_pick(int a) {
   int view = SCREEN_H - TOP - 100, rh = 100;
-  draw_text(font(W_MED, 30), pick_mode == 0 ? pick_name : "Aggiungi amici al gruppo", CX, TOP - 54, C_WHITE, a, AL_L);
+  draw_text(font(W_MED, 30), pick_mode == 0 ? pick_name : _("Aggiungi amici al gruppo"), CX, TOP - 54, C_WHITE, a, AL_L);
   follow(sel * rh, rh, view);
   SDL_Rect clip = { 0, TOP - 10, SCREEN_W, view + 20 };
   SDL_RenderSetClipRect(R, &clip);
@@ -613,9 +613,9 @@ static void draw_people(int a) {
   card(CX, y, CW, rh - 20, sel == 0, a);
   fill_circle(CX + 60, y + 50, 34, sel == 0 ? C_WHITE : C_ACC, a);
   draw_icon(IC_SEARCH, CX + 60, y + 50, 32, sel == 0 ? RGB(12, 14, 22) : C_WHITE, a);
-  draw_text(font(W_MED, 29), "Cerca per ID online", CX + 120, y + 32, C_TXT, a, AL_L);
+  draw_text(font(W_MED, 29), _("Cerca per ID online"), CX + 120, y + 32, C_TXT, a, AL_L);
   y += rh;
-  draw_text(font(W_MED, 25), nsugg ? "Persone che potresti conoscere" : "Nessun suggerimento per ora: aggiungi qualche amico", CX + 6, y, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 25), nsugg ? _("Persone che potresti conoscere") : _("Nessun suggerimento per ora: aggiungi qualche amico"), CX + 6, y, C_DIM, a, AL_L);
   y += 50;
   for (int i = 0; i < nsugg; i++, y += rh) {
     if (y + rh < TOP - 20 || y > TOP + view) continue;
@@ -623,11 +623,11 @@ static void draw_people(int a) {
     card(CX, y, CW, rh - 20, sel == i + 1, a);
     draw_avatar(s->u.oid, s->u.avatar, CX + 60, y + 50, 66, a);
     draw_text(font(W_MED, 29), s->u.oid, CX + 120, y + 18, C_TXT, a, AL_L);
-    char why[80];
-    if (!strcmp(s->reason, "stessi_giochi")) snprintf(why, sizeof why, "Gioca ai tuoi stessi giochi");
-    else snprintf(why, sizeof why, "%d %s in comune", s->mutual, s->mutual == 1 ? "amico" : "amici");
+    char why[160];
+    if (!strcmp(s->reason, "stessi_giochi")) snprintf(why, sizeof why, "%s", _("Gioca ai tuoi stessi giochi"));
+    else snprintf(why, sizeof why, s->mutual == 1 ? _("%d amico in comune") : _("%d amici in comune"), s->mutual);
     draw_text(font(W_REG, 23), why, CX + 120, y + 58, C_DIM, a, AL_L);
-    pill(CX + CW - 300, y + 22, 56, s->requested ? "Richiesta inviata" : "Aggiungi", s->requested ? IC_CHECK : IC_ADDUSER, sel == i + 1, sel == i + 1 ? 1.0f : 0.0f, a);
+    pill(CX + CW - 300, y + 22, 56, s->requested ? _("Richiesta inviata") : _("Aggiungi"), s->requested ? IC_CHECK : IC_ADDUSER, sel == i + 1, sel == i + 1 ? 1.0f : 0.0f, a);
   }
   SDL_RenderSetClipRect(R, NULL);
 }
@@ -637,12 +637,12 @@ static void draw_stats(int a) {
   char t1[32], t2[32];
   hours(week_secs, t1, sizeof t1); hours(tot_secs, t2, sizeof t2);
   card(lx, TOP, lw, 150, 0, a);
-  draw_text(font(W_REG, 23), "Questa settimana", lx + 40, TOP + 30, C_DIM, a, AL_L);
+  draw_text(font(W_REG, 23), _("Questa settimana"), lx + 40, TOP + 30, C_DIM, a, AL_L);
   draw_text(font(W_LIGHT, 54), t1, lx + 40, TOP + 62, C_WHITE, a, AL_L);
-  draw_text(font(W_REG, 23), "In totale", lx + lw / 2 + 20, TOP + 30, C_DIM, a, AL_L);
+  draw_text(font(W_REG, 23), _("In totale"), lx + lw / 2 + 20, TOP + 30, C_DIM, a, AL_L);
   draw_text(font(W_LIGHT, 54), t2, lx + lw / 2 + 20, TOP + 62, C_WHITE, a, AL_L);
   int y = TOP + 190;
-  draw_text(font(W_MED, 26), ngst ? "I tuoi giochi" : "Gioca qualcosa: il tempo comparirà qui", lx + 6, y, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 26), ngst ? _("I tuoi giochi") : _("Gioca qualcosa: il tempo comparirà qui"), lx + 6, y, C_DIM, a, AL_L);
   y += 50;
   long maxs = ngst ? gst[0].secs : 1; if (maxs <= 0) maxs = 1;
   for (int i = 0; i < ngst && y < SCREEN_H - 160; i++, y += 78) {
@@ -654,9 +654,9 @@ static void draw_stats(int a) {
     fill_rrect(lx + 6, y + 40, (int)((lw - 6) * (double)g->secs / maxs), 12, 6, C_ACC2, a);
   }
   card(rx, TOP, rw, SCREEN_H - TOP - 120, sel == 0, a);
-  draw_text(font(W_MED, 29), "Classifica degli amici", rx + 36, TOP + 28, C_TXT, a, AL_L);
-  chip(rx + 36, TOP + 76, period_week ? "Questa settimana" : "Da sempre", C_ACC, a);
-  draw_text(font(W_REG, 21), "Quadrato: cambia periodo", rx + rw - 36, TOP + 84, C_FAINT, a, AL_R);
+  draw_text(font(W_MED, 29), _("Classifica degli amici"), rx + 36, TOP + 28, C_TXT, a, AL_L);
+  chip(rx + 36, TOP + 76, period_week ? _("Questa settimana") : _("Da sempre"), C_ACC, a);
+  draw_text(font(W_REG, 21), _("Quadrato: cambia periodo"), rx + rw - 36, TOP + 84, C_FAINT, a, AL_R);
   y = TOP + 140;
   for (int i = 0; i < nranks && y < SCREEN_H - 200; i++, y += 84) {
     Rank *r = &ranks[i];
@@ -669,7 +669,7 @@ static void draw_stats(int a) {
     hours(r->secs, t1, sizeof t1);
     draw_text(font(W_MED, 25), t1, rx + rw - 40, y + 18, C_TXT, a, AL_R);
   }
-  if (!nranks) draw_text(font(W_REG, 24), "Nessun dato ancora", rx + rw / 2, TOP + 240, C_FAINT, a, AL_C);
+  if (!nranks) draw_text(font(W_REG, 24), _("Nessun dato ancora"), rx + rw / 2, TOP + 240, C_FAINT, a, AL_C);
 }
 
 void community_draw(float t) {
@@ -690,14 +690,14 @@ void community_draw(float t) {
   }
   int ic[4]; const char *lb[4]; int n = 0;
   switch (sub) {
-    case SUB_POST: ic[n] = IC_BTN_X; lb[n++] = sel ? "Opzioni" : (cur.liked ? "Non mi piace più" : "Mi piace"); ic[n] = IC_BTN_TRI; lb[n++] = "Commenta"; ic[n] = IC_BTN_O; lb[n++] = "Indietro"; break;
-    case SUB_CHAT: ic[n] = IC_BTN_X; lb[n++] = "Scrivi"; ic[n] = IC_BTN_SQ; lb[n++] = "Opzioni"; ic[n] = IC_BTN_O; lb[n++] = "Indietro"; break;
-    case SUB_PICK: ic[n] = IC_BTN_X; lb[n++] = "Seleziona"; ic[n] = IC_BTN_TRI; lb[n++] = pick_mode == 0 ? "Crea il gruppo" : "Aggiungi"; ic[n] = IC_BTN_O; lb[n++] = "Annulla"; break;
+    case SUB_POST: ic[n] = IC_BTN_X; lb[n++] = sel ? _("Opzioni") : (cur.liked ? _("Non mi piace più") : _("Mi piace")); ic[n] = IC_BTN_TRI; lb[n++] = _("Commenta"); ic[n] = IC_BTN_O; lb[n++] = _("Indietro"); break;
+    case SUB_CHAT: ic[n] = IC_BTN_X; lb[n++] = _("Scrivi"); ic[n] = IC_BTN_SQ; lb[n++] = _("Opzioni"); ic[n] = IC_BTN_O; lb[n++] = _("Indietro"); break;
+    case SUB_PICK: ic[n] = IC_BTN_X; lb[n++] = _("Seleziona"); ic[n] = IC_BTN_TRI; lb[n++] = pick_mode == 0 ? _("Crea il gruppo") : _("Aggiungi"); ic[n] = IC_BTN_O; lb[n++] = _("Annulla"); break;
     default:
-      if (tab == TAB_FEED && sel > 0) { ic[n] = IC_BTN_X; lb[n++] = "Mi piace"; ic[n] = IC_BTN_TRI; lb[n++] = "Commenti"; ic[n] = IC_BTN_SQ; lb[n++] = "Opzioni"; }
-      else if (tab == TAB_STATS) { ic[n] = IC_BTN_SQ; lb[n++] = "Periodo"; }
-      else { ic[n] = IC_BTN_X; lb[n++] = "Seleziona"; }
-      ic[n] = IC_BTN_O; lb[n++] = "Chiudi";
+      if (tab == TAB_FEED && sel > 0) { ic[n] = IC_BTN_X; lb[n++] = _("Mi piace"); ic[n] = IC_BTN_TRI; lb[n++] = _("Commenti"); ic[n] = IC_BTN_SQ; lb[n++] = _("Opzioni"); }
+      else if (tab == TAB_STATS) { ic[n] = IC_BTN_SQ; lb[n++] = _("Periodo"); }
+      else { ic[n] = IC_BTN_X; lb[n++] = _("Seleziona"); }
+      ic[n] = IC_BTN_O; lb[n++] = _("Chiudi");
   }
   hints(ic, lb, n, a);
 }

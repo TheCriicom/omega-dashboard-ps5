@@ -36,19 +36,19 @@ void rel_time(const char *iso, char *out, size_t n) {
   long t = iso_epoch(iso);
   if (!t) { out[0] = 0; return; }
   long d = now_epoch() - t; if (d < 0) d = 0;
-  if (d < 60) snprintf(out, n, "adesso");
-  else if (d < 3600) snprintf(out, n, "%ld min fa", d / 60);
-  else if (d < 86400) snprintf(out, n, "%ld h fa", d / 3600);
-  else if (d < 86400 * 7) snprintf(out, n, "%ld g fa", d / 86400);
-  else snprintf(out, n, "%ld sett. fa", d / (86400 * 7));
+  if (d < 60) snprintf(out, n, "%s", _("adesso"));
+  else if (d < 3600) snprintf(out, n, _("%ld min fa"), d / 60);
+  else if (d < 86400) snprintf(out, n, _("%ld h fa"), d / 3600);
+  else if (d < 86400 * 7) snprintf(out, n, _("%ld g fa"), d / 86400);
+  else snprintf(out, n, _("%ld sett. fa"), d / (86400 * 7));
 }
 void play_time(const char *iso, char *out, size_t n) {
   long t = iso_epoch(iso);
   if (!t) { out[0] = 0; return; }
   long d = now_epoch() - t; if (d < 0) d = 0;
-  if (d < 60) snprintf(out, n, "ha appena iniziato");
-  else if (d < 3600) snprintf(out, n, "da %ld min", d / 60);
-  else snprintf(out, n, "da %ld h %ld min", d / 3600, (d % 3600) / 60);
+  if (d < 60) snprintf(out, n, "%s", _("ha appena iniziato"));
+  else if (d < 3600) snprintf(out, n, _("da %ld min"), d / 60);
+  else snprintf(out, n, _("da %ld h %ld min"), d / 3600, (d % 3600) / 60);
 }
 
 int friend_online(const Friend *f) { return strcmp(f->status, "offline") != 0 && f->status[0]; }
@@ -175,7 +175,7 @@ static void parse_party(JVal *p) {
 static void on_sync(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
   sync_busy = 0;
-  if (st == 401) { set_msg("Sessione scaduta: accedi di nuovo", 1); do_logout(); return; }
+  if (st == 401) { set_msg(_("Sessione scaduta: accedi di nuovo"), 1); do_logout(); return; }
   if (st != 200 || !j) return;
   const char *st_iso = jstr(j, "server_time", NULL);
   if (st_iso) { S.server_epoch = iso_epoch(st_iso); S.server_ticks = SDL_GetTicks(); }
@@ -361,17 +361,17 @@ static void after_friend_action(int st, JVal *j, const char *raw, void *ud) {
   const char *what = ud;
   if (st >= 200 && st < 300) {
     const char *res = jstr(j, "result", "");
-    char m[160];
-    if (!strcmp(res, "pending")) snprintf(m, sizeof m, "Richiesta di amicizia inviata a %s", jstr(j, "online_id", ""));
-    else if (!strcmp(res, "accepted")) snprintf(m, sizeof m, "Tu e %s ora siete amici", jstr(j, "online_id", ""));
-    else if (!strcmp(res, "already_friends")) snprintf(m, sizeof m, "Siete già amici");
-    else if (!strcmp(res, "declined")) snprintf(m, sizeof m, "Richiesta rifiutata");
-    else if (!strcmp(res, "removed")) snprintf(m, sizeof m, "%s", what && !strcmp(what, "cancel") ? "Richiesta annullata" : "Amico rimosso");
-    else snprintf(m, sizeof m, "Fatto");
+    char m[256];
+    if (!strcmp(res, "pending")) snprintf(m, sizeof m, _("Richiesta di amicizia inviata a %s"), jstr(j, "online_id", ""));
+    else if (!strcmp(res, "accepted")) snprintf(m, sizeof m, _("Tu e %s ora siete amici"), jstr(j, "online_id", ""));
+    else if (!strcmp(res, "already_friends")) snprintf(m, sizeof m, "%s", _("Siete già amici"));
+    else if (!strcmp(res, "declined")) snprintf(m, sizeof m, "%s", _("Richiesta rifiutata"));
+    else if (!strcmp(res, "removed")) snprintf(m, sizeof m, "%s", what && !strcmp(what, "cancel") ? _("Richiesta annullata") : _("Amico rimosso"));
+    else snprintf(m, sizeof m, "%s", _("Fatto"));
     set_msg(m, 0);
   } else {
     const char *e = jstr(j, "error", "");
-    set_msg(!strcmp(e, "account_not_found") ? "Utente non trovato" : !strcmp(e, "cannot_befriend_self") ? "Non puoi aggiungere te stesso" : "Operazione non riuscita", 1);
+    set_msg(!strcmp(e, "account_not_found") ? _("Utente non trovato") : !strcmp(e, "cannot_befriend_self") ? _("Non puoi aggiungere te stesso") : _("Operazione non riuscita"), 1);
   }
   social_load_friends();
   social_sync_now();
@@ -425,38 +425,38 @@ static void on_party(int st, JVal *j, const char *raw, void *ud) {
     social_party_messages();
   } else {
     const char *e = jstr(j, "error", "");
-    set_msg(!strcmp(e, "no_invite") ? "L'invito non è più valido" : !strcmp(e, "not_friends") ? "Puoi invitare solo i tuoi amici" : "Operazione party non riuscita", 1);
+    set_msg(!strcmp(e, "no_invite") ? _("L'invito non è più valido") : !strcmp(e, "not_friends") ? _("Puoi invitare solo i tuoi amici") : _("Operazione party non riuscita"), 1);
   }
   social_sync_now();
 }
-void social_party_create(void) { net_req(HTTP_POST, OMEGA_API "/party", "{}", on_party, "Party creato"); }
+void social_party_create(void) { net_req(HTTP_POST, OMEGA_API "/party", "{}", on_party, (void *)_("Party creato")); }
 void social_party_invite(const char *oid) {
   char body[96]; snprintf(body, sizeof body, "{\"online_id\":\"%s\"}", oid);
-  static char m[96]; snprintf(m, sizeof m, "Invito inviato a %s", oid);
+  static char m[192]; snprintf(m, sizeof m, _("Invito inviato a %s"), oid);
   net_req(HTTP_POST, OMEGA_API "/party/invite", body, on_party, m);
 }
 void social_party_join(const char *pid) {
   char body[64]; snprintf(body, sizeof body, "{\"party_id\":\"%s\"}", pid);
-  net_req(HTTP_POST, OMEGA_API "/party/join", body, on_party, "Sei entrato nel party");
+  net_req(HTTP_POST, OMEGA_API "/party/join", body, on_party, (void *)_("Sei entrato nel party"));
 }
 void social_party_decline(const char *pid) {
   char body[64]; snprintf(body, sizeof body, "{\"party_id\":\"%s\"}", pid);
-  net_req(HTTP_POST, OMEGA_API "/party/decline", body, on_party, "Invito rifiutato");
+  net_req(HTTP_POST, OMEGA_API "/party/decline", body, on_party, (void *)_("Invito rifiutato"));
 }
 static void on_left(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 200) { memset(&S.party, 0, sizeof S.party); S.npmsg = 0; set_msg("Hai lasciato il party", 0); if (CH.open && CH.party) CH.open = 0; }
+  if (st == 200) { memset(&S.party, 0, sizeof S.party); S.npmsg = 0; set_msg(_("Hai lasciato il party"), 0); if (CH.open && CH.party) CH.open = 0; }
   social_sync_now();
 }
 void social_party_leave(void) { net_req(HTTP_POST, OMEGA_API "/party/leave", "{}", on_left, NULL); }
 void social_party_mute(int muted) {
   for (int i = 0; i < S.party.nmembers; i++) if (!strcasecmp(S.party.members[i].oid, S.me)) S.party.members[i].muted = muted;
   net_req(HTTP_POST, OMEGA_API "/party/mute", muted ? "{\"muted\":true}" : "{\"muted\":false}", NULL, NULL);
-  set_msg(muted ? "Microfono disattivato" : "Microfono attivato", 0);
+  set_msg(muted ? _("Microfono disattivato") : _("Microfono attivato"), 0);
 }
 static void on_sent_party(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 201) social_party_messages(); else set_msg("Messaggio non inviato", 1);
+  if (st == 201) social_party_messages(); else set_msg(_("Messaggio non inviato"), 1);
 }
 void social_party_send(const char *text) {
   char esc[1100], body[1200];
@@ -477,7 +477,7 @@ void social_presence(const char *status, const char *game_id, const char *game_n
 
 static void on_profile_saved(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  set_msg(st == 200 ? "Profilo aggiornato" : "Salvataggio non riuscito", st != 200);
+  set_msg(st == 200 ? _("Profilo aggiornato") : _("Salvataggio non riuscito"), st != 200);
   social_sync_now();
   if (PR.loaded && !strcasecmp(PR.oid, S.me)) profile_open(S.me);
 }
@@ -526,7 +526,7 @@ void chat_open_party(void) {
 static void on_sent(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
   if (st == 201) chat_poll();
-  else set_msg(!strcmp(jstr(j, "error", ""), "not_friends") ? "Puoi scrivere solo ai tuoi amici" : "Messaggio non inviato", 1);
+  else set_msg(!strcmp(jstr(j, "error", ""), "not_friends") ? _("Puoi scrivere solo ai tuoi amici") : _("Messaggio non inviato"), 1);
 }
 void chat_send(const char *text) {
   if (!text || !*text) return;
@@ -552,7 +552,7 @@ void chat_send(const char *text) {
 static void on_profile(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
   PR.loading = 0;
-  if (st != 200 || !j) { if (st == 404) set_msg("Utente non trovato", 1); return; }
+  if (st != 200 || !j) { if (st == 404) set_msg(_("Utente non trovato"), 1); return; }
   if (strcasecmp(jstr(j, "online_id", ""), PR.oid)) return;
   jcpy(PR.oid, sizeof PR.oid, j, "online_id");
   PR.avatar = (int)jnum(j, "avatar", 0);
@@ -603,8 +603,8 @@ void profile_open(const char *oid) {
 // --------------------------------------------------- stato, blocchi, inviti --
 static void on_status(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 200) { set_msg("Stato aggiornato", 0); social_sync_now(); }
-  else set_msg("Stato non aggiornato", 1);
+  if (st == 200) { set_msg(_("Stato aggiornato"), 0); social_sync_now(); }
+  else set_msg(_("Stato non aggiornato"), 1);
 }
 void social_set_status(const char *mode, const char *message) {
   char e[200], body[260];
@@ -620,27 +620,28 @@ static void status_pick(int idx, void *ud) {
   if (idx >= 0 && idx < 4) { social_set_status(MODES[idx], S.status_msg); return; }
   if (idx == 4) {
     char m[64]; snprintf(m, sizeof m, "%s", S.status_msg);
-    if (!edit_text("Il tuo messaggio di stato (es. \"Cerco gente per Warzone\")", m, sizeof m, 0)) return;
+    if (!edit_text(_("Il tuo messaggio di stato (es. \"Cerco gente per Warzone\")"), m, sizeof m, 0)) return;
     snprintf(S.status_msg, sizeof S.status_msg, "%s", m);
     social_set_status(S.status_mode[0] ? S.status_mode : "online", m);
   }
 }
 void status_menu(void) {
-  static char l[5][96]; static const char *items[5];
-  static const char *names[4] = { "Online", "Assente", "Non disturbare (niente avvisi)", "Invisibile (appari offline)" };
+  static char l[5][160]; static const char *items[5];
+  static const char *names[4] = { N_("Online"), N_("Assente"), N_("Non disturbare (niente avvisi)"), N_("Invisibile (appari offline)") };
   for (int i = 0; i < 4; i++) {
-    snprintf(l[i], sizeof l[i], "%s%s", names[i], !strcmp(S.status_mode[0] ? S.status_mode : "online", MODES[i]) ? "  (attuale)" : "");
+    snprintf(l[i], sizeof l[i], !strcmp(S.status_mode[0] ? S.status_mode : "online", MODES[i]) ? _("%s  (attuale)") : "%s", _(names[i]));
     items[i] = l[i];
   }
-  snprintf(l[4], sizeof l[4], S.status_msg[0] ? "Messaggio: %s" : "Scrivi un messaggio di stato%s", S.status_msg);
+  if (S.status_msg[0]) snprintf(l[4], sizeof l[4], _("Messaggio: %s"), S.status_msg);
+  else snprintf(l[4], sizeof l[4], "%s", _("Scrivi un messaggio di stato"));
   items[4] = l[4];
-  menu_open("Il tuo stato", items, 5, status_pick, NULL);
+  menu_open(_("Il tuo stato"), items, 5, status_pick, NULL);
 }
 
 static void on_block(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw;
-  if (st >= 200 && st < 300) { set_msg(ud ? "Utente bloccato" : "Utente sbloccato", 0); social_load_friends(); if (ov_top() == OV_PROFILE) profile_open(PR.oid); }
-  else set_msg("Operazione non riuscita", 1);
+  if (st >= 200 && st < 300) { set_msg(ud ? _("Utente bloccato") : _("Utente sbloccato"), 0); social_load_friends(); if (ov_top() == OV_PROFILE) profile_open(PR.oid); }
+  else set_msg(_("Operazione non riuscita"), 1);
 }
 void social_block(const char *oid, int block) {
   char path[96]; snprintf(path, sizeof path, OMEGA_API "/users/%s/block", oid);
@@ -649,7 +650,7 @@ void social_block(const char *oid, int block) {
 
 static void on_reported(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  set_msg(st >= 200 && st < 300 ? "Grazie, la segnalazione è stata inviata" : "Segnalazione non riuscita", !(st >= 200 && st < 300));
+  set_msg(st >= 200 && st < 300 ? _("Grazie, la segnalazione è stata inviata") : _("Segnalazione non riuscita"), !(st >= 200 && st < 300));
 }
 void social_report_user(const char *oid, const char *reason) {
   char path[96], body[80];
@@ -660,8 +661,8 @@ void social_report_user(const char *oid, const char *reason) {
 
 static void on_invited(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
-  if (st >= 200 && st < 300) set_msg("Invito inviato", 0);
-  else set_msg(!strcmp(jstr(j, "error", ""), "blocked") ? "Non puoi invitare questo utente" : st == 429 ? "Troppi inviti: riprova più tardi" : "Invito non inviato", 1);
+  if (st >= 200 && st < 300) set_msg(_("Invito inviato"), 0);
+  else set_msg(!strcmp(jstr(j, "error", ""), "blocked") ? _("Non puoi invitare questo utente") : st == 429 ? _("Troppi inviti: riprova più tardi") : _("Invito non inviato"), 1);
 }
 void social_invite_game(const char *oid, const char *game_id, const char *game_name) {
   char e1[80], e2[220], e3[220], body[600];
@@ -673,7 +674,7 @@ void social_invite_game(const char *oid, const char *game_id, const char *game_n
 static char inv_gid[24], inv_gname[100], inv_names[MAX_FRIENDS][32]; static int ninv_names;
 static void invite_pick(int idx, void *ud) { (void)ud; if (idx >= 0 && idx < ninv_names) social_invite_game(inv_names[idx], inv_gid, inv_gname); }
 void invite_to_game_menu(const char *game_id, const char *game_name) {
-  static char labels[24][80]; static const char *items[24];
+  static char labels[24][128]; static const char *items[24];
   snprintf(inv_gid, sizeof inv_gid, "%s", game_id); snprintf(inv_gname, sizeof inv_gname, "%s", game_name);
   ninv_names = 0;
   // gli amici online per primi
@@ -682,10 +683,10 @@ void invite_to_game_menu(const char *game_id, const char *game_name) {
       int on = friend_online(&S.friends[i]);
       if (on != !pass) continue;
       snprintf(inv_names[ninv_names], sizeof inv_names[0], "%s", S.friends[i].oid);
-      snprintf(labels[ninv_names], sizeof labels[0], "%s%s", S.friends[i].oid, on ? "  \xC2\xB7 online" : "");
+      snprintf(labels[ninv_names], sizeof labels[0], on ? _("%s  \xC2\xB7 online") : "%s", S.friends[i].oid);
       items[ninv_names] = labels[ninv_names]; ninv_names++;
     }
-  if (!ninv_names) { set_msg("Aggiungi un amico per invitarlo", 0); return; }
-  static char title[140]; snprintf(title, sizeof title, "Invita a giocare a %s", game_name);
+  if (!ninv_names) { set_msg(_("Aggiungi un amico per invitarlo"), 0); return; }
+  static char title[240]; snprintf(title, sizeof title, _("Invita a giocare a %s"), game_name);
   menu_open(title, items, ninv_names, invite_pick, NULL);
 }

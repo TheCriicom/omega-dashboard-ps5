@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "關於本譯文",
+    "body": "本文為義大利文原文的譯本，僅為方便閱讀而提供。如本譯文與義大利文版本有任何差異，以義大利文版本為準。"
+  },
+  "missing": "[待補充]",
+  "fragments": {
+    "vat": "，加值稅號 {vat}",
+    "hosting_at": "（主機代管服務商：{hosting}）"
+  },
+  "privacy": {
+    "title": "隱私權聲明",
+    "sections": [
+      { "id": "controller", "title": "誰處理您的資料", "body": "資料控管者：{controller}。隱私權事務及檢舉聯絡方式：{email}。Omega 是一個獨立專案：與 Sony Interactive Entertainment 沒有關聯，也不使用其帳號或伺服器。" },
+      { "id": "data", "title": "我們蒐集哪些資料", "body": "帳號：線上 ID、密碼（僅以 scrypt 雜湊值形式儲存，絕不以明文儲存）、電子郵件（如您提供）、您上傳的大頭貼和封面圖片、個人檔案文字、註冊日期及最近一次登入時間。社群功能：好友關係及好友邀請、上線狀態及您正在使用的遊戲或應用程式（在您遊玩時由您的主機傳送）、近期動態、私人訊息、派對聊天及派對邀請、通知。商店：您發布的自製軟體、留言、喜歡/不喜歡、評分、檢舉、安裝次數。個人遊戲庫：您的 JSON 檔案的位址及其中包含的遊戲清單（名稱、圖片、連結）。技術資料：對於傳送至伺服器的每一個請求，我們會記錄 IP 位址、日期與時間、所請求的路徑（包括使用 Omega 瀏覽器開啟的網頁位址）、處理結果及耗時。密碼、權杖和 Cookie 會經過遮蔽，絕不會儲存在記錄檔中。" },
+      { "id": "purposes", "title": "處理目的與法律依據", "body": "為向您提供您所要求的服務（帳號、社群功能、商店、遊戲庫）：履行契約，《一般資料保護規則》(GDPR) 第6條第1項(b)款。為維護安全、防止濫用及處理檢舉：正當利益以及與所代管內容相關的法定義務，第6條第1項(f)款及第6條第1項(c)款。我們不會將您的資料用於廣告或剖析（profiling），也不會出售您的資料。" },
+      { "id": "retention", "title": "保存期限", "body": "技術請求記錄檔會在 {days} 天後刪除。帳號資料及內容將保留至您刪除帳號為止；工作階段在 24 小時後失效。已結案的檢舉及審核操作記錄，將在證明內容處理情形所需的期間內予以保存。" },
+      { "id": "recipients", "title": "誰可以看到您的資料", "body": "其他使用者可以看到您的公開個人檔案、您發布的內容，以及（如果你們是好友）您的上線狀態和動態。訊息僅有其收件者可以看到。資料儲存在由資料控管者{hosting_at}管理的伺服器上，該伺服器的代管業者以資料處理者身分行事。當您安裝自製軟體或開啟網頁時，主機或我們的伺服器會連線至代管該檔案或該網頁的網站：此時適用該網站的隱私權聲明。" },
+      { "id": "rights", "title": "您的權利", "body": "您可以寄送電子郵件至 {email}，存取並下載您的資料（設定 → 隱私權與資料 → 下載我的資料）、更正資料、刪除資料（刪除帳號）、反對資料處理或要求限制處理。您也可以向義大利個人資料保護主管機關（Garante per la protezione dei dati personali，www.garanteprivacy.it）提出申訴。" },
+      { "id": "age", "title": "最低年齡", "body": "本服務僅供年滿 14 歲者使用。" },
+      { "id": "version", "title": "版本", "body": "更新日期：{version}。" }
+    ]
+  },
+  "terms": {
+    "title": "使用條款",
+    "sections": [
+      { "id": "service", "title": "服務內容", "body": "Omega（{url}）免費提供帳號、社群功能以及一個自製軟體（homebrew）商店，適用於使用者已合法安裝第三方軟體的主機。本服務由 {name} 營運。Omega 是一個獨立專案，與 Sony Interactive Entertainment 沒有關聯，亦未獲其認可或贊助。「PlayStation」和「PS5」為其各自所有者的商標。" },
+      { "id": "risk", "title": "風險自負", "body": "本服務及商店中的自製軟體均依「現狀」提供。安裝非官方軟體可能導致故障、資料遺失或主機喪失保固，風險由您自行承擔。自製軟體為其各自作者的作品，適用其各自的授權條款。" },
+      { "id": "prohibited", "title": "禁止事項", "body": "發布或分享您不具有相應權利的內容（尤其是商業遊戲或軟體的拷貝、指向盜版內容的連結、以盜版為目的規避其保護措施的工具）；惡意軟體或危險檔案；違法、冒犯性或煽動仇恨的內容；垃圾訊息；使用他人帳號或試圖危害其安全。" },
+      { "id": "publishing", "title": "在商店中發布", "body": "發布即表示您聲明：您是該自製軟體的作者，或其授權條款允許再散布；且連結指向所述的檔案，該檔案未經有害修改。您授權我們在商店中顯示其名稱、說明和圖片。檔案保留在您指定的網站上：Omega 僅代管其介紹頁面。" },
+      { "id": "library", "title": "個人遊戲庫", "body": "遊戲庫用於整理及重新安裝您合法擁有的遊戲的備份，僅供個人使用。請勿用它與他人分享拷貝：檔案存放在您自己保存的位置，Omega 不代管這些檔案。" },
+      { "id": "moderation", "title": "檢舉與審核", "body": "您可以在商店中檢舉自製軟體或留言（選項 → 檢舉），也可以寄送電子郵件至 {email} 進行檢舉。我們會審查檢舉，並可隱藏或移除違反本條款的內容，以及停權或關閉違反本條款的帳號；遭多次檢舉的內容將在審查完成前予以隱藏。" },
+      { "id": "liability", "title": "責任", "body": "在法律允許的範圍內，對於因使用自製軟體或因本服務無法使用而產生的損害，我們不負賠償責任；本服務可能會變更或中斷。法律為消費者規定的強制性保護不受影響。" },
+      { "id": "changes", "title": "條款變更與準據法", "body": "如條款有所變更，我們會在應用程式中再次徵求您的同意。本條款適用義大利法律。" },
+      { "id": "version", "title": "版本", "body": "本條款自 {version} 起生效。" }
+    ]
+  },
+  "licenses": {
+    "title": "開放原始碼授權條款",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Omega 主機應用程式為自由軟體，依 GNU GPL 第 3 版或任何更新版本散布，不提供任何擔保。完整原始碼可從 {url}/source 下載。" },
+      { "id": "developer", "title": "開發者", "body": "Omega 由 {developer} 開發 — {developer_url}" },
+      { "id": "app_components", "title": "應用程式使用的元件", "body": "ps5-payload-sdk (GPL-3.0 或更新版本) · SDL2、SDL2_ttf、SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib 和 minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)。" },
+      { "id": "server_components", "title": "伺服器使用的元件", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 或更新版本) · jxrlib (BSD-2-Clause)。" },
+      { "id": "store_homebrew", "title": "商店中的自製軟體", "body": "目錄中的每個自製軟體都是擁有各自授權條款的開放原始碼專案，其授權條款與專案網站一併標示於其介紹頁面上。" }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} 向你发送了好友请求",
+    "friend_accept": "{actor} 接受了你的好友请求",
+    "party_invite": "{actor} 邀请你加入派对",
+    "post_like": "{actor} 赞了你的帖子",
+    "post_comment": "{actor} 评论了你的帖子",
+    "store_comment": "{actor} 评论了 {app}",
+    "game_invite": "{actor} 邀请你一起玩",
+    "game_start": "{actor} 正在玩 {game}",
+    "online": "{actor} 已上线",
+    "admin_report": "举报：{title}",
+    "admin_social_report": "举报：{kind} {title}",
+    "report_on_comment": "（评论）",
+    "report_hidden": "——已隐藏"
+  },
+  "report_kind": {
+    "user": "用户",
+    "post": "帖子",
+    "post_comment": "评论"
+  },
+  "report_reason": {
+    "pirateria": "盗版",
+    "malware": "恶意软件",
+    "contenuto_offensivo": "冒犯性内容",
+    "spam": "垃圾信息",
+    "link_rotto": "链接失效",
+    "molestie": "骚扰",
+    "impersonificazione": "冒充他人",
+    "altro": "其他"
+  },
+  "web": {
+    "documents": "文档",
+    "privacy": "隐私",
+    "terms": "使用条款",
+    "licenses": "许可证",
+    "source": "源代码",
+    "language": "语言",
+    "developed_by": "由 {developer} 开发",
+    "source_intro": "Omega 主机应用是自由软件：采用 GNU General Public License 第 3 版或更高版本。你可以在此获取该应用及其配套守护进程的完整源代码，以及编译说明（build.sh）。",
+    "source_download": "下载 omega-src.tar.gz",
+    "source_generated": "压缩包由服务器上当前运行的代码即时生成。",
+    "source_unavailable": "压缩包暂时无法获取。"
+  },
+  "api": {
+    "description": "面向主机的账号、社交功能和自制软件商店。独立项目，与 Sony 没有关联。"
+  }
+}

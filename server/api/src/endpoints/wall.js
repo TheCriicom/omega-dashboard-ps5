@@ -6,6 +6,7 @@
 const db = require('../db');
 const { HttpError, readJson } = require('../http');
 const { notify } = require('../notify');
+const messages = require('../messages');
 const limiter = require('../ratelimit');
 const rel = require('../relations');
 const { fileReport } = require('../socialreport');
@@ -144,7 +145,7 @@ async function like({ req, auth, params }) {
         [row.author_id, auth.accountId, String(row.post_id)]);
       if (!seen.rowCount) {
         await notify(row.author_id, 'post_like', {
-          actorId: auth.accountId, title: `A ${auth.onlineId} piace il tuo post`, body: row.body.slice(0, 120), ref: String(row.post_id) });
+          actorId: auth.accountId, title: (l) => messages.t(l, 'notify.post_like', { actor: auth.onlineId }), body: row.body.slice(0, 120), ref: String(row.post_id) });
       }
     }
   } else {
@@ -184,7 +185,7 @@ async function addComment({ req, auth, params }) {
     [row.post_id, auth.accountId, t])).rows[0];
   if (String(row.author_id) !== String(auth.accountId)) {
     await notify(row.author_id, 'post_comment', {
-      actorId: auth.accountId, title: `${auth.onlineId} ha commentato il tuo post`, body: t, ref: String(row.post_id) });
+      actorId: auth.accountId, title: (l) => messages.t(l, 'notify.post_comment', { actor: auth.onlineId }), body: t, ref: String(row.post_id) });
   }
   const me = (await db.query('SELECT online_id, avatar, avatar_media, avatar_frames FROM lab_account WHERE account_id=$1', [auth.accountId])).rows[0];
   return {

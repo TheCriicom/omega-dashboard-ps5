@@ -43,7 +43,8 @@ enum { KIND_AUTO = 0, KIND_PKG = 1, KIND_ZIP = 2, KIND_ELF = 3 };
 static SDL_atomic_t g_state;          // 0 fermo, 1 in corso, 2 finito
 static volatile long g_done, g_total; // byte scaricati / totali
 static volatile int g_cancel;
-static char g_label[96], g_phase[48], g_result[300];
+static char g_label[96], g_phase[128], g_result[512];
+static volatile int g_dl;           // fase di scaricamento: avanzamento in MB
 static int g_result_err, g_installed_title;
 static Uint32 g_started;
 
@@ -150,7 +151,7 @@ static int unzip_to(const char *zip, const char *dest, const char *strip) {
     // gli eseguibili devono restare tali (anche i file senza estensione)
     if (ends_with(out, ".elf") || ends_with(out, ".so") || !strchr(rel, '.')) chmod(out, 0755);
     files++;
-    snprintf(g_phase, sizeof g_phase, "Estrazione (%d file)", files);
+    snprintf(g_phase, sizeof g_phase, _("Estrazione (%d file)"), files);
   } while (unzGoToNextFile(uf) == UNZ_OK);
   free(buf); unzClose(uf);
   return rc ? rc : (files ? 0 : -1);
@@ -189,24 +190,26 @@ static int detect_kind(int kind, const char *url) {
 
 // ------------------------------------------------------------------- lavori --
 static int download(const InstallReq *j, const char *dest) {
-  snprintf(g_phase, sizeof g_phase, "Scaricamento");
+  snprintf(g_phase, sizeof g_phase, "%s", _("Scaricamento")); g_dl = 1;
   mkparents(dest);
   int st = omega_url_download(j->url, dest, &g_done, &g_total, &g_cancel);
   if (st == 200) return 0;
   unlink(dest);
-  snprintf(g_result, sizeof g_result, st == CANCELLED ? "Installazione annullata" : "Download non riuscito (%d)", st);
+  g_dl = 0;
+  if (st == CANCELLED) snprintf(g_result, sizeof g_result, "%s", _("Installazione annullata"));
+  else snprintf(g_result, sizeof g_result, _("Download non riuscito (%d)"), st);
   return st == CANCELLED ? -2 : -1;
 }
 
 static int do_pkg(const InstallReq *j) {
 #ifdef PS5
-  if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow."); return -1; }
+  if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "%s", _("AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.")); return -1; }
   pkg_metadata_t meta = { .uri = j->url, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = j->name[0] ? j->name : "", .icon_url = "" };
   pkg_info_t info; memset(&info, 0, sizeof info);
   playgo_info_t pg; memset(&pg, 0, sizeof pg);
   int rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
-  if (rc) { snprintf(g_result, sizeof g_result, "Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow.", (unsigned)rc); return -1; }
-  snprintf(g_result, sizeof g_result, "Installazione avviata: comparirà nella Home della console");
+  if (rc) { snprintf(g_result, sizeof g_result, _("Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow."), (unsigned)rc); return -1; }
+  snprintf(g_result, sizeof g_result, "%s", _("Installazione avviata: comparirà nella Home della console"));
   return 0;
 #else
   for (int i = 0; i <= 100 && !g_cancel; i += 5) { g_total = 100; g_done = i; SDL_Delay(30); }
@@ -215,21 +218,36 @@ static int do_pkg(const InstallReq *j) {
 #endif
 }
 
-// .elf → Payload Manager, con il .elf.json che pldmgr si aspetta accanto
+// .elf → nella cartella del caricatore rilevato (hen.c): OnionHEN / etaHEN 2
+// in una cartella piatta, altrimenti Payload Manager con il suo .elf.json.
+// L'avvio automatico non si attiva da solo: lo decide l'utente nel caricatore.
 static int do_elf(const InstallReq *j) {
   char name[64], file[160], dir[400], path[600], tmp[620], side[640], sha[65];
   safe_name(j->name, name, sizeof name);
   // il nome vero del file: l'URL finale di GitHub è un link firmato senza nome
   if (j->filename[0]) url_basename(j->filename, file, sizeof file); else url_basename(j->url, file, sizeof file);
   if (!ends_with(file, ".elf")) { size_t L = strlen(file); snprintf(file + L, sizeof file - L, ".elf"); }
+  char flat[300];
+  if (hen_payload_dir(flat, sizeof flat)) {
+    snprintf(path, sizeof path, "%s/%s", flat, file);
+    snprintf(tmp, sizeof tmp, "%s.part", path);
+    mkdirs(flat);
+    int rc = download(j, tmp); if (rc) return rc;
+    if (rename(tmp, path) != 0) { unlink(tmp); snprintf(g_result, sizeof g_result, "%s", _("Impossibile salvare il payload")); return -1; }
+    chmod(path, 0755);
+    snprintf(side, sizeof side, "%s.omega.json", path);   // solo il nome da mostrare in home
+    FILE *f = fopen(side, "w"); if (f) { fprintf(f, "{\n"); json_str_field(f, "name", j->name, 1); fprintf(f, "}\n"); fclose(f); }
+    snprintf(g_result, sizeof g_result, _("%s installato per %s: lo trovi in home e tra i payload del caricatore"), j->name, hen_name());
+    return 0;
+  }
   snprintf(dir, sizeof dir, OMEGA_PLD_ROOT "/%s", name);
   snprintf(path, sizeof path, "%s/%s", dir, file);
   snprintf(tmp, sizeof tmp, "%s.part", path);
   mkdirs(dir);
   int rc = download(j, tmp); if (rc) return rc;
-  if (rename(tmp, path) != 0) { unlink(tmp); snprintf(g_result, sizeof g_result, "Impossibile salvare il payload"); return -1; }
+  if (rename(tmp, path) != 0) { unlink(tmp); snprintf(g_result, sizeof g_result, "%s", _("Impossibile salvare il payload")); return -1; }
   chmod(path, 0755);
-  snprintf(g_phase, sizeof g_phase, "Verifica");
+  snprintf(g_phase, sizeof g_phase, "%s", _("Verifica"));
   if (file_sha256(path, sha)) sha[0] = 0;
   snprintf(side, sizeof side, "%s.json", path);
   FILE *f = fopen(side, "w");
@@ -250,9 +268,9 @@ static int do_elf(const InstallReq *j) {
     fclose(f);
   }
   if (ends_with(file, "-install.elf"))
-    snprintf(g_result, sizeof g_result, "%s è in Payload Manager: avvialo una volta per completare l'installazione", j->name);
+    snprintf(g_result, sizeof g_result, _("%s è in Payload Manager: avvialo una volta per completare l'installazione"), j->name);
   else
-    snprintf(g_result, sizeof g_result, "%s installato in Payload Manager", j->name);
+    snprintf(g_result, sizeof g_result, _("%s installato in Payload Manager"), j->name);
   return 0;
 }
 
@@ -260,9 +278,9 @@ static int do_zip(const InstallReq *j) {
 #ifdef HAVE_ZIP
   char zip[400]; snprintf(zip, sizeof zip, OMEGA_DIR "/dl/omega-install.zip");
   int rc = download(j, zip); if (rc) return rc;
-  snprintf(g_phase, sizeof g_phase, "Analisi");
+  snprintf(g_phase, sizeof g_phase, "%s", _("Analisi"));
   ZipInfo zi;
-  if (zip_scan(zip, &zi)) { unlink(zip); snprintf(g_result, sizeof g_result, "Lo zip è vuoto o danneggiato"); return -1; }
+  if (zip_scan(zip, &zi)) { unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Lo zip è vuoto o danneggiato")); return -1; }
   if (zi.hb_top || zi.hb_root) {
     char dest[400], folder[256];
     if (zi.hb_top) { snprintf(folder, sizeof folder, "%.*s", (int)strlen(zi.top) - 1, zi.top); snprintf(dest, sizeof dest, "%s", OMEGA_HB_ROOT); }
@@ -280,13 +298,13 @@ static int do_zip(const InstallReq *j) {
     mkdirs(dest);
     rc = unzip_to(zip, dest, "");
     unlink(zip);
-    if (rc) { snprintf(g_result, sizeof g_result, "Estrazione dello zip non riuscita"); return -1; }
+    if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
     omega_log("install: homebrew %s → %s/%s", j->name, OMEGA_HB_ROOT, folder);
-    snprintf(g_result, sizeof g_result, "%s installato: lo trovi nella Home di Omega", j->name);
+    snprintf(g_result, sizeof g_result, _("%s installato: lo trovi nella Home di Omega"), j->name);
     g_installed_title = 1;
     return 0;
   }
-  if (!j->title_id[0]) { unlink(zip); snprintf(g_result, sizeof g_result, "Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID"); return -1; }
+  if (!j->title_id[0]) { unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID")); return -1; }
   char dest[200]; snprintf(dest, sizeof dest, APP_DIR "/%s", j->title_id);
 # ifdef PS5
   sceAppInstUtilInitialize();
@@ -295,14 +313,14 @@ static int do_zip(const InstallReq *j) {
   mkdirs(dest);
   rc = unzip_to(zip, dest, zi.top);
   unlink(zip);
-  if (rc) { snprintf(g_result, sizeof g_result, "Estrazione dello zip non riuscita"); return -1; }
+  if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
 # ifdef PS5
-  snprintf(g_phase, sizeof g_phase, "Registrazione");
+  snprintf(g_phase, sizeof g_phase, "%s", _("Registrazione"));
   rc = reg_app(j->title_id, "/user/app/");
-  if (rc) { snprintf(g_result, sizeof g_result, "Registrazione non riuscita (0x%08X). Privilegio ShellCore mancante?", (unsigned)rc); return -1; }
+  if (rc) { snprintf(g_result, sizeof g_result, _("Registrazione non riuscita (0x%08X). Privilegio ShellCore mancante?"), (unsigned)rc); return -1; }
   g_installed_title = 1;
 # endif
-  snprintf(g_result, sizeof g_result, "%s installato", j->name[0] ? j->name : j->title_id);
+  snprintf(g_result, sizeof g_result, _("%s installato"), j->name[0] ? j->name : j->title_id);
   return 0;
 #else
   (void)j;
@@ -314,8 +332,8 @@ static int do_zip(const InstallReq *j) {
 
 static int install_thread(void *arg) {
   InstallReq *j = arg;
-  g_done = g_total = 0; g_cancel = 0; g_result[0] = 0; g_result_err = 0; g_installed_title = 0;
-  snprintf(g_phase, sizeof g_phase, "Preparazione");
+  g_done = g_total = 0; g_cancel = 0; g_dl = 0; g_result[0] = 0; g_result_err = 0; g_installed_title = 0;
+  snprintf(g_phase, sizeof g_phase, "%s", _("Preparazione"));
   mkdir(OMEGA_DIR, 0777);
   int kind = detect_kind(j->kind, j->url);
   omega_log("install: %s kind=%d %s", j->name, kind, j->url);
@@ -328,17 +346,17 @@ static int install_thread(void *arg) {
 }
 
 void install_begin(const InstallReq *r) {
-  if (SDL_AtomicGet(&g_state) == 1) { set_msg("C'è già un'installazione in corso", 1); return; }
-  if (!r || !r->url[0]) { set_msg("Link di download mancante", 1); return; }
+  if (SDL_AtomicGet(&g_state) == 1) { set_msg(_("C'è già un'installazione in corso"), 1); return; }
+  if (!r || !r->url[0]) { set_msg(_("Link di download mancante"), 1); return; }
   InstallReq *j = malloc(sizeof *j);
-  if (!j) { set_msg("Memoria insufficiente", 1); return; }
+  if (!j) { set_msg(_("Memoria insufficiente"), 1); return; }
   *j = *r;
-  snprintf(g_label, sizeof g_label, "%s", r->name[0] ? r->name : "Installazione");
+  snprintf(g_label, sizeof g_label, "%s", r->name[0] ? r->name : _("Installazione"));
   g_started = SDL_GetTicks();
   SDL_AtomicSet(&g_state, 1);
   SDL_Thread *t = SDL_CreateThread(install_thread, "install", j);
   if (t) SDL_DetachThread(t);
-  else { free(j); SDL_AtomicSet(&g_state, 0); set_msg("Impossibile avviare l'installazione", 1); }
+  else { free(j); SDL_AtomicSet(&g_state, 0); set_msg(_("Impossibile avviare l'installazione"), 1); }
 }
 
 // dal ciclo principale: chiude l'installazione quando il thread ha finito
@@ -347,7 +365,7 @@ void install_tick(void) {
   SDL_AtomicSet(&g_state, 0);
   set_msg(g_result, g_result_err);
   if (g_installed_title) {
-    toast(IC_DOWNLOAD, NULL, 0, g_label, "Installato: ora è nella tua Home");
+    toast(IC_DOWNLOAD, NULL, 0, g_label, _("Installato: ora è nella tua Home"));
     scan_apps();
   } else if (!g_result_err) {
     toast(IC_DOWNLOAD, NULL, 0, g_label, g_result);
@@ -362,16 +380,16 @@ void install_overlay(void) {
   draw_icon(IC_DOWNLOAD, x + 60, y + h / 2, 44, C_ACC2, 255);
   draw_text_fit(font(W_MED, 28), g_label, x + 110, y + 24, w - 150, C_TXT, 255, AL_L);
   long done = g_done, total = g_total;
-  char sub[120];
-  if (total > 0 && done >= 0 && !strncmp(g_phase, "Scaricamento", 12)) {
-    snprintf(sub, sizeof sub, "%s  ·  %.1f / %.1f MB", g_phase, done / 1048576.0, total / 1048576.0);
+  char sub[256];
+  if (total > 0 && done >= 0 && g_dl) {
+    snprintf(sub, sizeof sub, _("%s  ·  %.1f / %.1f MB"), g_phase, done / 1048576.0, total / 1048576.0);
   } else {
     Uint32 s = (SDL_GetTicks() - g_started) / 1000;
-    snprintf(sub, sizeof sub, "%s...  %us", g_phase[0] ? g_phase : "In corso", s);
+    snprintf(sub, sizeof sub, "%s...  %us", g_phase[0] ? g_phase : _("In corso"), s);
   }
   draw_text_fit(font(W_REG, 22), sub, x + 110, y + 62, w - 150, C_DIM, 255, AL_L);
   int bx = x + 110, bw = w - 150, by = y + h - 30;
   fill_rrect(bx, by, bw, 8, 4, RGB(255, 255, 255), 30);
-  if (total > 0 && !strncmp(g_phase, "Scaricamento", 12)) fill_rrect(bx, by, (int)(bw * clampf((float)done / (float)total, 0, 1)), 8, 4, C_ACC2, 230);
+  if (total > 0 && g_dl) fill_rrect(bx, by, (int)(bw * clampf((float)done / (float)total, 0, 1)), 8, 4, C_ACC2, 230);
   else { int iw = bw / 3, ix = (int)(fmodf((float)g_time * 400, (float)(bw + iw)) - iw); fill_rrect(bx + (ix < 0 ? 0 : ix), by, ix < 0 ? iw + ix : iw, 8, 4, C_ACC2, 230); }
 }

@@ -1,13 +1,15 @@
-# Sicurezza
+<sub>**English** · [Italiano](SECURITY.it.md)</sub>
 
-Se trovi una vulnerabilità nel server o nell'app, non aprire una issue
-pubblica: scrivi un messaggio privato tramite
+# Security
+
+If you find a vulnerability in the server or the app, do not open a public
+issue: send a private report through
 [GitHub Security Advisories](https://github.com/CristianLaporta/omega-dashboard-ps5/security/advisories/new)
-con una descrizione e, se possibile, i passi per riprodurla.
+with a description and, if possible, the steps to reproduce it.
 
-Rispondiamo entro pochi giorni e, una volta corretto il problema, lo rendiamo
-pubblico insieme alla correzione.
+We reply within a few days and, once the problem is fixed, we disclose it
+together with the fix.
 
-Ambiti di particolare interesse: autenticazione e sessioni, pannello di
-moderazione, caricamento di file (avatar, copertine), download e installazione
-dallo Store, il relay della voce.
+Areas of particular interest: authentication and sessions, the moderation
+panel, file uploads (avatars, covers), downloads and installs from the Store,
+the voice relay.

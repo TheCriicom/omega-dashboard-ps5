@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} har skickat en vänförfrågan till dig",
+    "friend_accept": "{actor} har accepterat din vänförfrågan",
+    "party_invite": "{actor} har bjudit in dig till ett party",
+    "post_like": "{actor} gillar ditt inlägg",
+    "post_comment": "{actor} har kommenterat ditt inlägg",
+    "store_comment": "{actor} har kommenterat {app}",
+    "game_invite": "{actor} bjuder in dig att spela",
+    "game_start": "{actor} spelar {game}",
+    "online": "{actor} är online",
+    "admin_report": "Anmälan: {title}",
+    "admin_social_report": "Anmälan: {kind} {title}",
+    "report_on_comment": " (kommentar)",
+    "report_hidden": " — dold"
+  },
+  "report_kind": {
+    "user": "användare",
+    "post": "inlägg",
+    "post_comment": "kommentar"
+  },
+  "report_reason": {
+    "pirateria": "piratkopiering",
+    "malware": "skadlig kod",
+    "contenuto_offensivo": "kränkande innehåll",
+    "spam": "spam",
+    "link_rotto": "länken fungerar inte",
+    "molestie": "trakasserier",
+    "impersonificazione": "utger sig för att vara någon annan",
+    "altro": "annat"
+  },
+  "web": {
+    "documents": "Dokument",
+    "privacy": "Integritet",
+    "terms": "Användarvillkor",
+    "licenses": "Licenser",
+    "source": "Källkod",
+    "language": "Språk",
+    "developed_by": "Utvecklad av {developer}",
+    "source_intro": "Omega-appen för konsolen är fri programvara: GNU General Public License version 3 eller senare. Här hittar du den fullständiga källkoden för appen och för daemonen som följer med den, med instruktioner för att bygga (build.sh).",
+    "source_download": "Ladda ner omega-src.tar.gz",
+    "source_generated": "Arkivet skapas direkt från koden som körs på servern.",
+    "source_unavailable": "Arkivet är tillfälligt otillgängligt."
+  },
+  "api": {
+    "description": "Konton, sociala funktioner och en Store för homebrew till konsolen. Oberoende projekt, inte anknutet till Sony."
+  }
+}

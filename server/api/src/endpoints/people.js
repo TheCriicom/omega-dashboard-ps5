@@ -9,6 +9,7 @@
 const db = require('../db');
 const { HttpError, readJson } = require('../http');
 const { notify } = require('../notify');
+const messages = require('../messages');
 const limiter = require('../ratelimit');
 const rel = require('../relations');
 const { fileReport } = require('../socialreport');
@@ -183,7 +184,7 @@ async function invite({ req, auth }) {
   const name = gameName || gameId;
   for (const u of targets) {
     await notify(u.account_id, 'game_invite', {
-      actorId: auth.accountId, title: `${auth.onlineId} ti invita a giocare`,
+      actorId: auth.accountId, title: (l) => messages.t(l, 'notify.game_invite', { actor: auth.onlineId }),
       body: note ? `${name} — ${note}` : name, ref: gameId });
   }
   return { status: 201, body: { result: 'invited', to: targets.map((u) => u.online_id) } };

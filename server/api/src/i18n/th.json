@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} ส่งคำขอเป็นเพื่อนถึงคุณ",
+    "friend_accept": "{actor} ยอมรับคำขอเป็นเพื่อนของคุณแล้ว",
+    "party_invite": "{actor} เชิญคุณเข้าร่วมปาร์ตี้",
+    "post_like": "{actor} ถูกใจโพสต์ของคุณ",
+    "post_comment": "{actor} แสดงความคิดเห็นในโพสต์ของคุณ",
+    "store_comment": "{actor} แสดงความคิดเห็นใน {app}",
+    "game_invite": "{actor} ชวนคุณมาเล่นด้วยกัน",
+    "game_start": "{actor} กำลังเล่น {game}",
+    "online": "{actor} ออนไลน์อยู่",
+    "admin_report": "รายงาน: {title}",
+    "admin_social_report": "รายงาน: {kind} {title}",
+    "report_on_comment": " (ความคิดเห็น)",
+    "report_hidden": " — ซ่อนแล้ว"
+  },
+  "report_kind": {
+    "user": "ผู้ใช้",
+    "post": "โพสต์",
+    "post_comment": "ความคิดเห็น"
+  },
+  "report_reason": {
+    "pirateria": "การละเมิดลิขสิทธิ์",
+    "malware": "มัลแวร์",
+    "contenuto_offensivo": "เนื้อหาที่สร้างความขุ่นเคือง",
+    "spam": "สแปม",
+    "link_rotto": "ลิงก์ใช้งานไม่ได้",
+    "molestie": "การคุกคาม",
+    "impersonificazione": "การแอบอ้างเป็นผู้อื่น",
+    "altro": "อื่น ๆ"
+  },
+  "web": {
+    "documents": "เอกสาร",
+    "privacy": "ความเป็นส่วนตัว",
+    "terms": "ข้อกำหนดการใช้งาน",
+    "licenses": "สัญญาอนุญาต",
+    "source": "ซอร์สโค้ด",
+    "language": "ภาษา",
+    "developed_by": "พัฒนาโดย {developer}",
+    "source_intro": "แอป Omega สำหรับคอนโซลเป็นซอฟต์แวร์เสรี: GNU General Public License เวอร์ชัน 3 หรือเวอร์ชันที่ใหม่กว่า ที่นี่คุณจะพบซอร์สโค้ดฉบับสมบูรณ์ของแอปและของเดมอน (daemon) ที่ทำงานคู่กัน พร้อมคำแนะนำในการคอมไพล์ (build.sh)",
+    "source_download": "ดาวน์โหลด omega-src.tar.gz",
+    "source_generated": "ไฟล์เก็บถาวรนี้สร้างขึ้นทันทีจากโค้ดที่ใช้งานอยู่บนเซิร์ฟเวอร์",
+    "source_unavailable": "ไฟล์เก็บถาวรไม่พร้อมใช้งานชั่วคราว"
+  },
+  "api": {
+    "description": "บัญชี ฟีเจอร์โซเชียล และ Store สำหรับ homebrew บนคอนโซล โครงการอิสระ ไม่มีส่วนเกี่ยวข้องกับ Sony"
+  }
+}

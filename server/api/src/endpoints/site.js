@@ -7,6 +7,7 @@ const path = require('node:path');
 const config = require('../config');
 const { HttpError } = require('../http');
 const info = require('./info');
+const lang = require('../lang');
 
 const ROOT = path.resolve(config.siteDir);
 const TYPES = {
@@ -55,14 +56,77 @@ async function serve(req, res, rel) {
   return { sent: true };
 }
 
-// GET / — chi ospita un server senza sito vede la descrizione dell'api
-async function home(ctx) {
-  if (!fs.existsSync(path.join(ROOT, 'index.html'))) return info.index(ctx);
-  return serve(ctx.req, ctx.res, 'index.html');
+// ------------------------------------------------------------- lingue --
+// Il sito è generato in site/index.html (inglese) e site/<codice>/index.html,
+// site/<codice>/installa.html per ognuna delle lingue di lang.CODES. Le
+// cartelle possono mancare: allora si serve la pagina di site/.
+const exists = (rel) => { try { return fs.statSync(path.join(ROOT, rel)).isFile(); } catch { return false; } };
+
+function redirect(res, location, vary) {
+  const headers = { location, 'cache-control': 'no-cache', 'content-length': 0 };
+  if (vary) headers.vary = 'Accept-Language, Cookie';
+  res.writeHead(302, headers);
+  res.end();
+  return { sent: true };
 }
 
-// GET /installa
-async function install({ req, res }) { return serve(req, res, 'installa.html'); }
+// Pagina della lingua scelta, oppure redirect a /<lang>/... se esiste.
+// `page` è "index.html" o "installa.html", `suffix` il percorso dopo /<lang>/.
+// La scelta fatta dal visitatore (cookie omega_lang, scritto dal selettore del
+// sito) vale più della lingua del browser. Senza nessuna indicazione (crawler)
+// si serve la pagina inglese, a cui punta x-default, senza redirect.
+function chosenLang(ctx) {
+  const m = /(?:^|;\s*)omega_lang=([A-Za-z-]+)/.exec(ctx.req.headers.cookie || '');
+  if (m && lang.isCode(m[1])) return m[1];
+  return ctx.langExplicit ? ctx.lang : null;
+}
+
+async function negotiate(ctx, page, suffix) {
+  const { req, res, url } = ctx;
+  const code = chosenLang(ctx);
+  if (code && exists(path.join(code, page))) {
+    const q = new URLSearchParams(url.search);
+    q.delete('lang');                       // la lingua ora è nel percorso
+    const rest = q.toString();
+    return redirect(res, `/${code}/${suffix}${rest ? `?${rest}` : ''}`, true);
+  }
+  if (exists(page)) {
+    res.setHeader('vary', 'Accept-Language, Cookie');
+    return serve(req, res, page);
+  }
+  return null;
+}
+
+// GET / — 302 a /<lingua>/ (?lang=, Accept-Language, "en"); senza la cartella
+// della lingua si serve site/index.html; senza sito la descrizione dell'api.
+async function home(ctx) {
+  const out = await negotiate(ctx, 'index.html', '');
+  return out || info.index(ctx);
+}
+
+// GET /installa — 302 a /<lingua>/installa
+async function install(ctx) {
+  const out = await negotiate(ctx, 'installa.html', 'installa');
+  if (!out) throw new HttpError(404, 'not_found');
+  return out;
+}
+
+// GET /:lang  e  /:lang/  — solo i 27 codici (il router accetta solo quelli)
+async function langHome({ req, res, url, params }) {
+  const code = params.lang;
+  if (!lang.isCode(code)) throw new HttpError(404, 'not_found');
+  if (!url.pathname.endsWith('/')) return redirect(res, `/${code}/${url.search}`, false);
+  const rel = exists(path.join(code, 'index.html')) ? path.join(code, 'index.html') : 'index.html';
+  return serve(req, res, rel);
+}
+
+// GET /:lang/installa
+async function langInstall({ req, res, params }) {
+  const code = params.lang;
+  if (!lang.isCode(code)) throw new HttpError(404, 'not_found');
+  const rel = exists(path.join(code, 'installa.html')) ? path.join(code, 'installa.html') : 'installa.html';
+  return serve(req, res, rel);
+}
 
 // GET /assets/:dir/:file  e  /assets/:file
 async function asset({ req, res, params }) {
@@ -71,4 +135,4 @@ async function asset({ req, res, params }) {
   return serve(req, res, path.join('assets', ...parts));
 }
 
-module.exports = { home, install, asset };
+module.exports = { home, install, langHome, langInstall, asset };

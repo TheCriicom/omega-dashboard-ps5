@@ -2,6 +2,7 @@
 // (callback che accetta tutto): gli aggiornamenti si affidano alla firma
 // Ed25519 del manifest, non al TLS.
 #include "omega.h"
+#include "i18n.h"
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -69,9 +70,21 @@ int net_setup(void) {
   return 0;
 }
 
+// Percorso del server in uso ("/api/v1/...") oppure URL completo: musica dal
+// demone (127.0.0.1) o da un server musicale dell'utente. Il token di Omega va
+// solo al server di Omega.
+static const char *full_url(const char *path, const char **token, char *url, size_t n) {
+  if (!strncmp(path, "http://", 7) || !strncmp(path, "https://", 8)) {
+    size_t bl = strlen(omega_base());
+    if (strncmp(path, omega_base(), bl) != 0) *token = NULL;
+    snprintf(url, n, "%s", path);
+  } else snprintf(url, n, "%s%s", omega_base(), path);
+  return url;
+}
+
 int omega_http(int method, const char *path, const char *token,
                const char *body, char *out, size_t outlen) {
-  char url[640]; snprintf(url, sizeof url, "%s%s", omega_base(), path);
+  char url[1400]; full_url(path, &token, url, sizeof url);
   int conn = sceHttpCreateConnectionWithURL(g_tmpl, url, 1);
   if (conn < 0) { omega_log("conn err 0x%x %s", conn, path); return conn; }
   uint64_t blen = body ? (uint64_t)strlen(body) : 0;
@@ -81,6 +94,7 @@ int omega_http(int method, const char *path, const char *token,
     sceHttpAddRequestHeader(req, "Authorization", b, 1); }
   if (body) sceHttpAddRequestHeader(req, "Content-Type", "application/json", 1);
   sceHttpAddRequestHeader(req, "Accept", "application/json", 1);
+  sceHttpAddRequestHeader(req, "Accept-Language", i18n_code(), 1);   // documenti, Store ed errori nella lingua dell'utente
   int rc = sceHttpSendRequest(req, body, (size_t)blen);
   int status = -1;
   if (rc >= 0) {
@@ -95,12 +109,13 @@ int omega_http(int method, const char *path, const char *token,
 
 int omega_http_bin(const char *path, const char *token, unsigned char **out, size_t *len, size_t max) {
   *out = NULL; *len = 0;
-  char url[640]; snprintf(url, sizeof url, "%s%s", omega_base(), path);
+  char url[1400]; full_url(path, &token, url, sizeof url);
   int conn = sceHttpCreateConnectionWithURL(g_tmpl, url, 1);
   if (conn < 0) return conn;
   int req = sceHttpCreateRequestWithURL(conn, HTTP_GET, url, 0);
   if (req < 0) { sceHttpDeleteConnection(conn); return req; }
   if (token) { char b[700]; snprintf(b, sizeof b, "Bearer %s", token); sceHttpAddRequestHeader(req, "Authorization", b, 1); }
+  sceHttpAddRequestHeader(req, "Accept-Language", i18n_code(), 1);
   int status = -1;
   if (sceHttpSendRequest(req, NULL, 0) >= 0) {
     sceHttpGetStatusCode(req, &status);
@@ -191,6 +206,7 @@ int omega_http_upload(const char *path, const char *token, const void *data, siz
   sceHttpSetRecvTimeOut(req, SEC(180));
   if (token) { char b[700]; snprintf(b, sizeof b, "Bearer %s", token); sceHttpAddRequestHeader(req, "Authorization", b, 1); }
   sceHttpAddRequestHeader(req, "Content-Type", "application/octet-stream", 1);
+  sceHttpAddRequestHeader(req, "Accept-Language", i18n_code(), 1);
   int status = -1;
   int rc = sceHttpSendRequest(req, data, len);
   if (rc >= 0) {

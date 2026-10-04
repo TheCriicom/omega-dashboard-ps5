@@ -25,6 +25,45 @@ void url_encode(char *dst, size_t n, const char *src, const char *keep) {
   dst[o] = 0;
 }
 
+// ------------------------------------------------------------------- date --
+// Le date si compongono da modelli tradotti con segnaposto {nome}: ogni lingua
+// mette giorno, mese e anno nell'ordine che vuole (es. "{month}{day}日").
+void tmpl_fill(char *out, size_t n, const char *tmpl, const char *const *kv, int nkv) {
+  size_t o = 0;
+  for (const char *p = tmpl; *p && o + 1 < n;) {
+    if (*p == '{') {
+      const char *e = strchr(p, '}'); int done = 0;
+      for (int i = 0; e && i + 1 < nkv * 2; i += 2)
+        if (strlen(kv[i]) == (size_t)(e - p - 1) && !strncmp(p + 1, kv[i], (size_t)(e - p - 1))) {
+          o += (size_t)snprintf(out + o, n - o, "%s", kv[i + 1]); if (o >= n) o = n - 1;
+          p = e + 1; done = 1; break;
+        }
+      if (done) continue;
+    }
+    out[o++] = *p++;
+  }
+  out[o] = 0;
+}
+
+static const char *const MONTH[12] = { N_("gennaio"), N_("febbraio"), N_("marzo"), N_("aprile"), N_("maggio"), N_("giugno"),
+                                       N_("luglio"), N_("agosto"), N_("settembre"), N_("ottobre"), N_("novembre"), N_("dicembre") };
+static const char *const MONTH_ABBR[12] = { N_("gen"), N_("feb"), N_("mar"), N_("apr"), N_("mag"), N_("giu"),
+                                            N_("lug"), N_("ago"), N_("set"), N_("ott"), N_("nov"), N_("dic") };
+static const char *const WDAY[7] = { N_("domenica"), N_("luned\xC3\xAC"), N_("marted\xC3\xAC"), N_("mercoled\xC3\xAC"),
+                                     N_("gioved\xC3\xAC"), N_("venerd\xC3\xAC"), N_("sabato") };
+
+void date_long(char *out, size_t n, int wday, int day, int mon) {
+  char d[8]; snprintf(d, sizeof d, "%d", day);
+  const char *kv[] = { "weekday", _(WDAY[(wday % 7 + 7) % 7]), "day", d, "month", _(MONTH[(mon % 12 + 12) % 12]) };
+  tmpl_fill(out, n, _("{weekday} {day} {month}"), kv, 3);
+}
+
+void date_short(char *out, size_t n, int day, int mon, int year) {
+  char d[8], y[8]; snprintf(d, sizeof d, "%d", day); snprintf(y, sizeof y, "%d", year);
+  const char *kv[] = { "day", d, "mon", _(MONTH_ABBR[(mon % 12 + 12) % 12]), "year", y };
+  tmpl_fill(out, n, _("{day} {mon} {year}"), kv, 3);
+}
+
 uint32_t fnv1a(const char *s) {
   uint32_t h = 2166136261u;
   for (; *s; s++) h = (h ^ (unsigned char)*s) * 16777619u;

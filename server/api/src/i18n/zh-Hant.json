@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} 向你送出了好友邀請",
+    "friend_accept": "{actor} 接受了你的好友邀請",
+    "party_invite": "{actor} 邀請你加入派對",
+    "post_like": "{actor} 喜歡你的貼文",
+    "post_comment": "{actor} 在你的貼文留言",
+    "store_comment": "{actor} 在 {app} 留言",
+    "game_invite": "{actor} 邀請你一起玩",
+    "game_start": "{actor} 正在玩 {game}",
+    "online": "{actor} 已上線",
+    "admin_report": "檢舉：{title}",
+    "admin_social_report": "檢舉：{kind} {title}",
+    "report_on_comment": "（留言）",
+    "report_hidden": "——已隱藏"
+  },
+  "report_kind": {
+    "user": "使用者",
+    "post": "貼文",
+    "post_comment": "留言"
+  },
+  "report_reason": {
+    "pirateria": "盜版",
+    "malware": "惡意軟體",
+    "contenuto_offensivo": "冒犯性內容",
+    "spam": "垃圾訊息",
+    "link_rotto": "連結失效",
+    "molestie": "騷擾",
+    "impersonificazione": "冒充他人",
+    "altro": "其他"
+  },
+  "web": {
+    "documents": "文件",
+    "privacy": "隱私權",
+    "terms": "使用條款",
+    "licenses": "授權條款",
+    "source": "原始碼",
+    "language": "語言",
+    "developed_by": "由 {developer} 開發",
+    "source_intro": "Omega 主機應用程式為自由軟體：採用 GNU General Public License 第 3 版或更新版本。你可以在此取得該應用程式及其隨附常駐程式（daemon）的完整原始碼，以及編譯說明（build.sh）。",
+    "source_download": "下載 omega-src.tar.gz",
+    "source_generated": "壓縮檔由伺服器上目前執行的程式碼即時產生。",
+    "source_unavailable": "壓縮檔暫時無法取得。"
+  },
+  "api": {
+    "description": "主機專用的帳號、社群功能及自製軟體商店。獨立專案，與 Sony 沒有關聯。"
+  }
+}

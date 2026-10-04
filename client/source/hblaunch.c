@@ -64,7 +64,7 @@ static void js_log_exc(JSContext *ctx, JSValueConst e, const char *dir, char *ou
   const char *st = NULL; JSValue sv = JS_UNDEFINED;
   if (JS_IsObject(e)) { sv = JS_GetPropertyStr(ctx, e, "stack"); if (JS_IsString(sv)) st = JS_ToCString(ctx, sv); }
   omega_log("homebrew.js %s: %s%s%s", dir, m ? m : "?", st ? "\n" : "", st ? st : "");
-  if (out && on) snprintf(out, on, "%s", m ? m : "errore sconosciuto");
+  if (out && on) snprintf(out, on, "%s", m ? m : _("errore sconosciuto"));
   if (st) JS_FreeCString(ctx, st);
   JS_FreeValue(ctx, sv);
   if (m) JS_FreeCString(ctx, m);
@@ -177,7 +177,7 @@ static const char HB_PRELUDE[] =
   "window.location = { origin: 'null', href: 'about:blank', protocol: 'blob:', host: '', hostname: '', port: '', pathname: '', search: '', hash: '' };\n"
   "window.parent = { postMessage() {} }; window.top = window.parent;\n"
   "window.addEventListener = function () {}; window.removeEventListener = function () {};\n"
-  "var navigator = { userAgent: 'Mozilla/5.0 (PlayStation; PlayStation 5) Omega', language: 'it-IT' };\n"
+  "var navigator = { userAgent: 'Mozilla/5.0 (PlayStation; PlayStation 5) Omega', language: __omega_lang };\n"
   "var document = { title: '', body: {}, getElementById() { return null; }, querySelector() { return null; }, querySelectorAll() { return []; },\n"
   "  createElement() { return { style: {}, classList: { add() {}, remove() {} }, appendChild() {}, setAttribute() {} }; }, addEventListener() {} };\n"
   "var console = { log() {}, info() {}, debug() {}, warn(...a) { __omega_log(a.join(' ')); }, error(...a) { __omega_log(a.join(' ')); } };\n"
@@ -427,22 +427,23 @@ static void hb_js_free(HbSess *h) {
 static int hb_js_open(HbSess *h, const char *dir, char *err, size_t en) {
   char path[600]; snprintf(path, sizeof path, "%s/homebrew.js", dir);
   size_t sl = 0; char *src = file_read(path, 256 * 1024, &sl);
-  if (!src) { snprintf(err, en, "homebrew.js non leggibile"); return -1; }
+  if (!src) { snprintf(err, en, "%s", _("homebrew.js non leggibile")); return -1; }
   h->rt = JS_NewRuntime();
-  if (!h->rt) { free(src); snprintf(err, en, "Memoria insufficiente per lo script"); return -1; }
+  if (!h->rt) { free(src); snprintf(err, en, "%s", _("Memoria insufficiente per lo script")); return -1; }
   JS_SetMemoryLimit(h->rt, HB_MEM);
   JS_SetMaxStackSize(h->rt, HB_STACK);
   JS_SetRuntimeOpaque(h->rt, h);
   h->deadline = SDL_GetTicks() + HB_STEP_MS; h->hard = SDL_GetTicks() + HB_HARD_MS;
   JS_SetInterruptHandler(h->rt, qjs_interrupt, h);
   h->ctx = JS_NewContext(h->rt);
-  if (!h->ctx) { free(src); hb_js_free(h); snprintf(err, en, "Memoria insufficiente per lo script"); return -1; }
+  if (!h->ctx) { free(src); hb_js_free(h); snprintf(err, en, "%s", _("Memoria insufficiente per lo script")); return -1; }
   JSContext *ctx = h->ctx;
   JSValue g = JS_GetGlobalObject(ctx);
   JS_SetPropertyStr(ctx, g, "__omega_ls", JS_NewCFunction(ctx, js_ls, "__omega_ls", 1));
   JS_SetPropertyStr(ctx, g, "__omega_read", JS_NewCFunction(ctx, js_read, "__omega_read", 1));
   JS_SetPropertyStr(ctx, g, "__omega_fetch", JS_NewCFunction(ctx, js_fetch, "__omega_fetch", 1));
   JS_SetPropertyStr(ctx, g, "__omega_log", JS_NewCFunction(ctx, js_log, "__omega_log", 1));
+  JS_SetPropertyStr(ctx, g, "__omega_lang", JS_NewString(ctx, i18n_locale()));   // navigator.language
   // workingDir come in websrv: la cartella di homebrew.js
   JS_SetPropertyStr(ctx, g, "__omega_wd", JS_NewString(ctx, dir));
   JS_SetPropertyStr(ctx, g, "__omega_root", JS_NewString(ctx, OMEGA_SYSROOT));
@@ -506,13 +507,13 @@ static int hb_js_main(HbSess *h, const char *dir, char **meta, char *err, size_t
   *meta = hb_js_call(h, "__omega_meta()", dir);
   JVal *j = *meta ? json_parse(*meta) : NULL;
   int rc = 0;
-  if (!j) { rc = -1; snprintf(err, en, "main() non ha risposto"); }
+  if (!j) { rc = -1; snprintf(err, en, "%s", _("main() non ha risposto")); }
   else if (jget(j, "error")) {
     rc = -1; omega_log("homebrew.js %s: main() fallita: %s", dir, jstr(j, "error", "?"));
     snprintf(err, en, "%s", jstr(j, "error", "?")); char *nl = strchr(err, '\n'); if (nl) *nl = 0;   // lo stack resta nel log
   }
-  else if (jget(j, "pending")) { rc = -1; snprintf(err, en, "main() non ha risposto in tempo"); }
-  else if (jget(j, "empty")) { rc = -1; snprintf(err, en, "main() non ha restituito nulla"); }
+  else if (jget(j, "pending")) { rc = -1; snprintf(err, en, "%s", _("main() non ha risposto in tempo")); }
+  else if (jget(j, "empty")) { rc = -1; snprintf(err, en, "%s", _("main() non ha restituito nulla")); }
   json_free(j);
   return rc;
 }
@@ -527,7 +528,7 @@ int hb_meta(const char *dir, char *name, size_t n, char *sub, size_t sn) {
   snprintf(g_meta_dir, sizeof g_meta_dir, "%s", dir); g_meta_img[0] = 0;
 #ifdef HAVE_QJS
   HbSess h; memset(&h, 0, sizeof h);
-  char err[200], *meta = NULL;
+  char err[400], *meta = NULL;
   if (hb_js_open(&h, dir, err, sizeof err) == 0) {
     if (hb_js_main(&h, dir, &meta, err, sizeof err) == 0) {
       JVal *j = json_parse(meta);
@@ -592,7 +593,7 @@ static int hb_resolve(const char *dir, int choice, char *err, size_t en, char (*
     char *meta = NULL, e2[300];
     if (hb_js_open(&g_hb, dir, e2, sizeof e2) || hb_js_main(&g_hb, dir, &meta, e2, sizeof e2)) {
       free(meta); hb_end();
-      snprintf(err, en, "Lo script di avvio di questo homebrew non funziona: %.150s", e2);
+      snprintf(err, en, _("Lo script di avvio di questo homebrew non funziona: %.150s"), e2);
       return -1;
     }
     free(meta);
@@ -604,7 +605,7 @@ static int hb_resolve(const char *dir, int choice, char *err, size_t en, char (*
   } else {
     if (g_hb.query) return 0;
 #ifdef HAVE_QJS
-    if (!g_hb.ctx) { snprintf(err, en, "Sessione di avvio scaduta: riprova"); return -1; }
+    if (!g_hb.ctx) { snprintf(err, en, "%s", _("Sessione di avvio scaduta: riprova")); return -1; }
     hb_js_step(&g_hb);
     char code[64]; snprintf(code, sizeof code, "__omega_choose(%d, %d)", choice, maxn > 1 ? maxn : 16);
     char *s = hb_js_call(&g_hb, code, dir); free(s);
@@ -618,7 +619,7 @@ static int hb_resolve(const char *dir, int choice, char *err, size_t en, char (*
   free(s);
   int rc = -1;
   JVal *it = jget(j, "items");
-  if (!j) snprintf(err, en, "Lo script di avvio non ha risposto");
+  if (!j) snprintf(err, en, "%s", _("Lo script di avvio non ha risposto"));
   else if (jget(j, "launch")) {
     g_hb.query = strdup(jstr(j, "launch", ""));
     g_hb.daemon = jbool(j, "daemon");
@@ -629,19 +630,19 @@ static int hb_resolve(const char *dir, int choice, char *err, size_t en, char (*
       JFOR(x, it) { if (*nn >= maxn) break; snprintf(names[*nn], 64, "%s", jstr(x, NULL, "?")); (*nn)++; }
       snprintf(err, en, "%s", jstr(j, "title", ""));
       rc = 1;
-    } else snprintf(err, en, "Questo homebrew chiede di scegliere tra più voci");
+    } else snprintf(err, en, "%s", _("Questo homebrew chiede di scegliere tra più voci"));
   } else if (jget(j, "error")) {
     char m[160]; snprintf(m, sizeof m, "%s", jstr(j, "error", "?"));
     char *nl = strchr(m, '\n'); if (nl) *nl = 0;
     omega_log("homebrew.js %s: %s", dir, jstr(j, "error", "?"));
-    if (strstr(m, "Failed to fetch")) snprintf(err, en, "Il server che l'homebrew usa non risponde: controlla la rete (o l'indirizzo scritto nello script)");
-    else snprintf(err, en, "Errore nello script di avvio: %s", m);
-  } else if (jget(j, "empty")) snprintf(err, en, "Nessun contenuto da avviare (mancano i file, es. ROM o dati del gioco?)");
+    if (strstr(m, "Failed to fetch")) snprintf(err, en, "%s", _("Il server che l'homebrew usa non risponde: controlla la rete (o l'indirizzo scritto nello script)"));
+    else snprintf(err, en, _("Errore nello script di avvio: %s"), m);
+  } else if (jget(j, "empty")) snprintf(err, en, "%s", _("Nessun contenuto da avviare (mancano i file, es. ROM o dati del gioco?)"));
   else if (jget(j, "none")) {
     const char *al = jstr(j, "alert", NULL);
     if (al && *al) snprintf(err, en, "%.180s", al);
-    else snprintf(err, en, "Nessun file scelto: l'homebrew non ha indicato cosa avviare");
-  } else snprintf(err, en, "Lo script di avvio non ha risposto in tempo");
+    else snprintf(err, en, "%s", _("Nessun file scelto: l'homebrew non ha indicato cosa avviare"));
+  } else snprintf(err, en, "%s", _("Lo script di avvio non ha risposto in tempo"));
   json_free(j);
   if (rc < 0) hb_end();
   return rc;
@@ -664,7 +665,7 @@ int hb_launch(const char *dir, int choice, int dry, char *err, size_t en, char (
   if (dry || !g_hb.query || strcmp(g_hb.dir, dir)) {
     int r = hb_resolve(dir, dry ? choice : -1, err, en, names, maxn, nn);
     if (r < 0 || dry) return r;
-    if (r == 1) { hb_end(); snprintf(err, en, "Scegli prima una voce dal menu dell'homebrew"); return -1; }
+    if (r == 1) { hb_end(); snprintf(err, en, "%s", _("Scegli prima una voce dal menu dell'homebrew")); return -1; }
   }
   static char url[8192];
   snprintf(url, sizeof url, WEBSRV_URL "/hbldr?%s", g_hb.query);
@@ -674,7 +675,7 @@ int hb_launch(const char *dir, int choice, int dry, char *err, size_t en, char (
 #ifdef PS5
   unsigned char b[16];
   long r = omega_url_peek(url, b, sizeof b);   // websrv chiude Omega e avvia l'homebrew
-  if (r < 0) { snprintf(err, en, "websrv non risponde o non è riuscito ad avviarlo (porta 8080): è avviato?"); return -1; }
+  if (r < 0) { snprintf(err, en, "%s", _("websrv non risponde o non è riuscito ad avviarlo (porta 8080): è avviato?")); return -1; }
 #endif
   return daemon ? 2 : 0;
 }

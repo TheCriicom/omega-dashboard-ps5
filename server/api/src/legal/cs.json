@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "O tomto překladu",
+    "body": "Toto je překlad původního italského textu, poskytnutý pro vaše pohodlí. V případě jakéhokoli rozdílu mezi tímto překladem a italským zněním má přednost italské znění."
+  },
+  "missing": "[bude doplněno]",
+  "fragments": {
+    "vat": ", DIČ {vat}",
+    "hosting_at": " (poskytovatel hostingu: {hosting})"
+  },
+  "privacy": {
+    "title": "Zásady ochrany osobních údajů",
+    "sections": [
+      { "id": "controller", "title": "Kdo zpracovává vaše údaje", "body": "Správce osobních údajů: {controller}. Kontakt ve věcech ochrany osobních údajů a pro hlášení: {email}. Omega je nezávislý projekt: není spojena se společností Sony Interactive Entertainment a nepoužívá její účty ani servery." },
+      { "id": "data", "title": "Jaké údaje shromažďujeme", "body": "Účet: online ID, heslo (uložené pouze jako otisk scrypt, nikdy v čitelné podobě), e-mail, pokud jej uvedete, avatar a titulní obrázek, které nahrajete, text profilu, datum registrace a posledního přihlášení. Sociální funkce: přátelství a žádosti o přátelství, stav online a titul, který právě používáte (odesílá jej vaše konzole během hraní), nedávné aktivity, přímé zprávy, chaty a pozvánky do party, oznámení. Store: homebrew, které publikujete, komentáře, líbí se/nelíbí se, hodnocení, hlášení, počet instalací. Osobní knihovna: adresa vašeho souboru JSON a seznam titulů, které obsahuje (název, obrázky, odkazy). Technické údaje: u každého požadavku na server zaznamenáváme IP adresu, datum a čas, požadovanou cestu (včetně adresy stránek otevřených v prohlížeči Omega), výsledek a časy zpracování. Hesla, tokeny a soubory cookie jsou maskovány a nikdy se neukládají do záznamů." },
+      { "id": "purposes", "title": "Proč a na jakém právním základě", "body": "Abychom vám poskytli službu, o kterou jste požádali (účet, sociální funkce, Store, knihovna): plnění smlouvy, čl. 6 odst. 1 písm. b) GDPR. Pro zajištění bezpečnosti, předcházení zneužití a vyřizování hlášení: oprávněný zájem a zákonné povinnosti týkající se hostovaného obsahu, čl. 6 odst. 1 písm. f) a c). Vaše údaje nepoužíváme k reklamě ani k profilování a neprodáváme je." },
+      { "id": "retention", "title": "Jak dlouho", "body": "Technické záznamy požadavků se mažou po {days} dnech. Údaje účtu a obsah zůstávají uloženy, dokud účet nesmažete; relace vyprší po 24 hodinách. Uzavřená hlášení a záznam moderátorských zásahů se uchovávají, dokud jsou potřebné k prokázání toho, jak bylo s obsahem naloženo." },
+      { "id": "recipients", "title": "Kdo je může vidět", "body": "Ostatní uživatelé vidí váš veřejný profil, to, co publikujete, a pokud jste přátelé, i vaši přítomnost a aktivitu. Zprávy vidí pouze jejich příjemci. Údaje jsou uloženy na serveru spravovaném správcem{hosting_at}; poskytovatel hostingu jedná jako zpracovatel. Když nainstalujete homebrew nebo otevřete webovou stránku, konzole nebo náš server se připojí k webu, který daný soubor nebo stránku hostuje: platí zásady ochrany osobních údajů tohoto webu." },
+      { "id": "rights", "title": "Vaše práva", "body": "Napsáním na adresu {email} můžete ke svým údajům získat přístup a stáhnout si je (Nastavení → Soukromí a data → Stáhnout moje data), opravit je, vymazat je (Smazat účet), vznést námitku proti jejich zpracování nebo požádat o jeho omezení. Můžete také podat stížnost u italského úřadu pro ochranu osobních údajů (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Minimální věk", "body": "Služba je určena pouze osobám, kterým je alespoň 14 let." },
+      { "id": "version", "title": "Verze", "body": "Aktualizováno dne {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Podmínky užívání",
+    "sections": [
+      { "id": "service", "title": "Služba", "body": "Omega ({url}) bezplatně poskytuje účty, sociální funkce a Store s homebrew pro konzole, na které uživatel oprávněně nainstaloval software třetích stran. Provozovatelem je {name}. Omega je nezávislý projekt a není přidružena ke společnosti Sony Interactive Entertainment, ani jí není schválena či sponzorována. „PlayStation“ a „PS5“ jsou ochranné známky příslušných vlastníků." },
+      { "id": "risk", "title": "Používání na vlastní riziko", "body": "Služba a homebrew ve Store jsou poskytovány tak, jak jsou. Instalace neoficiálního softwaru může způsobit poruchy, ztrátu dat nebo ztrátu záruky na konzoli a provádíte ji na vlastní riziko. Homebrew jsou díla příslušných autorů a vztahují se na ně jejich vlastní licence." },
+      { "id": "prohibited", "title": "Co není povoleno", "body": "Publikovat nebo sdílet obsah, k němuž nemáte práva — zejména kopie komerčních her nebo softwaru, odkazy na pirátský materiál, nástroje k obcházení jejich ochrany za účelem pirátství —, malware nebo nebezpečné soubory, nezákonný či urážlivý obsah nebo obsah podněcující k nenávisti, spam, používat cizí účty nebo se pokoušet narušit jejich zabezpečení." },
+      { "id": "publishing", "title": "Publikování ve Store", "body": "Publikováním prohlašujete, že jste autorem daného homebrew nebo že jeho licence umožňuje jeho další šíření a že odkaz vede na uvedený soubor bez škodlivých úprav. Udělujete nám svolení zobrazovat ve Store název, popis a obrázky. Soubory zůstávají na webu, který uvedete: Omega hostuje pouze jejich kartu." },
+      { "id": "library", "title": "Osobní knihovna", "body": "Knihovna slouží k uspořádání a opětovné instalaci záloh titulů, které oprávněně vlastníte, pro osobní potřebu. Nepoužívejte ji ke sdílení kopií s ostatními: soubory zůstávají tam, kde je máte uložené, a Omega je nehostuje." },
+      { "id": "moderation", "title": "Hlášení a moderování", "body": "Homebrew nebo komentář můžete nahlásit ze Store (Možnosti → Nahlásit) nebo napsáním na adresu {email}. Hlášení posuzujeme a obsah, který porušuje tyto podmínky, můžeme skrýt nebo odstranit a účty, které je porušují, pozastavit nebo zrušit; obsah s více hlášeními je až do ověření skryt." },
+      { "id": "liability", "title": "Odpovědnost", "body": "V rozsahu povoleném zákonem neodpovídáme za škody vzniklé v důsledku používání homebrew ani v důsledku nedostupnosti služby, která se může měnit nebo být ukončena. Tím není dotčena kogentní ochrana, kterou právní předpisy poskytují spotřebitelům." },
+      { "id": "changes", "title": "Změny a rozhodné právo", "body": "Pokud se podmínky změní, v aplikaci se vás na ně znovu zeptáme. Použije se italské právo." },
+      { "id": "version", "title": "Verze", "body": "Podmínky platné od {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Licence open source",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Aplikace Omega pro konzoli je svobodný software šířený pod licencí GNU GPL verze 3 nebo novější, bez jakékoli záruky. Kompletní zdrojový kód lze stáhnout z adresy {url}/source." },
+      { "id": "developer", "title": "Vývojář", "body": "Omega je vyvíjena vývojářem {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Komponenty používané aplikací", "body": "ps5-payload-sdk (GPL-3.0 nebo novější) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib a minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "Komponenty používané serverem", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 nebo novější) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "Homebrew ve Store", "body": "Každý homebrew v katalogu je open source projekt s vlastní licencí, která je uvedena na jeho kartě spolu s webem projektu." }
+    ]
+  }
+}

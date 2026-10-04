@@ -1,11 +1,13 @@
+<sub>[English](architecture.md) · **Italiano**</sub>
+
 # Architettura
 
 ```
  console PS5                                     server
 ┌──────────────────────────────┐         ┌──────────────────────────────────┐
 │ Omega (homebrew, SDL2)       │  HTTPS  │ Caddy / reverse proxy            │
-│  home · store · community    │ ──────► │   └─ proxy   registro, oscuramento│
-│  party (voce) · impostazioni │         │        └─ api   Node.js           │
+│  home · store · community    │ ──────► │   └─ proxy  registro, oscuramento│
+│  party (voce) · impostazioni │         │        └─ api   Node.js          │
 │                              │         │              └─ PostgreSQL       │
 │ omega_redirect (payload)     │ ──────► │                                  │
 │  riapre Omega, notifiche     │         └──────────────────────────────────┘
@@ -59,4 +61,4 @@ direttamente dal sito dell'autore.
 
 **Voce** — `POST party/voice` con un pacchetto binario; gli altri membri lo
 ricevono da `GET party/voice?after=<cursore>&wait=1`, che resta in attesa fino a
-1,5 s. Il formato è descritto in `server/README.md`.
+1,5 s. Il formato è descritto in [`server/README.it.md`](../server/README.it.md#voce-nel-party).

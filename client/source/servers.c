@@ -119,6 +119,11 @@ int srv_remove(int i) {
   return 0;
 }
 
+const char *srv_name(const Server *s) {
+  ensure();
+  return s == &list[0] ? _("Omega") : s ? s->name : "";
+}
+
 const char *srv_host(const Server *s) {
   const char *h = s ? strstr(s->url, "://") : NULL;
   return h ? h + 3 : (s ? s->url : "");

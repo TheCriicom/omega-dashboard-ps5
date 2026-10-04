@@ -1,11 +1,13 @@
 ---
-name: Proposta
-about: Un'idea per migliorare Omega
+name: Feature request
+about: An idea to improve Omega / Un'idea per migliorare Omega
 labels: proposta
 ---
 
-**Il problema che vorresti risolvere**
+<!-- Write in English or Italian, as you prefer. / Scrivi in inglese o in italiano, come preferisci. -->
 
-**La soluzione che immagini**
+**The problem you'd like to solve** / **Il problema che vorresti risolvere**
 
-**Alternative considerate**
+**The solution you have in mind** / **La soluzione che immagini**
+
+**Alternatives you've considered** / **Alternative considerate**

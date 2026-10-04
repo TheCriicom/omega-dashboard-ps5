@@ -1,71 +1,93 @@
 <p align="center">
-  <img src="docs/img/mark.svg" width="88" alt="">
+  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/omega-mark.svg"><img src="docs/img/omega-mark-light.svg" width="96" alt="Omega"></picture>
 </p>
 
 <h1 align="center">Omega</h1>
 
 <p align="center">
-  La dashboard open source per PS5 con homebrew: giochi, Store, amici e party in un'unica Home.
+  The open-source dashboard for homebrew-enabled PS5 consoles: games, Store, music, friends and party in one place.<br>
+  Developed by <a href="https://outlinedigital.it"><b>TheCriicom</b></a>.
 </p>
+
+<p align="center"><sub><b>English</b> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.fr.md">Français</a> · <a href="README.es.md">Español</a> · <a href="README.de.md">Deutsch</a> · <a href="README.nl.md">Nederlands</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.ru.md">Русский</a> · <a href="README.ko.md">한국어</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a> · <a href="README.fi.md">Suomi</a> · <a href="README.sv.md">Svenska</a> · <a href="README.da.md">Dansk</a> · <a href="README.nb.md">Norsk bokmål</a> · <a href="README.pl.md">Polski</a> · <a href="README.tr.md">Türkçe</a> · <a href="README.cs.md">Čeština</a> · <a href="README.hu.md">Magyar</a> · <a href="README.el.md">Ελληνικά</a> · <a href="README.ro.md">Română</a> · <a href="README.th.md">ไทย</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.uk.md">Українська</a></sub></p>
 
 <p align="center">
-  <a href="https://play.omegasuite.it">Sito</a> ·
-  <a href="https://play.omegasuite.it/installa">Installa</a> ·
-  <a href="server/README.md">Ospita un server</a> ·
-  <a href="client/README.md">Sviluppo</a>
+  <a href="https://play.omegasuite.it">Website</a> ·
+  <a href="https://play.omegasuite.it/installa">Install</a> ·
+  <a href="server/README.md">Host a server</a> ·
+  <a href="client/README.md">Development</a>
 </p>
 
-![Home di Omega](docs/screenshots/home.png)
+![Omega Home](docs/screenshots/home.png)
 
-Omega sostituisce la Home della console con un'interfaccia pensata per chi usa
-homebrew: i giochi installati e gli homebrew stanno nella stessa fila, lo Store
-installa con un tasto, gli amici sono sempre a portata di mano. Gira come
-homebrew (SDL2, renderer software) e parla con un server che chiunque può
-ospitare.
+Omega is a dashboard built for homebrew users, and your Home screen if you want
+it to be (it asks on first launch): installed games and homebrew sit in the same
+row, the Store installs with one button, music keeps playing while you game and
+your friends are always one press away. It runs as homebrew (SDL2, software
+renderer) and talks to a server that anyone can host.
 
-## Cosa c'è dentro
+## What's inside
 
-- **Home** con giochi e homebrew insieme, sfondi dinamici dall'artwork, avvio
-  diretto (giochi tramite LncUtil, homebrew tramite websrv, payload ELF in
-  background).
-- **Store** di homebrew open source: ricerca, scaffali per categoria, voti,
-  valutazioni e commenti. Riconosce da solo `.pkg`, `.zip` ed `.elf` e li
-  installa nel posto giusto.
-- **Libreria personale** da un file JSON con i backup dei propri giochi.
-- **Community**: bacheca con post, mi piace e commenti; gruppi di chat;
-  persone che potresti conoscere; tempo di gioco e classifica degli amici.
-- **Party** con chat e voce (Opus), inviti a giocare, stato personalizzato
-  (online, assente, non disturbare, invisibile).
-- **Game Base**: amici, richieste e messaggi.
-- **Privacy**: blocchi, segnalazioni, chi può scriverti, esportazione dei dati,
-  eliminazione dell'account.
-- **Temi**, musica d'atmosfera generata, browser di lettura.
-- **Server a scelta**: dalle Impostazioni si aggiunge l'indirizzo di qualunque
-  server Omega; quello ufficiale resta sempre disponibile.
+- **Home** with games and homebrew together, dynamic backgrounds from the
+  artwork, direct launch (games through LncUtil, homebrew through websrv, ELF
+  payloads in the background).
+- **Store** of open-source homebrew: search, category shelves, votes, ratings
+  and comments. It detects `.pkg`, `.zip` and `.elf` on its own and installs
+  each one in the right place.
+- **My library**: your own game backups with a download link and a cover,
+  added from the console or from your phone, or imported from a JSON file
+  (once, or linked so it stays in sync). Stored only on the console.
+- **Music**, also during games: internet radio (radio-browser), Navidrome and
+  other Subsonic servers, USB files, any audio link. Playback runs in the
+  background daemon (FFmpeg audio-only build), so it doesn't stop when you
+  launch a game.
+- **Phone remote**: the daemon serves a web page on port 9095. Scan the QR
+  code shown on the console, type the PIN, and control the music, send audio
+  files, and manage My library from any phone, tablet or PC browser.
+- **HEN detection**: at startup Omega recognises OnionHEN, etaHEN, pldmgr or
+  ps5_autoloader, tells you what's missing and, after you confirm, installs and
+  enables its services in the right place. On OnionHEN it adds a page to the
+  in-game menu (L2 + R3) with music controls.
+- **System tools**: temperatures, fan threshold, storage and a file manager.
+- **Community**: a wall with posts, likes and comments; group chats; people
+  you may know; playtime and a friends leaderboard.
+- **Party** with chat and voice (Opus), game invites, custom status (online,
+  away, do not disturb, invisible).
+- **Game Base**: friends, requests and messages.
+- **Privacy**: blocking, reporting, who can message you, data export, account
+  deletion.
+- **Themes**, generated ambient music, a reading browser.
+- **27 languages**: the app follows the console language automatically (and
+  can be changed in Settings).
+- **Choose your server**: add the address of any Omega server in Settings; the
+  official one always stays available.
 
 | | |
 |---|---|
 | ![Store](docs/screenshots/store.png) | ![Community](docs/screenshots/community.png) |
-| ![Party](docs/screenshots/party.png) | ![Tempo di gioco](docs/screenshots/stats.png) |
+| ![Party](docs/screenshots/party.png) | ![Playtime](docs/screenshots/stats.png) |
+| ![Phone remote on a PC](docs/screenshots/remote-music.png) | ![My library from a PC](docs/screenshots/remote-library.png) |
 
-## Struttura
+## Repository layout
 
-| Cartella | |
+| Folder | |
 |---|---|
-| [`client/`](client) | l'app per la console (C, SDL2) e una build desktop per svilupparla sul Mac |
-| [`daemon/`](daemon) | payload di supporto: riapre Omega quando si torna alla Home e porta le notifiche durante il gioco |
-| [`server/`](server) | API Node.js, proxy, pannello di moderazione e Docker Compose per ospitare un server |
-| [`docs/`](docs) | architettura e immagini |
+| [`client/`](client) | the console app (C, SDL2) and a desktop build to develop it on a Mac |
+| [`daemon/`](daemon) | background payload: music player, phone remote web page, My library, notifications during games, and (only if you choose it) reopening Omega when you go back to the Home |
+| [`onionhen-plugin/`](onionhen-plugin) | OnionHEN plugin: an Omega page in the in-game menu with music controls |
+| [`server/`](server) | Node.js API, proxy, moderation panel and Docker Compose to host a server |
+| [`docs/`](docs) | architecture and images |
 
-## Installare Omega sulla console
+## Installing Omega on the console
 
-Serve una PS5 con jailbreak e supporto agli homebrew (un launcher come
-[websrv](https://github.com/ps5-payload-dev/websrv) e un loader di payload).
-La strada più semplice è la pagina [play.omegasuite.it/installa](https://play.omegasuite.it/installa),
-da aprire con il browser della console. In alternativa si scarica il pacchetto
-dal sito e si copia `data/` sulla console via FTP.
+You need a jailbroken PS5 with homebrew support: a HEN such as OnionHEN or
+etaHEN, or a launcher such as [websrv](https://github.com/ps5-payload-dev/websrv)
+with a payload loader.
+The easiest way is [play.omegasuite.it/installa](https://play.omegasuite.it/installa),
+opened in the console's browser. Alternatively, download the package from the
+website and copy `data/` to the console over FTP.
 
-## Ospitare un server
+## Hosting a server
 
 ```sh
 git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
@@ -73,27 +95,35 @@ cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```
 
-Lo script prepara il `.env` con segreti casuali e avvia i container. La guida
-completa, con HTTPS automatico tramite Caddy, è in [`server/README.md`](server/README.md).
-Poi, sulla console: **Impostazioni → Server → Aggiungi un server**.
+The script creates `.env` with random secrets and starts the containers. The
+full guide, with automatic HTTPS through Caddy, is in
+[`server/README.md`](server/README.md). Then, on the console:
+**Settings → Server → Add a server**.
 
-## Sviluppare
+## Development
 
-- App: [`client/README.md`](client/README.md) — build per PS5 con
-  [ps5-payload-sdk](https://github.com/ps5-payload-dev/sdk) e build desktop con
-  SDL2 di Homebrew, comandabile da file per provare l'interfaccia senza console.
-- Server: [`server/README.md`](server/README.md) — Node.js ≥ 20 e PostgreSQL,
-  test end-to-end con `npm test`.
-- Architettura: [`docs/architettura.md`](docs/architettura.md).
+- App: [`client/README.md`](client/README.md) — PS5 build with
+  [ps5-payload-sdk](https://github.com/ps5-payload-dev/sdk) and a desktop build
+  with Homebrew's SDL2, driven by a command file to test the UI without a console.
+  Translations live in `client/i18n/` (one JSON per language).
+- Server: [`server/README.md`](server/README.md) — Node.js ≥ 20 and PostgreSQL,
+  end-to-end tests with `npm test`.
+- Architecture: [`docs/architecture.md`](docs/architecture.md).
 
-Le proposte sono benvenute: leggi [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licenza
+## Author
 
-Omega è software libero: [GNU GPL v3 o successiva](LICENSE). I componenti di
-terze parti e le loro licenze sono elencati in
+Omega is developed by **TheCriicom** — [outlinedigital.it](https://outlinedigital.it).
+
+## License
+
+Copyright © 2026 TheCriicom and the Omega contributors.
+Omega is free software: [GNU GPL v3 or later](LICENSE). Third-party components
+and their licenses are listed in
 [`client/THIRD-PARTY-NOTICES.md`](client/THIRD-PARTY-NOTICES.md).
 
-Omega è un progetto indipendente e non è affiliato, approvato o sponsorizzato
-da Sony Interactive Entertainment. "PlayStation" e "PS5" sono marchi dei
-rispettivi titolari. Omega non contiene né distribuisce giochi.
+Omega is an independent project and is not affiliated with, endorsed or
+sponsored by Sony Interactive Entertainment. "PlayStation" and "PS5" are
+trademarks of their respective owners. Omega does not contain or distribute
+games.

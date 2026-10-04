@@ -1,0 +1,48 @@
+{
+  "notice": {
+    "title": "A fordításról",
+    "body": "Ez az eredeti olasz nyelvű szöveg fordítása, amelyet a könnyebb használhatóság érdekében teszünk közzé. Ha a fordítás és az olasz nyelvű változat között bármilyen eltérés van, az olasz nyelvű változat az irányadó."
+  },
+  "missing": "[kiegészítendő]",
+  "fragments": {
+    "vat": ", adószám: {vat}",
+    "hosting_at": " (tárhelyszolgáltató: {hosting})"
+  },
+  "privacy": {
+    "title": "Adatvédelmi tájékoztató",
+    "sections": [
+      { "id": "controller", "title": "Ki kezeli az adataidat", "body": "Adatkezelő: {controller}. Kapcsolattartás adatvédelmi ügyekben és bejelentésekhez: {email}. Az Omega független projekt: nem áll kapcsolatban a Sony Interactive Entertainment vállalattal, és nem használja annak fiókjait vagy szervereit." },
+      { "id": "data", "title": "Milyen adatokat gyűjtünk", "body": "Fiók: online azonosító, jelszó (kizárólag scrypt-lenyomatként tárolva, soha nem olvasható formában), e-mail-cím, ha megadod, a feltöltött avatar és borítókép, profilszöveg, a regisztráció dátuma és az utolsó bejelentkezés. Közösségi funkciók: barátságok és barátkérelmek, online állapot és az éppen használt játék vagy alkalmazás (játék közben a konzolod küldi), legutóbbi tevékenységek, közvetlen üzenetek, partycsevegések és partymeghívások, értesítések. Store: az általad közzétett homebrew-k, hozzászólások, tetszik/nem tetszik jelölések, értékelések, bejelentések, a telepítések száma. Saját könyvtár: a JSON-fájlod címe és a benne szereplő játékok listája (név, képek, hivatkozások). Technikai adatok: a szerverhez intézett minden kérésnél rögzítjük az IP-címet, a dátumot és az időpontot, a kért útvonalat (beleértve az Omega böngészőben megnyitott oldalak címét), az eredményt és az időadatokat. A jelszavakat, tokeneket és sütiket kitakarjuk, ezek soha nem kerülnek a naplókba." },
+      { "id": "purposes", "title": "Miért és milyen jogalapon", "body": "Az általad kért szolgáltatás nyújtásához (fiók, közösségi funkciók, Store, könyvtár): szerződés teljesítése, GDPR 6. cikk (1) bekezdés b) pont. A biztonság érdekében, a visszaélések megelőzésére és a bejelentések kezelésére: jogos érdek és a tárolt tartalmakra vonatkozó jogi kötelezettségek, 6. cikk (1) bekezdés f) és c) pont. Adataidat nem használjuk reklámcélra vagy profilalkotásra, és nem adjuk el őket." },
+      { "id": "retention", "title": "Meddig", "body": "A kérések technikai naplóit {days} nap elteltével töröljük. A fiókadatok és a tartalmak a fiókod törléséig megmaradnak; a munkamenetek 24 óra után lejárnak. A lezárt bejelentéseket és a moderálási műveletek naplóját addig őrizzük meg, amíg szükség van rájuk annak igazolásához, hogyan kezeltük a tartalmakat." },
+      { "id": "recipients", "title": "Ki láthatja", "body": "A többi felhasználó látja a nyilvános profilodat, az általad közzétett tartalmakat, és ha barátok vagytok, a jelenlétedet és a tevékenységedet. Az üzeneteket csak a címzettjeik látják. Az adatokat az adatkezelő{hosting_at} által üzemeltetett szerver tárolja; a tárhelyszolgáltató adatfeldolgozóként jár el. Ha telepítesz egy homebrew-t vagy megnyitsz egy weboldalt, a konzol vagy a szerverünk kapcsolódik az adott fájlt vagy oldalt tároló webhelyhez: ilyenkor annak a webhelynek az adatvédelmi tájékoztatója irányadó." },
+      { "id": "rights", "title": "Jogaid", "body": "Hozzáférhetsz az adataidhoz és letöltheted őket (Beállítások → Adatvédelem és adatok → Adataim letöltése), helyesbítheted, törölheted őket (Fiók törlése), tiltakozhatsz a kezelésük ellen, vagy kérheted a kezelés korlátozását; ehhez írj a következő címre: {email}. Panaszt is tehetsz az olasz adatvédelmi hatóságnál (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
+      { "id": "age", "title": "Alsó korhatár", "body": "A szolgáltatás kizárólag legalább 14 éves személyek számára érhető el." },
+      { "id": "version", "title": "Verzió", "body": "Utolsó frissítés: {version}." }
+    ]
+  },
+  "terms": {
+    "title": "Felhasználási feltételek",
+    "sections": [
+      { "id": "service", "title": "A szolgáltatás", "body": "Az Omega ({url}) ingyenesen kínál fiókokat, közösségi funkciókat és egy homebrew Store-t olyan konzolokhoz, amelyekre a felhasználó jogszerűen telepített harmadik féltől származó szoftvert. Üzemeltető: {name}. Az Omega független projekt, nem áll kapcsolatban a Sony Interactive Entertainment vállalattal, és az nem hagyta jóvá és nem szponzorálja. A „PlayStation” és a „PS5” a megfelelő jogosultjaik védjegyei." },
+      { "id": "risk", "title": "Használat saját felelősségre", "body": "A szolgáltatást és a Store-ban található homebrew-kat jelenlegi állapotukban biztosítjuk. Nem hivatalos szoftver telepítése hibás működést, adatvesztést vagy a konzol garanciájának elvesztését okozhatja, és saját felelősségedre történik. A homebrew-k a szerzőik művei, saját licencükkel." },
+      { "id": "prohibited", "title": "Mi nem megengedett", "body": "Olyan tartalmak közzététele vagy megosztása, amelyekhez nincsenek jogaid — különösen kereskedelmi játékok vagy szoftverek másolatai, kalózanyagokra mutató hivatkozások, a védelmük kalózkodási célú megkerülésére szolgáló eszközök —, kártevők vagy veszélyes fájlok, jogellenes, sértő vagy gyűlöletkeltő tartalmak, spam, mások fiókjainak használata vagy biztonságuk veszélyeztetésének kísérlete." },
+      { "id": "publishing", "title": "Közzététel a Store-ban", "body": "A közzététellel kijelented, hogy te vagy a homebrew szerzője, vagy hogy a licence lehetővé teszi a továbbterjesztését, és hogy a hivatkozás ártalmas módosítások nélkül a megadott fájlra mutat. Engedélyezed számunkra, hogy a nevet, a leírást és a képeket megjelenítsük a Store-ban. A fájlok az általad megadott webhelyen maradnak: az Omega csak az adatlapjukat tárolja." },
+      { "id": "library", "title": "Saját könyvtár", "body": "A könyvtár arra szolgál, hogy személyes használatra rendszerezd és újratelepítsd a jogszerűen birtokolt játékaid biztonsági mentéseit. Ne használd arra, hogy másolatokat ossz meg másokkal: a fájlok ott maradnak, ahol te tárolod őket, és az Omega nem tárolja őket." },
+      { "id": "moderation", "title": "Bejelentések és moderálás", "body": "Egy homebrew-t vagy hozzászólást bejelenthetsz a Store-ból (Opciók → Bejelentés), vagy írhatsz a következő címre: {email}. Megvizsgáljuk a bejelentéseket, és elrejthetjük vagy eltávolíthatjuk a jelen feltételeket sértő tartalmakat, illetve felfüggeszthetjük vagy megszüntethetjük a jelen feltételeket sértő fiókokat; a több bejelentést kapott tartalmakat az ellenőrzésig elrejtjük." },
+      { "id": "liability", "title": "Felelősség", "body": "A jogszabályok által megengedett mértékben nem felelünk a homebrew-k használatából vagy a szolgáltatás elérhetetlenségéből eredő károkért; a szolgáltatás megváltozhat vagy megszűnhet. Ez nem érinti a fogyasztókat megillető, kötelezően alkalmazandó védelmet." },
+      { "id": "changes", "title": "Módosítások és irányadó jog", "body": "Ha a feltételek megváltoznak, az alkalmazásban ismét rákérdezünk. Az olasz jog az irányadó." },
+      { "id": "version", "title": "Verzió", "body": "Hatályos: {version}." }
+    ]
+  },
+  "licenses": {
+    "title": "Nyílt forráskódú licencek",
+    "sections": [
+      { "id": "omega", "title": "Omega", "body": "Az Omega konzolalkalmazás szabad szoftver, amelyet a GNU GPL 3-as vagy újabb verziója szerint terjesztünk, mindenféle garancia nélkül. A teljes forráskód innen tölthető le: {url}/source." },
+      { "id": "developer", "title": "Fejlesztő", "body": "Az Omega fejlesztője: {developer} — {developer_url}" },
+      { "id": "app_components", "title": "Az alkalmazás által használt összetevők", "body": "ps5-payload-sdk (GPL-3.0 vagy újabb) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib és minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
+      { "id": "server_components", "title": "A szerver által használt összetevők", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 vagy újabb) · jxrlib (BSD-2-Clause)." },
+      { "id": "store_homebrew", "title": "A Store homebrew-jai", "body": "A katalógus minden homebrew-ja saját licenccel rendelkező nyílt forráskódú projekt; a licenc a projekt webhelyével együtt a homebrew adatlapján szerepel." }
+    ]
+  }
+}

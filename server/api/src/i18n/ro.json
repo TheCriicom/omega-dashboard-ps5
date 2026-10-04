@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} ți-a trimis o cerere de prietenie",
+    "friend_accept": "{actor} ți-a acceptat cererea de prietenie",
+    "party_invite": "{actor} te-a invitat într-un party",
+    "post_like": "Lui {actor} îi place postarea ta",
+    "post_comment": "{actor} a comentat la postarea ta",
+    "store_comment": "{actor} a comentat la {app}",
+    "game_invite": "{actor} te invită să joci",
+    "game_start": "{actor} joacă {game}",
+    "online": "{actor} este online",
+    "admin_report": "Raportare: {title}",
+    "admin_social_report": "Raportare: {kind} {title}",
+    "report_on_comment": " (comentariu)",
+    "report_hidden": " — ascuns"
+  },
+  "report_kind": {
+    "user": "utilizator",
+    "post": "postare",
+    "post_comment": "comentariu"
+  },
+  "report_reason": {
+    "pirateria": "piraterie",
+    "malware": "malware",
+    "contenuto_offensivo": "conținut ofensator",
+    "spam": "spam",
+    "link_rotto": "link nefuncțional",
+    "molestie": "hărțuire",
+    "impersonificazione": "uzurpare de identitate",
+    "altro": "altceva"
+  },
+  "web": {
+    "documents": "Documente",
+    "privacy": "Confidențialitate",
+    "terms": "Termeni de utilizare",
+    "licenses": "Licențe",
+    "source": "Cod sursă",
+    "language": "Limbă",
+    "developed_by": "Dezvoltat de {developer}",
+    "source_intro": "Aplicația Omega pentru consolă este software liber: GNU General Public License versiunea 3 sau ulterioară. Aici găsești codul sursă complet al aplicației și al daemonului care o însoțește, cu instrucțiunile de compilare (build.sh).",
+    "source_download": "Descarcă omega-src.tar.gz",
+    "source_generated": "Arhivă generată pe loc din codul care rulează pe server.",
+    "source_unavailable": "Arhivă momentan indisponibilă."
+  },
+  "api": {
+    "description": "Conturi, funcții sociale și Store de homebrew pentru consolă. Proiect independent, neafiliat cu Sony."
+  }
+}

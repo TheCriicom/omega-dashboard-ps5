@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} hat dir eine Freundschaftsanfrage gesendet",
+    "friend_accept": "{actor} hat deine Freundschaftsanfrage angenommen",
+    "party_invite": "{actor} hat dich zu einer Party eingeladen",
+    "post_like": "{actor} gefällt dein Beitrag",
+    "post_comment": "{actor} hat deinen Beitrag kommentiert",
+    "store_comment": "{actor} hat {app} kommentiert",
+    "game_invite": "{actor} lädt dich zum Spielen ein",
+    "game_start": "{actor} spielt {game}",
+    "online": "{actor} ist online",
+    "admin_report": "Meldung: {title}",
+    "admin_social_report": "Meldung: {kind} {title}",
+    "report_on_comment": " (Kommentar)",
+    "report_hidden": " — ausgeblendet"
+  },
+  "report_kind": {
+    "user": "Nutzer",
+    "post": "Beitrag",
+    "post_comment": "Kommentar"
+  },
+  "report_reason": {
+    "pirateria": "Piraterie",
+    "malware": "Malware",
+    "contenuto_offensivo": "beleidigender Inhalt",
+    "spam": "Spam",
+    "link_rotto": "defekter Link",
+    "molestie": "Belästigung",
+    "impersonificazione": "Identitätsanmaßung",
+    "altro": "Sonstiges"
+  },
+  "web": {
+    "documents": "Dokumente",
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen",
+    "licenses": "Lizenzen",
+    "source": "Quellcode",
+    "language": "Sprache",
+    "developed_by": "Entwickelt von {developer}",
+    "source_intro": "Die Omega-App für die Konsole ist freie Software: GNU General Public License Version 3 oder höher. Hier findest du den vollständigen Quellcode der App und des zugehörigen Daemons, mit Build-Anleitung (build.sh).",
+    "source_download": "omega-src.tar.gz herunterladen",
+    "source_generated": "Das Archiv wird bei Abruf aus dem auf dem Server laufenden Code erzeugt.",
+    "source_unavailable": "Archiv vorübergehend nicht verfügbar."
+  },
+  "api": {
+    "description": "Konten, soziale Funktionen und ein Homebrew-Store für die Konsole. Unabhängiges Projekt, nicht mit Sony verbunden."
+  }
+}

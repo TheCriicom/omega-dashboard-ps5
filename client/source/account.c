@@ -11,7 +11,7 @@
 static struct {
   int loading, error;
   char kind[16];
-  char title[96];
+  char title[160];
   int n; struct { char title[120]; char *body; int h; } s[DOC_SECT];
   float scroll, target, max;
 } D;
@@ -41,7 +41,7 @@ void doc_open(const char *kind) {
   doc_free();
   memset(&D, 0, sizeof D);
   snprintf(D.kind, sizeof D.kind, "%s", kind);
-  snprintf(D.title, sizeof D.title, "%s", !strcmp(kind, "privacy") ? "Informativa sulla privacy" : !strcmp(kind, "terms") ? "Termini d'uso" : "Licenze open source");
+  snprintf(D.title, sizeof D.title, "%s", !strcmp(kind, "privacy") ? _("Informativa sulla privacy") : !strcmp(kind, "terms") ? _("Termini d'uso") : _("Licenze open source"));
   D.loading = 1;
   net_req(HTTP_GET, OMEGA_API "/legal", NULL, on_legal, NULL);
   ov_push(OV_DOC);
@@ -60,7 +60,7 @@ void doc_draw(float t) {
   fill_rect(x + 40, top - 14, w - 80, 1, RGB(255, 255, 255), a * 10 / 100);
   if (D.loading) { draw_spinner(x + w / 2, y + h / 2, 22, a); return; }
   if (D.error) {
-    draw_text(font(W_REG, 30), "Documento non disponibile: server non raggiungibile.", x + w / 2, y + h / 2 - 20, C_DIM, a, AL_C);
+    draw_text(font(W_REG, 30), _("Documento non disponibile: server non raggiungibile."), x + w / 2, y + h / 2 - 20, C_DIM, a, AL_C);
     return;
   }
   D.scroll = approach(D.scroll, D.target, 14.0f);
@@ -87,7 +87,7 @@ void doc_draw(float t) {
     fill_rrect(x + w - 30, by, 6, bh, 3, C_ACC2, a * 80 / 100);
   }
   const int ic[] = { IC_BTN_O };
-  const char *lb[] = { "Chiudi" };
+  const char *lb[] = { _("Chiudi") };
   hints(ic, lb, 1, a);
 }
 
@@ -112,7 +112,7 @@ static int write_file(const char *path, const char *data) {
 static void on_export(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)ud;
   if (st != 200 || !raw || raw[0] != '{') {
-    set_msg(st == 429 ? "Hai già scaricato i dati da poco: riprova tra un'ora" : "Esportazione non riuscita", 1);
+    set_msg(st == 429 ? _("Hai già scaricato i dati da poco: riprova tra un'ora") : _("Esportazione non riuscita"), 1);
     return;
   }
   mkdir(OMEGA_DIR, 0777);
@@ -127,23 +127,23 @@ static void on_export(int st, JVal *j, const char *raw, void *ud) {
     if (write_file(up, raw) == 0) { snprintf(where, sizeof where, "%s", up); break; }
   }
   char m[360];
-  if (where[0]) snprintf(m, sizeof m, "Dati salvati in %s", where);
-  else snprintf(m, sizeof m, "Impossibile salvare il file dei dati");
+  if (where[0]) snprintf(m, sizeof m, _("Dati salvati in %s"), where);
+  else snprintf(m, sizeof m, "%s", _("Impossibile salvare il file dei dati"));
   set_msg(m, !where[0]);
 }
 
 static void on_delete(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 200) { do_logout(); set_msg("Account eliminato. Tutti i tuoi dati sono stati cancellati.", 0); }
-  else if (st == 401) set_msg("Password non corretta", 1);
-  else if (st == 429) set_msg("Troppi tentativi: riprova più tardi", 1);
-  else set_msg("Eliminazione non riuscita", 1);
+  if (st == 200) { do_logout(); set_msg(_("Account eliminato. Tutti i tuoi dati sono stati cancellati."), 0); }
+  else if (st == 401) set_msg(_("Password non corretta"), 1);
+  else if (st == 429) set_msg(_("Troppi tentativi: riprova più tardi"), 1);
+  else set_msg(_("Eliminazione non riuscita"), 1);
 }
 
 static void delete_yes(int idx, void *ud) {
   (void)idx; (void)ud;
   char pw[128] = "";
-  if (!edit_text("Password del tuo account", pw, sizeof pw, 1) || !pw[0]) return;
+  if (!edit_text(_("Password del tuo account"), pw, sizeof pw, 1) || !pw[0]) return;
   char e[300], body[360];
   json_escape(e, sizeof e, pw);
   snprintf(body, sizeof body, "{\"password\":\"%s\"}", e);
@@ -163,7 +163,7 @@ static void privacy_save(void) {
 }
 static void on_privacy(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
-  if (st != 200) { set_msg("Impostazioni non disponibili", 1); return; }
+  if (st != 200) { set_msg(_("Impostazioni non disponibili"), 1); return; }
   jcpy(PV.messages, sizeof PV.messages, j, "messages");
   jcpy(PV.requests, sizeof PV.requests, j, "friend_requests");
   PV.activity = jbool(j, "show_activity"); PV.loaded = 1;
@@ -176,8 +176,8 @@ static void on_blocks(int st, JVal *j, const char *raw, void *ud) {
   if (st != 200) return;
   static const char *items[40]; nblocked = 0;
   JFOR(u, jget(j, "users")) { if (nblocked >= 40) break; jcpy(blocked[nblocked], sizeof blocked[0], u, "online_id"); items[nblocked] = blocked[nblocked]; nblocked++; }
-  if (!nblocked) { set_msg("Non hai bloccato nessuno", 0); return; }
-  menu_open("Utenti bloccati (X per sbloccare)", items, nblocked, unblock_pick, NULL);
+  if (!nblocked) { set_msg(_("Non hai bloccato nessuno"), 0); return; }
+  menu_open(_("Utenti bloccati (X per sbloccare)"), items, nblocked, unblock_pick, NULL);
 }
 static void contact_pick(int idx, void *ud) {
   (void)ud;
@@ -191,12 +191,12 @@ static void contact_pick(int idx, void *ud) {
   privacy_menu_open();       // il menu resta aperto con i valori aggiornati
 }
 static void privacy_menu_open(void) {
-  static char l[3][96]; static const char *items[4];
-  snprintf(l[0], sizeof l[0], "Chi può scrivermi: %s", strcmp(PV.messages, "friends") ? "tutti" : "solo amici");
-  snprintf(l[1], sizeof l[1], "Richieste di amicizia: %s", !strcmp(PV.requests, "nobody") ? "nessuno" : !strcmp(PV.requests, "friends_of_friends") ? "amici di amici" : "tutti");
-  snprintf(l[2], sizeof l[2], "Mostra cosa gioco e il mio tempo: %s", PV.activity ? "sì" : "no");
-  items[0] = l[0]; items[1] = l[1]; items[2] = l[2]; items[3] = "Utenti bloccati";
-  menu_open("Contatti e visibilità", items, 4, contact_pick, NULL);
+  static char l[3][160]; static const char *items[4];
+  snprintf(l[0], sizeof l[0], "%s", strcmp(PV.messages, "friends") ? _("Chi può scrivermi: tutti") : _("Chi può scrivermi: solo amici"));
+  snprintf(l[1], sizeof l[1], "%s", !strcmp(PV.requests, "nobody") ? _("Richieste di amicizia: nessuno") : !strcmp(PV.requests, "friends_of_friends") ? _("Richieste di amicizia: amici di amici") : _("Richieste di amicizia: tutti"));
+  snprintf(l[2], sizeof l[2], "%s", PV.activity ? _("Mostra cosa gioco e il mio tempo: sì") : _("Mostra cosa gioco e il mio tempo: no"));
+  items[0] = l[0]; items[1] = l[1]; items[2] = l[2]; items[3] = _("Utenti bloccati");
+  menu_open(_("Contatti e visibilità"), items, 4, contact_pick, NULL);
 }
 
 static void privacy_pick(int idx, void *ud) {
@@ -206,23 +206,23 @@ static void privacy_pick(int idx, void *ud) {
     case 1: doc_open("privacy"); break;
     case 2: doc_open("terms"); break;
     case 3: doc_open("licenses"); break;
-    case 4: set_msg("Preparazione dei tuoi dati...", 0); net_req(HTTP_GET, OMEGA_API "/account/export", NULL, on_export, NULL); break;
-    case 5: confirm_open("Eliminare per sempre l'account e tutto ciò che hai pubblicato? Non si può annullare.", "Elimina", delete_yes, NULL); break;
+    case 4: set_msg(_("Preparazione dei tuoi dati..."), 0); net_req(HTTP_GET, OMEGA_API "/account/export", NULL, on_export, NULL); break;
+    case 5: confirm_open(_("Eliminare per sempre l'account e tutto ciò che hai pubblicato? Non si può annullare."), _("Elimina"), delete_yes, NULL); break;
   }
 }
 static void privacy_pick_guest(int idx, void *ud) { privacy_pick(idx + 1, ud); }
 
 void privacy_menu(void) {
-  static const char *items[] = { "Contatti e visibilità", "Informativa sulla privacy", "Termini d'uso", "Licenze open source", "Scarica i miei dati", "Elimina account" };
-  if (g_token[0]) menu_open("Privacy e dati", items, 6, privacy_pick, NULL);
-  else menu_open("Privacy e termini", items + 1, 3, privacy_pick_guest, NULL);
+  const char *items[] = { _("Contatti e visibilità"), _("Informativa sulla privacy"), _("Termini d'uso"), _("Licenze open source"), _("Scarica i miei dati"), _("Elimina account") };
+  if (g_token[0]) menu_open(_("Privacy e dati"), items, 6, privacy_pick, NULL);
+  else menu_open(_("Privacy e termini"), items + 1, 3, privacy_pick_guest, NULL);
 }
 
 // ------------------------------------------------------------ termini nuovi --
 static int terms_pending;
 static void on_terms_ok(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 200) set_msg("Grazie! Termini accettati", 0);
+  if (st == 200) set_msg(_("Grazie! Termini accettati"), 0);
 }
 static void terms_yes(int idx, void *ud) {
   (void)idx; (void)ud;
@@ -242,7 +242,7 @@ void terms_refresh(void) { net_req(HTTP_GET, OMEGA_API "/me", NULL, on_me_terms,
 void terms_tick(void) {
   if (!terms_pending || g_scene != SC_HOME || ov_depth() > 0) return;
   terms_pending = 0;
-  confirm_open("Termini d'uso e privacy sono stati aggiornati (Impostazioni > Privacy e dati). Li accetti?", "Accetto", terms_yes, NULL);
+  confirm_open(_("Termini d'uso e privacy sono stati aggiornati (Impostazioni > Privacy e dati). Li accetti?"), _("Accetto"), terms_yes, NULL);
 }
 
 // ------------------------------------------------------------------- server --
@@ -264,7 +264,7 @@ static void switch_now(int i) {
   memset(f_pass, 0, sizeof f_pass);
   bg_set_default();
   scene_set(SC_LOGIN);
-  char m[160]; snprintf(m, sizeof m, "Collegato a %s: accedi o crea un account", s->name);
+  char m[256]; snprintf(m, sizeof m, _("Collegato a %s: accedi o crea un account"), srv_name(s));
   set_msg(m, 0);
 }
 static void switch_yes(int idx, void *ud) { (void)idx; (void)ud; switch_now(srv_target); }
@@ -274,39 +274,39 @@ static void ask_switch(int i) {
   if (!s || i == srv_current()) return;
   srv_target = i;
   if (!g_token[0]) { switch_now(i); return; }
-  static char q[220];
-  snprintf(q, sizeof q, "Collegarsi a %s (%s)? Uscirai dall'account di questo server.", s->name, srv_host(s));
-  confirm_open(q, "Collegati", switch_yes, NULL);
+  static char q[512];
+  snprintf(q, sizeof q, _("Collegarsi a %s (%s)? Uscirai dall'account di questo server."), srv_name(s), srv_host(s));
+  confirm_open(q, _("Collegati"), switch_yes, NULL);
 }
 
 static void remove_yes(int idx, void *ud) {
   (void)idx; (void)ud;
   if (srv_target == srv_current()) switch_now(0);
   srv_remove(srv_target);
-  set_msg("Server rimosso", 0);
+  set_msg(_("Server rimosso"), 0);
 }
 static void remove_pick(int idx, void *ud) {
   (void)ud;
   srv_target = idx + 1;    // l'elenco non contiene Omega
   const Server *s = srv_get(srv_target);
   if (!s) return;
-  static char q[220];
-  snprintf(q, sizeof q, "Togliere %s (%s) dall'elenco?", s->name, srv_host(s));
-  confirm_open(q, "Togli", remove_yes, NULL);
+  static char q[512];
+  snprintf(q, sizeof q, _("Togliere %s (%s) dall'elenco?"), srv_name(s), srv_host(s));
+  confirm_open(q, _("Togli"), remove_yes, NULL);
 }
 
 static void add_server(void) {
   char url[200] = "https://", norm[200], name[48];
-  if (!edit_text("Indirizzo del server (es. https://mio-server.it)", url, sizeof url, 0)) return;
-  if (srv_normalize(url, norm, sizeof norm) < 0) { set_msg("Indirizzo non valido", 1); return; }
+  if (!edit_text(_("Indirizzo del server (es. https://mio-server.it)"), url, sizeof url, 0)) return;
+  if (srv_normalize(url, norm, sizeof norm) < 0) { set_msg(_("Indirizzo non valido"), 1); return; }
   snprintf(name, sizeof name, "%s", strstr(norm, "://") + 3);
-  if (!edit_text("Nome del server", name, sizeof name, 0)) return;
+  if (!edit_text(_("Nome del server"), name, sizeof name, 0)) return;
   int i = srv_add(name, norm);
-  if (i == -2) { set_msg("Elenco pieno: togli un server prima", 1); return; }
-  if (i < 0) { set_msg("Indirizzo non valido", 1); return; }
-  if (i == srv_current()) { set_msg("Stai già usando questo server", 0); return; }
+  if (i == -2) { set_msg(_("Elenco pieno: togli un server prima"), 1); return; }
+  if (i < 0) { set_msg(_("Indirizzo non valido"), 1); return; }
+  if (i == srv_current()) { set_msg(_("Stai già usando questo server"), 0); return; }
   if (!g_token[0]) { switch_now(i); return; }
-  set_msg("Server aggiunto", 0);
+  set_msg(_("Server aggiunto"), 0);
   ask_switch(i);
 }
 
@@ -318,21 +318,21 @@ static void server_pick(int idx, void *ud) {
   else if (n > 1) {
     static char names[SRV_MAX][120]; static const char *items[SRV_MAX];
     for (int i = 1; i < n; i++) { snprintf(names[i - 1], sizeof names[0], "%s \xC2\xB7 %s", srv_get(i)->name, srv_host(srv_get(i))); items[i - 1] = names[i - 1]; }
-    menu_open("Togli un server", items, n - 1, remove_pick, NULL);
+    menu_open(_("Togli un server"), items, n - 1, remove_pick, NULL);
   }
 }
 
 void server_menu(void) {
-  static char names[SRV_MAX + 2][140]; static const char *items[SRV_MAX + 2];
+  static char names[SRV_MAX + 2][200]; static const char *items[SRV_MAX + 2];
   int n = srv_count(), k = 0;
   for (int i = 0; i < n; i++, k++) {
     const Server *s = srv_get(i);
-    snprintf(names[k], sizeof names[k], "%s \xC2\xB7 %s%s", s->name, srv_host(s), i == srv_current() ? "  (in uso)" : "");
+    snprintf(names[k], sizeof names[k], i == srv_current() ? _("%s \xC2\xB7 %s  (in uso)") : "%s \xC2\xB7 %s", srv_name(s), srv_host(s));
     items[k] = names[k];
   }
-  snprintf(names[k], sizeof names[k], "+ Aggiungi un server"); items[k] = names[k]; k++;
-  if (n > 1) { snprintf(names[k], sizeof names[k], "Togli un server dall'elenco"); items[k] = names[k]; k++; }
-  menu_open("Server", items, k, server_pick, NULL);
+  snprintf(names[k], sizeof names[k], "%s", _("+ Aggiungi un server")); items[k] = names[k]; k++;
+  if (n > 1) { snprintf(names[k], sizeof names[k], "%s", _("Togli un server dall'elenco")); items[k] = names[k]; k++; }
+  menu_open(_("Server"), items, k, server_pick, NULL);
 }
 
 const char *server_label(void) { return srv_get(srv_current())->name; }

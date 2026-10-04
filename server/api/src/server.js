@@ -12,6 +12,8 @@ const feeds = require('./feeds');
 const playtime = require('./playtime');
 const { HttpError, send } = require('./http');
 const adminApi = require('./endpoints/admin');
+const lang = require('./lang');
+const { toEnglish } = require('./errors-en');
 
 const routes = router.load();
 
@@ -27,6 +29,11 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   // Dietro al proxy l'IP del client è il primo valore di x-forwarded-for.
   const clientIp = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  // lingua della richiesta (?lang=, Accept-Language, "en"): i gestori la leggono da ctx.lang
+  const { lang: reqLang, explicit: langExplicit } = lang.fromRequest(req, url);
+  // dettagli degli errori in inglese solo se la richiesta chiede un'altra lingua:
+  // le app che non mandano Accept-Language continuano a riceverli in italiano
+  const detail = (d) => (langExplicit && reqLang !== lang.SOURCE ? toEnglish(d) : d);
 
   try {
     if (url.pathname === '/healthz' && req.method === 'GET') {
@@ -46,16 +53,16 @@ const server = http.createServer(async (req, res) => {
     if (route.auth === 'admin') {
       // pannello web: cookie di sessione admin, non il token della console
       admin = await adminApi.resolve(req);
-      if (!admin) return send(res, 401, { error: 'unauthorized', detail: 'accesso amministratore richiesto' }, { 'cache-control': 'no-store' });
+      if (!admin) return send(res, 401, { error: 'unauthorized', detail: detail('accesso amministratore richiesto') }, { 'cache-control': 'no-store' });
     } else if (route.auth) {
       auth = await session.resolve(req);
       if (!auth) {
-        return send(res, 401, { error: 'unauthorized', detail: 'serve un token di sessione: POST /api/v1/auth/login' },
+        return send(res, 401, { error: 'unauthorized', detail: detail('serve un token di sessione: POST /api/v1/auth/login') },
           { 'www-authenticate': 'Bearer realm="omega"' });
       }
     }
 
-    const out = await route.fn({ req, res, url, params, auth, admin, routes, clientIp });
+    const out = await route.fn({ req, res, url, params, auth, admin, routes, clientIp, lang: reqLang, langExplicit });
     if (out && out.sent) return undefined;
     if (out.status === 204) {
       res.writeHead(204);
@@ -64,7 +71,7 @@ const server = http.createServer(async (req, res) => {
     return send(res, out.status, out.body);
   } catch (err) {
     if (err instanceof HttpError) {
-      return send(res, err.status, { error: err.code, detail: err.message !== err.code ? err.message : undefined },
+      return send(res, err.status, { error: err.code, detail: err.message !== err.code ? detail(err.message) : undefined },
         err.headers || {});
     }
     logError(req, err, requestId);

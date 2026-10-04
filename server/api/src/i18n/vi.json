@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} đã gửi cho bạn lời mời kết bạn",
+    "friend_accept": "{actor} đã chấp nhận lời mời kết bạn của bạn",
+    "party_invite": "{actor} đã mời bạn tham gia party",
+    "post_like": "{actor} thích bài đăng của bạn",
+    "post_comment": "{actor} đã bình luận về bài đăng của bạn",
+    "store_comment": "{actor} đã bình luận về {app}",
+    "game_invite": "{actor} mời bạn chơi cùng",
+    "game_start": "{actor} đang chơi {game}",
+    "online": "{actor} đang trực tuyến",
+    "admin_report": "Báo cáo: {title}",
+    "admin_social_report": "Báo cáo: {kind} {title}",
+    "report_on_comment": " (bình luận)",
+    "report_hidden": " — đã ẩn"
+  },
+  "report_kind": {
+    "user": "người dùng",
+    "post": "bài đăng",
+    "post_comment": "bình luận"
+  },
+  "report_reason": {
+    "pirateria": "vi phạm bản quyền",
+    "malware": "phần mềm độc hại",
+    "contenuto_offensivo": "nội dung xúc phạm",
+    "spam": "spam",
+    "link_rotto": "liên kết hỏng",
+    "molestie": "quấy rối",
+    "impersonificazione": "mạo danh",
+    "altro": "khác"
+  },
+  "web": {
+    "documents": "Tài liệu",
+    "privacy": "Quyền riêng tư",
+    "terms": "Điều khoản sử dụng",
+    "licenses": "Giấy phép",
+    "source": "Mã nguồn",
+    "language": "Ngôn ngữ",
+    "developed_by": "Phát triển bởi {developer}",
+    "source_intro": "Ứng dụng Omega dành cho máy chơi game là phần mềm tự do: GNU General Public License phiên bản 3 hoặc mới hơn. Tại đây bạn có thể tìm thấy toàn bộ mã nguồn của ứng dụng và của daemon đi kèm, cùng với hướng dẫn biên dịch (build.sh).",
+    "source_download": "Tải xuống omega-src.tar.gz",
+    "source_generated": "Tệp nén được tạo ngay tại thời điểm tải từ mã nguồn đang chạy trên máy chủ.",
+    "source_unavailable": "Tệp nén tạm thời không khả dụng."
+  },
+  "api": {
+    "description": "Tài khoản, tính năng xã hội và Store homebrew dành cho máy chơi game. Dự án độc lập, không liên kết với Sony."
+  }
+}

@@ -34,7 +34,7 @@ function keyMatches(given) {
 }
 
 // POST /api/v1/auth/register  { online_id, password, email?, registration_key? }
-async function register({ req, clientIp }) {
+async function register({ req, clientIp, lang, langExplicit }) {
   const wait = limiter.hit(`register|${clientIp}`, 10, 3600);
   if (wait) throw tooMany(wait);
 
@@ -58,9 +58,9 @@ async function register({ req, clientIp }) {
   const hash = await passwords.hash(body.password);
   try {
     const r = await db.query(
-      `INSERT INTO lab_account (online_id, password_hash, email, terms_version, terms_accepted_at) VALUES ($1, $2, $3, $4, now())
+      `INSERT INTO lab_account (online_id, password_hash, email, terms_version, terms_accepted_at, lang) VALUES ($1, $2, $3, $4, now(), $5)
        RETURNING account_id, online_id, created_at`,
-      [onlineId, hash, email, legal.TERMS_VERSION],
+      [onlineId, hash, email, legal.TERMS_VERSION, langExplicit ? lang : null],
     );
     const a = r.rows[0];
     return {
@@ -78,7 +78,7 @@ async function register({ req, clientIp }) {
 }
 
 // POST /api/v1/auth/login  { online_id, password }
-async function login({ req, clientIp }) {
+async function login({ req, clientIp, lang, langExplicit }) {
   const body = await readJson(req);
   const onlineId = String(body.online_id || '');
   const password = typeof body.password === 'string' ? body.password : '';
@@ -107,7 +107,9 @@ async function login({ req, clientIp }) {
   }
 
   limiter.reset(`login-acc|${onlineId.toLowerCase()}`);
-  await db.query('UPDATE lab_account SET last_login_at = now() WHERE account_id = $1', [account.account_id]);
+  // la lingua dell'app (Accept-Language) diventa quella delle notifiche dell'account
+  await db.query('UPDATE lab_account SET last_login_at = now(), lang = coalesce($2, lang) WHERE account_id = $1',
+    [account.account_id, langExplicit ? lang : null]);
   return { status: 200, body: await session.issue(account) };
 }
 

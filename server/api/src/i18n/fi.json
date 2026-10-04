@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} lähetti sinulle kaveripyynnön",
+    "friend_accept": "{actor} hyväksyi kaveripyyntösi",
+    "party_invite": "{actor} kutsui sinut partyyn",
+    "post_like": "{actor} tykkää julkaisustasi",
+    "post_comment": "{actor} kommentoi julkaisuasi",
+    "store_comment": "{actor} kommentoi kohdetta {app}",
+    "game_invite": "{actor} kutsuu sinut pelaamaan",
+    "game_start": "{actor} pelaa: {game}",
+    "online": "{actor} on nyt online",
+    "admin_report": "Ilmoitus: {title}",
+    "admin_social_report": "Ilmoitus: {kind} {title}",
+    "report_on_comment": " (kommentti)",
+    "report_hidden": " — piilotettu"
+  },
+  "report_kind": {
+    "user": "käyttäjä",
+    "post": "julkaisu",
+    "post_comment": "kommentti"
+  },
+  "report_reason": {
+    "pirateria": "piratismi",
+    "malware": "haittaohjelma",
+    "contenuto_offensivo": "loukkaava sisältö",
+    "spam": "roskaposti",
+    "link_rotto": "toimimaton linkki",
+    "molestie": "häirintä",
+    "impersonificazione": "toisena henkilönä esiintyminen",
+    "altro": "muu"
+  },
+  "web": {
+    "documents": "Asiakirjat",
+    "privacy": "Tietosuoja",
+    "terms": "Käyttöehdot",
+    "licenses": "Lisenssit",
+    "source": "Lähdekoodi",
+    "language": "Kieli",
+    "developed_by": "Kehittäjä: {developer}",
+    "source_intro": "Omega-konsolisovellus on vapaa ohjelmisto: GNU General Public License, versio 3 tai myöhempi. Täältä löydät sovelluksen ja sen mukana toimivan taustapalvelun (daemonin) täydellisen lähdekoodin sekä käännösohjeet (build.sh).",
+    "source_download": "Lataa omega-src.tar.gz",
+    "source_generated": "Arkisto luodaan pyydettäessä palvelimella käytössä olevasta koodista.",
+    "source_unavailable": "Arkisto ei ole tilapäisesti saatavilla."
+  },
+  "api": {
+    "description": "Tilit, sosiaaliset toiminnot ja homebrew-ohjelmien Store konsolille. Itsenäinen projekti, ei sidoksissa Sonyyn."
+  }
+}

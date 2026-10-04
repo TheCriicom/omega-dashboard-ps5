@@ -27,8 +27,10 @@ typedef struct {
   Col avg; float appear, foc;
 } SApp;
 
+// voce di "La mia libreria": i dati arrivano tutti dal demone (lib.c), sulla console
 typedef struct {
-  char id[16], title[96], platform[8], version[24], title_id[16];
+  char id[40], title[128], platform[8], version[24], title_id[16], origin[8];
+  char url[1024], cover_url[1024], desc[1200], shots[4][512]; int nshots;
   int kind; long size; int has_cover, nscreens;
   SDL_Texture *cover; int cover_state; Col avg; float appear, foc;
 } LItem;
@@ -81,12 +83,14 @@ static Col g_amb = { 18, 22, 34, 255 };    // colore d'ambiente, dalla copertina
 static Col d_cover_avg = { 18, 22, 34, 255 };
 static void build_shelves(void);
 
-// sorgente della libreria
-static int src_set, src_loading; static char src_url[400], src_name[64], src_status[32]; static int src_count;
+// libreria: JSON collegato (facoltativo) e stato del demone
+#define CTL_URL "http://127.0.0.1:9095"
+static int src_set, src_loading, lib_down; static char src_url[1024], src_status[64];
+static const LItem *lib_find(const char *id);
 
 // dettaglio
 static int det_is_lib;              // 0 homebrew, 1 voce della libreria
-static char det_id[16];
+static char det_id[40];
 static int det_loading, det_loaded;
 static char d_title[96], d_tagline[140], d_cat[20], d_ver[24], d_author[32], d_desc[4000], d_tid[16], d_platform[8];
 static char d_home[300], d_license[48];
@@ -106,7 +110,8 @@ static int pub_edit;                // 0 nuovo, 1 modifica (usa det_id)
 static int pub_sel;
 static char p_title[96], p_tagline[140], p_desc[4000], p_ver[24], p_tid[16], p_url[1024], p_icon[1024], p_cover[1024], p_shots[1024], p_tags[256];
 static int p_cat, p_kind;           // indici in CATS e KINDS
-static const char *CATS[] = { "app", "gioco", "utility", "emulatore", "tema", "altro" };
+// valori inviati al server (dati, restano in italiano); nel modulo si mostrano tradotti
+static const char *CATS[] = { N_("app"), N_("gioco"), N_("utility"), N_("emulatore"), N_("tema"), N_("altro") };
 static const char *KINDS[] = { "auto", "pkg", "zip", "elf" };
 #define NKINDS 4
 #define NCATS 6
@@ -168,50 +173,42 @@ static void load_apps(void) {
   net_req(HTTP_GET, path, NULL, on_apps, (void *)(intptr_t)gen);
 }
 
+static int contains_ci(const char *h, const char *n) {
+  if (!n[0]) return 1;
+  for (; *h; h++) { size_t i = 0; while (n[i] && h[i] && tolower((unsigned char)h[i]) == tolower((unsigned char)n[i])) i++; if (!n[i]) return 1; }
+  return 0;
+}
 static void on_items(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; if ((int)(intptr_t)ud != gen) return;
-  loading = 0;
+  loading = 0; src_loading = 0;
   for (int i = 0; i < nlitem; i++) if (litem[i].cover) SDL_DestroyTexture(litem[i].cover);
   nlitem = 0;
-  if (st != 200 || !j) return;
-  JVal *arr = jget(j, "items");
-  JFOR(a, arr) {
+  lib_down = st != 200 || !j;
+  if (lib_down) return;
+  JVal *src = jget(j, "source");
+  jcpy(src_url, sizeof src_url, src, "url"); jcpy(src_status, sizeof src_status, src, "status");
+  src_set = src_url[0] != 0;
+  JFOR(a, jget(j, "items")) {
     if (nlitem >= MAX_LITEM) break;
+    if (!contains_ci(jstr(a, "title", ""), q)) continue;
     LItem *s = &litem[nlitem]; memset(s, 0, sizeof *s);
-    jcpy(s->id, sizeof s->id, a, "item_id");
-    jcpy(s->title, sizeof s->title, a, "title");
-    jcpy(s->platform, sizeof s->platform, a, "platform");
-    jcpy(s->version, sizeof s->version, a, "version");
-    jcpy(s->title_id, sizeof s->title_id, a, "title_id");
-    s->kind = kind_of(jstr(a, "file_kind", "auto"));
-    s->size = (long)jnum(a, "size_bytes", 0);
-    s->has_cover = jbool(a, "has_cover"); s->nscreens = (int)jnum(a, "nscreens", 0);
+    jcpy(s->id, sizeof s->id, a, "id"); jcpy(s->title, sizeof s->title, a, "title");
+    jcpy(s->platform, sizeof s->platform, a, "platform"); jcpy(s->version, sizeof s->version, a, "version");
+    jcpy(s->title_id, sizeof s->title_id, a, "title_id"); jcpy(s->origin, sizeof s->origin, a, "origin");
+    jcpy(s->url, sizeof s->url, a, "url"); jcpy(s->cover_url, sizeof s->cover_url, a, "cover"); jcpy(s->desc, sizeof s->desc, a, "description");
+    JFOR(sh, jget(a, "screenshots")) { if (s->nshots >= 4) break; snprintf(s->shots[s->nshots++], 512, "%s", sh->s ? sh->s : ""); }
+    s->kind = kind_of(jstr(a, "kind", "auto"));
+    s->size = (long)jnum(a, "size", 0);
+    s->has_cover = s->cover_url[0] != 0; s->nscreens = s->nshots;
     nlitem++;
   }
   if (sel >= nlitem) sel = nlitem ? nlitem - 1 : 0;
 }
 static void load_items(void) {
   loading = 1; gen++;
-  char path[160], enc[64];
-  url_encode(enc, sizeof enc, q, "");
-  snprintf(path, sizeof path, OMEGA_API "/library/items%s%s", q[0] ? "?q=" : "", q[0] ? enc : "");
-  net_req(HTTP_GET, path, NULL, on_items, (void *)(intptr_t)gen);
+  net_req(HTTP_GET, CTL_URL "/v1/library", NULL, on_items, (void *)(intptr_t)gen);
 }
-
-static void on_source(int st, JVal *j, const char *raw, void *ud) {
-  (void)raw; (void)ud; src_loading = 0;
-  src_set = 0; src_url[0] = src_name[0] = src_status[0] = 0; src_count = 0;
-  if (st != 200 || !j) return;
-  JVal *s = jget(j, "source");
-  if (s && s->t == J_OBJ) {
-    src_set = 1;
-    jcpy(src_url, sizeof src_url, s, "url");
-    jcpy(src_name, sizeof src_name, s, "name");
-    jcpy(src_status, sizeof src_status, s, "last_status");
-    src_count = (int)jnum(s, "item_count", 0);
-  }
-}
-static void load_source(void) { src_loading = 1; net_req(HTTP_GET, OMEGA_API "/library/source", NULL, on_source, NULL); }
+static const LItem *lib_find(const char *id) { for (int i = 0; i < nlitem; i++) if (!strcmp(litem[i].id, id)) return &litem[i]; return NULL; }
 
 // --------------------------------------- copertine, caricate quando servono --
 static void on_app_cover(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) {
@@ -237,15 +234,14 @@ static void req_app_cover(SApp *s) {
 static void req_lib_cover(LItem *s) {
   if (s->cover_state || !s->has_cover) return;
   s->cover_state = 1;
-  char path[80]; snprintf(path, sizeof path, OMEGA_API "/library/items/%s/cover", s->id);
-  load_req(LOAD_URL, s->id, path, TILE_W, TILE_H, 18, RGB(20, 24, 36), on_lib_cover, NULL);
+  load_req(LOAD_URL, s->id, s->cover_url, TILE_W, TILE_H, 18, RGB(20, 24, 36), on_lib_cover, NULL);
 }
 
 // ---------------------------------------------------------------- dettaglio --
 static void on_detail(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; if ((int)(intptr_t)ud != gen) return;
   det_loading = 0;
-  if (st != 200 || !j) { set_msg("Scheda non disponibile", 1); return; }
+  if (st != 200 || !j) { set_msg(_("Scheda non disponibile"), 1); return; }
   det_loaded = 1;
   jcpy(d_title, sizeof d_title, j, "title");
   jcpy(d_tagline, sizeof d_tagline, j, "tagline");
@@ -293,20 +289,15 @@ static void on_detail(int st, JVal *j, const char *raw, void *ud) {
   }
 }
 
-static void on_item_detail(int st, JVal *j, const char *raw, void *ud) {
-  (void)raw; if ((int)(intptr_t)ud != gen) return;
-  det_loading = 0;
-  if (st != 200 || !j) { set_msg("Scheda non disponibile", 1); return; }
-  det_loaded = 1;
-  jcpy(d_title, sizeof d_title, j, "title");
-  jcpy(d_desc, sizeof d_desc, j, "description");
-  jcpy(d_ver, sizeof d_ver, j, "version");
-  jcpy(d_tid, sizeof d_tid, j, "title_id");
-  jcpy(d_platform, sizeof d_platform, j, "platform");
-  d_kind = kind_of(jstr(j, "file_kind", "auto"));
-  d_has_cover = jbool(j, "has_cover"); d_nscreens = (int)jnum(j, "nscreens", 0);
-  if (d_nscreens > MAX_SHOT) d_nscreens = MAX_SHOT;
-  d_size = (long)jnum(j, "size_bytes", 0);
+// scheda di un gioco della libreria: tutto è già in memoria
+static void lib_detail(const LItem *it) {
+  det_loading = 0; det_loaded = 1;
+  snprintf(d_title, sizeof d_title, "%s", it->title); snprintf(d_desc, sizeof d_desc, "%s", it->desc);
+  snprintf(d_ver, sizeof d_ver, "%s", it->version); snprintf(d_tid, sizeof d_tid, "%s", it->title_id);
+  snprintf(d_platform, sizeof d_platform, "%s", it->platform);
+  snprintf(d_dl_url, sizeof d_dl_url, "%s", it->url); snprintf(d_cover_url, sizeof d_cover_url, "%s", it->cover_url);
+  d_kind = it->kind; d_has_cover = it->has_cover; d_nscreens = it->nshots; d_size = it->size;
+  d_nscreen_urls = 0; for (int i = 0; i < it->nshots && i < MAX_SHOT; i++) snprintf(d_screens[d_nscreen_urls++], 1024, "%s", it->shots[i]);
   d_tagline[0] = d_cat[0] = d_author[0] = d_home[0] = d_license[0] = 0; d_mine = 0; d_comments = 0; nscom = 0; d_ntags = 0;
   d_likes = d_dislikes = d_ratings = 0; d_rating = 0; d_my_vote = d_my_rating = 0;
 }
@@ -316,8 +307,8 @@ static void open_detail(const char *id, int is_lib) {
   det_is_lib = is_lib; snprintf(det_id, sizeof det_id, "%s", id);
   det_loaded = 0; det_loading = 1; view = 1; det_zone = 0; act_sel = 0; shot_sel = 0; com_sel = 0;
   det_scroll = det_scroll_t = 0; gen++;
-  char path[80];
-  if (is_lib) { snprintf(path, sizeof path, OMEGA_API "/library/items/%s", id); net_req(HTTP_GET, path, NULL, on_item_detail, (void *)(intptr_t)gen); }
+  char path[96];
+  if (is_lib) { const LItem *it = lib_find(id); if (it) lib_detail(it); else { det_loading = 0; set_msg(_("Scheda non disponibile"), 1); } }
   else { snprintf(path, sizeof path, OMEGA_API "/store/apps/%s", id); net_req(HTTP_GET, path, NULL, on_detail, (void *)(intptr_t)gen); }
 }
 
@@ -337,14 +328,16 @@ static void on_det_shot(const char *key, SDL_Texture *t, SDL_Color avg, void *ud
 static void req_det_cover(void) {
   if (d_cover_st || !d_has_cover) return;
   d_cover_st = 1;
-  char path[96]; snprintf(path, sizeof path, det_is_lib ? OMEGA_API "/library/items/%s/cover" : OMEGA_API "/store/apps/%s/cover", det_id);
-  load_req(LOAD_URL, det_id, path, 320, 320, 28, RGB(10, 14, 24), on_det_cover, (void *)(intptr_t)gen);
+  char path[1100];
+  if (det_is_lib) snprintf(path, sizeof path, "%s", d_cover_url); else snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/cover", det_id);
+  load_req(LOAD_URL, "detcover", path, 320, 320, 28, RGB(10, 14, 24), on_det_cover, (void *)(intptr_t)gen);
 }
 static void req_det_shot(int n) {
   if (n < 0 || n >= MAX_SHOT || d_shot_st[n]) return;
   d_shot_st[n] = 1;
-  char key[24]; snprintf(key, sizeof key, "%s:%d", det_id, n);
-  char path[96]; snprintf(path, sizeof path, det_is_lib ? OMEGA_API "/library/items/%s/shot/%d" : OMEGA_API "/store/apps/%s/shot/%d", det_id, n);
+  char key[24]; snprintf(key, sizeof key, "shot:%d", n);
+  char path[1100];
+  if (det_is_lib) snprintf(path, sizeof path, "%s", d_screens[n]); else snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/shot/%d", det_id, n);
   load_req(LOAD_URL, key, path, 460, 258, 14, RGB(10, 14, 24), on_det_shot, (void *)(intptr_t)(((gen & 0xffffff) << 8) | n));
 }
 // screenshot in alta risoluzione per il visore a schermo intero
@@ -358,8 +351,9 @@ static void req_view(int n) {
   if (d_view_idx == n && d_view_st) return;
   d_view_idx = n; d_view_st = 1;
   if (d_view) { SDL_DestroyTexture(d_view); d_view = NULL; }
-  char key[24]; snprintf(key, sizeof key, "v%s:%d", det_id, n);
-  char path[96]; snprintf(path, sizeof path, det_is_lib ? OMEGA_API "/library/items/%s/shot/%d" : OMEGA_API "/store/apps/%s/shot/%d", det_id, n);
+  char key[24]; snprintf(key, sizeof key, "view:%d", n);
+  char path[1100];
+  if (det_is_lib) snprintf(path, sizeof path, "%s", d_screens[n]); else snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/shot/%d", det_id, n);
   load_req(LOAD_URL, key, path, 1280, 720, 10, RGB(0, 0, 0), on_view, (void *)(intptr_t)(((gen & 0xffffff) << 8) | n));
 }
 static void draw_shot_viewer(int a) {
@@ -379,7 +373,7 @@ static void draw_shot_viewer(int a) {
   if (view_shot > 0) draw_icon(IC_BACK, 60, SCREEN_H / 2 - 20, 48, C_DIM, a);
   if (view_shot < n - 1) draw_icon(IC_FWD, SCREEN_W - 60, SCREEN_H / 2 - 20, 48, C_DIM, a);
   const int ic[] = { IC_BTN_O };
-  const char *lb[] = { "Chiudi" };
+  const char *lb[] = { _("Chiudi") };
   hints(ic, lb, 1, a);
 }
 
@@ -391,7 +385,7 @@ static void after_action(int st, JVal *j, const char *raw, void *ud) {
     if (jget(j, "my_vote")) d_my_vote = (int)jnum(j, "my_vote", d_my_vote);
     d_rating = (float)jnum(j, "rating", d_rating); d_ratings = (int)jnum(j, "ratings", d_ratings);
     if (jget(j, "my_rating")) d_my_rating = (int)jnum(j, "my_rating", d_my_rating);
-  } else set_msg("Operazione non riuscita", 1);
+  } else set_msg(_("Operazione non riuscita"), 1);
 }
 static void send_vote(int value) {
   char path[80], body[32];
@@ -411,12 +405,12 @@ static void rate_pick(int idx, void *ud) {
 
 static void comment_done(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 201) { set_msg("Commento pubblicato", 0); open_detail(det_id, 0); }
-  else set_msg("Commento non riuscito", 1);
+  if (st == 201) { set_msg(_("Commento pubblicato"), 0); open_detail(det_id, 0); }
+  else set_msg(_("Commento non riuscito"), 1);
 }
 static void write_comment(void) {
   char buf[480] = "";
-  if (!edit_text("Scrivi un commento", buf, sizeof buf, 0) || !buf[0]) return;
+  if (!edit_text(_("Scrivi un commento"), buf, sizeof buf, 0) || !buf[0]) return;
   char esc[1000], body[1040], path[80];
   json_escape(esc, sizeof esc, buf);
   snprintf(body, sizeof body, "{\"text\":\"%s\"}", esc);
@@ -426,7 +420,7 @@ static void write_comment(void) {
 
 static void resolve_done(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
-  if (st != 200 || !j) { set_msg("Link non risolvibile", 1); return; }
+  if (st != 200 || !j) { set_msg(_("Link non risolvibile"), 1); return; }
   InstallReq r; memset(&r, 0, sizeof r);
   char kind[8];
   jcpy(r.url, sizeof r.url, j, "url");
@@ -444,17 +438,26 @@ static void resolve_done(int st, JVal *j, const char *raw, void *ud) {
   install_begin(&r);
 }
 static void do_install(void) {
-  if (install_busy()) { set_msg("C'è già un'installazione in corso", 1); return; }
+  if (install_busy()) { set_msg(_("C'è già un'installazione in corso"), 1); return; }
+  if (det_is_lib) {
+    InstallReq r; memset(&r, 0, sizeof r);
+    snprintf(r.url, sizeof r.url, "%s", d_dl_url); snprintf(r.name, sizeof r.name, "%s", d_title);
+    snprintf(r.title_id, sizeof r.title_id, "%s", d_tid); snprintf(r.version, sizeof r.version, "%s", d_ver);
+    snprintf(r.category, sizeof r.category, "gioco"); r.kind = d_kind; r.size = d_size;
+    const char *f = strrchr(d_dl_url, '/'); snprintf(r.filename, sizeof r.filename, "%.*s", (int)strcspn(f ? f + 1 : "game", "?#"), f ? f + 1 : "game");
+    install_begin(&r);
+    return;
+  }
   char path[96];
-  snprintf(path, sizeof path, det_is_lib ? OMEGA_API "/library/items/%s/download" : OMEGA_API "/store/apps/%s/download", det_id);
-  set_msg("Risoluzione del link...", 0);
+  snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/download", det_id);
+  set_msg(_("Risoluzione del link..."), 0);
   net_req(HTTP_GET, path, NULL, resolve_done, NULL);
 }
 
 static void delete_done(int st, JVal *j, const char *raw, void *ud) {
   (void)j; (void)raw; (void)ud;
-  if (st == 200) { set_msg("Homebrew rimosso", 0); view = 0; lv = LV_CONTENT; load_apps(); }
-  else set_msg("Rimozione non riuscita", 1);
+  if (st == 200) { set_msg(_("Homebrew rimosso"), 0); view = 0; lv = LV_CONTENT; load_apps(); }
+  else set_msg(_("Rimozione non riuscita"), 1);
 }
 static void confirm_delete(int idx, void *ud) {
   (void)ud; if (idx != 0) return;
@@ -489,14 +492,14 @@ static void publish_open_edit(void) {
 static void publish_done(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
   if (st == 201 || st == 200) {
-    set_msg(pub_edit ? "Homebrew aggiornato" : "Homebrew pubblicato", 0);
+    set_msg(pub_edit ? _("Homebrew aggiornato") : _("Homebrew pubblicato"), 0);
     view = 0; lv = LV_CONTENT; tab = 0; load_apps();
   } else {
     const char *e = j ? jstr(j, "error", "") : "";
-    set_msg(!strcmp(e, "title_required") ? "Serve un titolo" :
-            !strcmp(e, "download_url_required") || !strcmp(e, "download_url_invalid") ? "Serve un link http(s) al file" :
-            !strcmp(e, "rights_not_confirmed") ? "Serve la conferma sui diritti" :
-            "Pubblicazione non riuscita", 1);
+    set_msg(!strcmp(e, "title_required") ? _("Serve un titolo") :
+            !strcmp(e, "download_url_required") || !strcmp(e, "download_url_invalid") ? _("Serve un link http(s) al file") :
+            !strcmp(e, "rights_not_confirmed") ? _("Serve la conferma sui diritti") :
+            _("Pubblicazione non riuscita"), 1);
   }
 }
 // aggiunge "chiave":"valore" (con escape) all'oggetto JSON in costruzione
@@ -542,37 +545,60 @@ static void send_publish(int idx, void *ud) {
   net_req(HTTP_POST, path, wrapped, publish_done, NULL);
 }
 static void do_publish(void) {
-  if (!p_title[0]) { set_msg("Serve un titolo", 1); return; }
-  if (!p_url[0]) { set_msg("Serve il link al file (pkg o zip)", 1); return; }
+  if (!p_title[0]) { set_msg(_("Serve un titolo"), 1); return; }
+  if (!p_url[0]) { set_msg(_("Serve il link al file (pkg o zip)"), 1); return; }
   // chi pubblica dichiara di poterlo fare (termini d'uso, "Pubblicare nello Store")
-  confirm_open("Confermi che \xC3\xA8 un homebrew tuo o redistribuibile, e non un gioco o software piratato?", "Confermo", send_publish, NULL);
+  confirm_open(_("Confermi che \xC3\xA8 un homebrew tuo o redistribuibile, e non un gioco o software piratato?"), _("Confermo"), send_publish, NULL);
 }
 
-// -------------------------------------------------------- sorgente libreria --
-static void source_saved(int st, JVal *j, const char *raw, void *ud) {
-  (void)j; (void)raw; (void)ud;
-  if (st == 200) { set_msg("Libreria collegata: sincronizzo...", 0); load_source(); net_req(HTTP_POST, OMEGA_API "/library/sync", "{}", NULL, NULL); }
-  else set_msg("Impossibile salvare l'URL", 1);
+// ------------------------------------------------------ libreria: comandi --
+static void lib_done(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw;
+  const char *ok = ud;
+  if (st == 200 || st == 202) { if (ok) set_msg(ok, 0); }
+  else set_msg(st < 0 ? _("Il servizio di Omega non risponde: aggiorna Omega o riavvia la console") :
+               !strcmp(j ? jstr(j, "error", "") : "", "title_and_url_required") ? _("Servono il titolo e un link http(s)") : _("Operazione non riuscita"), 1);
+  load_items();
 }
 static void set_library_url(void) {
-  char buf[400]; snprintf(buf, sizeof buf, "%s", src_url);
-  if (!edit_text("URL del tuo JSON (solo backup dei giochi che possiedi)", buf, sizeof buf, 0) || !buf[0]) return;
-  char esc[900], body[960];
-  json_escape(esc, sizeof esc, buf);
+  char buf[1024]; snprintf(buf, sizeof buf, "%s", src_url[0] ? src_url : "https://");
+  if (!edit_text(_("Link al tuo JSON di giochi (solo backup di giochi che possiedi)"), buf, sizeof buf, 0) || strlen(buf) < 10) return;
+  char esc[2100], body[2200]; json_escape(esc, sizeof esc, buf);
   snprintf(body, sizeof body, "{\"url\":\"%s\"}", esc);
-  net_req(HTTP_POST, OMEGA_API "/library/source", body, source_saved, NULL);
+  net_req(HTTP_POST, CTL_URL "/v1/library/source", body, lib_done, (void *)_("JSON collegato: sincronizzo, i giochi compaiono tra poco"));
 }
-static void sync_done(int st, JVal *j, const char *raw, void *ud) {
-  (void)raw; (void)ud;
-  if (st == 200) { char m[64]; snprintf(m, sizeof m, "Libreria aggiornata: %d giochi", (int)jnum(j, "count", 0)); set_msg(m, 0); load_source(); load_items(); }
-  else { const char *e = j ? jstr(j, "error", "") : ""; set_msg(!strcmp(e, "no_source") ? "Collega prima un URL" : !strcmp(e, "invalid_json") ? "JSON non valido o irraggiungibile" : "Sincronizzazione non riuscita", 1); }
+static void unlink_yes(int idx, void *ud) {
+  (void)ud; if (idx != 0) return;
+  net_req(HTTP_POST, CTL_URL "/v1/library/source", "{\"url\":\"\"}", lib_done, (void *)_("JSON scollegato: restano i giochi aggiunti a mano"));
 }
-static void sync_library(void) { set_msg("Sincronizzazione in corso...", 0); net_req(HTTP_POST, OMEGA_API "/library/sync", "{}", sync_done, NULL); }
+static void sync_library(void) { net_req(HTTP_POST, CTL_URL "/v1/library/sync", "{}", lib_done, (void *)_("Sincronizzazione in corso...")); }
+
+// aggiunta o modifica dalla console: titolo, link, copertina (il resto dal telefono)
+static void lib_edit(const LItem *it) {
+  char title[128] = "", url[1024] = "https://", cover[1024] = "https://";
+  if (it) { snprintf(title, sizeof title, "%s", it->title); snprintf(url, sizeof url, "%s", it->url); snprintf(cover, sizeof cover, "%s", it->cover_url[0] ? it->cover_url : "https://"); }
+  if (!edit_text(_("Titolo del gioco"), title, sizeof title, 0) || !title[0]) return;
+  if (!edit_text(_("Link per scaricarlo (pkg, zip o elf)"), url, sizeof url, 0) || strlen(url) < 10) return;
+  if (!edit_text(_("Link della copertina (facoltativo)"), cover, sizeof cover, 0)) cover[0] = 0;
+  if (!strcmp(cover, "https://") || !strcmp(cover, "http://")) cover[0] = 0;
+  static char body[4400]; char a[300], b[2100], c[2100], d[100];
+  json_escape(a, sizeof a, title); json_escape(b, sizeof b, url); json_escape(c, sizeof c, cover); json_escape(d, sizeof d, it ? it->id : "");
+  if (it) snprintf(body, sizeof body, "{\"id\":\"%s\",\"title\":\"%s\",\"url\":\"%s\",\"cover\":\"%s\",\"platform\":\"%s\",\"title_id\":\"%s\",\"version\":\"%s\"}",
+                   d, a, b, c, it->platform, it->title_id, it->version);
+  else snprintf(body, sizeof body, "{\"title\":\"%s\",\"url\":\"%s\",\"cover\":\"%s\"}", a, b, c);
+  net_req(HTTP_POST, CTL_URL "/v1/library/item", body, lib_done, (void *)(it ? _("Gioco aggiornato") : _("Gioco aggiunto alla libreria")));
+}
+static void lib_delete_yes(int idx, void *ud) {
+  (void)ud; if (idx != 0) return;
+  char esc[100], body[140]; json_escape(esc, sizeof esc, det_id); snprintf(body, sizeof body, "{\"id\":\"%s\"}", esc);
+  net_req(HTTP_POST, CTL_URL "/v1/library/remove", body, lib_done, (void *)_("Tolto dalla libreria"));
+  view = 0; lv = LV_CONTENT;
+}
 
 // ------------------------------------------------------------------ disegno --
 static void search_store(void) {
   char buf[48]; snprintf(buf, sizeof buf, "%s", q);
-  if (edit_text(tab == 0 ? "Cerca un homebrew" : "Cerca nella libreria", buf, sizeof buf, 0)) {
+  if (edit_text(tab == 0 ? _("Cerca un homebrew") : _("Cerca nella libreria"), buf, sizeof buf, 0)) {
     snprintf(q, sizeof q, "%s", buf);
     sel = 0;
     if (tab == 0) load_apps(); else load_items();
@@ -589,8 +615,8 @@ static void draw_stars(int x, int y, int size, float rating, int alpha) {
 static const char *kind_label(int k) { return k == 1 ? "PKG" : k == 2 ? "ZIP" : k == 3 ? "ELF" : "FILE"; }
 static void human_size(long b, char *out, size_t n) {
   if (b <= 0) out[0] = 0;
-  else if (b >= 1073741824L) snprintf(out, n, "%.1f GB", b / 1073741824.0);
-  else snprintf(out, n, "%.0f MB", b / 1048576.0);
+  else if (b >= 1073741824L) snprintf(out, n, _("%.1f GB"), b / 1073741824.0);
+  else snprintf(out, n, _("%.0f MB"), b / 1048576.0);
 }
 
 static int grid_count(void) { return tab == 0 ? nsapp : nlitem; }
@@ -622,14 +648,14 @@ static int hero_count(void) { return nsapp < HERO_N ? nsapp : HERO_N; }
 static int sy(int cy) { return LIST_TOP + cy - (int)list_scroll; }        // contenuto → schermo
 
 static const char *cat_label(const char *c) {
-  return !strcmp(c, "gioco") ? "Gioco" : !strcmp(c, "emulatore") ? "Emulatore" : !strcmp(c, "utility") ? "Strumento"
-       : !strcmp(c, "tema") ? "Tema" : !strcmp(c, "app") ? "App" : "Altro";
+  return !strcmp(c, "gioco") ? _("Gioco") : !strcmp(c, "emulatore") ? _("Emulatore") : !strcmp(c, "utility") ? _("Strumento")
+       : !strcmp(c, "tema") ? _("Tema") : !strcmp(c, "app") ? _("App") : _("Altro");
 }
 
 static void build_shelves(void) {
   static const struct { const char *t, *c; int ps4; } D[] = {
-    { "Giochi", "gioco", 0 }, { "Emulatori", "emulatore", 0 }, { "App e intrattenimento", "app", 0 },
-    { "Strumenti e payload", "utility", 0 }, { "Temi e altro", "", 0 }, { "Per PS4", "", 1 } };
+    { N_("Giochi"), "gioco", 0 }, { N_("Emulatori"), "emulatore", 0 }, { N_("App e intrattenimento"), "app", 0 },
+    { N_("Strumenti e payload"), "utility", 0 }, { N_("Temi e altro"), "", 0 }, { N_("Per PS4"), "", 1 } };   // titoli tradotti quando si disegnano
   nshelf = 0;
   for (unsigned d = 0; d < sizeof D / sizeof D[0]; d++) {
     Shelf *s = &shelf[nshelf];
@@ -648,23 +674,27 @@ static void build_shelves(void) {
 }
 
 // -------------------------------------------------------------------- barra --
-enum { A_SEARCH, A_CLEARQ, A_SORT0, A_SORT1, A_SORT2, A_MINE, A_PUBLISH, A_SYNC, A_SETURL };
+enum { A_SEARCH, A_CLEARQ, A_SORT0, A_SORT1, A_SORT2, A_MINE, A_PUBLISH, A_SYNC, A_SETURL, A_ADDGAME, A_PHONE, A_UNLINK };
 typedef struct { const char *l; int ic; int act; int on; } BarItem;
 static int bar_items(BarItem *it) {
   static char qlabel[64];
   int n = 0;
-  it[n++] = (BarItem){ "Cerca", IC_SEARCH, A_SEARCH, 0 };
+  it[n++] = (BarItem){ _("Cerca"), IC_SEARCH, A_SEARCH, 0 };
   if (q[0]) { snprintf(qlabel, sizeof qlabel, "\"%s\"", q); it[n++] = (BarItem){ qlabel, IC_CLOSE, A_CLEARQ, 1 }; }
   if (tab == 0) {
-    it[n++] = (BarItem){ "Scopri", -1, A_SORT0, sort == 0 && !mine_filter && !q[0] };
-    it[n++] = (BarItem){ "Più votati", -1, A_SORT1, sort == 1 && !mine_filter };
-    it[n++] = (BarItem){ "Più scaricati", -1, A_SORT2, sort == 2 && !mine_filter };
-    it[n++] = (BarItem){ "Le mie", IC_USER, A_MINE, mine_filter };
-    it[n++] = (BarItem){ "Pubblica", IC_PLUS, A_PUBLISH, 0 };
-  } else if (src_set) {
-    it[n++] = (BarItem){ "Aggiorna", IC_RELOAD, A_SYNC, 0 };
-    it[n++] = (BarItem){ "Cambia URL", IC_GEAR, A_SETURL, 0 };
-  } else it[n++] = (BarItem){ "Collega la libreria", IC_PLUS, A_SETURL, 0 };
+    it[n++] = (BarItem){ _("Scopri"), -1, A_SORT0, sort == 0 && !mine_filter && !q[0] };
+    it[n++] = (BarItem){ _("Più votati"), -1, A_SORT1, sort == 1 && !mine_filter };
+    it[n++] = (BarItem){ _("Più scaricati"), -1, A_SORT2, sort == 2 && !mine_filter };
+    it[n++] = (BarItem){ _("Le mie"), IC_USER, A_MINE, mine_filter };
+    it[n++] = (BarItem){ _("Pubblica"), IC_PLUS, A_PUBLISH, 0 };
+  } else {
+    it[n++] = (BarItem){ _("Aggiungi un gioco"), IC_PLUS, A_ADDGAME, 0 };
+    it[n++] = (BarItem){ _("Dal telefono"), IC_GLOBE, A_PHONE, 0 };
+    if (src_set) {
+      it[n++] = (BarItem){ _("Aggiorna il JSON"), IC_RELOAD, A_SYNC, 0 };
+      it[n++] = (BarItem){ _("Scollega il JSON"), IC_CLOSE, A_UNLINK, 0 };
+    } else it[n++] = (BarItem){ _("Collega un JSON"), IC_NEWS, A_SETURL, 0 };
+  }
   return n;
 }
 static void bar_do(int act) {
@@ -676,12 +706,15 @@ static void bar_do(int act) {
     case A_PUBLISH: publish_open_new(); break;
     case A_SYNC: sync_library(); break;
     case A_SETURL: set_library_url(); break;
+    case A_ADDGAME: lib_edit(NULL); break;
+    case A_PHONE: remote_open(); break;
+    case A_UNLINK: confirm_open(_("Scollegare il JSON? I giochi arrivati da lì spariscono, quelli aggiunti a mano restano."), _("Scollega"), unlink_yes, NULL); break;
   }
 }
 static void switch_tab(int t) {
   if (t == tab) return;
   tab = t; sel = 0; row = -1; bar_sel = 0; q[0] = 0; list_scroll = list_scroll_t = 0;
-  if (tab == 0) load_apps(); else { load_source(); load_items(); }
+  if (tab == 0) load_apps(); else load_items();
 }
 
 // ----------------------------------------------------------------- elementi --
@@ -703,11 +736,11 @@ static void draw_header(int a) {
   fill_rect(0, 0, SCREEN_W, ST_TOP - 8, ST_BG, (int)(a * (0.55f + 0.4f * k)));
   grad_v(0, ST_TOP - 8, SCREEN_W, 40, ST_BG, (int)(a * (0.55f + 0.4f * k)), ST_BG, 0);
   draw_icon(IC_STORE, ST_X + 18, 74, 46, C_ACC2, a);
-  draw_text(font(W_LIGHT, 38), "Store", ST_X + 56, 52, C_WHITE, a, AL_L);
+  draw_text(font(W_LIGHT, 38), _("Store"), ST_X + 56, 52, C_WHITE, a, AL_L);
   int x = ST_X + 230, y = 46;
   int tabs_on = view == 0;
   if (tabs_on) { l_pill(x, y + 12, "L1", a); x += 66; }
-  const char *names[2] = { "Homebrew", "Libreria" };
+  const char *names[2] = { _("Homebrew"), _("Libreria") };
   for (int i = 0; i < 2; i++) {
     TTF_Font *f = font(tab == i ? W_BOLD : W_MED, 30);
     int w = text_w(f, names[i]) + 52, h = 54;
@@ -757,7 +790,7 @@ static void tile_info(int is_lib, int i, TileV *t) {
     t->cov = s->cover; t->cs = s->cover_state; t->appear = &s->appear; t->foc = &s->foc; t->title = s->title; t->kind = s->kind;
     t->inst = installed_index(s->title_id, s->title) >= 0;
     char sz[16]; human_size(s->size, sz, sizeof sz);
-    snprintf(t->sub, sizeof t->sub, "%s%s%s", s->platform[0] ? s->platform : "Gioco", sz[0] ? " \xC2\xB7 " : "", sz);
+    snprintf(t->sub, sizeof t->sub, "%s%s%s", s->platform[0] ? s->platform : _("Gioco"), sz[0] ? " \xC2\xB7 " : "", sz);
   }
 }
 
@@ -804,7 +837,7 @@ static void draw_hero(int x, int y, int w, int h, int focused, int a) {
   if (s->cover && s->cover_state == 2) { shadow_rrect(ix, iy, S, S, 26, 36, fa * 70 / 100); draw_tex(s->cover, ix, iy, S, S, fa); }
   else { fill_rrect(ix, iy, S, S, 26, RGB(30, 36, 54), fa); draw_icon(IC_STORE, ix + S / 2, iy + S / 2, 110, C_DIM, fa); }
   int tx = x + 72, tw = ix - tx - 60;
-  draw_text(font(W_BOLD, 21), "IN EVIDENZA", tx, y + 52, C_ACC2, fa, AL_L);
+  draw_text(font(W_BOLD, 21), _("IN EVIDENZA"), tx, y + 52, C_ACC2, fa, AL_L);
   draw_text_fit(font(W_LIGHT, 72), s->title, tx, y + 84, tw, C_WHITE, fa, AL_L);
   draw_text_wrap(font(W_REG, 29), s->tagline, tx, y + 178, tw, 2, 38, RGB(222, 228, 242), fa);
   int cx = tx, cy = y + 268;
@@ -816,7 +849,7 @@ static void draw_hero(int x, int y, int w, int h, int focused, int a) {
   fill_rrect(bx, by, bw, 60, 30, C_WHITE, focused ? a : a * 22 / 100);
   Col bf = focused ? ST_BG : C_WHITE;
   draw_icon(inst ? IC_PLAY : IC_ARROW_R, bx + 38, by + 30, 26, bf, a);
-  draw_text(font(W_BOLD, 26), inst ? "Avvia" : "Scopri", bx + 66, by + 30 - TTF_FontHeight(font(W_BOLD, 26)) / 2, bf, a, AL_L);
+  draw_text(font(W_BOLD, 26), inst ? _("Avvia") : _("Scopri"), bx + 66, by + 30 - TTF_FontHeight(font(W_BOLD, 26)) / 2, bf, a, AL_L);
   for (int i = 0; i < n; i++) {             // pallini della rotazione
     int dx = bx + bw + 40 + i * 26;
     if (i == hero_i) fill_rrect(dx - 4, by + 24, 22, 12, 6, C_WHITE, a); else fill_circle(dx + 5, by + 30, 5, C_WHITE, a * 40 / 100);
@@ -834,27 +867,36 @@ static void draw_list_empty(int a) {
   int y = sy(BAR_H + 80);
   if (loading) { draw_spinner(SCREEN_W / 2, y + 120, 22, a); return; }
   draw_icon(tab == 0 ? IC_STORE : IC_GAMEPAD, SCREEN_W / 2, y + 80, 90, C_FAINT, a);
-  draw_text(font(W_MED, 32), q[0] ? "Nessun risultato" : tab == 0 ? (mine_filter ? "Non hai ancora pubblicato nulla" : "Ancora nessun homebrew") : "La tua libreria è vuota",
+  draw_text(font(W_MED, 32), q[0] ? _("Nessun risultato") : tab == 0 ? (mine_filter ? _("Non hai ancora pubblicato nulla") : _("Ancora nessun homebrew")) : _("La tua libreria è vuota"),
             SCREEN_W / 2, y + 160, C_TXT, a, AL_C);
-  draw_text(font(W_REG, 25), q[0] ? "Prova un'altra parola, o cancella la ricerca dalla barra in alto" : tab == 0 ? "Usa Pubblica nella barra in alto" : "Usa Aggiorna nella barra in alto",
+  draw_text(font(W_REG, 25), q[0] ? _("Prova un'altra parola, o cancella la ricerca dalla barra in alto") : tab == 0 ? _("Usa Pubblica nella barra in alto") : _("Usa Aggiorna nella barra in alto"),
             SCREEN_W / 2, y + 208, C_DIM, a, AL_C);
 }
 
+// libreria vuota o servizio assente: cosa è e come si riempie
 static void draw_link_library(int a) {
-  int w = 1000, h = 300, x = (SCREEN_W - w) / 2, y = sy(BAR_H + 70);
-  int foc = lv == LV_CONTENT;
+  int w = 1240, h = 430, x = (SCREEN_W - w) / 2, y = sy(BAR_H + 50);
   fill_rrect(x, y, w, h, 30, RGB(24, 28, 44), a);
-  if (foc) stroke_rrect(x - 5, y - 5, w + 10, h + 10, 35, 4, C_WHITE, a);
-  draw_icon(IC_GAMEPAD, x + 130, y + h / 2, 100, C_ACC2, a);
-  draw_text(font(W_MED, 38), "Collega la tua libreria personale", x + 240, y + 48, C_WHITE, a, AL_L);
-  draw_text_wrap(font(W_REG, 25), "Indica l'URL di un tuo file JSON con i giochi PS4/PS5 (pkg o zip): titolo, immagini, testo, "
-                 "versione e link diretto. Lo Store si riempirà da lì.", x + 240, y + 96, w - 290, 2, 34, C_DIM, a);
-  draw_text_wrap(font(W_REG, 21), "Solo per i backup dei giochi che possiedi, a uso personale: i file restano sul tuo spazio, Omega non li ospita n\xC3\xA9 li condivide.",
-                 x + 240, y + 166, w - 290, 2, 28, C_FAINT, a);
-  int bw = 340, bx = x + 240, by = y + h - 82;
-  fill_rrect(bx, by, bw, 56, 28, foc ? C_WHITE : C_ACC, a);
-  draw_icon(IC_PLUS, bx + 34, by + 28, 24, foc ? ST_BG : C_WHITE, a);
-  draw_text(font(W_BOLD, 25), "Inserisci l'URL", bx + 62, by + 28 - TTF_FontHeight(font(W_BOLD, 25)) / 2, foc ? ST_BG : C_WHITE, a, AL_L);
+  draw_icon(IC_GAMEPAD, x + 120, y + 110, 96, C_ACC2, a);
+  if (lib_down) {
+    draw_text(font(W_MED, 36), _("La libreria è sulla console"), x + 220, y + 50, C_WHITE, a, AL_L);
+    draw_text_wrap(font(W_REG, 25), _("La custodisce il servizio di Omega, che non risponde: aggiorna Omega o riavvia la console."), x + 220, y + 104, w - 270, 3, 36, C_DIM, a);
+    return;
+  }
+  draw_text(font(W_MED, 36), _("La mia libreria"), x + 220, y + 44, C_WHITE, a, AL_L);
+  draw_text_wrap(font(W_REG, 25), _("I backup dei giochi che possiedi, con copertina e link: li installi da qui con un tasto. Restano solo sulla tua console."),
+                 x + 220, y + 96, w - 270, 2, 34, C_DIM, a);
+  const char *how[3] = { _("Dal telefono: Dal telefono nella barra qui sopra, poi La mia libreria › Aggiungi un gioco. Scrivere link lunghi è più comodo."),
+                         _("Dalla console: Aggiungi un gioco nella barra, con titolo, link e copertina."),
+                         _("Da un JSON: Collega un JSON con l'elenco dei tuoi giochi, oppure importalo dal telefono.") };
+  for (int i = 0; i < 3; i++) {
+    int yy = y + 190 + i * 70;
+    fill_circle(x + 246, yy + 18, 18, C_ACC, a);
+    char nb[4]; snprintf(nb, sizeof nb, "%d", i + 1);
+    draw_text(font(W_BOLD, 22), nb, x + 246, yy + 18 - TTF_FontHeight(font(W_BOLD, 22)) / 2, C_WHITE, a, AL_C);
+    draw_text_wrap(font(W_REG, 24), how[i], x + 284, yy + 2, w - 330, 2, 30, C_TXT, a);
+  }
+  draw_text_fit(font(W_REG, 21), _("Solo backup di giochi che possiedi, a uso personale: Omega non ospita né condivide questi file."), x + 220, y + h - 44, w - 270, C_FAINT, a, AL_L);
 }
 
 static void draw_shelves(int a) {
@@ -869,7 +911,7 @@ static void draw_shelves(int a) {
     int y = sy(BAR_H + 30 + HERO_H + 60 + k * SHELF_H);
     if (y > SCREEN_H || y + SHELF_H < LIST_TOP) continue;
     int on = lv == LV_CONTENT && row == k;
-    char t[64]; snprintf(t, sizeof t, "%s", s->title);
+    char t[128]; snprintf(t, sizeof t, "%s", _(s->title));
     int tw = draw_text(font(on ? W_BOLD : W_MED, 32), t, ST_X, y, on ? C_WHITE : C_TXT, a, AL_L);
     char c[16]; snprintf(c, sizeof c, "%d", s->n);
     draw_text(font(W_REG, 24), c, ST_X + tw + 16, y + 6, C_FAINT, a, AL_L);
@@ -913,7 +955,7 @@ static void draw_list(int a) {
   list_scroll = approach(list_scroll, list_scroll_t, 11.0f);
   SDL_Rect clip = { 0, LIST_TOP - 30, SCREEN_W, SCREEN_H - LIST_TOP + 30 }; SDL_RenderSetClipRect(R, &clip);
   draw_bar(a);
-  if (tab == 1 && !src_set && !src_loading) draw_link_library(a);
+  if (tab == 1 && (lib_down || (!nlitem && !q[0] && !loading))) draw_link_library(a);
   else if (!grid_count()) draw_list_empty(a);
   else if (shelves_mode()) draw_shelves(a);
   else draw_grid(a);
@@ -942,7 +984,7 @@ static void list_input(int b) {
   }
   // contenuto: ○ risale alla barra (non chiude lo Store)
   if (b == B_O) { lv = LV_BAR; return; }
-  if (tab == 1 && !src_set) { if (b == B_UP) lv = LV_BAR; else if (b == B_X) set_library_url(); return; }
+  if (tab == 1 && (lib_down || !nlitem) && !q[0]) { if (b == B_UP || b == B_X) lv = LV_BAR; return; }
   int n = grid_count();
   if (!n) { if (b == B_UP) lv = LV_BAR; return; }
   if (shelves_mode()) {
@@ -999,7 +1041,7 @@ static void draw_detail(int a) {
   if (d_tagline[0]) { draw_text_wrap(font(W_REG, 28), d_tagline, ix, iy, iw, 2, 34, RGB(214, 220, 236), a); iy += 46; }
   if (!det_is_lib && d_author[0]) {
     draw_avatar(d_author, d_author_av, ix + 16, iy + 18, 34, a);
-    char by[64]; snprintf(by, sizeof by, "di %s", d_author);
+    char by[128]; snprintf(by, sizeof by, _("di %s"), d_author);
     int w = draw_text(font(W_REG, 23), by, ix + 42, iy + 4, C_DIM, a, AL_L);
     if (d_ratings) {
       int sx = ix + 42 + w + 28;
@@ -1028,10 +1070,10 @@ static void draw_detail(int a) {
     if (foc) stroke_rrect(bx - 4, by - 4, w + 8, h + 8, 36, 3, C_WHITE, a * 60 / 100);
     Col fg = foc ? ST_BG : C_WHITE;
     TTF_Font *f = font(W_BOLD, 26); int fy = by + h / 2 - TTF_FontHeight(f) / 2;
-    if (i == 0) { int ins = installed_index(d_tid, d_title) >= 0; draw_icon(ins ? IC_PLAY : IC_DOWNLOAD, bx + 42, by + h / 2, 28, fg, a); draw_text(f, ins ? "Avvia" : "Installa", bx + 70, fy, fg, a, AL_L); }
+    if (i == 0) { int ins = installed_index(d_tid, d_title) >= 0; draw_icon(ins ? IC_PLAY : IC_DOWNLOAD, bx + 42, by + h / 2, 28, fg, a); draw_text(f, ins ? _("Avvia") : _("Installa"), bx + 70, fy, fg, a, AL_L); }
     else if (i == 1) { draw_icon(IC_LIKE, bx + 36, by + h / 2, 26, foc ? fg : on ? C_OK : C_WHITE, a); char c[8]; snprintf(c, sizeof c, "%d", d_likes); draw_text(f, c, bx + 60, fy, fg, a, AL_L); }
     else if (i == 2) { draw_icon(IC_DISLIKE, bx + 36, by + h / 2, 26, foc ? fg : on ? C_ERR : C_WHITE, a); char c[8]; snprintf(c, sizeof c, "%d", d_dislikes); draw_text(f, c, bx + 60, fy, fg, a, AL_L); }
-    else { draw_icon(IC_STAR, bx + 34, by + h / 2, 26, d_my_rating ? C_WARN : fg, a); char c[16]; if (d_my_rating) snprintf(c, sizeof c, "%d/5", d_my_rating); else snprintf(c, sizeof c, "Valuta"); draw_text(f, c, bx + 58, fy, fg, a, AL_L); }
+    else { draw_icon(IC_STAR, bx + 34, by + h / 2, 26, d_my_rating ? C_WARN : fg, a); char c[64]; if (d_my_rating) snprintf(c, sizeof c, "%d/5", d_my_rating); else snprintf(c, sizeof c, "%s", _("Valuta")); draw_text(f, c, bx + 58, fy, fg, a, AL_L); }
     bx += w + 14;
   }
   iy = by + 64;
@@ -1040,7 +1082,7 @@ static void draw_detail(int a) {
   int cardw = 520, cardx = SCREEN_W - ST_X - cardw, leftw = cardx - lx - 60;
   int ly = y;
   if (d_desc[0]) {
-    draw_text(font(W_BOLD, 28), "Descrizione", lx, ly, C_WHITE, a, AL_L); ly += 48;
+    draw_text(font(W_BOLD, 28), _("Descrizione"), lx, ly, C_WHITE, a, AL_L); ly += 48;
     ly += draw_text_wrap(font(W_REG, 25), d_desc, lx, ly, leftw, 20, 36, C_TXT, a) * 36 + 24;
   }
   if (d_ntags) {
@@ -1059,12 +1101,12 @@ static void draw_detail(int a) {
     char inst[24] = "", host[120] = "";
     if (!det_is_lib) snprintf(inst, sizeof inst, "%ld", d_downloads);
     if (d_home[0]) { const char *h = strstr(d_home, "://"); snprintf(host, sizeof host, "%s", h ? h + 3 : d_home); char *sl = strchr(host, '/'); if (sl && sl[1] == 0) *sl = 0; }
-    const char *K[] = { "Versione", "Dimensione", "Tipo di file", "Piattaforma", "Categoria", "Licenza", "Installazioni", "Title ID", "Progetto" };
+    const char *K[] = { _("Versione"), _("Dimensione"), _("Tipo di file"), _("Piattaforma"), _("Categoria"), _("Licenza"), _("Installazioni"), _("Title ID"), _("Progetto") };
     const char *V[] = { d_ver, sz, kind_label(d_kind), d_platform, d_cat[0] ? cat_label(d_cat) : "", d_license, inst, d_tid, host };
     int rows = 0; for (int i = 0; i < 9; i++) rows += V[i] && V[i][0];
     int ch = 74 + rows * 44 + 10;
     fill_rrect(cardx, y, cardw, ch, 24, RGB(255, 255, 255), a * 7 / 100);
-    draw_text(font(W_BOLD, 26), "Informazioni", cardx + 28, y + 24, C_WHITE, a, AL_L);
+    draw_text(font(W_BOLD, 26), _("Informazioni"), cardx + 28, y + 24, C_WHITE, a, AL_L);
     int ry = y + 76;
     for (int i = 0; i < 9; i++) if (V[i] && V[i][0]) { info_row(cardx + 28, ry, cardw - 56, K[i], V[i], a); ry += 44; }
     if (y + ch > ly) ly = y + ch;
@@ -1072,8 +1114,8 @@ static void draw_detail(int a) {
   y = ly + 40;
   int shots_y = y;
   if (d_nscreens) {
-    draw_text(font(W_BOLD, 28), "Immagini", lx, y, C_WHITE, a, AL_L);
-    if (det_zone == 1) draw_text(font(W_REG, 22), "\xE2\x9C\x95 ingrandisci", lx + 170, y + 6, C_DIM, a, AL_L);
+    draw_text(font(W_BOLD, 28), _("Immagini"), lx, y, C_WHITE, a, AL_L);
+    if (det_zone == 1) draw_text(font(W_REG, 22), _("\xE2\x9C\x95 ingrandisci"), lx + 170, y + 6, C_DIM, a, AL_L);
     y += 50;
     int sw = 480, sh = 270;
     for (int i = 0; i < d_nscreens; i++) {
@@ -1089,11 +1131,11 @@ static void draw_detail(int a) {
   // commenti, solo per gli homebrew
   int com_y0 = y, com_h = 104;
   if (!det_is_lib) {
-    char h[48]; snprintf(h, sizeof h, "Commenti (%d)", d_comments);
+    char h[96]; snprintf(h, sizeof h, _("Commenti (%d)"), d_comments);
     int w = draw_text(font(W_BOLD, 28), h, lx, y, C_WHITE, a, AL_L);
-    draw_text(font(W_REG, 22), "Triangolo: scrivi un commento", lx + w + 24, y + 6, C_DIM, a, AL_L);
+    draw_text(font(W_REG, 22), _("Triangolo: scrivi un commento"), lx + w + 24, y + 6, C_DIM, a, AL_L);
     y += 54; com_y0 = y;
-    if (!nscom) { draw_text(font(W_REG, 24), "Ancora nessun commento: premi Triangolo e scrivi il primo.", lx, y, C_DIM, a, AL_L); y += 44; }
+    if (!nscom) { draw_text(font(W_REG, 24), _("Ancora nessun commento: premi Triangolo e scrivi il primo."), lx, y, C_DIM, a, AL_L); y += 44; }
     for (int i = 0; i < nscom; i++) {
       int foc = det_zone == 2 && com_sel == i, cw = SCREEN_W - 2 * ST_X;
       fill_rrect(lx - 16, y - 10, cw + 32, com_h - 12, 18, C_WHITE, a * (foc ? 12 : 5) / 100);
@@ -1116,18 +1158,18 @@ static void draw_detail(int a) {
 typedef struct { const char *label; char *buf; size_t n; int choice; int multiline; } Field;
 static int build_fields(Field *f) {
   int k = 0;
-  f[k++] = (Field){ "Titolo", p_title, sizeof p_title, -1, 0 };
-  f[k++] = (Field){ "Sottotitolo", p_tagline, sizeof p_tagline, -1, 0 };
-  f[k++] = (Field){ "Descrizione", p_desc, sizeof p_desc, -1, 1 };
-  f[k++] = (Field){ "Categoria", NULL, 0, 0, 0 };            // scelta
-  f[k++] = (Field){ "Versione", p_ver, sizeof p_ver, -1, 0 };
-  f[k++] = (Field){ "Link al file (pkg o zip)", p_url, sizeof p_url, -1, 0 };
-  f[k++] = (Field){ "Tipo di file", NULL, 0, 1, 0 };         // scelta
-  f[k++] = (Field){ "Title ID (per gli zip)", p_tid, sizeof p_tid, -1, 0 };
-  f[k++] = (Field){ "URL icona", p_icon, sizeof p_icon, -1, 0 };
-  f[k++] = (Field){ "URL copertina", p_cover, sizeof p_cover, -1, 0 };
-  f[k++] = (Field){ "URL screenshot (separati da spazio)", p_shots, sizeof p_shots, -1, 0 };
-  f[k++] = (Field){ "Hashtag (separati da spazio)", p_tags, sizeof p_tags, -1, 0 };
+  f[k++] = (Field){ _("Titolo"), p_title, sizeof p_title, -1, 0 };
+  f[k++] = (Field){ _("Sottotitolo"), p_tagline, sizeof p_tagline, -1, 0 };
+  f[k++] = (Field){ _("Descrizione"), p_desc, sizeof p_desc, -1, 1 };
+  f[k++] = (Field){ _("Categoria"), NULL, 0, 0, 0 };            // scelta
+  f[k++] = (Field){ _("Versione"), p_ver, sizeof p_ver, -1, 0 };
+  f[k++] = (Field){ _("Link al file (pkg o zip)"), p_url, sizeof p_url, -1, 0 };
+  f[k++] = (Field){ _("Tipo di file"), NULL, 0, 1, 0 };         // scelta
+  f[k++] = (Field){ _("Title ID (per gli zip)"), p_tid, sizeof p_tid, -1, 0 };
+  f[k++] = (Field){ _("URL icona"), p_icon, sizeof p_icon, -1, 0 };
+  f[k++] = (Field){ _("URL copertina"), p_cover, sizeof p_cover, -1, 0 };
+  f[k++] = (Field){ _("URL screenshot (separati da spazio)"), p_shots, sizeof p_shots, -1, 0 };
+  f[k++] = (Field){ _("Hashtag (separati da spazio)"), p_tags, sizeof p_tags, -1, 0 };
   return k;
 }
 #define NFIELDS 12
@@ -1136,7 +1178,7 @@ static void draw_publish(int a) {
   Field f[NFIELDS]; int nf = build_fields(f);
   int total = nf + 1;   // più il pulsante Pubblica
   int lx = (SCREEN_W - 1100) / 2, w = 1100;
-  draw_text(font(W_LIGHT, 46), pub_edit ? "Modifica homebrew" : "Pubblica un homebrew", lx, ST_TOP - 6, C_WHITE, a, AL_L);
+  draw_text(font(W_LIGHT, 46), pub_edit ? _("Modifica homebrew") : _("Pubblica un homebrew"), lx, ST_TOP - 6, C_WHITE, a, AL_L);
   int rowh = 92, y0 = ST_TOP + 70;
   float target = pub_sel * rowh > (SCREEN_H - y0 - rowh) ? (float)(pub_sel * rowh - (SCREEN_H - y0 - rowh)) : 0;
   static float psc; psc = approach(psc, target, 14.0f);
@@ -1150,13 +1192,13 @@ static void draw_publish(int a) {
       fill_rrect(bx, y + 6, bw, 60, 30, foc ? C_ACC : RGB(0, 120, 90), a);
       if (foc) stroke_rrect(bx - 3, y + 3, bw + 6, 66, 33, 3, C_WHITE, a);
       draw_icon(IC_CHECK, bx + 36, y + 36, 26, C_WHITE, a);
-      draw_text(font(W_MED, 28), pub_edit ? "Salva modifiche" : "Pubblica", bx + 64, y + 20, C_WHITE, a, AL_L);
+      draw_text(font(W_MED, 28), pub_edit ? _("Salva modifiche") : _("Pubblica"), bx + 64, y + 20, C_WHITE, a, AL_L);
       continue;
     }
     if (foc) { fill_rrect(lx - 14, y, w + 28, rowh - 12, 16, C_WHITE, a * 10 / 100); stroke_rrect(lx - 17, y - 3, w + 34, rowh - 6, 19, 2, C_WHITE, a); }
     draw_text(font(W_REG, 23), f[i].label, lx, y + 8, C_DIM, a, AL_L);
     char shown[300];
-    if (f[i].choice == 0) snprintf(shown, sizeof shown, "%s", CATS[p_cat]);
+    if (f[i].choice == 0) snprintf(shown, sizeof shown, "%s", _(CATS[p_cat]));
     else if (f[i].choice == 1) snprintf(shown, sizeof shown, "%s", KINDS[p_kind]);
     else snprintf(shown, sizeof shown, "%s", f[i].buf[0] ? f[i].buf : "—");
     draw_text_fit(font(W_MED, 28), shown, lx, y + 40, w - 60, f[i].buf && f[i].buf[0] ? C_WHITE : C_FAINT, a, AL_L);
@@ -1170,7 +1212,7 @@ void store_open(void) {
   free_covers(); free_detail_tex();
   tab = 0; view = 0; lv = LV_CONTENT; sort = 0; sel = 0; row = -1; bar_sel = 0; q[0] = 0; mine_filter = 0;
   list_scroll = list_scroll_t = 0; hero_i = 0; hero_fade = 1; hero_at = SDL_GetTicks();
-  load_apps(); load_source();
+  load_apps();
   if (ov_top() != OV_STORE) ov_push(OV_STORE);
 }
 
@@ -1188,17 +1230,17 @@ void store_draw(float t) {
   // i comandi in basso dipendono dal punto in cui si è
   int ic[5]; const char *lb[5]; int n = 0;
   if (view == 0) {
-    ic[n] = IC_BTN_X; lb[n++] = lv == LV_CONTENT ? "Apri" : "Seleziona";
-    ic[n] = IC_BTN_O; lb[n++] = lv == LV_CONTENT ? "Indietro" : "Esci dallo Store";
-    ic[n] = IC_BTN_TRI; lb[n++] = "Cerca";
-    ic[n] = -1; lb[n++] = "L1/R1  Schede";
+    ic[n] = IC_BTN_X; lb[n++] = lv == LV_CONTENT ? _("Apri") : _("Seleziona");
+    ic[n] = IC_BTN_O; lb[n++] = lv == LV_CONTENT ? _("Indietro") : _("Esci dallo Store");
+    ic[n] = IC_BTN_TRI; lb[n++] = _("Cerca");
+    ic[n] = -1; lb[n++] = _("L1/R1  Schede");
   } else if (view == 1) {
-    ic[n] = IC_BTN_X; lb[n++] = "Scegli";
-    ic[n] = IC_BTN_O; lb[n++] = "Indietro";
-    if (!det_is_lib) { ic[n] = IC_BTN_TRI; lb[n++] = "Commenta"; }
-    if (!det_is_lib && det_zone == 2 && com_sel < nscom && !scom[com_sel].mine) { ic[n] = IC_BTN_SQ; lb[n++] = "Segnala commento"; }
-    else if (installed_index(d_tid, d_title) >= 0 || !det_is_lib) { ic[n] = IC_BTN_SQ; lb[n++] = "Opzioni"; }
-  } else { ic[n] = IC_BTN_X; lb[n++] = "Modifica campo"; ic[n] = IC_BTN_O; lb[n++] = "Annulla"; }
+    ic[n] = IC_BTN_X; lb[n++] = _("Scegli");
+    ic[n] = IC_BTN_O; lb[n++] = _("Indietro");
+    if (!det_is_lib) { ic[n] = IC_BTN_TRI; lb[n++] = _("Commenta"); }
+    if (!det_is_lib && det_zone == 2 && com_sel < nscom && !scom[com_sel].mine) { ic[n] = IC_BTN_SQ; lb[n++] = _("Segnala commento"); }
+    else { ic[n] = IC_BTN_SQ; lb[n++] = _("Opzioni"); }
+  } else { ic[n] = IC_BTN_X; lb[n++] = _("Modifica campo"); ic[n] = IC_BTN_O; lb[n++] = _("Annulla"); }
   grad_v(0, SCREEN_H - 110, SCREEN_W, 110, ST_BG, 0, ST_BG, a);
   hints(ic, lb, n, a);
 }
@@ -1206,7 +1248,7 @@ void store_draw(float t) {
 // -------------------------------------------------------------------- input --
 static void launch_installed(void) {
   int idx = installed_index(d_tid, d_title);
-  if (idx < 0) { set_msg("Non installato", 1); return; }
+  if (idx < 0) { set_msg(_("Non installato"), 1); return; }
   ov_clear();
   launch_app(idx);
 }
@@ -1217,8 +1259,8 @@ static void confirm_uninstall(int idx, void *ud) {
   if (k >= 0 && apps[k].pld) rc = payload_remove(apps[k].dir);
   else if (k >= 0 && apps[k].hb) { char root[256]; snprintf(root, sizeof root, "%s", apps[k].dir); char *sl = strrchr(root, '/'); if (sl) *sl = 0; rc = hb_remove(apps[k].dir, root); }
   else rc = store_uninstall(d_tid);
-  if (rc == 0) { set_msg("Titolo disinstallato", 0); scan_apps(); }
-  else { char m[72]; snprintf(m, sizeof m, "Disinstallazione non riuscita (0x%x)", (unsigned)rc); set_msg(m, 1); }
+  if (rc == 0) { set_msg(_("Titolo disinstallato"), 0); scan_apps(); }
+  else { char m[160]; snprintf(m, sizeof m, _("Disinstallazione non riuscita (0x%x)"), (unsigned)rc); set_msg(m, 1); }
 }
 
 // segnalazione di un homebrew o di un commento (termini d'uso: "Segnalazioni e moderazione")
@@ -1227,15 +1269,15 @@ static char rep_comment[16];
 static void report_done(int st, JVal *j, const char *raw, void *ud) {
   (void)raw; (void)ud;
   const char *e = j ? jstr(j, "error", "") : "";
-  if (st == 200 || st == 201) set_msg(jbool(j, "hidden") ? "Grazie: contenuto oscurato in attesa di verifica" : "Grazie, la segnalazione \xC3\xA8 stata inviata", 0);
-  else if (!strcmp(e, "cannot_report_own")) set_msg("Non puoi segnalare un tuo contenuto", 1);
-  else if (st == 429) set_msg("Troppe segnalazioni: riprova pi\xC3\xB9 tardi", 1);
-  else set_msg("Segnalazione non riuscita", 1);
+  if (st == 200 || st == 201) set_msg(jbool(j, "hidden") ? _("Grazie: contenuto oscurato in attesa di verifica") : _("Grazie, la segnalazione \xC3\xA8 stata inviata"), 0);
+  else if (!strcmp(e, "cannot_report_own")) set_msg(_("Non puoi segnalare un tuo contenuto"), 1);
+  else if (st == 429) set_msg(_("Troppe segnalazioni: riprova pi\xC3\xB9 tardi"), 1);
+  else set_msg(_("Segnalazione non riuscita"), 1);
 }
 static void report_pick(int idx, void *ud) {
   (void)ud; if (idx < 0 || idx > 5) return;
   char note[300] = "", esc[640] = "", body[900], path[96];
-  if (idx == 5 && !edit_text("Descrivi il problema", note, sizeof note, 0)) return;
+  if (idx == 5 && !edit_text(_("Descrivi il problema"), note, sizeof note, 0)) return;
   json_escape(esc, sizeof esc, note);
   if (rep_comment[0]) snprintf(body, sizeof body, "{\"reason\":\"%s\",\"note\":\"%s\",\"comment_id\":%s}", REPORT_KEYS[idx], esc, rep_comment);
   else snprintf(body, sizeof body, "{\"reason\":\"%s\",\"note\":\"%s\"}", REPORT_KEYS[idx], esc);
@@ -1243,29 +1285,32 @@ static void report_pick(int idx, void *ud) {
   net_req(HTTP_POST, path, body, report_done, NULL);
 }
 static void report_open(const char *comment_id) {
-  static const char *items[] = { "Pirateria o contenuto non autorizzato", "Malware o file pericoloso", "Contenuto offensivo", "Spam", "Link non funzionante", "Altro..." };
+  const char *items[] = { _("Pirateria o contenuto non autorizzato"), _("Malware o file pericoloso"), _("Contenuto offensivo"), _("Spam"), _("Link non funzionante"), _("Altro...") };
   snprintf(rep_comment, sizeof rep_comment, "%s", comment_id ? comment_id : "");
-  menu_open(comment_id ? "Segnala il commento" : "Segnala questo homebrew", items, 6, report_pick, NULL);
+  menu_open(comment_id ? _("Segnala il commento") : _("Segnala questo homebrew"), items, 6, report_pick, NULL);
 }
 
-static int opt_act[6]; static int nopt_act;
+static int opt_act[8]; static int nopt_act;
 static void options_pick(int idx, void *ud) {
   (void)ud; if (idx < 0 || idx >= nopt_act) return;
   switch (opt_act[idx]) {
     case 1: do_install(); break;   // reinstalla o aggiorna
-    case 2: confirm_open("Disinstallare questo titolo?", "Disinstalla", confirm_uninstall, NULL); break;
+    case 2: confirm_open(_("Disinstallare questo titolo?"), _("Disinstalla"), confirm_uninstall, NULL); break;
     case 3: publish_open_edit(); break;
-    case 4: confirm_open("Eliminare questo homebrew?", "Elimina", confirm_delete, NULL); break;
+    case 4: confirm_open(_("Eliminare questo homebrew?"), _("Elimina"), confirm_delete, NULL); break;
     case 5: report_open(NULL); break;
+    case 6: { const LItem *it = lib_find(det_id); if (it) { LItem copy = *it; lib_edit(&copy); view = 0; lv = LV_CONTENT; } break; }
+    case 7: confirm_open(_("Togliere questo gioco dalla libreria? Il gioco installato resta."), _("Togli"), lib_delete_yes, NULL); break;
   }
 }
 static void detail_options(void) {
-  static const char *lbl[6];
+  static const char *lbl[8];
   nopt_act = 0;
-  if (installed_index(d_tid, d_title) >= 0) { lbl[nopt_act] = "Reinstalla / aggiorna"; opt_act[nopt_act++] = 1; lbl[nopt_act] = "Disinstalla"; opt_act[nopt_act++] = 2; }
-  if (!det_is_lib && d_mine) { lbl[nopt_act] = "Modifica"; opt_act[nopt_act++] = 3; lbl[nopt_act] = "Elimina"; opt_act[nopt_act++] = 4; }
-  if (!det_is_lib && !d_mine) { lbl[nopt_act] = "Segnala"; opt_act[nopt_act++] = 5; }
-  if (!nopt_act) { set_msg("Nessuna opzione disponibile", 0); return; }
+  if (installed_index(d_tid, d_title) >= 0) { lbl[nopt_act] = _("Reinstalla / aggiorna"); opt_act[nopt_act++] = 1; lbl[nopt_act] = _("Disinstalla"); opt_act[nopt_act++] = 2; }
+  if (!det_is_lib && d_mine) { lbl[nopt_act] = _("Modifica"); opt_act[nopt_act++] = 3; lbl[nopt_act] = _("Elimina"); opt_act[nopt_act++] = 4; }
+  if (!det_is_lib && !d_mine) { lbl[nopt_act] = _("Segnala"); opt_act[nopt_act++] = 5; }
+  if (det_is_lib) { lbl[nopt_act] = _("Modifica"); opt_act[nopt_act++] = 6; lbl[nopt_act] = _("Togli dalla libreria"); opt_act[nopt_act++] = 7; }
+  if (!nopt_act) { set_msg(_("Nessuna opzione disponibile"), 0); return; }
   menu_open(d_title, lbl, nopt_act, options_pick, NULL);
 }
 
@@ -1287,7 +1332,7 @@ static void detail_input(int b) {
       if (act_sel == 0) { if (installed_index(d_tid, d_title) >= 0) launch_installed(); else do_install(); }
       else if (act_sel == 1) send_vote(d_my_vote == 1 ? 0 : 1);
       else if (act_sel == 2) send_vote(d_my_vote == -1 ? 0 : -1);
-      else { static const char *st[] = { "1 stella", "2 stelle", "3 stelle", "4 stelle", "5 stelle" }; menu_open("Valuta", st, 5, rate_pick, NULL); }
+      else { const char *st[] = { _("1 stella"), _("2 stelle"), _("3 stelle"), _("4 stelle"), _("5 stelle") }; menu_open(_("Valuta"), st, 5, rate_pick, NULL); }
     }
     return;
   }

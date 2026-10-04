@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "friend_request": "{actor} sent you a friend request",
+    "friend_accept": "{actor} accepted your friend request",
+    "party_invite": "{actor} invited you to a party",
+    "post_like": "{actor} likes your post",
+    "post_comment": "{actor} commented on your post",
+    "store_comment": "{actor} commented on {app}",
+    "game_invite": "{actor} invites you to play",
+    "game_start": "{actor} is playing {game}",
+    "online": "{actor} is online",
+    "admin_report": "Report: {title}",
+    "admin_social_report": "Report: {kind} {title}",
+    "report_on_comment": " (comment)",
+    "report_hidden": " — hidden"
+  },
+  "report_kind": {
+    "user": "user",
+    "post": "post",
+    "post_comment": "comment"
+  },
+  "report_reason": {
+    "pirateria": "piracy",
+    "malware": "malware",
+    "contenuto_offensivo": "offensive content",
+    "spam": "spam",
+    "link_rotto": "broken link",
+    "molestie": "harassment",
+    "impersonificazione": "impersonation",
+    "altro": "other"
+  },
+  "web": {
+    "documents": "Documents",
+    "privacy": "Privacy",
+    "terms": "Terms of use",
+    "licenses": "Licenses",
+    "source": "Source code",
+    "language": "Language",
+    "developed_by": "Developed by {developer}",
+    "source_intro": "The Omega console app is free software: GNU General Public License version 3 or later. Here you will find the complete source code of the app and of the daemon that comes with it, with build instructions (build.sh).",
+    "source_download": "Download omega-src.tar.gz",
+    "source_generated": "Archive generated on the fly from the code running on the server.",
+    "source_unavailable": "Archive temporarily unavailable."
+  },
+  "api": {
+    "description": "Accounts, social features and a homebrew Store for the console. Independent project, not affiliated with Sony."
+  }
+}

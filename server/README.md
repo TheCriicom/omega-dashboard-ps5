@@ -1,17 +1,23 @@
+<sub>**English** · [Italiano](README.it.md)</sub>
+
+<p align="center">
+  <picture><source media="(prefers-color-scheme: dark)" srcset="../docs/img/omega-mark.svg"><img src="../docs/img/omega-mark-light.svg" width="96" alt="Omega"></picture>
+</p>
+
 # Omega — server
 
-Il server dell'app **Omega**: account, funzioni social (amici, presenza,
-messaggi, party con chat e voce, bacheca, gruppi, tempo di gioco), lo **Store**
-di homebrew, la **libreria personale** e il pannello di moderazione web.
-Chiunque può ospitarne uno: sulla console basta aggiungerne l'indirizzo in
-**Impostazioni → Server**.
+The server for the **Omega** app: accounts, social features (friends, presence,
+messages, party with chat and voice, wall, groups, playtime), the homebrew
+**Store**, the **personal library** and the web moderation panel.
+Anyone can host one: on the console, just add its address in
+**Settings → Server**.
 
-Omega è un progetto indipendente: non è affiliato a Sony Interactive
-Entertainment e non usa i suoi account né i suoi server.
+Omega is an independent project: it is not affiliated with Sony Interactive
+Entertainment and does not use its accounts or its servers.
 
-## Installazione rapida
+## Quick install
 
-Su un server Linux con Docker e Docker Compose v2:
+On a Linux server with Docker and Docker Compose v2:
 
 ```sh
 git clone https://github.com/CristianLaporta/omega-dashboard-ps5.git
@@ -19,133 +25,134 @@ cd omega-dashboard-ps5/server
 ./scripts/install.sh
 ```
 
-Lo script chiede un dominio (facoltativo) e una porta, crea `.env` con segreti
-casuali, costruisce le immagini, avvia i servizi e carica il catalogo dello
-Store. Con un dominio che punta al server attiva l'HTTPS automatico tramite
-Caddy (porte 80 e 443 libere).
+The script asks for a domain (optional) and a port, creates `.env` with random
+secrets, builds the images, starts the services and loads the Store catalog.
+With a domain pointing to the server it enables automatic HTTPS through Caddy
+(ports 80 and 443 must be free).
 
-Dopo l'avvio:
+After startup:
 
-1. dalla console, **Impostazioni → Server → Aggiungi un server** con l'indirizzo
-   mostrato a fine installazione, poi crea un account;
-2. rendi amministratore il tuo account:
+1. on the console, **Settings → Server → Add a server** with the address
+   shown at the end of the install, then create an account;
+2. make your account an administrator:
    `docker compose exec api npm run admin -- grant <online_id>`;
-3. compila nel `.env` almeno `LEGAL_CONTROLLER_NAME` e `LEGAL_CONTACT_EMAIL`
-   (compaiono in privacy e termini) e riavvia con `docker compose up -d`.
+3. fill in at least `LEGAL_CONTROLLER_NAME` and `LEGAL_CONTACT_EMAIL` in `.env`
+   (they appear in the privacy policy and terms) and restart with
+   `docker compose up -d`.
 
-### Installazione a mano
+### Manual install
 
 ```sh
-cp .env.example .env     # compila PGPASSWORD e OMEGA_SESSION_SECRET (openssl rand -hex 32)
-docker compose up -d --build --wait                                   # solo http, su 127.0.0.1:8090
-docker compose -f compose.yml -f compose.tls.yml up -d --build --wait # con HTTPS (serve OMEGA_DOMAIN)
+cp .env.example .env     # fill in PGPASSWORD and OMEGA_SESSION_SECRET (openssl rand -hex 32)
+docker compose up -d --build --wait                                   # http only, on 127.0.0.1:8090
+docker compose -f compose.yml -f compose.tls.yml up -d --build --wait # with HTTPS (requires OMEGA_DOMAIN)
 docker compose exec api npm run seed:store
 ```
 
-Senza Caddy puoi mettere davanti il reverse proxy che usi già (nginx, Traefik…)
-puntandolo a `127.0.0.1:8090`: va disattivato il buffering delle risposte per
-la voce del party, che usa long-poll.
+Without Caddy you can put the reverse proxy you already use (nginx, Traefik…)
+in front, pointing it to `127.0.0.1:8090`: response buffering must be turned
+off for party voice, which uses long-polling.
 
-### Aggiornare
+### Updating
 
 ```sh
 git pull
 docker compose up -d --build --wait
 ```
 
-Le migrazioni del database si applicano da sole all'avvio dell'api.
+Database migrations are applied automatically when the api starts.
 
-## Architettura
+## Architecture
 
 ```
-console ─► HTTPS (Caddy o il tuo reverse proxy) ─► 127.0.0.1:8090
+console ─► HTTPS (Caddy or your reverse proxy) ─► 127.0.0.1:8090
                                           │
   ┌───────────────────────────────────────┼───────────────────────────────┐
-  │ progetto docker compose  omega        ▼                               │
+  │ docker compose project  omega         ▼                               │
   │                                                                       │
-  │  proxy   (omega-proxy)       unica porta pubblicata, solo su loopback │
-  │    inoltra tutto all'api e scrive il registro delle richieste,        │
-  │    con credenziali e token oscurati; i corpi non si registrano mai    │
+  │  proxy   (omega-proxy)       the only published port, loopback only   │
+  │    forwards everything to the api and writes the request log,         │
+  │    with credentials and tokens redacted; bodies are never logged      │
   │          │                                                            │
   │          ▼                                                            │
-  │  api     (omega-api)         solo rete interna                        │
-  │    rotte di config/endpoints.json, sessioni, pannello /admin          │
+  │  api     (omega-api)         internal network only                    │
+  │    routes from config/endpoints.json, sessions, /admin panel          │
   │          │                                                            │
   │          ▼                                                            │
-  │  db      (omega-db)          PostgreSQL 17, nessuna porta pubblicata  │
+  │  db      (omega-db)          PostgreSQL 17, no published port         │
   └───────────────────────────────────────────────────────────────────────┘
 ```
 
-| Cartella | Contenuto |
+| Folder | Contents |
 |---|---|
-| `api/` | api Node.js (`src/`), rotte (`config/endpoints.json`), migrazioni, catalogo dello Store, pannello admin, test |
-| `proxy/` | proxy senza dipendenze npm |
-| `compose.yml` | i tre servizi |
-| `compose.tls.yml`, `Caddyfile` | HTTPS automatico con Caddy |
-| `scripts/install.sh` | installazione guidata |
+| `api/` | Node.js api (`src/`), routes (`config/endpoints.json`), migrations, Store catalog, admin panel, tests |
+| `proxy/` | proxy with no npm dependencies |
+| `compose.yml` | the three services |
+| `compose.tls.yml`, `Caddyfile` | automatic HTTPS with Caddy |
+| `scripts/install.sh` | guided install |
 
-L'api applica all'avvio le migrazioni di `api/migrations/` non ancora
-registrate; un file già applicato non si modifica mai, si aggiunge il successivo.
+At startup the api applies the migrations in `api/migrations/` that are not yet
+recorded; a file that has been applied is never modified, you add the next one.
 
-## Configurazione
+## Configuration
 
-Le variabili si leggono da `.env` (modello in `.env.example`).
+Variables are read from `.env` (template in `.env.example`).
 
-| Variabile | Predefinito | Uso |
+| Variable | Default | Purpose |
 |---|---|---|
-| `PGUSER`, `PGDATABASE`, `PGPASSWORD` | `omega`, `omega`, — | credenziali di PostgreSQL (`PGPASSWORD` obbligatoria) |
-| `OMEGA_SESSION_SECRET` | — | firma dei token di sessione e del cookie admin, almeno 32 caratteri. Cambiarlo disconnette tutti |
-| `OMEGA_SESSION_TTL_SECONDS` | `86400` | durata delle sessioni dell'app |
-| `OMEGA_REGISTRATION_KEY` | vuota | chiave richiesta alla registrazione; vuota = registrazione aperta |
-| `PUBLIC_BASE_URL` | `http://localhost:8090` | indirizzo pubblico, usato nei testi legali |
-| `LEGAL_CONTROLLER_NAME`, `LEGAL_CONTROLLER_VAT`, `LEGAL_CONTROLLER_ADDRESS`, `LEGAL_CONTACT_EMAIL`, `LEGAL_HOSTING_PROVIDER` | vuote | titolare del servizio nei documenti legali; se mancano si legge "[da completare]" |
-| `LOG_RETENTION_DAYS` | `30` | giorni di conservazione dei registri del proxy (citati nell'informativa) |
-| `STORE_AUTOHIDE_REPORTS` | `3` | segnalatori distinti oltre cui un contenuto si oscura in attesa di verifica |
-| `LOG_SKIP_PREFIXES` | `/api/v1/party/voice,/lab/v1/party/voice` | percorsi inoltrati ma non registrati dal proxy |
-| `OMEGA_PORT`, `OMEGA_BIND` | `8090`, `127.0.0.1` | porta e indirizzo su cui il server ascolta |
-| `OMEGA_DOMAIN` | vuota | dominio per l'HTTPS automatico (`compose.tls.yml`) |
+| `PGUSER`, `PGDATABASE`, `PGPASSWORD` | `omega`, `omega`, — | PostgreSQL credentials (`PGPASSWORD` is required) |
+| `OMEGA_SESSION_SECRET` | — | signs session tokens and the admin cookie, at least 32 characters. Changing it signs everyone out |
+| `OMEGA_SESSION_TTL_SECONDS` | `86400` | lifetime of app sessions |
+| `OMEGA_REGISTRATION_KEY` | empty | key required at sign-up; empty = open registration |
+| `PUBLIC_BASE_URL` | `http://localhost:8090` | public address, used in the legal texts |
+| `LEGAL_CONTROLLER_NAME`, `LEGAL_CONTROLLER_VAT`, `LEGAL_CONTROLLER_ADDRESS`, `LEGAL_CONTACT_EMAIL`, `LEGAL_HOSTING_PROVIDER` | empty | service operator in the legal documents; if missing, they read "[da completare]" ("to be completed") |
+| `LOG_RETENTION_DAYS` | `30` | days the proxy logs are kept (stated in the privacy policy) |
+| `STORE_AUTOHIDE_REPORTS` | `3` | number of distinct reporters beyond which content is hidden pending review |
+| `LOG_SKIP_PREFIXES` | `/api/v1/party/voice,/lab/v1/party/voice` | paths forwarded but not logged by the proxy |
+| `OMEGA_PORT`, `OMEGA_BIND` | `8090`, `127.0.0.1` | port and address the server listens on |
+| `OMEGA_DOMAIN` | empty | domain for automatic HTTPS (`compose.tls.yml`) |
 
-Variabili interne, già impostate da `compose.yml` o utili solo in sviluppo:
+Internal variables, already set by `compose.yml` or only useful in development:
 `DATABASE_URL`, `API_PORT`, `MEDIA_DIR`, `SITE_DIR`, `PUBLIC_SOURCE_DIR`,
-`STORE_ASSET_DIR`, `ADMIN_INSECURE_COOKIE=1` (cookie admin senza `Secure`, per
-provare il pannello su http) e, per il proxy, `PROXY_PORT`, `UPSTREAM_URL`,
+`STORE_ASSET_DIR`, `ADMIN_INSECURE_COOKIE=1` (admin cookie without `Secure`, to
+try the panel over http) and, for the proxy, `PROXY_PORT`, `UPSTREAM_URL`,
 `LOG_DIR`, `REDACT_HEADERS`, `REDACT_QUERY`.
 
-## Avvio in locale
+## Running locally
 
-Servono Node.js ≥ 20 e un PostgreSQL; ffmpeg e JxrDecApp solo per caricare
-avatar e copertine.
+You need Node.js ≥ 20 and PostgreSQL; ffmpeg and JxrDecApp only for uploading
+avatars and covers.
 
 ```sh
-createdb omega          # lo schema lo creano le migrazioni all'avvio dell'api
+createdb omega          # the schema is created by the migrations when the api starts
 cd api && npm ci
 DATABASE_URL=postgres://localhost/omega OMEGA_SESSION_SECRET=$(openssl rand -hex 32) \
   API_PORT=18080 ADMIN_INSECURE_COOKIE=1 PUBLIC_SOURCE_DIR=../.. npm start
 ```
 
-Il proxy, se serve:
+The proxy, if you need it:
 
 ```sh
 cd proxy && PROXY_PORT=19986 UPSTREAM_URL=http://127.0.0.1:18080 LOG_DIR=/tmp/omega-logs npm start
 ```
 
-### Test
+### Tests
 
-I test end-to-end girano contro un'api già avviata; leggono anche il database
-(`DATABASE_URL`) e avviano un proxy temporaneo da `proxy/`.
+The end-to-end tests run against an api that is already running; they also read
+the database (`DATABASE_URL`) and start a temporary proxy from `proxy/`.
 
 ```sh
 cd api
 OMEGA_TEST_URL=http://127.0.0.1:18080 DATABASE_URL=postgres://localhost/omega npm test
 ```
 
-`OMEGA_TEST_URL` vale `http://127.0.0.1:18080` se non indicata. I test creano
-account con nomi unici a ogni esecuzione: usare un database di sviluppo.
+`OMEGA_TEST_URL` defaults to `http://127.0.0.1:18080`. The tests create
+accounts with unique names on every run: use a development database.
 
-## Amministrazione
+## Administration
 
-**Ruolo admin** — il primo amministratore si nomina da riga di comando; gli
-altri anche dal pannello:
+**Admin role** — the first administrator is appointed from the command line;
+the others from the panel as well:
 
 ```sh
 docker compose exec api npm run admin -- grant <online_id>
@@ -153,98 +160,101 @@ docker compose exec api npm run admin -- revoke <online_id>
 docker compose exec api npm run admin -- list
 ```
 
-**Pannello** — `/admin`, con un account che ha il ruolo admin: panoramica,
-segnalazioni (Store e social), homebrew, commenti, bacheca, utenti (ban, ruoli,
-disconnessione, eliminazione) e registro di tutte le azioni. Sessione in un
-cookie HttpOnly, Secure, SameSite=Strict di 8 ore, separata dai token dell'app;
-le richieste che modificano qualcosa richiedono l'intestazione `X-Omega-Admin: 1`.
+**Panel** — `/admin`, with an account that has the admin role: overview,
+reports (Store and social), homebrew, comments, wall, users (bans, roles,
+sign-out, deletion) and a log of every action. The session lives in an
+HttpOnly, Secure, SameSite=Strict cookie valid for 8 hours, separate from the
+app tokens; requests that change something require the `X-Omega-Admin: 1`
+header.
 
-**Catalogo curato dello Store** — `api/config/store-catalog.json`: homebrew
-open source con link diretti ai rilasci ufficiali. Le icone e le immagini non
-sono incluse nel repository (appartengono ai rispettivi progetti): mettile in
-`api/store-assets/` con i nomi indicati nel catalogo, altrimenti lo Store le
-mostra con un segnaposto. Il caricamento è idempotente (chiave
-`catalog_key`; voti, commenti e installazioni restano):
+**Curated Store catalog** — `api/config/store-catalog.json`: open-source
+homebrew with direct links to the official releases. Icons and images are not
+included in the repository (they belong to their respective projects): put
+them in `api/store-assets/` with the names given in the catalog, otherwise the
+Store shows a placeholder. Loading is idempotent (key `catalog_key`; votes,
+comments and installs are kept):
 
 ```sh
-docker compose exec api npm run seed:store              # carica o aggiorna
-docker compose exec api npm run seed:store -- --dry-run # mostra soltanto
-docker compose exec api npm run seed:store -- --prune   # toglie le voci uscite dal catalogo
+docker compose exec api npm run seed:store              # load or update
+docker compose exec api npm run seed:store -- --dry-run # show only
+docker compose exec api npm run seed:store -- --prune   # remove entries no longer in the catalog
 ```
 
-## Moderazione
+## Moderation
 
-- Homebrew e commenti dello Store, post e commenti della bacheca e utenti si
-  possono segnalare dall'app. Una segnalazione aperta per utente e contenuto.
-- Raggiunti `STORE_AUTOHIDE_REPORTS` segnalatori distinti, homebrew, commenti e
-  post si oscurano in attesa di verifica; gli utenti no (il ban si decide dal
-  pannello). Gli amministratori ricevono una notifica per ogni segnalazione.
-- Dal pannello una segnalazione si archivia, oppure il contenuto si oscura o si
-  elimina; tutte le segnalazioni aperte sullo stesso contenuto si chiudono insieme.
-- Un ban revoca le sessioni, impedisce il login (con il motivo, mostrato solo a
-  chi conosce la password) e nasconde gli homebrew dell'autore finché resta.
+- Store homebrew and comments, wall posts and comments, and users can be
+  reported from the app. One open report per user and item.
+- Once `STORE_AUTOHIDE_REPORTS` distinct reporters is reached, homebrew,
+  comments and posts are hidden pending review; users are not (bans are decided
+  from the panel). Administrators get a notification for every report.
+- From the panel a report can be dismissed, or the content hidden or deleted;
+  all open reports on the same item are closed together.
+- A ban revokes sessions, blocks login (with the reason, shown only to someone
+  who knows the password) and hides the author's homebrew for as long as it
+  lasts.
 
-## Registri e conservazione
+## Logs and retention
 
-Il proxy scrive una riga JSON per richiesta su stdout e in
-`requests-AAAA-MM-GG.jsonl` nel volume `logs` (`/var/log/omega` nel container):
+The proxy writes one JSON line per request to stdout and to
+`requests-AAAA-MM-GG.jsonl` in the `logs` volume (`/var/log/omega` in the
+container):
 `ts, request_id, client_ip, method, path, query, status, duration_ms,
-resp_bytes, error, req_headers`. Le intestazioni e i parametri elencati in
-`REDACT_HEADERS` e `REDACT_QUERY` e i segmenti di percorso lunghi o a forma di
-JWT si oscurano; i corpi non si registrano mai. I file più vecchi di
-`LOG_RETENTION_DAYS` si cancellano da soli.
+resp_bytes, error, req_headers`. The headers and parameters listed in
+`REDACT_HEADERS` and `REDACT_QUERY`, and path segments that are long or shaped
+like a JWT, are redacted; bodies are never logged. Files older than
+`LOG_RETENTION_DAYS` are deleted automatically.
 
 ```sh
 docker exec omega-proxy sh -c 'tail -f /var/log/omega/requests-$(date -u +%F).jsonl'
 ```
 
-L'api registra su stdout solo avvio, errori e cancellazioni di account. I log dei
-container ruotano a 5 file da 10 MB.
+The api logs only startup, errors and account deletions to stdout. Container
+logs rotate at 5 files of 10 MB.
 
 ## API
 
-Il prefisso canonico è `/api/v1`. Le stesse rotte rispondono anche come
-`/lab/v1/...`, il prefisso usato dalle versioni meno recenti dell'app. Un
-percorso sconosciuto risponde `404 {"error":"not_found"}`, un metodo non
-previsto `405` con `Allow`.
+The canonical prefix is `/api/v1`. The same routes also answer as
+`/lab/v1/...`, the prefix used by older versions of the app. An unknown path
+returns `404 {"error":"not_found"}`, an unsupported method `405` with `Allow`.
 
-Autenticazione: `POST /api/v1/auth/login` rilascia un token da inviare come
-`Authorization: Bearer <token>`. Gli errori hanno la forma
-`{"error": "<codice>", "detail"?: "..."}`; i limiti di frequenza rispondono `429`.
-L'elenco completo delle rotte è in `api/config/endpoints.json` e su
+Authentication: `POST /api/v1/auth/login` issues a token to send as
+`Authorization: Bearer <token>`. Errors have the form
+`{"error": "<codice>", "detail"?: "..."}`; rate limits return `429`.
+The full list of routes is in `api/config/endpoints.json` and at
 `GET /api/v1/endpoints`.
 
-| Area | Rotte principali |
+| Area | Main routes |
 |---|---|
 | Account | `POST auth/register` `{online_id, password, email?, registration_key?, accept_terms: true}` · `POST auth/login` · `POST auth/logout` · `POST auth/password` · `GET me` · `GET account/export` · `POST account/delete` `{password}` · `POST account/terms` `{version}` |
-| Profilo e amici | `GET/POST profile` · `GET friends` · `POST friends/request\|accept\|decline` `{online_id}` · `DELETE friends/:onlineId` · `GET friends/suggestions` · `GET users/search?q=` · `GET users/:onlineId` |
-| Presenza e home | `GET/POST presence` · `POST status` `{mode, message?}` · `GET sync?since=` (anche heartbeat) · `GET activity` · `GET/POST notifications…` |
-| Privacy e blocchi | `GET/POST privacy` · `POST/DELETE users/:onlineId/block` · `GET blocks` · `POST users/:onlineId/report` |
-| Messaggi | `GET messages` · `GET/POST messages/:onlineId` |
-| Party | `GET/POST party` · `POST party/invite\|join\|decline\|leave\|mute` · `GET/POST party/messages` · `GET/POST party/voice` (audio binario, long-poll) |
-| Bacheca | `POST posts` · `GET feed?before=&limit=` · `GET users/:onlineId/posts` · `GET/DELETE posts/:id` · `POST posts/:id/like` · `GET/POST posts/:id/comments` · `DELETE …/comments/:commentId` · `POST …/report` |
-| Gruppi | `GET/POST groups` · `GET/POST groups/:id` · `GET/POST groups/:id/messages` · `POST groups/:id/members\|leave` · `DELETE groups/:id/members/:onlineId` |
-| Tempo di gioco e inviti | `GET stats/me` · `GET stats/friends?game_id=&period=week\|all` · `POST invites` |
-| Media | `POST media/upload?kind=avatar\|cover&ext=` (corpo = file) · `POST media/clear?kind=` · `GET media/:id/:frame` |
-| Notizie e giochi | `GET news?game_id=` · `GET news/:newsId/image` · `GET games/:gameId` |
-| Browser | `GET browse?url=` o `?q=` (pagina ridotta a blocchi) · `GET browse/img/:id` |
+| Profile and friends | `GET/POST profile` · `GET friends` · `POST friends/request\|accept\|decline` `{online_id}` · `DELETE friends/:onlineId` · `GET friends/suggestions` · `GET users/search?q=` · `GET users/:onlineId` |
+| Presence and home | `GET/POST presence` · `POST status` `{mode, message?}` · `GET sync?since=` (also a heartbeat) · `GET activity` · `GET/POST notifications…` |
+| Privacy and blocking | `GET/POST privacy` · `POST/DELETE users/:onlineId/block` · `GET blocks` · `POST users/:onlineId/report` |
+| Messages | `GET messages` · `GET/POST messages/:onlineId` |
+| Party | `GET/POST party` · `POST party/invite\|join\|decline\|leave\|mute` · `GET/POST party/messages` · `GET/POST party/voice` (binary audio, long-poll) |
+| Wall | `POST posts` · `GET feed?before=&limit=` · `GET users/:onlineId/posts` · `GET/DELETE posts/:id` · `POST posts/:id/like` · `GET/POST posts/:id/comments` · `DELETE …/comments/:commentId` · `POST …/report` |
+| Groups | `GET/POST groups` · `GET/POST groups/:id` · `GET/POST groups/:id/messages` · `POST groups/:id/members\|leave` · `DELETE groups/:id/members/:onlineId` |
+| Playtime and invites | `GET stats/me` · `GET stats/friends?game_id=&period=week\|all` · `POST invites` |
+| Media | `POST media/upload?kind=avatar\|cover&ext=` (body = file) · `POST media/clear?kind=` · `GET media/:id/:frame` |
+| News and games | `GET news?game_id=` · `GET news/:newsId/image` · `GET games/:gameId` |
+| Browser | `GET browse?url=` or `?q=` (page reduced to blocks) · `GET browse/img/:id` |
 | Store | `GET/POST store/apps` · `GET/POST/DELETE store/apps/:id` · `GET store/apps/:id/cover\|icon\|shot/:n\|download` · `POST store/apps/:id/vote\|rate\|report` · `GET/POST store/apps/:id/comments` · `DELETE …/comments/:commentId` |
-| Libreria personale | `GET/POST library/source` · `POST library/sync` · `GET library/items` · `GET library/items/:id[/cover\|/shot/:n\|/download]` |
-| Documenti | `GET legal` (JSON per l'app) |
+| Personal library | `GET/POST library/source` · `POST library/sync` · `GET library/items` · `GET library/items/:id[/cover\|/shot/:n\|/download]` |
+| Documents | `GET legal` (JSON for the app) |
 
-Fuori da `/api/v1`: `GET /` (descrizione dell'api, o il sito se `SITE_DIR`
-contiene un `index.html`), `GET /healthz`, `/legal`,
+Outside `/api/v1`: `GET /` (api description, or the website if `SITE_DIR`
+contains an `index.html`), `GET /healthz`, `/legal`,
 `/legal/privacy|terms|licenses`, `/source`, `/source/omega-src.tar.gz`,
-`/admin` e `/admin/api/...`.
+`/admin` and `/admin/api/...`.
 
-### Store e libreria
+### Store and library
 
-Gli homebrew puntano a un link diretto (`.pkg`, `.zip` o `.elf`); le immagini su
-siti terzi le scarica e le serve il server, mentre il file da installare lo
-scarica la console. `GET store/apps/:id/download` risolve il link e restituisce
+Homebrew entries point to a direct link (`.pkg`, `.zip` or `.elf`); images on
+third-party sites are downloaded and served by the server, while the file to
+install is downloaded by the console. `GET store/apps/:id/download` resolves the
+link and returns
 `{url, filename, kind, size, title_id, version, category, summary, homepage_url}`.
 
-La libreria personale si riempie da un JSON dell'utente:
+The personal library is filled from a JSON file provided by the user:
 
 ```json
 { "name": "La mia libreria", "games": [
@@ -254,39 +264,40 @@ La libreria personale si riempie da un JSON dell'utente:
 ]}
 ```
 
-Sono accettati anche `items`/`library` al posto di `games`,
-`download_url`/`file`/`pkg` per `url`, `image`/`icon` per `cover`, `screenshots`
-per `images`, `kind` per `type` (altrimenti si deduce dall'estensione).
+Also accepted: `items`/`library` instead of `games`,
+`download_url`/`file`/`pkg` for `url`, `image`/`icon` for `cover`, `screenshots`
+for `images`, `kind` for `type` (otherwise it is inferred from the extension).
 
-### Voce nel party
+### Party voice
 
-Relay in memoria (ultimi 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`
-con un pezzo fino a 8 KB; `GET party/voice?after=<cursore>&wait=1` attende fino a
-1,5 s e risponde in binario little-endian:
-`"OVC1" u32 next_cursor u16 count`, poi per pezzo
+In-memory relay (last 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`
+with a chunk of up to 8 KB; `GET party/voice?after=<cursore>&wait=1` waits up to
+1.5 s and replies in little-endian binary:
+`"OVC1" u32 next_cursor u16 count`, then for each chunk
 `u8 oid_len, oid, u8 codec (1=opus, 2=adpcm), u32 seq, u16 len, data`.
 
-### Aggiungere una rotta
+### Adding a route
 
-1. una riga in `api/config/endpoints.json` (`method`, `path`, `handler`, `family`, `auth`);
-2. la funzione in `api/src/endpoints/<modulo>.js`: riceve
-   `{ req, res, url, params, auth, admin, clientIp }` e restituisce `{ status, body }`
-   (oppure `{ sent: true }` se scrive la risposta da sé);
-3. se servono tabelle o colonne, una nuova migrazione `api/migrations/NNN_nome.sql`.
+1. a line in `api/config/endpoints.json` (`method`, `path`, `handler`, `family`, `auth`);
+2. the function in `api/src/endpoints/<modulo>.js`: it receives
+   `{ req, res, url, params, auth, admin, clientIp }` and returns `{ status, body }`
+   (or `{ sent: true }` if it writes the response itself);
+3. if you need tables or columns, a new migration `api/migrations/NNN_nome.sql`.
 
-## Documenti legali e sorgente
+## Legal documents and source code
 
-Informativa privacy, termini d'uso e licenze sono in `api/src/legal.js`, unica
-fonte per l'app (`GET /api/v1/legal`) e per il web (`/legal/*`). Descrivono ciò
-che il servizio fa davvero: se cambiano i dati raccolti si aggiornano i testi e
-`TERMS_VERSION`, e l'app chiede di nuovo il consenso (`terms.needs_accept` in
-`GET /api/v1/me`). I dati del titolare arrivano dalle variabili `LEGAL_*`.
+The privacy policy, terms of use and licenses are in `api/src/legal.js`, the
+single source for the app (`GET /api/v1/legal`) and for the web (`/legal/*`).
+They describe what the service actually does: if the data collected changes,
+update the texts and `TERMS_VERSION`, and the app asks for consent again
+(`terms.needs_accept` in `GET /api/v1/me`). The operator's details come from
+the `LEGAL_*` variables.
 
-Il codice sorgente dell'app console (GPL-3.0-or-later) è scaricabile da
-`/source`: l'archivio si genera al momento da `client/` e `daemon/`,
-montati in sola lettura nel container dell'api. Se modifichi l'app e la
-distribuisci, la GPL ti chiede di pubblicarne il sorgente: questo lo fa per te.
+The source code of the console app (GPL-3.0-or-later) can be downloaded from
+`/source`: the archive is generated on the fly from `client/` and `daemon/`,
+mounted read-only in the api container. If you modify the app and distribute
+it, the GPL requires you to publish its source: this does it for you.
 
-## Licenza
+## License
 
 GPL-3.0-or-later.

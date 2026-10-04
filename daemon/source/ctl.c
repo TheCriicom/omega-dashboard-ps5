@@ -120,9 +120,14 @@ static void send_all(int s, const void *p, size_t n) {
 static void reply(int s, int code, const char *type, const void *body, size_t len) {
   const char *msg = code == 200 ? "OK" : code == 400 ? "Bad Request" : code == 404 ? "Not Found" : code == 413 ? "Payload Too Large" : code == 202 ? "Accepted" : code == 401 ? "Unauthorized" : code == 403 ? "Forbidden" : code == 429 ? "Too Many Requests" : code == 409 ? "Conflict" : code == 507 ? "Insufficient Storage" : "Error";
   char h[256];
-  int n = snprintf(h, sizeof h, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %zu\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", code, msg, type, len);
+  static int trace = 4;   // diagnosi: i primi passi delle prime risposte nel log
+  if (trace > 0) player_log("risposta %d: inizio (stack %p)", code, (void *)h);
+  int n = snprintf(h, sizeof h, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %lu\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", code, msg, type, (unsigned long)len);
+  if (trace > 0) player_log("risposta %d: intestazione %d byte", code, n);
   send_all(s, h, (size_t)n);
+  if (trace > 0) player_log("risposta %d: intestazione inviata", code);
   if (len) send_all(s, body, len);
+  if (trace > 0) { player_log("risposta %d: corpo inviato", code); trace--; }
 }
 static void reply_json(int s, int code, const char *js) { reply(s, code, "application/json", js, strlen(js)); }
 
@@ -616,7 +621,7 @@ static int handle(int s, int local) {
 
   // la pagina del telecomando e l'abbinamento sono aperti; il resto dalla rete vuole il token
   if (!strcmp(method, "GET") && (!strcmp(path, "/") || !strcmp(path, "/index.html"))) {
-    char h[200]; int n = snprintf(h, sizeof h, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %zu\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", REMOTE_HTML_LEN);
+    char h[200]; int n = snprintf(h, sizeof h, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %lu\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", (unsigned long)REMOTE_HTML_LEN);
     send_all(s, h, (size_t)n); send_all(s, REMOTE_HTML, REMOTE_HTML_LEN); return 0;
   }
   int is_pair = !strcmp(path, "/v1/pair");

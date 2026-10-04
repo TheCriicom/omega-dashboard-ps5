@@ -46,7 +46,7 @@ static struct {
 static void ksyms(void) {
   if (K.done) return;
   K.cpu_t = ksym("sceKernelGetCpuTemperature"); K.soc_t = ksym("sceKernelGetSocSensorTemperature");
-  K.fan = ksym("sceKernelGetCurrentFanDuty"); K.sw = ksym("sceKernelGetProsperoSystemSwVersion");
+  K.sw = ksym("sceKernelGetProsperoSystemSwVersion");   // la ventola no: sceKernelGetCurrentFanDuty rovinava lo stack
   K.mem = ksym("sceKernelAvailableFlexibleMemorySize");
   omega_log("sistema: temp %d sensori %d ventola %d firmware %d memoria %d", !!K.cpu_t, !!K.soc_t, !!K.fan, !!K.sw, !!K.mem);
   K.done = 1;
@@ -104,7 +104,6 @@ static void gather(SysInfo *si) {
   ksyms();
   if (K.cpu_t && K.cpu_t(&v) == 0 && v > 0 && v < 130) si->cpu_t = v;
   if (K.soc_t && K.soc_t(0, &v) == 0 && v > 0 && v < 130) si->soc_t = v;
-  int unk = 0; if (K.fan && K.fan(&unk, &v) == 0 && v >= 0 && v <= 100) si->fan = v;
   SwVer sw; memset(&sw, 0, sizeof sw); sw.size = sizeof sw;
   if (K.sw && K.sw(&sw) == 0 && sw.str[0]) { snprintf(si->fw, sizeof si->fw, "%.27s", sw.str); char *sp = strchr(si->fw, ' '); if (sp) *sp = 0; }
   size_t mf = 0; if (K.mem && K.mem(&mf) == 0) si->mem_free = mf / 1048576.0;

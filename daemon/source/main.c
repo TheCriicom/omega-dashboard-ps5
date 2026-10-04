@@ -390,20 +390,9 @@ static void on_track(const char *title, const char *artist) {
 
 // /v1/system per il telecomando: cosa sta girando e quanto scalda
 int sceKernelGetCpuTemperature(int *t);
-#include <ps5/kernel.h>
-// sceKernelGetCurrentFanDuty esiste solo in libkernel_sys: quando il servizio lo
-// avvia websrv (riavvio automatico dalla UI) non c'è, e chiamarla direttamente
-// salta in un punto a caso del programma. Si cerca a runtime.
-static int (*fan_duty_fn)(int *, int *);
-static int fan_duty(int *unk, int *duty) {
-  static int done;
-  if (!done) {
-    static const char *libs[] = { "libkernel_sys.sprx", "libkernel.sprx", "libkernel_web.sprx" };
-    for (int i = 0; i < 3 && !fan_duty_fn; i++) { uint32_t h; if (!kernel_dynlib_handle(-1, libs[i], &h)) fan_duty_fn = (void *)kernel_dynlib_dlsym(-1, h, "sceKernelGetCurrentFanDuty"); }
-    done = 1;
-  }
-  return fan_duty_fn ? fan_duty_fn(unk, duty) : -1;
-}
+// La velocità della ventola non si legge: sceKernelGetCurrentFanDuty scrive più
+// dati dei due interi che le si passavano, rovinava lo stack di questa funzione e
+// il servizio saltava in punti a caso (crash e blocchi di /v1/system).
 static int sys_trace = 3;   // i primi passi di /v1/system finiscono nel log (diagnosi)
 #define STEP(...) do { if (sys_trace > 0) lg(__VA_ARGS__); } while (0)
 static void system_json(char *out, size_t n) {
@@ -415,11 +404,9 @@ static void system_json(char *out, size_t n) {
     game_name(tid, name, sizeof name); json_esc(esc, sizeof esc, name);
   }
   STEP("sistema: gioco [%s] [%s]", tid, esc);
-  int t = -1, unk = 0, fan = -1;
+  int t = -1, fan = -1;
   if (sceKernelGetCpuTemperature(&t) != 0) t = -1;
   STEP("sistema: temperatura %d", t);
-  if (fan_duty(&unk, &fan) != 0 || fan < 0 || fan > 100) fan = -1;
-  STEP("sistema: ventola %d", fan);
   snprintf(out, n, "{\"game\":\"%s\",\"title_id\":\"%s\",\"cpu_t\":%d,\"fan\":%d,\"friends_online\":%d,\"lang\":\"%s\"}", esc, esc[0] ? tid : "", t, fan, friends_online, i18n_code());
   STEP("sistema: risposta pronta (%d byte)", (int)strlen(out));
   if (sys_trace > 0) sys_trace--;
@@ -496,6 +483,8 @@ int main(void) {
   ctl_on_system(system_json);
   ctl_on_notify(sys_notify);
   if (ctl_start(OMEGA_CTL_PORT, OMEGA_DIR) != 0) { lg("un'altra copia di omega_redirect è già attiva: esco"); return 0; }
+  // il numero di processo: se il servizio si blocca, la UI lo chiude e ne avvia uno nuovo
+  { FILE *pf = fopen(OMEGA_DIR "/omega_redirect.pid", "w"); if (pf) { fprintf(pf, "%d\n", (int)getpid()); fclose(pf); } }
   fan_restore();
   // il lettore parte subito: non dipende da websrv
   player_init(PLAYER_STATE);

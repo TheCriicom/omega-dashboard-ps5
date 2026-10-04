@@ -102,15 +102,13 @@ static int send_elfldr(const char *elf) {
 }
 #endif
 
-// Il servizio di Omega solo con elfldr: avviato da websrv (hbldr daemon=1) finisce
-// in un processo dove cade alla prima richiesta. Senza elfldr si aspetta il riavvio.
+// Il servizio di Omega: elfldr se c'è, altrimenti websrv (hbldr daemon=1).
 int payload_run_service(const char *elf, char *err, size_t en) {
   struct stat st;
   if (stat(elf, &st) != 0) { snprintf(err, en, "%s", _("File del payload non trovato")); return -1; }
 #ifdef PS5
   if (send_elfldr(elf) == 0) { omega_log("servizio %s inviato a elfldr :%d", elf, ELFLDR_PORT); return 0; }
-  snprintf(err, en, "elfldr :%d non disponibile", ELFLDR_PORT);
-  return -1;
+  return payload_run(elf, err, en);   // websrv come ripiego
 #else
   omega_log("(desktop) avvio simulato del servizio %s", elf);
   return 0;

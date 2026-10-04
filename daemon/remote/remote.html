@@ -675,7 +675,7 @@
   function size(b) { return b >= 1073741824 ? (b / 1073741824).toFixed(1) + ' GB' : (b / 1048576).toFixed(1) + ' MB'; }
   function fill(t, o) { return t.replace(/\{(\w+)\}/g, function (m, k) { return o[k] !== undefined ? o[k] : m; }); }
   function upMsg(ok, err) { $('upok').textContent = ok || ''; $('uperr').textContent = err || ''; }
-  function upEnd() { upX = null; $('upbox').hidden = true; $('up_file').disabled = $('up_dir').disabled = false; }
+  function upEnd() { upX = null; $('upbox').hidden = true; $('up_file').disabled = $('up_dir').disabled = false; try { upRelease(); } catch (e) {} }
   // list: [{file, path}] — path relativo dentro il lotto.
   // Ogni file riprende da dove era arrivato (status + &o=): se la rete cade, la
   // console si blocca o il servizio si riavvia, si riprova con attese crescenti.
@@ -706,6 +706,7 @@
         if (upStop) { upEnd(); return; }
         if (fails >= RETRY.length) { upEnd(); upMsg('', tx('up_fail') + tx('up_gaveup')); return; }
         var wait = RETRY[fails++], left = wait;
+        retryNow = function () { again(); };
         var tick = function () {
           if (upStop) return;
           $('up_txt').textContent = fill(tx('up_retry'), { s: left, k: fails, m: RETRY.length });
@@ -727,8 +728,10 @@
         if (upStop) { upEnd(); return; }
         if (i >= list.length) { finish(); return; }
         var f = list[i].file, path = list[i].path;
-        // prima si chiede quanto è già arrivato (dopo un errore o un riavvio del servizio)
-        api('GET', '/v1/library/upload/status?b=' + batch + '&p=' + encodeURIComponent(path)).then(function (st) {
+        // quanto è già arrivato si chiede solo dopo un errore o alla ripresa di un lotto:
+        // con migliaia di file piccoli una richiesta in più per file pesa
+        var ask = fails > 0 || resumed ? api('GET', '/v1/library/upload/status?b=' + batch + '&p=' + encodeURIComponent(path)) : Promise.resolve({ have: 0, done: false });
+        ask.then(function (st) {
           if (st.done && st.have === f.size) { sent += f.size; fails = 0; send(i + 1); return; }
           var off = st.have > 0 && st.have <= f.size ? st.have : 0;
           var x = new XMLHttpRequest(); upX = x;
@@ -749,11 +752,20 @@
         }).catch(function () { retry(function () { send(i); }); });
       };
       upStopTimer = function () { if (timer) clearTimeout(timer); };
+      // il telefono non deve spegnere lo schermo: in background il browser ferma la pagina
+      var lock = null;
+      try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {}); } catch (e) {}
+      upRelease = function () { try { if (lock) lock.release(); } catch (e) {} lock = null; };
+      // tornando sulla pagina dopo una pausa si riprova subito, senza aspettare l'attesa in corso
+      upWake = function () { if (timer && !upStop) { clearTimeout(timer); timer = null; fails = Math.max(fails, 1); retryNow(); } };
       try { localStorage.setItem(key + '-started', '1'); } catch (e) {}
       send(0);
     }).catch(function () { upMsg('', tx('up_fail')); });
   }
-  var upStopTimer = function () {};
+  var upStopTimer = function () {}, upRelease = function () {}, upWake = function () {}, retryNow = function () {};
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') upWake();
+  });
   $('up_cancel').onclick = function () { upStop = true; upStopTimer(); if (upX) upX.abort(); upEnd(); };
   $('up_file').onchange = function () { var f = this.files && this.files[0]; if (f) upStart([{ file: f, path: f.name }]); this.value = ''; };
   $('up_dir').onchange = function () {

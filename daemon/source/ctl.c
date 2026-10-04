@@ -59,14 +59,40 @@ void player_log(const char *fmt, ...);
 // ignorato): bastava formattare una risposta per esaurirlo. Con la memoria data
 // da noi (pthread_attr_setstack) lo stack è davvero quello.
 #define CTL_STACK (1024 * 1024)
+// Gli stack si riusano: un caricamento di una cartella apre un thread per file e
+// senza riuso migliaia di file esaurivano la memoria. I thread non sono staccati:
+// prima di riusare uno stack si fa pthread_join del thread che lo usava (già finito,
+// quindi ritorna subito), così si è certi che non lo stia più toccando.
+#define POOL 48
+static struct { void *stk; int busy; pthread_t t; } pool[POOL];   // busy: 0 libero, 1 in uso, 2 finito
+static pthread_mutex_t poolmx = PTHREAD_MUTEX_INITIALIZER;
+typedef struct { void *(*fn)(void *); void *arg; int slot; } ThreadJob;
+static void *thread_main(void *a) {
+  ThreadJob j = *(ThreadJob *)a; free(a);
+  void *r = j.fn(j.arg);
+  pthread_mutex_lock(&poolmx); pool[j.slot].busy = 2; pthread_mutex_unlock(&poolmx);
+  return r;
+}
 int omega_thread(void *(*fn)(void *), void *arg) {
+  int slot = -1; pthread_t done_t; int need_join = 0;
+  pthread_mutex_lock(&poolmx);
+  for (int i = 0; i < POOL && slot < 0; i++) if (pool[i].busy == 0) slot = i;
+  for (int i = 0; i < POOL && slot < 0; i++) if (pool[i].busy == 2) { slot = i; done_t = pool[i].t; need_join = 1; }
+  if (slot >= 0) {
+    if (!pool[slot].stk && posix_memalign(&pool[slot].stk, 4096, CTL_STACK) != 0) pool[slot].stk = NULL;
+    if (pool[slot].stk) pool[slot].busy = 1; else slot = -1;
+  }
+  pthread_mutex_unlock(&poolmx);
+  if (slot < 0) return -1;   // mai thread con lo stack di default: sulla console è troppo piccolo
+  if (need_join) pthread_join(done_t, NULL);
+  ThreadJob *j = malloc(sizeof *j);
+  if (!j) { pthread_mutex_lock(&poolmx); pool[slot].busy = 0; pthread_mutex_unlock(&poolmx); return -1; }
+  j->fn = fn; j->arg = arg; j->slot = slot;
   pthread_attr_t at; pthread_attr_init(&at);
-  pthread_attr_setdetachstate(&at, PTHREAD_CREATE_DETACHED);
-  void *stk = NULL;
-  if (posix_memalign(&stk, 4096, CTL_STACK) == 0) pthread_attr_setstack(&at, stk, CTL_STACK);
-  pthread_t t; int rc = pthread_create(&t, &at, fn, arg);
+  pthread_attr_setstack(&at, pool[slot].stk, CTL_STACK);
+  int rc = pthread_create(&pool[slot].t, &at, thread_main, j);
   pthread_attr_destroy(&at);
-  if (rc && stk) free(stk);
+  if (rc) { free(j); pthread_mutex_lock(&poolmx); pool[slot].busy = 0; pthread_mutex_unlock(&poolmx); }
   return rc;
 }
 #define spawn omega_thread
@@ -75,6 +101,7 @@ extern const char REMOTE_HTML[]; extern const size_t REMOTE_HTML_LEN;
 
 static char data_dir[200];
 static int lsock = -1;
+static time_t started_at;   // la UI lo confronta con la data del file: se il file è più nuovo, riavvia
 static char last_req[160] = "-";
 const char *ctl_last_request(void) { return last_req; }
 static char pin[8], secret[40];
@@ -118,7 +145,7 @@ static void send_all(int s, const void *p, size_t n) {
 }
 
 static void reply(int s, int code, const char *type, const void *body, size_t len) {
-  const char *msg = code == 200 ? "OK" : code == 400 ? "Bad Request" : code == 404 ? "Not Found" : code == 413 ? "Payload Too Large" : code == 202 ? "Accepted" : code == 401 ? "Unauthorized" : code == 403 ? "Forbidden" : code == 429 ? "Too Many Requests" : code == 409 ? "Conflict" : code == 507 ? "Insufficient Storage" : "Error";
+  const char *msg = code == 200 ? "OK" : code == 400 ? "Bad Request" : code == 404 ? "Not Found" : code == 413 ? "Payload Too Large" : code == 202 ? "Accepted" : code == 401 ? "Unauthorized" : code == 403 ? "Forbidden" : code == 429 ? "Too Many Requests" : code == 409 ? "Conflict" : code == 507 ? "Insufficient Storage" : code == 503 ? "Service Unavailable" : "Error";
   char h[256];
   static int trace = 4;   // diagnosi: i primi passi delle prime risposte nel log
   if (trace > 0) player_log("risposta %d: inizio (stack %p)", code, (void *)h);
@@ -396,7 +423,7 @@ NOINLINE static int start_upload(int s, const char *qs, const char *pre, size_t 
   u->s = s; u->clen = clen; u->off = off; u->base = base; u->total = total; snprintf(u->dst, sizeof u->dst, "%s", dst); snprintf(u->batch, sizeof u->batch, "%s", b);
   if (have > (size_t)clen) have = (size_t)clen;
   if (have) { u->pre = malloc(have); if (!u->pre) { free(u); reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; } memcpy(u->pre, pre, have); u->have = have; }
-  if (spawn(up_thread, u) != 0) { free(u->pre); free(u); reply_json(s, 500, "{\"error\":\"thread\"}"); return 0; }
+  if (spawn(up_thread, u) != 0) { free(u->pre); free(u); player_log("caricamento: nessun thread libero, il telefono riprova"); reply_json(s, 503, "{\"error\":\"busy\"}"); return 0; }
   return 1;
 }
 
@@ -682,7 +709,7 @@ static int handle(int s, int local) {
     if (!strcmp(path, "/v1/library/space")) { char up[300], o[96]; up_root(up, sizeof up); snprintf(o, sizeof o, "{\"free\":%lld}", free_bytes(up)); reply_json(s, 200, o); return 0; }
     if (!strcmp(path, "/v1/library/file")) { upload_file(s, qcopy); return 0; }
     if (!strcmp(path, "/v1/library/upload/status")) { upload_status(s, qcopy); return 0; }
-    if (!strcmp(path, "/v1/ping")) { reply_json(s, 200, "{\"ok\":true,\"service\":\"omega\"}"); return 0; }
+    if (!strcmp(path, "/v1/ping")) { char o[96]; snprintf(o, sizeof o, "{\"ok\":true,\"service\":\"omega\",\"started\":%ld}", (long)started_at); reply_json(s, 200, o); return 0; }
     reply_json(s, 404, "{\"error\":\"not_found\"}"); return 0;
   }
   if (strcmp(method, "POST")) { reply_json(s, 400, "{\"error\":\"method\"}"); return 0; }
@@ -754,6 +781,7 @@ static void *ctl_thread(void *arg) {
 }
 
 int ctl_start(int port, const char *dir) {
+  started_at = time(NULL);
   snprintf(data_dir, sizeof data_dir, "%s", dir ? dir : ".");
   remote_load();
   lsock = socket(AF_INET, SOCK_STREAM, 0);

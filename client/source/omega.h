@@ -12,7 +12,7 @@
 #endif
 // versione dell'app: la usano gli aggiornamenti, va alzata a ogni rilascio.
 #ifndef OMEGA_VERSION
-#define OMEGA_VERSION "2026.10.05.5"
+#define OMEGA_VERSION "2026.10.05.6"
 #endif
 
 // Dati dell'app. Il demone omega_redirect legge session.json e ui-active da

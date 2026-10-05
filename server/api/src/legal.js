@@ -11,7 +11,7 @@ const path = require('node:path');
 const config = require('./config');
 const lang = require('./lang');
 
-const TERMS_VERSION = '2026-10-05';
+const TERMS_VERSION = '2026-10-05.2';
 const DEVELOPER = { name: 'TheCriicom', url: 'https://outlinedigital.it' };
 const DOCS = ['privacy', 'terms', 'licenses'];
 

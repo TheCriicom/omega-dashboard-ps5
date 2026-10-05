@@ -77,7 +77,8 @@ async function getPrivacy({ auth }) {
   return { status: 200, body: await rel.privacyOf(auth.accountId) };
 }
 
-// POST /api/v1/privacy  { messages?, friend_requests?, show_activity? }
+// POST /api/v1/privacy  { messages?, friend_requests?, show_activity?, show_in_records?, trophies?, import_trophies? }
+// Spegnere l'importazione dei trofei cancella anche quelli già importati.
 async function setPrivacy({ req, auth }) {
   const body = await readJson(req);
   const cur = await rel.privacyOf(auth.accountId);
@@ -96,9 +97,20 @@ async function setPrivacy({ req, auth }) {
     if (typeof body.show_activity !== 'boolean') throw new HttpError(400, 'invalid_show_activity', 'show_activity: true|false');
     next.show_activity = body.show_activity;
   }
+  for (const k of ['show_in_records', 'import_trophies']) {
+    if (body[k] === undefined) continue;
+    if (typeof body[k] !== 'boolean') throw new HttpError(400, `invalid_${k}`, `${k}: true|false`);
+    next[k] = body[k];
+  }
+  if (body.trophies !== undefined) {
+    if (!['everyone', 'friends', 'nobody'].includes(body.trophies)) throw new HttpError(400, 'invalid_trophies', 'trophies: everyone|friends|nobody');
+    next.trophies = body.trophies;
+  }
   await db.query(
-    'UPDATE lab_account SET privacy_messages=$2, privacy_friend_requests=$3, show_activity=$4 WHERE account_id=$1',
-    [auth.accountId, next.messages, next.friend_requests, next.show_activity]);
+    `UPDATE lab_account SET privacy_messages=$2, privacy_friend_requests=$3, show_activity=$4,
+            show_in_records=$5, privacy_trophies=$6, import_trophies=$7 WHERE account_id=$1`,
+    [auth.accountId, next.messages, next.friend_requests, next.show_activity, next.show_in_records, next.trophies, next.import_trophies]);
+  if (!next.import_trophies) await db.query('DELETE FROM lab_tset_user WHERE account_id=$1', [auth.accountId]);
   return { status: 200, body: next };
 }
 

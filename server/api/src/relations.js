@@ -66,14 +66,24 @@ async function mutualFriends(a, b, limit = 5) {
 
 async function privacyOf(accountId) {
   const r = await db.query(
-    'SELECT privacy_messages, privacy_friend_requests, show_activity FROM lab_account WHERE account_id=$1', [accountId]);
+    `SELECT privacy_messages, privacy_friend_requests, show_activity, show_in_records, privacy_trophies, import_trophies
+       FROM lab_account WHERE account_id=$1`, [accountId]);
   const p = r.rows[0] || {};
   return {
     messages: p.privacy_messages || 'everyone',
     friend_requests: p.privacy_friend_requests || 'everyone',
     show_activity: p.show_activity !== false,
+    show_in_records: p.show_in_records !== false,
+    trophies: p.privacy_trophies || 'everyone',
+    import_trophies: p.import_trophies !== false,
   };
 }
+
+// Chi compare negli elenchi pubblici (record, classifica dei trofei) visti da
+// $n: account attivi che non sono in un blocco con chi guarda. La scelta di
+// comparire o no la aggiunge chi chiama (show_in_records, privacy_trophies).
+const LISTABLE_SQL = (alias, p) => `(NOT ${alias}.disabled AND ${alias}.banned_at IS NULL
+                                     AND ${alias}.account_id NOT IN ${BLOCKED_SQL(p)})`;
 
 // Presenza vista dagli altri, secondo lo stato scelto dall'utente:
 // invisibile → offline senza gioco; assente/non disturbare → quello stato.
@@ -85,7 +95,7 @@ function maskPresence(eff, mode) {
 }
 
 module.exports = {
-  STATUS_MODES, BLOCKED_SQL, FRIENDS_SQL, accountByOnlineId, userCard,
+  STATUS_MODES, BLOCKED_SQL, FRIENDS_SQL, LISTABLE_SQL, accountByOnlineId, userCard,
   blockState, isBlocked, areFriends,
   mutualCount, mutualFriends, privacyOf, maskPresence,
 };

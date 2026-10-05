@@ -35,7 +35,7 @@ async function exportData({ auth }) {
   const account = (await rows(
     `SELECT online_id, email, about_me, avatar, avatar_media, cover_media, role, created_at, last_login_at,
             terms_version, terms_accepted_at, status_mode, status_message,
-            privacy_messages, privacy_friend_requests, show_activity FROM lab_account WHERE account_id=$1`, [id]))[0];
+            privacy_messages, privacy_friend_requests, show_activity, show_in_records, privacy_trophies, import_trophies FROM lab_account WHERE account_id=$1`, [id]))[0];
   const data = {
     exported_at: new Date().toISOString(),
     account,
@@ -75,6 +75,9 @@ async function exportData({ auth }) {
     group_messages_sent: await rows(
       `SELECT g.name AS group, m.body, m.created_at FROM lab_group_message m JOIN lab_group g USING (group_id)
         WHERE m.from_id=$1 AND NOT m.system ORDER BY m.message_id`, [id]),
+    trophies: await rows(
+      `SELECT u.np_id, s.title, u.earned, u.points, u.last_earned, u.updated_at FROM lab_tset_user u LEFT JOIN lab_tset s USING (np_id)
+        WHERE u.account_id=$1 ORDER BY u.np_id`, [id]),
     playtime: await rows('SELECT game_id, game_name, seconds::bigint AS seconds, sessions, last_played FROM lab_playtime WHERE account_id=$1 ORDER BY seconds DESC', [id]),
   };
   return { status: 200, body: data };

@@ -77,6 +77,7 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_STORE: store_draw(t); break;
     case OV_DOC: doc_draw(t); break;
     case OV_COMMUNITY: community_draw(t); break;
+    case OV_TROPHIES: trophies_draw(t); break;
     case OV_ABOUT: about_draw(t); break;
     case OV_MUSIC: music_draw(t); break;
     case OV_SYSTEM: system_draw(t); break;
@@ -214,6 +215,7 @@ void do_logout(void) {
   }
   // le due richieste sopra partono col token attuale; le risposte in arrivo si scartano
   g_net_gen++;
+  consync_stop();
   session_clear(); g_token[0] = 0;
   social_reset(); ov_clear();
   memset(f_pass, 0, sizeof f_pass);
@@ -226,6 +228,7 @@ static Uint32 quit_at;
 void app_quit_later(Uint32 ms) { quit_at = SDL_GetTicks() + ms; }
 
 void app_quit(void) {
+  consync_stop();
   if (g_token[0]) {
     char buf[512]; omega_http(HTTP_POST, OMEGA_API "/presence", g_token, "{\"status\":\"offline\"}", buf, sizeof buf);
   }
@@ -296,6 +299,7 @@ static void dispatch(int b) {
       case OV_STORE: store_input(b); break;
       case OV_DOC: doc_input(b); break;
       case OV_COMMUNITY: community_input(b); break;
+      case OV_TROPHIES: trophies_input(b); break;
       case OV_ABOUT: about_input(b); break;
       case OV_MUSIC: music_input(b); break;
       case OV_SYSTEM: system_input(b); break;

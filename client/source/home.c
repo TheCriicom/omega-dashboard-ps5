@@ -246,6 +246,15 @@ void scan_apps(void) {
   for (int i = 0; i < napps; i++) apps[i].last_played = recent_of(apps[i].tid);
   for (int i = 0; i < napps; i++) for (int k = i + 1; k < napps; k++)
     if (app_cmp(&apps[k], &apps[i]) < 0) { AppEntry t = apps[i]; apps[i] = apps[k]; apps[k] = t; }
+  // la Community sta in home come una tessera, prima dei giochi: bacheca, gruppi, record e trofei
+  if (g_token[0] && napps < MAX_APPS) {
+    memmove(&apps[1], &apps[0], sizeof(AppEntry) * (size_t)napps);
+    AppEntry *a = &apps[0]; memset(a, 0, sizeof *a);
+    a->builtin = 1; a->tex_state = 2; a->avg = C_ACC;
+    snprintf(a->tid, sizeof a->tid, "%s", TID_COMMUNITY);
+    snprintf(a->name, sizeof a->name, "%s", _("Community"));
+    napps++;
+  }
   omega_log("scan_apps: %d titoli", napps);
 }
 
@@ -275,6 +284,7 @@ void home_enter(void) {
   if (app_sel >= napps) app_sel = 0;
   zone = Z_ROW; tab = T_GAMES; page_scroll = page_scroll_t = 0;
   request_icons();
+  consync_start(0);      // nomi e icone dei giochi, trofei della console
   focus_at = SDL_GetTicks(); focus_loaded = -1;
   social_load_news(); social_load_activity(); social_load_friends();
   last_feed = SDL_GetTicks(); entered_at = SDL_GetTicks();
@@ -403,6 +413,7 @@ static void hb_pick(int i, void *ud) {
 
 void launch_app(int idx) {
   if (idx < 0 || idx >= napps || launching >= 0 || SDL_AtomicGet(&hb_state)) return;
+  if (apps[idx].builtin) { community_open(0); return; }
   if (apps[idx].hb) { hb_step(idx, -1); return; }
   if (apps[idx].pld) {
     char err[400];
@@ -629,7 +640,12 @@ static void game_row(int y0, int alpha) {
       AppEntry *ap = &apps[i];
       int foc = i == app_sel;
       if (foc) shadow_rrect(tx, ty, s, s, 28, 26, a * 70 / 100);
-      if (ap->tex) {
+      if (ap->builtin) {
+        fill_rrect(tx, ty, s, s, 28, mix(C_ACC, RGB(12, 16, 30), 0.35f), a);
+        draw_icon(IC_FRIENDS, tx + s / 2, ty + s / 2 - s / 12, s * 44 / 100, C_WHITE, a);
+        draw_text_fit(font(W_MED, s > 190 ? 24 : 19), _("Community"), tx + s / 2, ty + s - (s > 190 ? 50 : 38), s - 20, C_WHITE, a, AL_C);
+        if (S.unread_groups) draw_badge(tx + s - 22, ty + 22, S.unread_groups, a);
+      } else if (ap->tex) {
         ap->appear = approach(ap->appear, 1, 8.0f);
         SDL_SetTextureColorMod(ap->tex, 255, 255, 255);
         draw_tex(ap->tex, tx, ty, s, s, (int)(a * ap->appear));
@@ -671,6 +687,7 @@ static void game_info(int y0, int alpha) {
   draw_text_fit(tf, ap->name, 110, y0, 1300, C_WHITE, alpha, AL_L);
   char sub[256], pl[96]; int np = count_playing(ap->tid);
   if (np) { snprintf(pl, sizeof pl, np == 1 ? _("%d amico sta giocando") : _("%d amici stanno giocando"), np); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, pl); }
+  else if (ap->builtin) snprintf(sub, sizeof sub, "%s", _("Bacheca, gruppi, record e trofei di tutti gli iscritti"));
   else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
   else if (ap->ext) { char on[96]; snprintf(on, sizeof on, _("Su %s"), ap->drive); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, on); }
   else snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, _("Installato"));
@@ -681,8 +698,8 @@ static void game_info(int y0, int alpha) {
   sel_anim_act = approach(sel_anim_act, zone == Z_ACT ? (float)act_sel : -1.0f, 16.0f);
   int by = y0 + 168;
   float f0 = clampf(1 - fabsf(sel_anim_act - 0), 0, 1), f1 = clampf(1 - fabsf(sel_anim_act - 1), 0, 1);
-  int w0 = pill(110, by, 84, _("Gioca"), IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
-  pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
+  int w0 = pill(110, by, 84, ap->builtin ? _("Apri") : _("Gioca"), ap->builtin ? IC_FRIENDS : IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
+  if (!ap->builtin) pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
   if (zone == Z_ACT) focus_ring(act_sel == 0 ? 110 : 110 + w0 + 20, by, act_sel == 0 ? w0 : 84, 84, 42, 0.5f + 0.5f * sinf((float)g_time * 3.2f), (int)(alpha * (act_sel == 0 ? f0 : f1)));
 }
 
@@ -894,7 +911,8 @@ void home_update(void) {
     if (focus_loaded != app_sel && SDL_GetTicks() - focus_at > FOCUS_MS) {
       focus_loaded = app_sel;
       bg_set_game(apps[app_sel].tid, apps[app_sel].art, apps[app_sel].avg);
-      if (!apps[app_sel].hb) social_load_game(apps[app_sel].tid);
+      if (apps[app_sel].builtin) { S.ngame_now = S.ngame_played = S.ngame_news = S.game_players = 0; S.game_tid[0] = 0; }   // niente scheda del gioco di prima
+      else if (!apps[app_sel].hb) social_load_game(apps[app_sel].tid);
     }
   }
   if (tab == T_EXPLORE) bg_set_default();
@@ -902,7 +920,7 @@ void home_update(void) {
   if (SDL_GetTicks() - last_feed > 30000) {
     last_feed = SDL_GetTicks();
     social_load_activity(); social_load_news();
-    if (napps && tab == T_GAMES && !apps[app_sel].hb) { S.game_loading = 0; social_load_game(apps[app_sel].tid); }
+    if (napps && tab == T_GAMES && !apps[app_sel].hb && !apps[app_sel].builtin) { S.game_loading = 0; social_load_game(apps[app_sel].tid); }
   }
   hb_poll();
   if (launching >= 0) {
@@ -937,7 +955,7 @@ void home_draw(void) {
   if (ps > 20 || tab == T_EXPLORE) grad_v(0, 118, SCREEN_W, 70, RGB(4, 8, 18), (int)(170 * clampf(page_scroll / 200.0f + (tab == T_EXPLORE), 0, 1)), RGB(4, 8, 18), 0);
   top_bar(255);
   int ic[4]; const char *lb[4]; int n = 0;
-  ic[n] = IC_BTN_X; lb[n++] = tab == T_GAMES && zone <= Z_ACT ? _("Gioca") : _("Seleziona");
+  ic[n] = IC_BTN_X; lb[n++] = tab == T_GAMES && zone <= Z_ACT ? (napps && apps[app_sel].builtin ? _("Apri") : _("Gioca")) : _("Seleziona");
   ic[n] = IC_BTN_TRI; lb[n++] = _("Game Base");
   ic[n] = IC_BTN_SQ; lb[n++] = _("Notifiche");
   ic[n] = IC_BTN_OPT; lb[n++] = _("Centro di controllo");
@@ -1061,7 +1079,7 @@ void home_input(int b) {
       break;
     case Z_ACT:
       if (b == B_LEFT && act_sel > 0) act_sel--;
-      else if (b == B_RIGHT && act_sel < 1) act_sel++;
+      else if (b == B_RIGHT && act_sel < 1 && !apps[app_sel].builtin) act_sel++;
       else if (b == B_UP || b == B_O) zone = Z_ROW;
       else if (b == B_DOWN && g_prefs.cards) { zone = Z_CARDS; card_sel = 0; }
       else if (b == B_X) {

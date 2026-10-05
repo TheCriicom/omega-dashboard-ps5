@@ -11,11 +11,12 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
-  N_("Nuovo: Impostazioni › Personalizza. Più di 30 opzioni: 12 temi, colore d'accento, sfondi, particelle, orologio, suoni, notifiche, salvaschermo e 7 stili rapidi."),
-  N_("La dashboard è da 2 a 4 volte più leggera per la console, e quando la home è ferma passa da sola a 30 fotogrammi."),
-  N_("Giochi sui dischi esterni: collega HDD, SSD o chiavette e i giochi compaiono in home con l'icona del disco. Se scolleghi il disco, spariscono."),
-  N_("Più dischi insieme vengono trovati da soli. Per avviare i giochi dai dischi serve kstuff attivo, come per gli altri strumenti."),
-  N_("Quando installi un gioco con un disco collegato, Omega ti chiede dove metterlo."),
+  N_("La Community ora \xC3\xA8 in home, prima dei giochi: bacheca, gruppi, persone e tempo di gioco a un tasto di distanza."),
+  N_("Nuovo: Record. Il tempo di gioco di tutti gli iscritti: giocatori, giochi pi\xC3\xB9 giocati e maratone, della settimana o di sempre."),
+  N_("Nuovo: Trofei. Omega legge i trofei ottenuti nei giochi di questa console e li mette nel tuo profilo e nella classifica pubblica."),
+  N_("Nei profili ora si vedono i trofei: i tuoi dal tasto Trofei, quelli degli altri se scelgono di mostrarli."),
+  N_("Impostazioni \xE2\x80\xBA Privacy raccoglie tutte le scelte: chi ti scrive, cosa vedono gli altri, record, trofei, utenti bloccati e i tuoi dati."),
+  N_("Chi spegne la console ora risulta offline dopo pochi minuti, e i giochi mostrano il nome e l'icona veri anche a chi non li ha."),
 };
 #define NITEMS (int)(sizeof ITEMS / sizeof *ITEMS)
 

@@ -87,7 +87,10 @@ async function onHeartbeat(accountId) {
   }
 }
 
-// Chiude i tratti rimasti aperti di console sparite da più di 3 minuti.
+// Chiude i tratti rimasti aperti di console sparite da più di 3 minuti e ne
+// spegne la presenza: senza questo la riga resterebbe «online» per sempre, e
+// chi torna dopo ore senza gioco erediterebbe quello di prima. swept la
+// distingue dall'offline scelto dall'utente (vedi sync in endpoints/hub.js).
 async function sweep() {
   const r = await db.query(
     `SELECT account_id, game_id, game_name, last_seen, play_since FROM lab_presence
@@ -98,18 +101,22 @@ async function sweep() {
       if (await addSegment(row.account_id, row.game_id, row.game_name, row.play_since, row.last_seen)) closed++;
     }
   }
+  await db.query(
+    `UPDATE lab_presence SET status='offline', swept=true, game_id=NULL, game_name=NULL, started_at=NULL
+      WHERE status<>'offline' AND play_since IS NULL AND last_seen < now() - interval '${SWEEP_AFTER}'`);
   return closed;
 }
 
 // Tratti aperti e ancora vivi, per mostrare il tempo in corso:
-// Map(account_id → { game_id, game_name, seconds }).
+// Map(account_id → { game_id, game_name, seconds }). Senza elenco: di tutti.
 async function openSegments(accountIds) {
   const out = new Map();
-  if (!accountIds.length) return out;
+  if (accountIds && !accountIds.length) return out;
   const r = await db.query(
     `SELECT account_id, game_id, game_name, play_since, last_seen, status FROM lab_presence
-      WHERE account_id = ANY($1::bigint[]) AND play_since IS NOT NULL AND game_id IS NOT NULL AND status <> 'offline'`,
-    [accountIds]);
+      WHERE ($1::bigint[] IS NULL OR account_id = ANY($1::bigint[]))
+        AND play_since IS NOT NULL AND game_id IS NOT NULL AND status <> 'offline'`,
+    [accountIds || null]);
   const now = Date.now();
   for (const row of r.rows) {
     if (isStale(row, now)) continue;

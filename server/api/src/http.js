@@ -27,13 +27,13 @@ function send(res, status, body, headers = {}) {
   res.end(payload);
 }
 
-function readBody(req) {
+function readBody(req, max = MAX_BODY) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
     req.on('data', (c) => {
       size += c.length;
-      if (size > MAX_BODY) {
+      if (size > max) {
         reject(new HttpError(413, 'payload_too_large'));
         req.destroy();
         return;
@@ -55,4 +55,4 @@ async function readJson(req) {
   }
 }
 
-module.exports = { HttpError, retryLater, send, readJson };
+module.exports = { HttpError, retryLater, send, readBody, readJson };

@@ -70,7 +70,10 @@ void menu_select(int i) { if (i >= 0 && i < mn_n) mn_sel = i, mn_anim = (float)i
 void menu_draw(float t) {
   backdrop(t, 120);
   mn_anim = approach(mn_anim, (float)mn_sel, 18.0f);
+  // largo quanto la voce più lunga (le scelte della Privacy portano il valore accanto)
   int w = 640, rh = 82, h = 110 + mn_n * rh + 30;
+  for (int i = 0; i < mn_n; i++) { int tw = text_w(font(W_MED, 28), mn_items[i]) + 130; if (tw > w) w = tw; }
+  if (w > 1180) w = 1180;
   if (h > SCREEN_H - 120) h = SCREEN_H - 120;
   int x = SCREEN_W / 2 - w / 2, y = SCREEN_H / 2 - h / 2 + (int)((1 - ease_out(t)) * 50);
   int a = (int)(255 * t);
@@ -607,16 +610,20 @@ void notif_input(int b) {
 
 // ------------------------------------------------------------------ profilo --
 static int pr_sel; static float pr_anim;
-enum { PA_MSG, PA_PARTY, PA_REMOVE, PA_ADD, PA_ACCEPT, PA_DECLINE, PA_CANCEL, PA_BIO, PA_AVATAR, PA_COVER, PA_LOGOUT, PA_STATUS, PA_MORE, PA_UNBLOCK };
+enum { PA_MSG, PA_PARTY, PA_REMOVE, PA_ADD, PA_ACCEPT, PA_DECLINE, PA_CANCEL, PA_BIO, PA_AVATAR, PA_COVER, PA_STATUS, PA_MORE, PA_UNBLOCK, PA_TROPHIES };
+#define PR_MAX_ACTIONS 6
 static int pr_actions(int *out, const char **lbl, int *icons) {
   int n = 0;
   #define ADD(id, l, ic) do { out[n] = id; lbl[n] = l; icons[n] = ic; n++; } while (0)
-  if (!strcmp(PR.relation, "self")) { ADD(PA_STATUS, _("Stato"), IC_CHECK); ADD(PA_BIO, _("Modifica bio"), IC_NEWS); ADD(PA_AVATAR, _("Avatar"), IC_USER); ADD(PA_COVER, _("Copertina"), IC_STAR); ADD(PA_LOGOUT, _("Esci"), IC_EXIT); }
+  // i trofei: i propri sempre, quelli degli altri se li mostrano
+  int trophies = PR.loaded && !PR.blocked && (!strcmp(PR.relation, "self") || !PR.trophies.hidden);
+  if (!strcmp(PR.relation, "self")) { ADD(PA_STATUS, _("Stato"), IC_CHECK); ADD(PA_TROPHIES, _("Trofei"), IC_STAR); ADD(PA_BIO, _("Modifica bio"), IC_NEWS); ADD(PA_AVATAR, _("Avatar"), IC_USER); ADD(PA_COVER, _("Copertina"), IC_ALBUM); }
   else if (PR.blocked) { ADD(PA_UNBLOCK, _("Sblocca"), IC_CHECK); }
   else if (!strcmp(PR.relation, "friend")) { ADD(PA_MSG, _("Messaggio"), IC_CHAT); ADD(PA_PARTY, S.party.active ? _("Invita al party") : _("Avvia party"), IC_PARTY); ADD(PA_REMOVE, _("Rimuovi"), IC_CLOSE); ADD(PA_MORE, P_("profilo", "Altro"), IC_MORE); }
   else if (!strcmp(PR.relation, "incoming")) { ADD(PA_ACCEPT, _("Accetta richiesta"), IC_CHECK); ADD(PA_DECLINE, _("Rifiuta"), IC_CLOSE); }
   else if (!strcmp(PR.relation, "outgoing")) { ADD(PA_CANCEL, _("Annulla richiesta"), IC_CLOSE); }
   else if (PR.loaded) { ADD(PA_ADD, _("Aggiungi amico"), IC_ADDUSER); }
+  if (trophies && strcmp(PR.relation, "self")) ADD(PA_TROPHIES, _("Trofei"), IC_STAR);
   if (PR.loaded && !PR.blocked && strcmp(PR.relation, "self") && strcmp(PR.relation, "friend")) ADD(PA_MORE, P_("profilo", "Altro"), IC_MORE);
   #undef ADD
   return n;
@@ -650,7 +657,7 @@ void profile_draw(float t) {
     fill_rrect(x + w - rw - 60, y + 286, rw, 44, 22, C_WHITE, a * 14 / 100);
     draw_text(font(W_MED, 22), rel, x + w - rw / 2 - 60, y + 296, C_TXT, a, AL_C);
   }
-  int ids[6], icons[6]; const char *lbl[6];
+  int ids[PR_MAX_ACTIONS], icons[PR_MAX_ACTIONS]; const char *lbl[PR_MAX_ACTIONS];
   int n = pr_actions(ids, lbl, icons);
   if (pr_sel >= n) pr_sel = n ? n - 1 : 0;
   pr_anim = approach(pr_anim, (float)pr_sel, 18.0f);
@@ -681,6 +688,8 @@ void profile_draw(float t) {
     draw_icon(IC_CLOCK, c1 + 16, cy + 314, 28, C_DIM, a);
     draw_text(font(W_REG, 25), line, c1 + 44, cy + 298, C_TXT, a, AL_L);
   }
+  if (PR.loaded && !PR.blocked && !PR.trophies.hidden && PR.trophies.sets)
+    trophy_counts(c1 + 2, cy + 342, PR.trophies.p, PR.trophies.g, PR.trophies.s, PR.trophies.b, a);
   if (PR.created[0]) {
     int Y, M, D;
     if (sscanf(PR.created, "%d-%d-%d", &Y, &M, &D) == 3 && M >= 1 && M <= 12) {
@@ -726,10 +735,9 @@ static void more_pick(int idx, void *ud) {
   if (idx == 0) confirm_open(_("Bloccarlo? Non potrà più scriverti, invitarti né vedere i tuoi post, e smetterete di essere amici."), _("Blocca"), block_yes, NULL);
   else if (idx == 1) { const char *r[] = { _("Spam"), _("Molestie"), _("Contenuto offensivo"), _("Si spaccia per un altro"), _("Altro") }; menu_open(_("Segnala utente"), r, 5, report_user_pick, NULL); }
 }
-static void logout_yes(int idx, void *ud) { (void)idx; (void)ud; do_logout(); }
 
 void profile_input(int b) {
-  int ids[6], icons[6]; const char *lbl[6];
+  int ids[PR_MAX_ACTIONS], icons[PR_MAX_ACTIONS]; const char *lbl[PR_MAX_ACTIONS];
   int n = pr_actions(ids, lbl, icons);
   if (b == B_O) { ov_pop(); return; }
   if (b == B_LEFT && pr_sel > 0) pr_sel--;
@@ -746,9 +754,9 @@ void profile_input(int b) {
       case PA_BIO: { char bio[168]; snprintf(bio, sizeof bio, "%s", PR.about); if (edit_text(_("La tua bio"), bio, sizeof bio, 0)) { snprintf(PR.about, sizeof PR.about, "%s", bio); social_profile_update(bio, 0); } break; }
       case PA_AVATAR: ov_push(OV_AVATAR); break;
       case PA_COVER: gallery_open(1); break;
-      case PA_LOGOUT: confirm_open(_("Vuoi uscire dal tuo account Omega?"), _("Esci"), logout_yes, NULL); break;
       case PA_STATUS: status_menu(); break;
       case PA_UNBLOCK: social_block(PR.oid, 0); break;
+      case PA_TROPHIES: trophies_open(PR.oid); break;
       case PA_MORE: { const char *m[] = { _("Blocca"), _("Segnala") }; menu_open(PR.oid, m, 2, more_pick, NULL); break; }
     }
   }
@@ -1017,7 +1025,7 @@ void settings_draw(float t) {
   draw_text_fit(font(W_REG, 22), info, px + 140, y + 72, pw - 170, C_DIM, a, AL_L);
   y += 140;
   static const char *opts[N_OPT] = { N_("Il mio profilo"), N_("Personalizza"), N_("Cambia avatar"), N_("Modifica bio"), N_("Tema"), N_("Lingua"), N_("Audio"), N_("Omega come Home"), N_("Server"), N_("Sistema e strumenti"),
-                                     N_("Privacy e dati"), N_("Informazioni su Omega"), N_("Esci dall'account"), N_("Chiudi Omega") };
+                                     N_("Privacy"), N_("Informazioni su Omega"), N_("Esci dall'account"), N_("Chiudi Omega") };
   static const int oic[N_OPT] = { IC_USER, IC_BRUSH, IC_STAR, IC_NEWS, IC_GEAR, IC_CHAT, IC_BELL, IC_GAMEPAD, IC_GLOBE, IC_FOLDER, IC_CHECK, IC_MORE, IC_EXIT, IC_POWER };
   st_anim = approach(st_anim, (float)st_sel, 20.0f);
   // 14 righe più l'intestazione stanno sopra la barra dei comandi (y 1018)

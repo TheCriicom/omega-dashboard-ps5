@@ -180,6 +180,7 @@ void mic_probe(void);                         // comando di debug "micprobe"
 #define MAX_CONV    64
 #define MAX_USERS   24
 #define MAX_APPS    256
+#define TID_COMMUNITY "OMEGACOMM"
 
 typedef struct {
   char oid[32]; int avatar; char about[168];
@@ -205,6 +206,7 @@ typedef struct {
   char tid[16]; char name[96]; char icon[256]; char art[256];
   int hb; char dir[256]; char sub[96];        // homebrew websrv nella cartella dir (tid = "HB" + hash)
   int pld;                                    // payload ELF: dir è il percorso dell'elf (tid = "PL" + hash)
+  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima)
   int ext; char src[300]; char drive[40];     // gioco su un disco esterno (drives.c): cartella e nome del disco
   long last_played;                           // per l'ordine "Ultimi giocati"
   SDL_Texture *tex; int tex_state; Col avg;   // tex_state: 0 nulla, 1 in caricamento, 2 pronta
@@ -309,6 +311,7 @@ typedef struct {
   int nrecent; Activity recent[8];
   int ngames; struct { char game_id[24]; char game_name[100]; char last[32]; int sessions; } games[6];
   char status_msg[64]; int mutual_friends, nmutual; char mutual[5][32]; int blocked; long total_seconds;
+  struct { int hidden, sets, p, g, s, b, points; } trophies;      // hidden: l'utente non li mostra a chi guarda
 } Profile;
 extern Profile PR;
 void profile_open(const char *oid);
@@ -324,7 +327,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);
@@ -394,6 +397,21 @@ void setup_draw(float t); void setup_input(int b);
 void hen_ask_home(void);              // domanda "Omega come Home?" (stessa finestra)
 void community_open(int tab); void community_open_post(const char *post_id);
 void community_draw(float t); void community_input(int b);
+// misure e pezzi comuni alle schede della Community (community.c, records.c)
+#define CM_X   140
+#define CM_W   (SCREEN_W - 2 * CM_X)
+#define CM_TOP 200
+void cm_card(int x, int y, int w, int h, int foc, int a);
+void cm_chip(int x, int y, const char *label, Col c, int a);
+void cm_hours(long secs, char *out, size_t n);             // "45 min", "3.5 h", "120 h"
+// Record e Trofei pubblici (records.c): trophies = 0 scheda Record, 1 scheda Trofei
+void records_enter(int trophies); void records_load(int trophies); void records_draw(int trophies, int a);
+int  records_input(int trophies, int b);                   // 1 = tasto gestito
+int  records_hints(int trophies, int *ic, const char **lb);
+int  trophy_counts(int x, int y, int p, int g, int s, int b, int a);   // quattro coppe con i conteggi; ritorna la larghezza
+void trophies_open(const char *oid); void trophies_draw(float t); void trophies_input(int b);
+// Giochi e trofei della console verso il server (consync.c)
+void consync_start(int force); void consync_stop(void); int consync_busy(void); int consync_rev(void);
 void doc_open(const char *kind); void doc_draw(float t); void doc_input(int b);   // "privacy" | "terms" | "licenses"
 
 // Privacy, termini e server (account.c)

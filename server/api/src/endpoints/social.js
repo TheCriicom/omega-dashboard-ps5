@@ -205,7 +205,7 @@ async function presenceSet({ req, auth }) {
        game_name=EXCLUDED.game_name,
        started_at = CASE WHEN EXCLUDED.game_id IS DISTINCT FROM lab_presence.game_id
                          THEN EXCLUDED.started_at ELSE lab_presence.started_at END,
-       last_seen=now()`,
+       last_seen=now(), swept=false`,
     [auth.accountId, status, gameId, gameName]);
   await playtime.onPresence(auth.accountId, prevRow, { status, gameId });
 

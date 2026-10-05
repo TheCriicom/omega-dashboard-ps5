@@ -13,6 +13,8 @@ const limiter = require('../ratelimit');
 const rel = require('../relations');
 const { multiline, oneLine, likePattern } = require('../text');
 const playtime = require('../playtime');
+const gameCards = require('../games');
+const trophies = require('./trophies');
 const voice = require('./voice');
 const groups = require('./groups');
 const stats = require('./stats');
@@ -152,7 +154,10 @@ async function sync(ctx) {
   // un tratto di gioco rimasto aperto da una console sparita si chiude qui
   await playtime.onHeartbeat(auth.accountId);
   // heartbeat: rinfresca la presenza senza cambiarne lo stato
-  await db.query(`UPDATE lab_presence SET last_seen=now() WHERE account_id=$1 AND status<>'offline'`, [auth.accountId]);
+  // (chi era stato spento dal giro periodico torna online; l'offline scelto resta)
+  await db.query(
+    `UPDATE lab_presence SET last_seen=now(), status=CASE WHEN swept THEN 'online' ELSE status END, swept=false
+      WHERE account_id=$1 AND (status<>'offline' OR swept)`, [auth.accountId]);
 
   const me = (await db.query('SELECT online_id, avatar, about_me, avatar_media, avatar_frames, cover_media, cover_frames, status_mode, status_message, lang FROM lab_account WHERE account_id=$1', [auth.accountId])).rows[0];
   // lingua delle notifiche: si aggiorna solo se l'app ne chiede un'altra
@@ -269,6 +274,7 @@ async function userProfile({ auth, params }) {
     `SELECT game_id, max(game_name) AS game_name, max(created_at) AS last_played, count(*)::int AS sessions
        FROM lab_activity WHERE account_id=$1 AND game_id IS NOT NULL
       GROUP BY game_id ORDER BY max(created_at) DESC LIMIT 6`, [u.account_id])).rows : [];
+  await gameCards.decorate(games);
   let presence = self ? effective(pres) : rel.maskPresence(effective(pres), a.status_mode);
   if (!visible) presence = { status: presence.status };
   if (bs.iBlocked) presence = { status: 'offline' };
@@ -285,6 +291,7 @@ async function userProfile({ auth, params }) {
       mutual_friends: self || blockedView ? 0 : await rel.mutualCount(auth.accountId, u.account_id),
       mutual: self || blockedView ? [] : await rel.mutualFriends(auth.accountId, u.account_id, 5),
       stats: activityOk ? await stats.summaryOf(u.account_id) : { total_seconds: 0, top_games: [], hidden: true },
+      trophies: blockedView ? { hidden: true } : await trophies.summaryFor(auth.accountId, u.account_id),
     },
   };
 }

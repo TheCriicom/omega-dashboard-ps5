@@ -580,6 +580,9 @@ static void on_profile(int st, JVal *j, const char *raw, void *ud) {
   PR.nmutual = 0;
   JFOR(m, jget(j, "mutual")) { if (PR.nmutual >= 5) break; jcpy(PR.mutual[PR.nmutual], sizeof PR.mutual[0], m, "online_id"); media_note_json(PR.mutual[PR.nmutual], m); PR.nmutual++; }
   PR.total_seconds = (long)jnum(jget(j, "stats"), "total_seconds", 0);
+  JVal *tr = jget(j, "trophies");
+  PR.trophies.hidden = !tr || jbool(tr, "hidden"); PR.trophies.sets = (int)jnum(tr, "sets", 0); PR.trophies.points = (int)jnum(tr, "points", 0);
+  PR.trophies.p = (int)jnum(tr, "p", 0); PR.trophies.g = (int)jnum(tr, "g", 0); PR.trophies.s = (int)jnum(tr, "s", 0); PR.trophies.b = (int)jnum(tr, "b", 0);
   PR.ngames = 0;
   JFOR(g, jget(j, "games")) {
     if (PR.ngames >= 6) break;

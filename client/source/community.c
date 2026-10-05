@@ -3,11 +3,14 @@
 //   Gruppi    chat di gruppo persistenti
 //   Persone   suggerimenti (amici in comune, stessi giochi)
 //   Tempo     i tuoi giochi più giocati e la classifica degli amici
+//   Record    tempo di gioco di tutti gli iscritti (records.c)
+//   Trofei    classifica pubblica dei trofei (records.c)
 #include "app.h"
 #include <math.h>
 #include <stdlib.h>
 
-enum { TAB_FEED, TAB_GROUPS, TAB_PEOPLE, TAB_STATS, NTABS };
+enum { TAB_FEED, TAB_GROUPS, TAB_PEOPLE, TAB_STATS, TAB_RECORDS, TAB_TROPHIES, NTABS };
+#define IS_PUBLIC(t) ((t) == TAB_RECORDS || (t) == TAB_TROPHIES)
 enum { SUB_NONE, SUB_POST, SUB_CHAT, SUB_PICK };
 
 typedef struct { char oid[32]; int avatar; } URef;
@@ -48,7 +51,7 @@ static void parse_user(JVal *u, URef *r) {
   media_note_json(r->oid, u);
 }
 
-static void hours(long secs, char *out, size_t n) {
+void cm_hours(long secs, char *out, size_t n) {
   if (secs < 3600) snprintf(out, n, _("%ld min"), secs / 60);
   else if (secs < 36000) snprintf(out, n, _("%.1f h"), secs / 3600.0);
   else snprintf(out, n, _("%ld h"), secs / 3600);
@@ -58,13 +61,13 @@ static int list_count(void);
 
 static void reset_sel(void) { sel = 0; sel_anim = 0; scroll = scroll_t = 0; }
 
-static void card(int x, int y, int w, int h, int foc, int a) {
+void cm_card(int x, int y, int w, int h, int foc, int a) {
   if (foc) shadow_rrect(x, y, w, h, 22, 22, a * 60 / 100);
   fill_rrect(x, y, w, h, 22, foc ? mix(C_PANEL, C_WHITE, 0.10f) : C_PANEL, a * 94 / 100);
   if (foc) stroke_rrect(x - 4, y - 4, w + 8, h + 8, 26, 3, C_WHITE, a);
 }
 
-static void chip(int x, int y, const char *label, Col c, int a) {
+void cm_chip(int x, int y, const char *label, Col c, int a) {
   TTF_Font *f = font(W_MED, 20);
   int w = text_w(f, label) + 28;
   fill_rrect(x, y, w, 34, 17, c, a * 30 / 100);
@@ -396,6 +399,7 @@ static void load_tab(void) {
     case TAB_GROUPS: load_groups(); break;
     case TAB_PEOPLE: net_req(HTTP_GET, OMEGA_API "/friends/suggestions", NULL, on_sugg, NULL); break;
     case TAB_STATS: load_stats(); break;
+    case TAB_RECORDS: case TAB_TROPHIES: records_enter(tab == TAB_TROPHIES); records_load(tab == TAB_TROPHIES); break;
   }
 }
 
@@ -419,9 +423,9 @@ void community_open_post(const char *post_id) {
 }
 
 // ------------------------------------------------------------------ disegno --
-#define CX 140
-#define CW (SCREEN_W - 2 * CX)
-#define TOP 200
+#define CX CM_X
+#define CW CM_W
+#define TOP CM_TOP
 
 static int post_h(const Post *p) {
   int tw = text_w(font(W_REG, 28), p->text), lines = tw / (CW - 200) + 1;
@@ -431,13 +435,13 @@ static int post_h(const Post *p) {
 
 static void draw_post(const Post *p, int x, int y, int w, int foc, int a, int full) {
   int h = full ? 0 : post_h(p);
-  if (!full) card(x, y, w, h, foc, a);
+  if (!full) cm_card(x, y, w, h, foc, a);
   draw_avatar(p->au.oid, p->au.avatar, x + 66, y + 66, 76, a);
   draw_text(font(W_MED, 29), p->au.oid, x + 124, y + 30, C_TXT, a, AL_L);
   char tm[64]; rel_time(p->when, tm, sizeof tm);
   draw_text(font(W_REG, 22), tm, x + 124, y + 68, C_FAINT, a, AL_L);
   int ty = y + 120;
-  if (p->game[0]) { chip(x + 40, ty - 6, p->game, C_ACC2, a); ty += 44; }
+  if (p->game[0]) { cm_chip(x + 40, ty - 6, p->game, C_ACC2, a); ty += 44; }
   int lines = draw_text_wrap(font(W_REG, 28), p->text, x + 40, ty, w - 80, full ? 14 : 6, 38, C_TXT, a);
   ty += lines * 38 + 18;
   Col lc = p->liked ? RGB(255, 92, 120) : C_DIM;
@@ -450,16 +454,21 @@ static void draw_post(const Post *p, int x, int y, int w, int foc, int a, int fu
 }
 
 static void draw_header(int a) {
-  const char *names[NTABS] = { _("Bacheca"), _("Gruppi"), _("Persone"), _("Tempo di gioco") };
+  const char *names[NTABS] = { _("Bacheca"), _("Gruppi"), _("Persone"), _("Tempo di gioco"), _("Record"), _("Trofei") };
   draw_icon(IC_FRIENDS, CX + 24, 84, 46, C_ACC2, a);
   draw_text(font(W_LIGHT, 48), _("Community"), CX + 66, 54, C_WHITE, a, AL_L);
   tab_anim = approach(tab_anim, (float)tab, 14.0f);
-  int x = CX + 460;
+  // sei schede: nelle lingue dai nomi lunghi il carattere si stringe finché stanno nella riga
+  int x = CX + 400, size = 28, pad = 22;
+  for (; size > 20; size -= 2, pad = size > 24 ? 22 : 16) {
+    int tot = 0; for (int i = 0; i < NTABS; i++) tot += text_w(font(W_MED, size), names[i]) + 2 * pad + 14;
+    if (x + tot <= SCREEN_W - CX) break;
+  }
   for (int i = 0; i < NTABS; i++) {
-    TTF_Font *f = font(tab == i ? W_MED : W_REG, 28);
-    int w = text_w(f, names[i]) + 44;
+    TTF_Font *f = font(tab == i ? W_MED : W_REG, size);
+    int w = text_w(f, names[i]) + 2 * pad;
     if (tab == i) fill_rrect(x, 56, w, 58, 29, C_WHITE, a * (sub ? 10 : 18) / 100);
-    draw_text(f, names[i], x + 22, 70, tab == i ? C_WHITE : C_DIM, a, AL_L);
+    draw_text(f, names[i], x + pad, 85 - TTF_FontHeight(f) / 2, tab == i ? C_WHITE : C_DIM, a, AL_L);
     if (i == TAB_GROUPS && S.unread_groups) draw_badge(x + w - 6, 58, S.unread_groups, a);
     x += w + 14;
   }
@@ -485,7 +494,7 @@ static void draw_feed(int a) {
   SDL_Rect clip = { 0, TOP - 10, SCREEN_W, view + 20 };
   SDL_RenderSetClipRect(R, &clip);
   y = TOP - (int)scroll;
-  card(CX, y, CW, 96, sel == 0, a);
+  cm_card(CX, y, CW, 96, sel == 0, a);
   draw_avatar(S.me, S.my_avatar, CX + 56, y + 48, 58, a);
   draw_text(font(W_REG, 28), _("Scrivi qualcosa ai tuoi amici..."), CX + 104, y + 30, C_DIM, a, AL_L);
   draw_icon(IC_SEND, CX + CW - 50, y + 48, 30, sel == 0 ? C_WHITE : C_FAINT, a);
@@ -512,7 +521,7 @@ static void draw_post_detail(int a) {
   SDL_Rect clip = { 0, TOP - 10, SCREEN_W, view + 20 };
   SDL_RenderSetClipRect(R, &clip);
   int y = TOP - (int)scroll;
-  card(CX, y, CW, ph, sel == 0, a);
+  cm_card(CX, y, CW, ph, sel == 0, a);
   draw_post(&cur, CX, y, CW, 0, a, 1);
   y += y0;
   draw_text(font(W_MED, 26), ncoms ? _("Commenti") : _("Ancora nessun commento: premi Triangolo e scrivi il primo"), CX + 10, y - 2, C_DIM, a, AL_L);
@@ -520,7 +529,7 @@ static void draw_post_detail(int a) {
   for (int i = 0; i < ncoms; i++, y += 132) {
     if (y + 120 < TOP - 20 || y > TOP + view) continue;
     PComment *c = &coms[i];
-    card(CX + 60, y, CW - 60, 120, sel == i + 1, a);
+    cm_card(CX + 60, y, CW - 60, 120, sel == i + 1, a);
     draw_avatar(c->au.oid, c->au.avatar, CX + 116, y + 60, 60, a);
     char tm[64]; rel_time(c->when, tm, sizeof tm);
     int nw = draw_text(font(W_MED, 24), c->au.oid, CX + 164, y + 18, C_TXT, a, AL_L);
@@ -536,7 +545,7 @@ static void draw_groups(int a) {
   SDL_Rect clip = { 0, TOP - 10, SCREEN_W, view + 20 };
   SDL_RenderSetClipRect(R, &clip);
   int y = TOP - (int)scroll;
-  card(CX, y, CW, rh - 20, sel == 0, a);
+  cm_card(CX, y, CW, rh - 20, sel == 0, a);
   fill_circle(CX + 64, y + 58, 38, sel == 0 ? C_WHITE : C_ACC, a);
   draw_icon(IC_PLUS, CX + 64, y + 58, 34, sel == 0 ? RGB(12, 14, 22) : C_WHITE, a);
   draw_text(font(W_MED, 30), _("Nuovo gruppo"), CX + 130, y + 26, C_TXT, a, AL_L);
@@ -545,7 +554,7 @@ static void draw_groups(int a) {
   for (int i = 0; i < ngroups; i++, y += rh) {
     if (y + rh < TOP - 20 || y > TOP + view) continue;
     Group *g = &groups[i];
-    card(CX, y, CW, rh - 20, sel == i + 1, a);
+    cm_card(CX, y, CW, rh - 20, sel == i + 1, a);
     for (int k = g->nmem - 1; k >= 0 && k < 3; k--) draw_avatar(g->mem[k].oid, g->mem[k].avatar, CX + 54 + k * 26, y + 58, 56, a);
     int tx = CX + 180;
     draw_text_fit(font(W_MED, 30), g->name, tx, y + 22, CW - 420, C_TXT, a, AL_L);
@@ -593,7 +602,7 @@ static void draw_pick(int a) {
   int y = TOP - (int)scroll;
   for (int i = 0; i < S.nfriends; i++, y += rh) {
     if (y + rh < TOP - 20 || y > TOP + view) continue;
-    card(CX, y, CW, rh - 14, sel == i, a);
+    cm_card(CX, y, CW, rh - 14, sel == i, a);
     draw_avatar(S.friends[i].oid, S.friends[i].avatar, CX + 56, y + 43, 60, a);
     draw_text(font(W_MED, 28), S.friends[i].oid, CX + 110, y + 26, C_TXT, a, AL_L);
     int bx = CX + CW - 80, by = y + 25;
@@ -610,7 +619,7 @@ static void draw_people(int a) {
   SDL_Rect clip = { 0, TOP - 10, SCREEN_W, view + 20 };
   SDL_RenderSetClipRect(R, &clip);
   int y = TOP - (int)scroll;
-  card(CX, y, CW, rh - 20, sel == 0, a);
+  cm_card(CX, y, CW, rh - 20, sel == 0, a);
   fill_circle(CX + 60, y + 50, 34, sel == 0 ? C_WHITE : C_ACC, a);
   draw_icon(IC_SEARCH, CX + 60, y + 50, 32, sel == 0 ? RGB(12, 14, 22) : C_WHITE, a);
   draw_text(font(W_MED, 29), _("Cerca per ID online"), CX + 120, y + 32, C_TXT, a, AL_L);
@@ -620,7 +629,7 @@ static void draw_people(int a) {
   for (int i = 0; i < nsugg; i++, y += rh) {
     if (y + rh < TOP - 20 || y > TOP + view) continue;
     Sugg *s = &sugg[i];
-    card(CX, y, CW, rh - 20, sel == i + 1, a);
+    cm_card(CX, y, CW, rh - 20, sel == i + 1, a);
     draw_avatar(s->u.oid, s->u.avatar, CX + 60, y + 50, 66, a);
     draw_text(font(W_MED, 29), s->u.oid, CX + 120, y + 18, C_TXT, a, AL_L);
     char why[160];
@@ -635,8 +644,8 @@ static void draw_people(int a) {
 static void draw_stats(int a) {
   int lx = CX, lw = CW * 55 / 100 - 30, rx = CX + CW * 55 / 100, rw = CW * 45 / 100;
   char t1[32], t2[32];
-  hours(week_secs, t1, sizeof t1); hours(tot_secs, t2, sizeof t2);
-  card(lx, TOP, lw, 150, 0, a);
+  cm_hours(week_secs, t1, sizeof t1); cm_hours(tot_secs, t2, sizeof t2);
+  cm_card(lx, TOP, lw, 150, 0, a);
   draw_text(font(W_REG, 23), _("Questa settimana"), lx + 40, TOP + 30, C_DIM, a, AL_L);
   draw_text(font(W_LIGHT, 54), t1, lx + 40, TOP + 62, C_WHITE, a, AL_L);
   draw_text(font(W_REG, 23), _("In totale"), lx + lw / 2 + 20, TOP + 30, C_DIM, a, AL_L);
@@ -648,14 +657,14 @@ static void draw_stats(int a) {
   for (int i = 0; i < ngst && y < SCREEN_H - 160; i++, y += 78) {
     GStat *g = &gst[i];
     draw_text_fit(font(W_MED, 25), g->game, lx + 6, y, lw - 160, C_TXT, a, AL_L);
-    hours(g->secs, t1, sizeof t1);
+    cm_hours(g->secs, t1, sizeof t1);
     draw_text(font(W_REG, 23), t1, lx + lw, y + 2, C_DIM, a, AL_R);
     fill_rrect(lx + 6, y + 40, lw - 6, 12, 6, RGB(255, 255, 255), a * 8 / 100);
     fill_rrect(lx + 6, y + 40, (int)((lw - 6) * (double)g->secs / maxs), 12, 6, C_ACC2, a);
   }
-  card(rx, TOP, rw, SCREEN_H - TOP - 120, sel == 0, a);
+  cm_card(rx, TOP, rw, SCREEN_H - TOP - 120, sel == 0, a);
   draw_text(font(W_MED, 29), _("Classifica degli amici"), rx + 36, TOP + 28, C_TXT, a, AL_L);
-  chip(rx + 36, TOP + 76, period_week ? _("Questa settimana") : _("Da sempre"), C_ACC, a);
+  cm_chip(rx + 36, TOP + 76, period_week ? _("Questa settimana") : _("Da sempre"), C_ACC, a);
   draw_text(font(W_REG, 21), _("Quadrato: cambia periodo"), rx + rw - 36, TOP + 84, C_FAINT, a, AL_R);
   y = TOP + 140;
   for (int i = 0; i < nranks && y < SCREEN_H - 200; i++, y += 84) {
@@ -666,7 +675,7 @@ static void draw_stats(int a) {
     draw_text(font(W_BOLD, 30), n, rx + 66, y + 14, rc, a, AL_C);
     draw_avatar(r->u.oid, r->u.avatar, rx + 140, y + 32, 56, a);
     draw_text_fit(font(W_MED, 26), r->u.oid, rx + 184, y + 16, rw - 380, C_TXT, a, AL_L);
-    hours(r->secs, t1, sizeof t1);
+    cm_hours(r->secs, t1, sizeof t1);
     draw_text(font(W_MED, 25), t1, rx + rw - 40, y + 18, C_TXT, a, AL_R);
   }
   if (!nranks) draw_text(font(W_REG, 24), _("Nessun dato ancora"), rx + rw / 2, TOP + 240, C_FAINT, a, AL_C);
@@ -686,9 +695,11 @@ void community_draw(float t) {
       if (tab == TAB_FEED) draw_feed(a);
       else if (tab == TAB_GROUPS) draw_groups(a);
       else if (tab == TAB_PEOPLE) draw_people(a);
-      else draw_stats(a);
+      else if (tab == TAB_STATS) draw_stats(a);
+      else records_draw(tab == TAB_TROPHIES, a);
   }
   int ic[4]; const char *lb[4]; int n = 0;
+  if (!sub && IS_PUBLIC(tab)) { hints(ic, lb, records_hints(tab == TAB_TROPHIES, ic, lb), a); return; }
   switch (sub) {
     case SUB_POST: ic[n] = IC_BTN_X; lb[n++] = sel ? _("Opzioni") : (cur.liked ? _("Non mi piace più") : _("Mi piace")); ic[n] = IC_BTN_TRI; lb[n++] = _("Commenta"); ic[n] = IC_BTN_O; lb[n++] = _("Indietro"); break;
     case SUB_CHAT: ic[n] = IC_BTN_X; lb[n++] = _("Scrivi"); ic[n] = IC_BTN_SQ; lb[n++] = _("Opzioni"); ic[n] = IC_BTN_O; lb[n++] = _("Indietro"); break;
@@ -726,6 +737,7 @@ static void people_pick(void) {
 }
 
 void community_input(int b) {
+  if (!sub && IS_PUBLIC(tab) && records_input(tab == TAB_TROPHIES, b)) return;
   int n = list_count();
   if (b == B_O) {
     if (sub == SUB_PICK) { sub = pick_mode ? SUB_CHAT : SUB_NONE; reset_sel(); }

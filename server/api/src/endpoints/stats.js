@@ -6,6 +6,7 @@
 const db = require('../db');
 const rel = require('../relations');
 const playtime = require('../playtime');
+const gameCards = require('../games');
 
 // GET /api/v1/stats/me
 async function me({ auth }) {
@@ -32,7 +33,7 @@ async function me({ auth }) {
   games.sort((a, b) => b.seconds - a.seconds || String(a.game_name || '').localeCompare(String(b.game_name || '')));
   const total = games.reduce((s, g) => s + g.seconds, 0);
   const week = games.reduce((s, g) => s + g.week_seconds, 0);
-  return { status: 200, body: { total_seconds: total, week_seconds: week, games: games.slice(0, 30) } };
+  return { status: 200, body: { total_seconds: total, week_seconds: week, games: await gameCards.decorate(games.slice(0, 30)) } };
 }
 
 // Totali per account, eventualmente di un solo gioco o della settimana in corso.
@@ -93,7 +94,7 @@ async function summaryOf(accountId) {
     if (g) g.seconds += open.seconds; else games.push({ game_id: open.game_id, game_name: open.game_name, seconds: open.seconds });
   }
   games.sort((a, b) => b.seconds - a.seconds);
-  return { total_seconds: games.reduce((s, g) => s + g.seconds, 0), top_games: games.slice(0, 3) };
+  return { total_seconds: games.reduce((s, g) => s + g.seconds, 0), top_games: await gameCards.decorate(games.slice(0, 3)) };
 }
 
 module.exports = { me, friends, summaryOf };

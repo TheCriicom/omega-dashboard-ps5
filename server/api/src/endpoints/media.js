@@ -184,6 +184,28 @@ async function upload({ req, auth, url }) {
   }
 }
 
+// Un'immagine già in memoria (icona di un gioco, di un set di trofei) → un
+// fotogramma JPEG quadrato servito da GET /api/v1/media/:id/1. Ritorna l'id.
+const IMAGE_MAGIC = [[0x89, 0x50, 0x4e, 0x47], [0xff, 0xd8, 0xff]];
+async function storeImage(buf, size = 256) {
+  if (!IMAGE_MAGIC.some((m) => m.every((b, i) => buf[i] === b))) throw new HttpError(400, 'unsupported_type');
+  const id = crypto.randomBytes(8).toString('hex');
+  const dir = path.join(ROOT, id);
+  const file = path.join(ROOT, `.up-${id}.img`);
+  await fsp.mkdir(dir, { recursive: true });
+  try {
+    await fsp.writeFile(file, buf);
+    await run('ffmpeg', ['-v', 'error', '-y', '-i', file, '-vf', cropFilter([size, size]), '-frames:v', '1', '-q:v', '3', path.join(dir, '001.jpg')], 30000);
+    return id;
+  } catch (err) {
+    await fsp.rm(dir, { recursive: true, force: true });
+    console.error(JSON.stringify({ ts: new Date().toISOString(), event: 'media_error', error: err.message, stderr: err.stderr }));
+    throw new HttpError(422, 'conversion_failed');
+  } finally {
+    await fsp.unlink(file).catch(() => {});
+  }
+}
+
 // POST /api/v1/media/clear?kind=avatar|cover
 async function clear({ auth, url }) {
   const kind = url.searchParams.get('kind');
@@ -207,4 +229,4 @@ async function frame({ params, res }) {
   return { sent: true };
 }
 
-module.exports = { upload, clear, frame, removeMedia };
+module.exports = { upload, clear, frame, removeMedia, storeImage };

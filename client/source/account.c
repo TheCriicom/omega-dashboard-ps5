@@ -152,13 +152,14 @@ static void delete_yes(int idx, void *ud) {
   memset(body, 0, sizeof body);
 }
 
-// chi può contattarmi, cosa vedono gli altri, utenti bloccati
-static struct { char messages[12], requests[24]; int activity, loaded; } PV;
-static void privacy_menu_open(void);
+// Privacy: tutte le scelte dell'utente in un solo menu, lette e scritte con
+// GET/POST /privacy. Sotto le scelte: stato, utenti bloccati, documenti e dati.
+static struct { char messages[12], requests[24], trophies[12]; int activity, records, import, loaded; } PV;
+static void privacy_menu_open(int focus);
 static void privacy_save(void) {
-  char body[160];
-  snprintf(body, sizeof body, "{\"messages\":\"%s\",\"friend_requests\":\"%s\",\"show_activity\":%s}",
-           PV.messages, PV.requests, PV.activity ? "true" : "false");
+  char body[260];
+  snprintf(body, sizeof body, "{\"messages\":\"%s\",\"friend_requests\":\"%s\",\"show_activity\":%s,\"show_in_records\":%s,\"trophies\":\"%s\",\"import_trophies\":%s}",
+           PV.messages, PV.requests, PV.activity ? "true" : "false", PV.records ? "true" : "false", PV.trophies, PV.import ? "true" : "false");
   net_req(HTTP_POST, OMEGA_API "/privacy", body, NULL, NULL);
 }
 static void on_privacy(int st, JVal *j, const char *raw, void *ud) {
@@ -166,8 +167,11 @@ static void on_privacy(int st, JVal *j, const char *raw, void *ud) {
   if (st != 200) { set_msg(_("Impostazioni non disponibili"), 1); return; }
   jcpy(PV.messages, sizeof PV.messages, j, "messages");
   jcpy(PV.requests, sizeof PV.requests, j, "friend_requests");
-  PV.activity = jbool(j, "show_activity"); PV.loaded = 1;
-  privacy_menu_open();
+  jcpy(PV.trophies, sizeof PV.trophies, j, "trophies");
+  if (!PV.trophies[0]) snprintf(PV.trophies, sizeof PV.trophies, "everyone");
+  PV.activity = jbool(j, "show_activity"); PV.records = jbool(j, "show_in_records"); PV.import = jbool(j, "import_trophies");
+  PV.loaded = 1;
+  privacy_menu_open(0);
 }
 static char blocked[40][32]; static int nblocked;
 static void unblock_pick(int idx, void *ud) { (void)ud; if (idx >= 0 && idx < nblocked) social_block(blocked[idx], 0); }
@@ -179,43 +183,77 @@ static void on_blocks(int st, JVal *j, const char *raw, void *ud) {
   if (!nblocked) { set_msg(_("Non hai bloccato nessuno"), 0); return; }
   menu_open(_("Utenti bloccati (X per sbloccare)"), items, nblocked, unblock_pick, NULL);
 }
-static void contact_pick(int idx, void *ud) {
-  (void)ud;
-  if (idx == 0) snprintf(PV.messages, sizeof PV.messages, "%s", strcmp(PV.messages, "friends") ? "friends" : "everyone");
-  else if (idx == 1) {
-    const char *next = !strcmp(PV.requests, "everyone") ? "friends_of_friends" : !strcmp(PV.requests, "friends_of_friends") ? "nobody" : "everyone";
-    snprintf(PV.requests, sizeof PV.requests, "%s", next);
-  } else if (idx == 2) PV.activity = !PV.activity;
-  else { net_req(HTTP_GET, OMEGA_API "/blocks", NULL, on_blocks, NULL); return; }
-  privacy_save();
-  privacy_menu_open();       // il menu resta aperto con i valori aggiornati
+static void import_off_yes(int idx, void *ud) {
+  (void)idx; (void)ud;
+  PV.import = 0; privacy_save();
+  set_msg(_("Importazione spenta: i trofei importati sono stati cancellati"), 0);
 }
-static void privacy_menu_open(void) {
-  static char l[3][160]; static const char *items[4];
-  snprintf(l[0], sizeof l[0], "%s", strcmp(PV.messages, "friends") ? _("Chi può scrivermi: tutti") : _("Chi può scrivermi: solo amici"));
-  snprintf(l[1], sizeof l[1], "%s", !strcmp(PV.requests, "nobody") ? _("Richieste di amicizia: nessuno") : !strcmp(PV.requests, "friends_of_friends") ? _("Richieste di amicizia: amici di amici") : _("Richieste di amicizia: tutti"));
-  snprintf(l[2], sizeof l[2], "%s", PV.activity ? _("Mostra cosa gioco e il mio tempo: sì") : _("Mostra cosa gioco e il mio tempo: no"));
-  items[0] = l[0]; items[1] = l[1]; items[2] = l[2]; items[3] = _("Utenti bloccati");
-  menu_open(_("Contatti e visibilità"), items, 4, contact_pick, NULL);
-}
+
+enum { PM_STATUS, PM_MESSAGES, PM_REQUESTS, PM_ACTIVITY, PM_RECORDS, PM_TROPHIES, PM_IMPORT, PM_BLOCKS, PM_NOTICE, PM_TERMS, PM_LICENSES, PM_EXPORT, PM_DELETE, PM_N };
+#define PM_GUEST_FIRST PM_NOTICE      // senza account restano solo i documenti
+#define PM_GUEST_N     3
 
 static void privacy_pick(int idx, void *ud) {
   (void)ud;
   switch (idx) {
-    case 0: net_req(HTTP_GET, OMEGA_API "/privacy", NULL, on_privacy, NULL); break;
-    case 1: doc_open("privacy"); break;
-    case 2: doc_open("terms"); break;
-    case 3: doc_open("licenses"); break;
-    case 4: set_msg(_("Preparazione dei tuoi dati..."), 0); net_req(HTTP_GET, OMEGA_API "/account/export", NULL, on_export, NULL); break;
-    case 5: confirm_open(_("Eliminare per sempre l'account e tutto ciò che hai pubblicato? Non si può annullare."), _("Elimina"), delete_yes, NULL); break;
+    case PM_STATUS: status_menu(); return;
+    case PM_MESSAGES: snprintf(PV.messages, sizeof PV.messages, "%s", strcmp(PV.messages, "friends") ? "friends" : "everyone"); break;
+    case PM_REQUESTS: {
+      const char *next = !strcmp(PV.requests, "everyone") ? "friends_of_friends" : !strcmp(PV.requests, "friends_of_friends") ? "nobody" : "everyone";
+      snprintf(PV.requests, sizeof PV.requests, "%s", next);
+      break;
+    }
+    case PM_ACTIVITY: PV.activity = !PV.activity; break;
+    case PM_RECORDS: PV.records = !PV.records; break;
+    case PM_TROPHIES: {
+      const char *next = !strcmp(PV.trophies, "everyone") ? "friends" : !strcmp(PV.trophies, "friends") ? "nobody" : "everyone";
+      snprintf(PV.trophies, sizeof PV.trophies, "%s", next);
+      break;
+    }
+    case PM_IMPORT:
+      if (PV.import) { confirm_open(_("Spegnere l'importazione dei trofei? Quelli gi\xC3\xA0 importati vengono cancellati dal server."), _("Spegni"), import_off_yes, NULL); return; }
+      PV.import = 1; privacy_save(); consync_start(1);
+      privacy_menu_open(idx);
+      return;
+    case PM_BLOCKS: net_req(HTTP_GET, OMEGA_API "/blocks", NULL, on_blocks, NULL); return;
+    case PM_NOTICE: doc_open("privacy"); return;
+    case PM_TERMS: doc_open("terms"); return;
+    case PM_LICENSES: doc_open("licenses"); return;
+    case PM_EXPORT: set_msg(_("Preparazione dei tuoi dati..."), 0); net_req(HTTP_GET, OMEGA_API "/account/export", NULL, on_export, NULL); return;
+    case PM_DELETE: confirm_open(_("Eliminare per sempre l'account e tutto ci\xC3\xB2 che hai pubblicato? Non si pu\xC3\xB2 annullare."), _("Elimina"), delete_yes, NULL); return;
+    default: return;
   }
+  privacy_save();
+  privacy_menu_open(idx);       // il menu resta aperto, sulla stessa voce, con il valore nuovo
 }
-static void privacy_pick_guest(int idx, void *ud) { privacy_pick(idx + 1, ud); }
+static void privacy_pick_guest(int idx, void *ud) { privacy_pick(idx + PM_GUEST_FIRST, ud); }
+
+static const char *privacy_docs(int i) {
+  return i == PM_NOTICE ? _("Informativa sulla privacy") : i == PM_TERMS ? _("Termini d'uso") : i == PM_LICENSES ? _("Licenze open source")
+       : i == PM_EXPORT ? _("Scarica i miei dati") : _("Elimina account");
+}
+static void privacy_menu_open(int focus) {
+  static char l[PM_BLOCKS][200]; static const char *items[PM_N];
+  const char *mode = S.status_mode[0] ? S.status_mode : "online";
+  snprintf(l[PM_STATUS], sizeof l[0], _("Il mio stato: %s"), !strcmp(mode, "invisible") ? _("invisibile") : !strcmp(mode, "away") ? _("assente") : !strcmp(mode, "dnd") ? _("non disturbare") : _("online"));
+  snprintf(l[PM_MESSAGES], sizeof l[0], "%s", strcmp(PV.messages, "friends") ? _("Chi pu\xC3\xB2 scrivermi: tutti") : _("Chi pu\xC3\xB2 scrivermi: solo amici"));
+  snprintf(l[PM_REQUESTS], sizeof l[0], "%s", !strcmp(PV.requests, "nobody") ? _("Richieste di amicizia: nessuno") : !strcmp(PV.requests, "friends_of_friends") ? _("Richieste di amicizia: amici di amici") : _("Richieste di amicizia: tutti"));
+  snprintf(l[PM_ACTIVITY], sizeof l[0], "%s", PV.activity ? _("Mostra agli amici cosa gioco e il mio tempo: s\xC3\xAC") : _("Mostra agli amici cosa gioco e il mio tempo: no"));
+  snprintf(l[PM_RECORDS], sizeof l[0], "%s", !PV.activity ? _("Compari nei Record pubblici: no (attivit\xC3\xA0 nascosta)") : PV.records ? _("Compari nei Record pubblici: s\xC3\xAC") : _("Compari nei Record pubblici: no"));
+  snprintf(l[PM_TROPHIES], sizeof l[0], "%s", !strcmp(PV.trophies, "nobody") ? _("Chi vede i miei trofei: nessuno") : !strcmp(PV.trophies, "friends") ? _("Chi vede i miei trofei: solo amici") : _("Chi vede i miei trofei: tutti (anche in classifica)"));
+  snprintf(l[PM_IMPORT], sizeof l[0], "%s", PV.import ? _("Importa i trofei da questa console: s\xC3\xAC") : _("Importa i trofei da questa console: no"));
+  for (int i = 0; i < PM_BLOCKS; i++) items[i] = l[i];
+  items[PM_BLOCKS] = _("Utenti bloccati");
+  for (int i = PM_NOTICE; i < PM_N; i++) items[i] = privacy_docs(i);
+  menu_open(_("Privacy"), items, PM_N, privacy_pick, NULL);
+  menu_select(focus);
+}
 
 void privacy_menu(void) {
-  const char *items[] = { _("Contatti e visibilità"), _("Informativa sulla privacy"), _("Termini d'uso"), _("Licenze open source"), _("Scarica i miei dati"), _("Elimina account") };
-  if (g_token[0]) menu_open(_("Privacy e dati"), items, 6, privacy_pick, NULL);
-  else menu_open(_("Privacy e termini"), items + 1, 3, privacy_pick_guest, NULL);
+  if (g_token[0]) { net_req(HTTP_GET, OMEGA_API "/privacy", NULL, on_privacy, NULL); return; }
+  static const char *items[PM_GUEST_N];
+  for (int i = 0; i < PM_GUEST_N; i++) items[i] = privacy_docs(PM_GUEST_FIRST + i);
+  menu_open(_("Privacy e termini"), items, PM_GUEST_N, privacy_pick_guest, NULL);
 }
 
 // ------------------------------------------------------------ termini nuovi --
@@ -242,7 +280,7 @@ void terms_refresh(void) { net_req(HTTP_GET, OMEGA_API "/me", NULL, on_me_terms,
 void terms_tick(void) {
   if (!terms_pending || g_scene != SC_HOME || ov_depth() > 0) return;
   terms_pending = 0;
-  confirm_open(_("Termini d'uso e privacy sono stati aggiornati (Impostazioni > Privacy e dati). Li accetti?"), _("Accetto"), terms_yes, NULL);
+  confirm_open(_("Termini d'uso e privacy sono stati aggiornati (Impostazioni > Privacy). Li accetti?"), _("Accetto"), terms_yes, NULL);
 }
 
 // ------------------------------------------------------------------- server --

@@ -43,7 +43,7 @@ const legalLib = require(path.join(API, 'src', 'legal.js'));
 const itDoc = await j('GET', '/api/v1/legal?lang=it');
 ok(itDoc.s === 200 && itDoc.b.lang === 'it' && itDoc.b.notice === null, 'legal it: nessun avviso di traduzione', itDoc.b.lang);
 ok(JSON.stringify(itDoc.b.available) === JSON.stringify(CODES), 'legal: available = 27 lingue', itDoc.b.available);
-ok(itDoc.b.version === legalLib.TERMS_VERSION && legalLib.TERMS_VERSION === '2026-10-05', 'TERMS_VERSION attesa (05/10: diagnostica nell\'informativa)');
+ok(itDoc.b.version === legalLib.TERMS_VERSION && legalLib.TERMS_VERSION === '2026-10-05.2', 'TERMS_VERSION attesa (05/10: record pubblici e trofei nell\'informativa)');
 ok(JSON.stringify(itDoc.b.developer) === JSON.stringify(DEV), 'legal: developer', itDoc.b.developer);
 const ids = (doc) => doc.sections.map((s) => s.id).join();
 for (const code of CODES) {

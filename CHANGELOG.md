@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026.10.05.6
+
+- **Community on the Home**: a Community tile sits before the games, so the
+  feed, groups, people and play time are one press away instead of hidden in
+  the Control Center.
+- **Records** (Community › Records): play time across all members, not just
+  friends. Players, most played games (with each game's record holder and a
+  per-game leaderboard) and marathons (one player on one game), for this week
+  or all time. Game totals count everyone, without names.
+- **Trophies**: the app reads the trophies earned on the console
+  (`TRPTITLE.DAT` per user, definitions and icon from the set's UCP archive)
+  and sends them to the server. They show up in profiles (your own from the
+  Trophies button) and in a public leaderboard by points. The state file format
+  is undocumented: the server recognises the record table instead of assuming
+  a layout, and keeps files it cannot read yet (`parsed=false`) to re-read them
+  later without another client release.
+- **Privacy** (Settings › Privacy) now holds every choice in one menu: status,
+  who can message you, friend requests, activity shown to friends, appearing in
+  the public Records, who sees your trophies (everyone, friends, nobody),
+  trophy import (turning it off deletes the imported ones), blocked users,
+  documents, data export and account deletion.
+- Games show their real name and icon to people who don't own them: consoles
+  send the name and icon of installed games the server doesn't know yet.
+- Presence turns itself off: a console that stops sending signals is marked
+  offline after three minutes and comes back online on its next sync, without
+  inheriting the game it was playing before.
+- Privacy notice updated (version 2026-10-05.2): play time, game names and
+  icons, trophies, and who can see them.
+
 ## 2026.10.05
 
 Versions 2026.10.05.3, .4 and .5, released on the same day.

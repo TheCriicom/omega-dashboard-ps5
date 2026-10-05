@@ -184,6 +184,29 @@ r = await raw('c', `/api/v1/trophies/${NP}/state?tag=9:9`, Buffer.alloc(900, 7))
 ok(r.s === 200 && r.b.parsed === false, 'file non riconosciuto: conservato, parsed=false', r);
 r = await api('b', 'GET', `/api/v1/users/${N.a}/trophies/${NP}`);
 ok(r.s === 200 && r.b.trophies.length === 8 && r.b.trophies.every((t) => t.earned && t.earned_at) && r.b.trophies[4].name === 'A Hidden Trophy', 'i trofei di un set, visti da un altro', r.b.trophies?.[4]);
+// formato vero della PS5 (T2PD): blocchi da 0x400 + 0x20 di firma, sezione 0x800 a passo 0x60
+const t2pd = (earned) => {
+  const s = Buffer.alloc(0x400 * 2);
+  s.write('T2PD', 0); s.writeUInt32BE(0x420, 0x0c); s.write('T2TD', 0x40); s.writeUInt32BE(1, 0x48);
+  const off = 0x200;
+  s.writeUInt32BE(0x800, 0x70); s.writeUInt32BE(0x50, 0x74); s.writeUInt32BE(8, 0x7c); s.writeBigUInt64BE(BigInt(off - 0x40), 0x80);
+  for (let i = 0; i < 8; i++) {
+    const r = off + i * 0x60;
+    s.writeUInt32BE(0x800, r); s.writeUInt32BE(0x50, r + 4); s.writeUInt32BE(i, r + 0x10);
+    if (earned.includes(i)) { s.writeUInt32BE(0x2000, r + 0x18); s.writeBigUInt64BE(BigInt(1790000000 + i + 62135596800) * 1000000n, r + 0x20); }
+  }
+  const out = [s.subarray(0, 0x40)];
+  for (let o = 0x40; o < s.length; o += 0x400) out.push(s.subarray(o, o + 0x400), Buffer.alloc(0x20, 0xab));
+  return Buffer.concat(out);
+};
+r = await raw('d', `/api/v1/trophies/${NP}/state?tag=t2:1`, t2pd([2, 5, 6]));
+ok(r.s === 200 && r.b.parsed === true && r.b.earned === 3, 'formato T2PD della console: letto, 3 trofei', r);
+r = await api('d', 'GET', `/api/v1/users/${N.d}/trophies/${NP}`);
+ok(r.b.trophies.filter((t) => t.earned).map((t) => t.id).join() === '2,5,6' && r.b.trophies[2].earned_at === new Date(1790000002000).toISOString(), 'T2PD: id e data giusti', r.b.trophies?.[2]);
+// un file non letto si rilegge da solo all'avvio dell'api
+await q('UPDATE lab_tset_user SET parsed=false, earned=$2, points=0 WHERE account_id=$1 AND np_id=$3', [id.d, '{}', NP]);
+const trophiesMod = require(path.join(API, 'src/endpoints/trophies.js'));
+ok((await trophiesMod.rereadUnparsed()) >= 1 && (await q('SELECT parsed, points FROM lab_tset_user WHERE account_id=$1 AND np_id=$2', [id.d, NP]))[0].parsed === true, 'rilettura all\'avvio dei file non letti');
 r = await api('a', 'GET', `/api/v1/users/${N.b}/trophies/${NP}`);
 ok(r.b.trophies[4].hidden && r.b.trophies[4].name === null && r.b.trophies[3].earned && r.b.trophies[3].name === 'Basic Bronze Trophy', 'un trofeo nascosto non ottenuto resta senza nome per gli altri', r.b.trophies?.slice(3, 5));
 r = await api('b', 'GET', `/api/v1/users/${N.b}/trophies/${NP}`);
@@ -191,7 +214,7 @@ ok(r.b.trophies[4].name === 'A Hidden Trophy', 'il proprietario lo vede', r.b.tr
 r = await api('b', 'GET', `/api/v1/users/${N.a}`);
 ok(r.s === 200 && r.b.trophies && r.b.trophies.points === 600 && r.b.trophies.p === 1, 'il profilo porta il riepilogo dei trofei', r.b.trophies);
 r = await api('a', 'GET', '/api/v1/trophies/ranking');
-ok(r.s === 200 && names(r.b.ranking).join() === [N.a, N.b].join() && of(r.b.ranking, 'a').me && of(r.b.ranking, 'a').points === 600 && r.b.me.listed,
+ok(r.s === 200 && names(r.b.ranking).join() === [N.a, N.d, N.b].join() && of(r.b.ranking, 'a').me && of(r.b.ranking, 'a').points === 600 && r.b.me.listed,
   'classifica pubblica dei trofei', r.b);
 ok(!r.b.ranking.some((x) => x.user.online_id === N.c), 'chi ha zero punti non è in classifica', r.b.ranking);
 

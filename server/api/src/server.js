@@ -86,6 +86,7 @@ migrate()
   .then((applied) => {
     feeds.start();
     playtime.start();
+    require('./endpoints/trophies').rereadUnparsed().catch((e) => console.error(JSON.stringify({ ts: new Date().toISOString(), event: 'trophy_reread_failed', error: e.message })));
     server.listen(config.port, () => {
       console.log(JSON.stringify({
         ts: new Date().toISOString(), event: 'startup', component: 'api', port: config.port,

@@ -231,4 +231,17 @@ async function ranking({ auth }) {
   return { status: 200, body: { ranking: list, me: { listed: priv.trophies === 'everyone', importing: priv.import_trophies, rank: mine ? mine.rank : null, of: all.length } } };
 }
 
-module.exports = { check, define, icon, state, userSets, userSet, ranking, summaryFor };
+// All'avvio dell'api: rilegge gli stati rimasti «non letti» (parsed=false)
+// con il lettore di adesso. Quando trophyparse.js impara un formato nuovo, i
+// file già arrivati si sistemano al rilascio, senza chiedere niente alle console.
+async function rereadUnparsed() {
+  const r = await db.query(
+    `SELECT u.account_id, u.np_id, u.raw, s.trophies FROM lab_tset_user u JOIN lab_tset s USING (np_id)
+      WHERE NOT u.parsed AND u.raw IS NOT NULL LIMIT 5000`);
+  let read = 0;
+  for (const row of r.rows) if ((await applyState(row.account_id, row.np_id, row.raw, row.trophies)).parsed) read++;
+  if (r.rows.length) console.log(JSON.stringify({ ts: new Date().toISOString(), event: 'trophy_reread', pending: r.rows.length, read }));
+  return read;
+}
+
+module.exports = { check, define, icon, state, userSets, userSet, ranking, summaryFor, rereadUnparsed };

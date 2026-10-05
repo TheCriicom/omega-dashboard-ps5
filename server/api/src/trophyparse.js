@@ -5,12 +5,19 @@
 //  · stato(buf, n): dal file per utente TRPTITLE.DAT quali trofei sono stati
 //    ottenuti e quando.
 //
-// Il formato di TRPTITLE.DAT non è documentato: qui non si presume una
-// disposizione fissa, la si riconosce. Si cerca una tabella di record a passo
-// costante numerati 0..n-1 e, dentro i record, un campo di 8 byte che per
-// alcuni record è una data plausibile e per gli altri è vuoto. Se non si trova
-// niente di simile il file resta «non letto» (parsed=false) e si conserva
-// com'è: si rilegge quando il lettore migliora, senza chiedere altro alle console.
+// TRPTITLE.DAT della PS5 (formato T2PD, ricavato il 06/10/2026 dai file di
+// 21 giochi arrivati da una console vera, tutti letti senza scarti):
+//   · intestazione di 0x40 byte: "T2PD", a 0x0c la misura del blocco (0x420);
+//   · poi blocchi di 0x400 byte di dati seguiti da 0x20 byte di firma: tolte
+//     le firme resta un flusso continuo, a cui si riferiscono gli indirizzi;
+//   · a 0x40 "T2TD", a 0x48 il numero di sezioni, a 0x70 il loro indice
+//     (0x20 byte l'una: tipo, misura del record, ?, numero, indirizzo + 0x40);
+//   · la sezione 0x800 ha un record per trofeo, ogni 0x60 byte (0x50 + 0x10):
+//     +0x10 id, +0x18 stato (bit 0x2000 = ottenuto), +0x20 data dello sblocco
+//     in microsecondi dall'anno 1 (big endian).
+// Un file in un altro formato passa al riconoscimento generico (tabella di
+// record numerati con un campo data); se nemmeno quello lo legge resta «non
+// letto» (parsed=false) e si conserva com'è per rileggerlo più avanti.
 const GRADES = new Set(['P', 'G', 'S', 'B']);
 const POINTS = { P: 300, G: 90, S: 30, B: 15 };
 const MAX_TROPHIES = 400;
@@ -79,10 +86,45 @@ function indexTables(buf, n) {
   return out;
 }
 
-// { parsed, earned: { "<id>": "<ISO>" } } — ids = id dei trofei del set, in ordine.
+// Formato T2PD (vedi sopra): { parsed, earned } oppure null se il file non lo è.
+const T2_EARNED = 0x2000;
+function t2pd(buf, ids, tMax) {
+  if (buf.length < 0x100 || buf.toString('latin1', 0, 4) !== 'T2PD') return null;
+  const block = buf.readUInt32BE(0x0c);
+  if (block <= 0x20 || block > 0x100000) return null;
+  const parts = [buf.subarray(0, 0x40)];
+  for (let o = 0x40; o < buf.length; o += block) parts.push(buf.subarray(o, Math.min(o + block - 0x20, buf.length)));
+  const s = Buffer.concat(parts);
+  if (s.length < 0x70 || s.toString('latin1', 0x40, 0x44) !== 'T2TD') return null;
+  const nsec = s.readUInt32BE(0x48);
+  if (nsec < 1 || nsec > 64 || 0x70 + nsec * 0x20 > s.length) return null;
+  for (let i = 0; i < nsec; i++) {
+    const e = 0x70 + i * 0x20;
+    if (s.readUInt32BE(e) !== 0x800) continue;
+    const size = s.readUInt32BE(e + 4), count = s.readUInt32BE(e + 12);
+    const off = Number(s.readBigUInt64BE(e + 0x10)) + 0x40, stride = size + 0x10;
+    if (size < 0x30 || !count || off + count * stride > s.length + 0x10) return null;
+    const known = new Set(ids);
+    const earned = {};
+    for (let k = 0; k < count; k++) {
+      const r = off + k * stride;
+      if (r + 0x28 > s.length || s.readUInt32BE(r) !== 0x800 || s.readUInt32BE(r + 4) !== size) return null;
+      const id = s.readUInt32BE(r + 0x10);
+      if (!known.has(id) || !(s.readUInt32BE(r + 0x18) & T2_EARNED)) continue;
+      const t = Number(s.readBigUInt64BE(r + 0x20)) / 1e6 - EPOCH_0001;
+      earned[String(id)] = t >= T_MIN && t <= tMax ? new Date(Math.round(t * 1000)).toISOString() : true;
+    }
+    return { parsed: true, earned };
+  }
+  return null;
+}
+
+// { parsed, earned: { "<id>": "<ISO>" | true } } — ids = id dei trofei del set, in ordine.
 function state(buf, ids, now = Date.now()) {
   const none = { parsed: false, earned: {} };
   if (!Buffer.isBuffer(buf) || buf.length < 32 || !Array.isArray(ids) || !ids.length) return none;
+  const t2 = t2pd(buf, ids, now / 1000 + 2 * 86400);
+  if (t2) return t2;
   const n = Math.max(...ids) + 1;
   const tMax = now / 1000 + 2 * 86400;
   let best = null;

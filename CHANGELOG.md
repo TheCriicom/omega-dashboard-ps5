@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026.10.05.7
+
+- **16 new illustrated avatars** (32 in total): dragon, unicorn, shark,
+  octopus, bunny, tiger, wolf, zombie, pirate, wizard, gamer with headset,
+  hacker, oni mask, flying saucer, slime and cyborg. The avatar picker now shows
+  the 32 characters in four rows and the 16 colours in a single row. Avatar
+  indices go up to 47; older clients show the new ones as a coloured initial.
+
 ## 2026.10.05.6
 
 - **Community on the Home**: a Community tile sits before the games, so the

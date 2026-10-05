@@ -454,7 +454,7 @@ static void foreground_tick(void) {
 
 // --------------------------------------------------------- comandi di debug --
 // File OMEGA_CMD, una riga per comando: "key x|o|tri|sq|opt|up|down|left|right|l1|r1",
-// "text <testo>" (prossima tastiera), "shot [file]", "wait <ms>", "micprobe", "system", "files", "store", "quit".
+// "text <testo>" (prossima tastiera), "shot [file]", "wait <ms>", "micprobe", "system", "files", "store", "avatar", "quit".
 // Il file si cancella appena letto.
 static char cmdq[64][160]; static int ncmd, cmd_i; static Uint32 cmd_next, cmd_check;
 static int want_shot; static char shot_path[256];
@@ -488,6 +488,7 @@ static void cmd_poll(void) {
   else if (!strcmp(c, "system")) system_open();
   else if (!strcmp(c, "files")) files_open(NULL);
   else if (!strcmp(c, "store")) store_open();
+  else if (!strcmp(c, "avatar")) ov_push(OV_AVATAR);
 }
 
 static void save_shot(void) {

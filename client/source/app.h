@@ -127,7 +127,7 @@ float sd_tri(float px, float py, float x0, float y0, float x1, float y1, float x
 
 // Avatar: foto/video caricati, personaggi illustrati (avatar.c) o colore + iniziale (gfx.c).
 #define AV_ART_FIRST 16
-#define AV_ART_COUNT 16
+#define AV_ART_COUNT 32
 void draw_avatar(const char *oid, int avatar, int cx, int cy, int size, int alpha);
 void draw_avatar_color(const char *oid, int avatar, int cx, int cy, int size, int alpha);
 void media_note(const char *oid, const char *media, int frames);   // avatar personalizzato di un utente

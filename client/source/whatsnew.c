@@ -11,6 +11,7 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
+  N_("Avatar: 16 personaggi nuovi, dal drago al cyborg. Li trovi in Impostazioni \xE2\x80\xBA Cambia avatar."),
   N_("La Community ora \xC3\xA8 in home, prima dei giochi: bacheca, gruppi, persone e tempo di gioco a un tasto di distanza."),
   N_("Nuovo: Record. Il tempo di gioco di tutti gli iscritti: giocatori, giochi pi\xC3\xB9 giocati e maratone, della settimana o di sempre."),
   N_("Nuovo: Trofei. Omega legge i trofei ottenuti nei giochi di questa console e li mette nel tuo profilo e nella classifica pubblica."),

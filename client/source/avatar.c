@@ -1,7 +1,7 @@
 // Omega UI — avatar:
 //  · personalizzati: foto o breve video caricati dall'utente (fotogrammi JPEG
 //    dal server), animati quando l'avatar è grande;
-//  · illustrati: 16 personaggi vettoriali (SDF a colori) rasterizzati una
+//  · illustrati: 32 personaggi vettoriali (SDF a colori) rasterizzati una
 //    volta a 256 px;
 //  · colore e iniziale (gfx.c) come ripiego.
 #include "app.h"
@@ -171,6 +171,108 @@ static const AvatarArt ART[AV_ART_COUNT] = {
   { C(3a0d0d), C(b3261e), { TRI(0.5f, 0.1f, 0.24f, 0.7f, 0.76f, 0.7f, ff6b1a), DISC(0.5f, 0.66f, 0.26f, ff6b1a), TRI(0.34f, 0.28f, 0.26f, 0.62f, 0.46f, 0.6f, ff8c2a),
     TRI(0.68f, 0.3f, 0.56f, 0.6f, 0.76f, 0.62f, ff8c2a), TRI(0.5f, 0.32f, 0.34f, 0.76f, 0.66f, 0.76f, ffc21a), DISC(0.5f, 0.74f, 0.15f, ffc21a),
     DISC(0.5f, 0.78f, 0.08f, fff3b0), DISC(0.44f, 0.62f, 0.022f, 3a0d0d), DISC(0.56f, 0.62f, 0.022f, 3a0d0d), AEND } },
+  // 16 drago
+  { C(1d0b3a), C(6c2bd9), { TRI(0.33f, 0.31f, 0.25f, 0.1f, 0.42f, 0.26f, f1e3c2), TRI(0.67f, 0.31f, 0.75f, 0.1f, 0.58f, 0.26f, f1e3c2),
+    BOX(0.31f, 0.7f, 0.38f, 0.4f, 0.14f, 1e8449), TRI(0.43f, 0.29f, 0.5f, 0.15f, 0.57f, 0.29f, f39c12), ELL(0.5f, 0.47f, 0.24f, 0.21f, 27ae60),
+    ELL(0.5f, 0.62f, 0.17f, 0.11f, 58d68d), DISC(0.45f, 0.6f, 0.017f, 145a32), DISC(0.55f, 0.6f, 0.017f, 145a32),
+    ELL(0.4f, 0.43f, 0.055f, 0.06f, fff3a0), ELL(0.6f, 0.43f, 0.055f, 0.06f, fff3a0), ELL(0.4f, 0.43f, 0.014f, 0.045f, 1a1a1a), ELL(0.6f, 0.43f, 0.014f, 0.045f, 1a1a1a),
+    SEG(0.43f, 0.8f, 0.57f, 0.8f, 0.012f, f7dc6f), SEG(0.44f, 0.88f, 0.56f, 0.88f, 0.012f, f7dc6f), SEG(0.44f, 0.68f, 0.56f, 0.68f, 0.008f, 145a32), AEND } },
+  // 17 unicorno
+  { C(8e7dff), C(ff9ff3), { DISC(0.34f, 0.4f, 0.11f, ff6b9d), DISC(0.3f, 0.55f, 0.1f, feca57), DISC(0.33f, 0.7f, 0.09f, 48dbfb), DISC(0.4f, 0.82f, 0.08f, a29bfe),
+    BOX(0.38f, 0.6f, 0.28f, 0.5f, 0.12f, ffffff), TRI(0.43f, 0.37f, 0.46f, 0.21f, 0.52f, 0.34f, ffffff), ELL(0.55f, 0.48f, 0.2f, 0.17f, ffffff),
+    TRI(0.5f, 0.33f, 0.6f, 0.31f, 0.63f, 0.07f, ffd700), SEG(0.53f, 0.27f, 0.6f, 0.24f, 0.006f, e1a800), SEG(0.55f, 0.19f, 0.61f, 0.17f, 0.006f, e1a800),
+    ELL(0.66f, 0.56f, 0.11f, 0.09f, ffe4f2), DISC(0.7f, 0.55f, 0.012f, d98cb3), ELL(0.53f, 0.45f, 0.03f, 0.04f, 2d1b4e), DISC(0.54f, 0.435f, 0.011f, ffffff),
+    ELL(0.58f, 0.54f, 0.032f, 0.018f, ffb3d9), AEND } },
+  // 18 squalo
+  { C(0a3d62), C(3c9ad6), { TRI(0.5f, 0.06f, 0.37f, 0.33f, 0.63f, 0.31f, 5d7b93), ELL(0.5f, 0.56f, 0.33f, 0.28f, 7f98ab), ELL(0.5f, 0.7f, 0.25f, 0.15f, eef4f7),
+    BOX(0.33f, 0.63f, 0.34f, 0.09f, 0.045f, 3b0f17), TRI(0.36f, 0.63f, 0.41f, 0.63f, 0.385f, 0.68f, ffffff), TRI(0.43f, 0.63f, 0.48f, 0.63f, 0.455f, 0.68f, ffffff),
+    TRI(0.52f, 0.63f, 0.57f, 0.63f, 0.545f, 0.68f, ffffff), TRI(0.59f, 0.63f, 0.64f, 0.63f, 0.615f, 0.68f, ffffff),
+    DISC(0.37f, 0.47f, 0.038f, 101820), DISC(0.63f, 0.47f, 0.038f, 101820), DISC(0.38f, 0.46f, 0.011f, ffffff), DISC(0.64f, 0.46f, 0.011f, ffffff),
+    SEG(0.23f, 0.5f, 0.25f, 0.6f, 0.008f, 4e6a80), SEG(0.77f, 0.5f, 0.75f, 0.6f, 0.008f, 4e6a80), DISC(0.78f, 0.24f, 0.025f, a9d8f5), DISC(0.84f, 0.32f, 0.016f, a9d8f5), AEND } },
+  // 19 polpo
+  { C(0f6e6e), C(48c9b0), { ELL(0.29f, 0.78f, 0.06f, 0.15f, e84393), ELL(0.41f, 0.83f, 0.06f, 0.15f, e84393), ELL(0.59f, 0.83f, 0.06f, 0.15f, e84393),
+    ELL(0.71f, 0.78f, 0.06f, 0.15f, e84393), ELL(0.5f, 0.44f, 0.27f, 0.28f, fd79a8), DISC(0.38f, 0.28f, 0.03f, e84393), DISC(0.6f, 0.25f, 0.024f, e84393),
+    DISC(0.68f, 0.37f, 0.02f, e84393), DISC(0.41f, 0.5f, 0.065f, ffffff), DISC(0.59f, 0.5f, 0.065f, ffffff), DISC(0.42f, 0.51f, 0.032f, 2d3436),
+    DISC(0.6f, 0.51f, 0.032f, 2d3436), DISC(0.43f, 0.495f, 0.01f, ffffff), DISC(0.61f, 0.495f, 0.01f, ffffff), ELL(0.5f, 0.63f, 0.045f, 0.025f, 8e2a5b),
+    ELL(0.31f, 0.58f, 0.04f, 0.022f, ffb3d1), ELL(0.69f, 0.58f, 0.04f, 0.022f, ffb3d1), AEND } },
+  // 20 coniglio
+  { C(fab1a0), C(ffeaa7), { ELL(0.4f, 0.22f, 0.065f, 0.18f, f5f6fa), ELL(0.6f, 0.22f, 0.065f, 0.18f, f5f6fa), ELL(0.4f, 0.23f, 0.032f, 0.13f, ffb8c6),
+    ELL(0.6f, 0.23f, 0.032f, 0.13f, ffb8c6), BOX(0.3f, 0.76f, 0.4f, 0.34f, 0.16f, e8e8f0), DISC(0.5f, 0.53f, 0.23f, ffffff),
+    DISC(0.42f, 0.5f, 0.03f, 2d3436), DISC(0.58f, 0.5f, 0.03f, 2d3436), DISC(0.43f, 0.49f, 0.01f, ffffff), DISC(0.59f, 0.49f, 0.01f, ffffff),
+    TRI(0.475f, 0.58f, 0.525f, 0.58f, 0.5f, 0.615f, ff7aa2), SEG(0.5f, 0.61f, 0.5f, 0.65f, 0.006f, b07a8a), SEG(0.5f, 0.65f, 0.46f, 0.67f, 0.006f, b07a8a),
+    SEG(0.5f, 0.65f, 0.54f, 0.67f, 0.006f, b07a8a), ELL(0.36f, 0.59f, 0.04f, 0.022f, ffc6d3), ELL(0.64f, 0.59f, 0.04f, 0.022f, ffc6d3),
+    DISC(0.66f, 0.84f, 0.06f, ff9f43), TRI(0.63f, 0.8f, 0.66f, 0.72f, 0.69f, 0.8f, 2ecc71), AEND } },
+  // 21 tigre
+  { C(0b6623), C(6ab04c), { DISC(0.29f, 0.3f, 0.085f, e67e22), DISC(0.71f, 0.3f, 0.085f, e67e22), DISC(0.29f, 0.3f, 0.042f, fdebd0), DISC(0.71f, 0.3f, 0.042f, fdebd0),
+    DISC(0.5f, 0.53f, 0.27f, f39c12), ELL(0.5f, 0.65f, 0.15f, 0.11f, fdf2e9), SEG(0.5f, 0.27f, 0.5f, 0.37f, 0.015f, 1e1e1e), SEG(0.43f, 0.29f, 0.45f, 0.36f, 0.01f, 1e1e1e),
+    SEG(0.57f, 0.29f, 0.55f, 0.36f, 0.01f, 1e1e1e), SEG(0.24f, 0.5f, 0.33f, 0.52f, 0.011f, 1e1e1e), SEG(0.25f, 0.58f, 0.33f, 0.57f, 0.011f, 1e1e1e),
+    SEG(0.76f, 0.5f, 0.67f, 0.52f, 0.011f, 1e1e1e), SEG(0.75f, 0.58f, 0.67f, 0.57f, 0.011f, 1e1e1e), ELL(0.4f, 0.46f, 0.048f, 0.035f, f9e79f),
+    ELL(0.6f, 0.46f, 0.048f, 0.035f, f9e79f), ELL(0.4f, 0.46f, 0.012f, 0.03f, 111111), ELL(0.6f, 0.46f, 0.012f, 0.03f, 111111),
+    TRI(0.46f, 0.59f, 0.54f, 0.59f, 0.5f, 0.64f, e17055), SEG(0.5f, 0.64f, 0.5f, 0.68f, 0.008f, 5d4037), AEND } },
+  // 22 lupo
+  { C(0c2461), C(4a69bd), { DISC(0.76f, 0.24f, 0.08f, fdfde0), TRI(0.28f, 0.38f, 0.31f, 0.11f, 0.45f, 0.3f, 7f8c8d), TRI(0.72f, 0.38f, 0.69f, 0.11f, 0.55f, 0.3f, 7f8c8d),
+    TRI(0.31f, 0.33f, 0.32f, 0.18f, 0.41f, 0.3f, 3d3d3d), TRI(0.69f, 0.33f, 0.68f, 0.18f, 0.59f, 0.3f, 3d3d3d), BOX(0.3f, 0.74f, 0.4f, 0.36f, 0.14f, 6c7a89),
+    ELL(0.5f, 0.52f, 0.25f, 0.24f, 95a5a6), TRI(0.45f, 0.33f, 0.55f, 0.33f, 0.5f, 0.47f, 6c7a89), TRI(0.36f, 0.53f, 0.64f, 0.53f, 0.5f, 0.79f, ecf0f1),
+    DISC(0.5f, 0.72f, 0.036f, 2d3436), ELL(0.41f, 0.47f, 0.042f, 0.026f, f6e58d), ELL(0.59f, 0.47f, 0.042f, 0.026f, f6e58d),
+    DISC(0.41f, 0.47f, 0.013f, 111111), DISC(0.59f, 0.47f, 0.013f, 111111), AEND } },
+  // 23 zombie
+  { C(2c003e), C(4b6584), { BOX(0.3f, 0.78f, 0.4f, 0.32f, 0.1f, 6c5ce7), TRI(0.4f, 0.78f, 0.46f, 0.78f, 0.43f, 0.85f, 4b6584), BOX(0.28f, 0.23f, 0.44f, 0.52f, 0.14f, 8bc34a),
+    BOX(0.28f, 0.21f, 0.44f, 0.1f, 0.06f, 3e2c1c), TRI(0.3f, 0.3f, 0.37f, 0.3f, 0.32f, 0.39f, 3e2c1c), TRI(0.58f, 0.3f, 0.66f, 0.3f, 0.63f, 0.37f, 3e2c1c),
+    DISC(0.4f, 0.47f, 0.065f, fdfefe), DISC(0.41f, 0.48f, 0.02f, c0392b), SEG(0.55f, 0.43f, 0.65f, 0.51f, 0.013f, 1b2a10), SEG(0.65f, 0.43f, 0.55f, 0.51f, 0.013f, 1b2a10),
+    BOX(0.4f, 0.6f, 0.21f, 0.08f, 0.02f, 3b1f1f), BOX(0.44f, 0.6f, 0.04f, 0.03f, 0.005f, f5f5dc), BOX(0.53f, 0.6f, 0.04f, 0.03f, 0.005f, f5f5dc),
+    SEG(0.31f, 0.37f, 0.4f, 0.33f, 0.006f, 2c3e2c), SEG(0.34f, 0.32f, 0.35f, 0.38f, 0.005f, 2c3e2c), SEG(0.37f, 0.31f, 0.38f, 0.37f, 0.005f, 2c3e2c),
+    ELL(0.6f, 0.68f, 0.03f, 0.02f, 6e9a3a), AEND } },
+  // 24 pirata
+  { C(1b4f72), C(2e86c1), { BOX(0.3f, 0.78f, 0.4f, 0.32f, 0.12f, fdfefe), SEG(0.34f, 0.84f, 0.66f, 0.84f, 0.014f, c0392b), SEG(0.34f, 0.93f, 0.66f, 0.93f, 0.014f, c0392b),
+    DISC(0.5f, 0.54f, 0.22f, f0c08a), ELL(0.5f, 0.7f, 0.18f, 0.1f, 6d3b1e), SEG(0.45f, 0.65f, 0.55f, 0.65f, 0.009f, 3b1d0e),
+    BOX(0.28f, 0.29f, 0.44f, 0.16f, 0.08f, c0392b), TRI(0.69f, 0.36f, 0.83f, 0.29f, 0.8f, 0.45f, a93226), DISC(0.38f, 0.35f, 0.016f, ffffff),
+    DISC(0.5f, 0.33f, 0.016f, ffffff), DISC(0.62f, 0.35f, 0.016f, ffffff), SEG(0.3f, 0.41f, 0.68f, 0.53f, 0.009f, 1b1b1b), DISC(0.6f, 0.5f, 0.058f, 1b1b1b),
+    DISC(0.42f, 0.5f, 0.026f, 1b1b1b), DISC(0.29f, 0.62f, 0.022f, f1c40f), ELL(0.5f, 0.57f, 0.03f, 0.025f, e0a878), AEND } },
+  // 25 mago
+  { C(1b1464), C(5f27cd), { TRI(0.5f, 0.03f, 0.28f, 0.38f, 0.72f, 0.38f, 3c40c6), DISC(0.46f, 0.22f, 0.022f, ffd32a), DISC(0.57f, 0.3f, 0.016f, ffd32a),
+    DISC(0.52f, 0.13f, 0.012f, ffd32a), DISC(0.5f, 0.53f, 0.17f, f6d5b3), TRI(0.32f, 0.57f, 0.68f, 0.57f, 0.5f, 0.96f, ecf0f1), ELL(0.5f, 0.62f, 0.18f, 0.08f, ecf0f1),
+    ELL(0.45f, 0.59f, 0.065f, 0.026f, ffffff), ELL(0.55f, 0.59f, 0.065f, 0.026f, ffffff), ELL(0.5f, 0.54f, 0.026f, 0.032f, eab38f),
+    DISC(0.44f, 0.49f, 0.019f, 2d3436), DISC(0.56f, 0.49f, 0.019f, 2d3436), SEG(0.4f, 0.45f, 0.47f, 0.44f, 0.009f, ffffff), SEG(0.53f, 0.44f, 0.6f, 0.45f, 0.009f, ffffff),
+    ELL(0.5f, 0.38f, 0.29f, 0.05f, 30336b), AEND } },
+  // 26 gamer con le cuffie
+  { C(3c40c6), C(ff3f34), { BOX(0.3f, 0.78f, 0.4f, 0.32f, 0.12f, 0be881), DISC(0.5f, 0.52f, 0.21f, ffd3a5), ELL(0.5f, 0.35f, 0.2f, 0.09f, 6f3a1f),
+    TRI(0.32f, 0.38f, 0.42f, 0.3f, 0.36f, 0.45f, 6f3a1f), SEG(0.27f, 0.5f, 0.3f, 0.27f, 0.024f, 2d3436), SEG(0.3f, 0.27f, 0.5f, 0.17f, 0.024f, 2d3436),
+    SEG(0.5f, 0.17f, 0.7f, 0.27f, 0.024f, 2d3436), SEG(0.7f, 0.27f, 0.73f, 0.5f, 0.024f, 2d3436), BOX(0.2f, 0.43f, 0.11f, 0.19f, 0.045f, ff3f34),
+    BOX(0.69f, 0.43f, 0.11f, 0.19f, 0.045f, ff3f34), SEG(0.27f, 0.6f, 0.4f, 0.7f, 0.01f, 2d3436), DISC(0.41f, 0.7f, 0.024f, 2d3436),
+    ELL(0.43f, 0.5f, 0.022f, 0.03f, 2d3436), ELL(0.57f, 0.5f, 0.022f, 0.03f, 2d3436), SEG(0.47f, 0.61f, 0.55f, 0.6f, 0.01f, a0522d),
+    SEG(0.38f, 0.86f, 0.62f, 0.86f, 0.01f, 05c46b), AEND } },
+  // 27 hacker
+  { C(000000), C(0b3d0b), { SEG(0.18f, 0.2f, 0.18f, 0.27f, 0.008f, 0a7a3a), SEG(0.82f, 0.62f, 0.82f, 0.7f, 0.008f, 0a7a3a), DISC(0.84f, 0.3f, 0.01f, 0a7a3a),
+    DISC(0.17f, 0.66f, 0.01f, 0a7a3a), BOX(0.22f, 0.22f, 0.56f, 0.82f, 0.24f, 1e272e), ELL(0.5f, 0.52f, 0.17f, 0.2f, 0a0a0a),
+    BOX(0.36f, 0.45f, 0.12f, 0.065f, 0.02f, 00ff88), BOX(0.52f, 0.45f, 0.12f, 0.065f, 0.02f, 00ff88), SEG(0.48f, 0.48f, 0.52f, 0.48f, 0.008f, 00ff88),
+    SEG(0.46f, 0.62f, 0.54f, 0.62f, 0.006f, 00aa55), SEG(0.44f, 0.74f, 0.44f, 0.87f, 0.006f, bdc3c7), SEG(0.56f, 0.74f, 0.56f, 0.87f, 0.006f, bdc3c7),
+    DISC(0.44f, 0.88f, 0.012f, bdc3c7), DISC(0.56f, 0.88f, 0.012f, bdc3c7), AEND } },
+  // 28 maschera oni
+  { C(1a0000), C(c0392b), { TRI(0.31f, 0.31f, 0.23f, 0.08f, 0.39f, 0.26f, f5f5dc), TRI(0.69f, 0.31f, 0.77f, 0.08f, 0.61f, 0.26f, f5f5dc),
+    ELL(0.5f, 0.53f, 0.27f, 0.29f, e74c3c), TRI(0.32f, 0.37f, 0.47f, 0.42f, 0.33f, 0.44f, 1a0000), TRI(0.68f, 0.37f, 0.53f, 0.42f, 0.67f, 0.44f, 1a0000),
+    ELL(0.4f, 0.48f, 0.052f, 0.032f, ffd32a), ELL(0.6f, 0.48f, 0.052f, 0.032f, ffd32a), DISC(0.4f, 0.48f, 0.016f, 1a0000), DISC(0.6f, 0.48f, 0.016f, 1a0000),
+    ELL(0.5f, 0.57f, 0.045f, 0.03f, b03a2e), BOX(0.35f, 0.63f, 0.3f, 0.11f, 0.045f, 1a0000), TRI(0.37f, 0.63f, 0.43f, 0.63f, 0.4f, 0.71f, ffffff),
+    TRI(0.57f, 0.63f, 0.63f, 0.63f, 0.6f, 0.71f, ffffff), TRI(0.44f, 0.74f, 0.5f, 0.74f, 0.47f, 0.69f, ffffff), TRI(0.5f, 0.74f, 0.56f, 0.74f, 0.53f, 0.69f, ffffff),
+    SEG(0.27f, 0.6f, 0.31f, 0.7f, 0.008f, a93226), SEG(0.73f, 0.6f, 0.69f, 0.7f, 0.008f, a93226), AEND } },
+  // 29 disco volante
+  { C(0c0032), C(3d1a78), { DISC(0.24f, 0.26f, 0.011f, ffffff), DISC(0.76f, 0.2f, 0.009f, ffffff), DISC(0.82f, 0.62f, 0.011f, ffffff), DISC(0.18f, 0.66f, 0.009f, ffffff),
+    DISC(0.66f, 0.12f, 0.007f, ffffff), TRI(0.5f, 0.55f, 0.29f, 0.94f, 0.71f, 0.94f, 5e8f72), TRI(0.5f, 0.58f, 0.37f, 0.94f, 0.63f, 0.94f, 8fd9a8),
+    DISC(0.5f, 0.44f, 0.14f, a5f3fc), DISC(0.5f, 0.47f, 0.06f, 7bed7b), ELL(0.48f, 0.46f, 0.012f, 0.018f, 101010), ELL(0.52f, 0.46f, 0.012f, 0.018f, 101010),
+    SEG(0.48f, 0.41f, 0.46f, 0.36f, 0.006f, 7bed7b), SEG(0.52f, 0.41f, 0.54f, 0.36f, 0.006f, 7bed7b), ELL(0.5f, 0.55f, 0.31f, 0.085f, 7f8c8d),
+    ELL(0.5f, 0.52f, 0.27f, 0.055f, bdc3c7), DISC(0.31f, 0.57f, 0.021f, ffd32a), DISC(0.43f, 0.6f, 0.021f, ff4757), DISC(0.57f, 0.6f, 0.021f, ffd32a),
+    DISC(0.69f, 0.57f, 0.021f, ff4757), DISC(0.42f, 0.4f, 0.025f, e0fbff), AEND } },
+  // 30 slime
+  { C(6c5ce7), C(a29bfe), { ELL(0.5f, 0.86f, 0.27f, 0.035f, 4834a6), ELL(0.5f, 0.67f, 0.31f, 0.21f, 3ddc97), DISC(0.5f, 0.5f, 0.22f, 3ddc97),
+    TRI(0.46f, 0.3f, 0.54f, 0.3f, 0.53f, 0.2f, 3ddc97), ELL(0.27f, 0.82f, 0.045f, 0.06f, 3ddc97), ELL(0.73f, 0.84f, 0.035f, 0.05f, 3ddc97),
+    ELL(0.39f, 0.42f, 0.055f, 0.03f, c8fff0), DISC(0.3f, 0.6f, 0.014f, c8fff0), ELL(0.42f, 0.57f, 0.036f, 0.052f, 1e272e), ELL(0.58f, 0.57f, 0.036f, 0.052f, 1e272e),
+    DISC(0.43f, 0.555f, 0.013f, ffffff), DISC(0.59f, 0.555f, 0.013f, ffffff), ELL(0.5f, 0.68f, 0.055f, 0.035f, 1e272e), ELL(0.5f, 0.7f, 0.03f, 0.015f, ff7675),
+    ELL(0.34f, 0.64f, 0.03f, 0.016f, 7ef0c0), ELL(0.66f, 0.64f, 0.03f, 0.016f, 7ef0c0), AEND } },
+  // 31 cyborg
+  { C(2f3542), C(57606f), { BOX(0.26f, 0.82f, 0.48f, 0.28f, 0.1f, 1e2530), BOX(0.4f, 0.72f, 0.2f, 0.14f, 0.02f, 747d8c), DISC(0.5f, 0.5f, 0.25f, a4b0be),
+    ELL(0.42f, 0.5f, 0.17f, 0.25f, f0c8a0), ELL(0.42f, 0.29f, 0.17f, 0.06f, 2d1e14), SEG(0.59f, 0.3f, 0.59f, 0.72f, 0.007f, 57606f),
+    DISC(0.62f, 0.46f, 0.05f, 2f3542), DISC(0.62f, 0.46f, 0.028f, ff4757), DISC(0.615f, 0.455f, 0.009f, ffd0d5), DISC(0.4f, 0.46f, 0.026f, 2d3436),
+    DISC(0.41f, 0.45f, 0.009f, ffffff), DISC(0.7f, 0.35f, 0.012f, 57606f), DISC(0.72f, 0.6f, 0.012f, 57606f), SEG(0.42f, 0.62f, 0.56f, 0.62f, 0.008f, 8b4a3a),
+    SEG(0.62f, 0.66f, 0.7f, 0.66f, 0.006f, 57606f), SEG(0.34f, 0.88f, 0.66f, 0.88f, 0.008f, 00d2d3), AEND } },
 };
 
 static SDL_Texture *art_tex[AV_ART_COUNT];

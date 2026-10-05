@@ -763,32 +763,40 @@ void profile_input(int b) {
 }
 
 // ------------------------------------------------------------ scelta avatar --
-// Righe 0-1: personaggi illustrati · righe 2-3: colori · riga 4: foto o video.
+// Quattro righe da 8 personaggi illustrati (0-31), una riga da 16 colori
+// (32-47), poi il tasto per una foto o un video personale (48).
+#define AV_CHARS AV_ART_COUNT
+#define AV_COLORS 16
+#define AV_CUSTOM (AV_CHARS + AV_COLORS)
 static int av_sel = -1;
-static int av_index(int sel) { return sel < 16 ? AV_ART_FIRST + sel : sel - 16; }
+static int av_index(int sel) { return sel < AV_CHARS ? AV_ART_FIRST + sel : sel - AV_CHARS; }
 void avatar_draw(float t) {
   backdrop(t, 140);
-  if (av_sel < 0) { av_sel = 32; for (int i = 0; i < 32; i++) if (av_index(i) == S.my_avatar) av_sel = i; }
+  if (av_sel < 0) { av_sel = AV_CUSTOM; for (int i = 0; i < AV_CUSTOM; i++) if (av_index(i) == S.my_avatar) av_sel = i; }
   int w = 1320, h = 940, x = SCREEN_W / 2 - w / 2, y = SCREEN_H / 2 - h / 2 + (int)((1 - ease_out(t)) * 40);
   int a = (int)(255 * t);
   shadow_rrect(x, y, w, h, 30, 40, a * 70 / 100);
   fill_rrect(x, y, w, h, 30, C_PANEL, a);
   draw_text(font(W_LIGHT, 44), _("Scegli il tuo avatar"), x + 60, y + 36, C_WHITE, a, AL_L);
-  draw_text(font(W_MED, 24), _("Personaggi"), x + 64, y + 108, C_DIM, a, AL_L);
-  draw_text(font(W_MED, 24), _("Colori"), x + 64, y + 482, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 24), _("Personaggi"), x + 64, y + 104, C_DIM, a, AL_L);
+  draw_text(font(W_MED, 24), _("Colori"), x + 64, y + 640, C_DIM, a, AL_L);
   float pulse = 0.5f + 0.5f * sinf((float)g_time * 4);
-  int custom_frames = 0; int has_custom = media_of(S.me, &custom_frames) != NULL;
-  for (int i = 0; i < 32; i++) {
-    int row = i / 8, col = i % 8;
-    int cx = x + 130 + col * 152, cy = y + 210 + row * 150 + (row >= 2 ? 50 : 0);
-    int foc = av_sel == i, idx = av_index(i);
-    if (foc) ring(cx, cy, 70, 4, C_WHITE, (int)(a * (0.7f + 0.3f * pulse)));
+  int has_custom = media_of(S.me, NULL) != NULL;
+  for (int i = 0; i < AV_CUSTOM; i++) {
+    int chr = i < AV_CHARS, foc = av_sel == i, idx = av_index(i);
+    int cx = chr ? x + 135 + (i % 8) * 150 : x + 90 + (i - AV_CHARS) * 76;
+    int cy = chr ? y + 196 + (i / 8) * 122 : y + 718;
+    int sz = chr ? (foc ? 112 : 98) : (foc ? 64 : 54);
+    if (foc) ring(cx, cy, sz / 2 + 8, 4, C_WHITE, (int)(a * (0.7f + 0.3f * pulse)));
     // oid vuoto: draw_avatar altrimenti mostrerebbe la foto personalizzata
-    if (idx >= AV_ART_FIRST) { char none[2] = ""; draw_avatar(none, idx, cx, cy, foc ? 124 : 108, a); }
-    else draw_avatar_color(S.me, idx, cx, cy, foc ? 124 : 108, a);
-    if (idx == S.my_avatar && !has_custom) { fill_circle(cx + 42, cy + 42, 17, C_OK, a); draw_icon(IC_CHECK, cx + 42, cy + 42, 22, C_WHITE, a); }
+    if (chr) { char none[2] = ""; draw_avatar(none, idx, cx, cy, sz, a); }
+    else draw_avatar_color(S.me, idx, cx, cy, sz, a);
+    if (idx == S.my_avatar && !has_custom) {
+      int o = chr ? 38 : 20, r = chr ? 16 : 11;
+      fill_circle(cx + o, cy + o, r, C_OK, a); draw_icon(IC_CHECK, cx + o, cy + o, r * 13 / 10, C_WHITE, a);
+    }
   }
-  int by = y + h - 120, bw = 560, bx = x + w / 2 - bw / 2, foc = av_sel == 32;
+  int by = y + h - 120, bw = 560, bx = x + w / 2 - bw / 2, foc = av_sel == AV_CUSTOM;
   if (foc) shadow_rrect(bx, by, bw, 80, 40, 16, a / 2);
   fill_rrect(bx, by, bw, 80, 40, foc ? C_WHITE : RGB(48, 54, 72), a);
   draw_icon(IC_PLAY, bx + 60, by + 40, 30, foc ? RGB(12, 14, 22) : C_TXT, a);
@@ -796,16 +804,24 @@ void avatar_draw(float t) {
 }
 void avatar_input(int b) {
   if (b == B_O) { av_sel = -1; ov_pop(); return; }
-  if (av_sel == 32) {
-    if (b == B_UP) av_sel = 28;
+  if (av_sel == AV_CUSTOM) {
+    if (b == B_UP) av_sel = AV_CHARS + AV_COLORS / 2;
     else if (b == B_X) { av_sel = -1; ov_pop(); gallery_open(0); }
     return;
   }
-  if (b == B_LEFT && av_sel % 8 > 0) av_sel--;
-  else if (b == B_RIGHT && av_sel % 8 < 7) av_sel++;
-  else if (b == B_UP && av_sel >= 8) av_sel -= 8;
-  else if (b == B_DOWN) av_sel = av_sel + 8 < 32 ? av_sel + 8 : 32;
-  else if (b == B_X) {
+  if (av_sel >= AV_CHARS) {                       // riga dei colori
+    int c = av_sel - AV_CHARS;
+    if (b == B_LEFT && c > 0) av_sel--;
+    else if (b == B_RIGHT && c < AV_COLORS - 1) av_sel++;
+    else if (b == B_UP) av_sel = AV_CHARS - 8 + c / 2;
+    else if (b == B_DOWN) av_sel = AV_CUSTOM;
+  } else {                                        // personaggi, 8 per riga
+    if (b == B_LEFT && av_sel % 8 > 0) av_sel--;
+    else if (b == B_RIGHT && av_sel % 8 < 7) av_sel++;
+    else if (b == B_UP && av_sel >= 8) av_sel -= 8;
+    else if (b == B_DOWN) av_sel = av_sel + 8 < AV_CHARS ? av_sel + 8 : AV_CHARS + (av_sel % 8) * 2;
+  }
+  if (b == B_X) {
     int idx = av_index(av_sel);
     // scegliere un avatar Omega toglie la foto o il video personale
     if (media_of(S.me, NULL)) { net_req(HTTP_POST, OMEGA_API "/media/clear?kind=avatar", "{}", NULL, NULL); media_note(S.me, "", 0); }

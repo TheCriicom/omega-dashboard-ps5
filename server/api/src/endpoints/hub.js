@@ -304,7 +304,7 @@ async function profileUpdate({ req, auth }) {
     await db.query('UPDATE lab_account SET about_me=$2 WHERE account_id=$1', [auth.accountId, about || null]);
   }
   if (body.avatar !== undefined) {
-    const av = Math.max(0, Math.min(31, Number.parseInt(body.avatar, 10) || 0));
+    const av = Math.max(0, Math.min(47, Number.parseInt(body.avatar, 10) || 0));
     await db.query('UPDATE lab_account SET avatar=$2 WHERE account_id=$1', [auth.accountId, av]);
   }
   return { status: 200, body: { result: 'ok' } };

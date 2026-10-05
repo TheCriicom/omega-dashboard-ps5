@@ -21,8 +21,10 @@ const handlers = {
   radio: require('./endpoints/radio'),
   store: require('./endpoints/store'),
   legal: require('./endpoints/legal'),
+  updates: require('./endpoints/updates'),
   site: require('./endpoints/site'),
   admin: require('./endpoints/admin'),
+  diag: require('./endpoints/diag'),
 };
 
 // Le versioni dell'app uscite prima di /api/v1 chiamano /lab/v1: stesso gestore.

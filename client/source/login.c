@@ -6,7 +6,7 @@
 
 // Il server accetta registrazioni solo dalle app che presentano questa chiave.
 #ifndef OMEGA_REG_KEY
-#define OMEGA_REG_KEY ""
+#define OMEGA_REG_KEY "1209dae3d1158f97c4f158908263411d"
 #endif
 
 static float splash_t;

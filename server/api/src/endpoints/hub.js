@@ -8,6 +8,7 @@ const { notify, rememberLang } = require('../notify');
 const messages = require('../messages');
 const { effective } = require('./social');
 const feeds = require('../feeds');
+const sysmsg = require('../sysmsg');
 const limiter = require('../ratelimit');
 const rel = require('../relations');
 const { multiline, oneLine, likePattern } = require('../text');
@@ -70,7 +71,7 @@ async function partyOf(accountId) {
   return r.rows[0] || null;
 }
 
-async function partyState(accountId, withMessages = true) {
+async function partyState(accountId, withMessages = true, code = null) {
   const p = await partyOf(accountId);
   if (!p) return null;
   const members = (await db.query(
@@ -94,11 +95,11 @@ async function partyState(accountId, withMessages = true) {
     owner: String(p.owner_id) === String(accountId), members, invited,
     talking: voice.talking(p.party_id),
   };
-  if (withMessages) out.messages = await partyMessages(p.party_id, 0);
+  if (withMessages) out.messages = await partyMessages(p.party_id, 0, code);
   return out;
 }
 
-async function partyMessages(partyId, after) {
+async function partyMessages(partyId, after, code) {
   const r = await db.query(
     `SELECT * FROM (
        SELECT m.message_id, a.online_id AS sender, a.avatar, m.body, m.created_at
@@ -106,7 +107,8 @@ async function partyMessages(partyId, after) {
         WHERE m.party_id=$1 AND m.message_id > $2
         ORDER BY m.message_id DESC LIMIT 60) t
       ORDER BY message_id`, [partyId, Number(after) || 0]);
-  return r.rows.map((m) => ({ ...m, message_id: String(m.message_id) }));
+  // "· x si è unito al party": messaggio di sistema, nella lingua di chi legge
+  return r.rows.map((m) => ({ ...m, body: m.body.startsWith('· ') ? sysmsg.translate(m.body, code) : m.body, message_id: String(m.message_id) }));
 }
 
 async function partyInvitesFor(accountId) {
@@ -368,12 +370,12 @@ async function sendMessage({ req, auth, params }) {
 
 // ---------------------------------------------------------------- party --
 // GET /api/v1/party
-async function party({ auth }) {
-  return { status: 200, body: { party: await partyState(auth.accountId), invites: await partyInvitesFor(auth.accountId) } };
+async function party({ auth, lang, langExplicit }) {
+  return { status: 200, body: { party: await partyState(auth.accountId, true, langExplicit ? lang : null), invites: await partyInvitesFor(auth.accountId) } };
 }
 
 // POST /api/v1/party  { name? }  — crea un party (lascia quello attuale).
-async function partyCreate({ req, auth }) {
+async function partyCreate({ req, auth, lang, langExplicit }) {
   const body = await readJson(req);
   const name = String(body.name || '').trim().slice(0, 40) || `Party di ${auth.onlineId}`;
   await leaveParty(auth.accountId, auth.onlineId);
@@ -381,7 +383,7 @@ async function partyCreate({ req, auth }) {
   await db.query('INSERT INTO lab_party_member (party_id, account_id) VALUES ($1,$2)', [p.party_id, auth.accountId]);
   voice.forget(auth.accountId);
   await systemPartyMessage(p.party_id, auth.accountId, `· ${auth.onlineId} ha creato il party`);
-  return { status: 201, body: { party: await partyState(auth.accountId) } };
+  return { status: 201, body: { party: await partyState(auth.accountId, true, langExplicit ? lang : null) } };
 }
 
 // POST /api/v1/party/invite  { online_id }
@@ -405,7 +407,7 @@ async function partyInvite({ req, auth }) {
 }
 
 // POST /api/v1/party/join  { party_id }
-async function partyJoin({ req, auth }) {
+async function partyJoin({ req, auth, lang, langExplicit }) {
   const body = await readJson(req);
   const partyId = Number(body.party_id) || 0;
   const inv = await db.query(
@@ -417,7 +419,7 @@ async function partyJoin({ req, auth }) {
   await db.query('DELETE FROM lab_party_invite WHERE party_id=$1 AND to_id=$2', [partyId, auth.accountId]);
   voice.forget(auth.accountId);
   await systemPartyMessage(partyId, auth.accountId, `· ${auth.onlineId} si è unito al party`);
-  return { status: 200, body: { party: await partyState(auth.accountId) } };
+  return { status: 200, body: { party: await partyState(auth.accountId, true, langExplicit ? lang : null) } };
 }
 
 // POST /api/v1/party/decline  { party_id }
@@ -442,10 +444,10 @@ async function partyMute({ req, auth }) {
 }
 
 // GET /api/v1/party/messages?after=<id>
-async function partyMessagesGet({ auth, url }) {
+async function partyMessagesGet({ auth, url, lang, langExplicit }) {
   const p = await partyOf(auth.accountId);
   if (!p) throw new HttpError(409, 'not_in_party');
-  return { status: 200, body: { messages: await partyMessages(p.party_id, url.searchParams.get('after')) } };
+  return { status: 200, body: { messages: await partyMessages(p.party_id, url.searchParams.get('after'), langExplicit ? lang : null) } };
 }
 
 // POST /api/v1/party/messages  { text }
@@ -461,14 +463,18 @@ async function partyMessagesPost({ req, auth }) {
 
 // ------------------------------------------------------------ news/giochi --
 // GET /api/v1/news?game_id=
-async function news({ url }) {
+// Prima le notizie nella lingua della richiesta (e in quelle sorelle), poi
+// l'inglese; le notizie scritte a mano (lang NULL) valgono per tutti.
+const NEWS_PREF = 'COALESCE(array_position($1::text[], lang), 1)';
+async function news({ url, lang }) {
+  const langs = feeds.langsFor(lang);
   const game = url.searchParams.get('game_id');
   const r = game
     ? await db.query(
-      `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news
-        WHERE game_id=$1 OR game_id IS NULL ORDER BY (game_id IS NULL), created_at DESC LIMIT 20`, [game])
+      `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news WHERE (lang = ANY($1) OR lang IS NULL) AND (game_id=$2 OR game_id IS NULL)
+        ORDER BY (game_id IS NULL), ${NEWS_PREF}, created_at DESC LIMIT 20`, [langs, game])
     : await db.query(
-      `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news ORDER BY created_at DESC LIMIT 30`);
+      `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news WHERE lang = ANY($1) OR lang IS NULL ORDER BY ${NEWS_PREF}, created_at DESC LIMIT 30`, [langs]);
   return { status: 200, body: { news: r.rows } };
 }
 
@@ -482,7 +488,8 @@ async function newsImage({ params, res }) {
 }
 
 // GET /api/v1/games/:gameId — amici che ci giocano ora, chi ci ha giocato, news.
-async function game({ auth, params, url }) {
+async function game({ auth, params, url, lang }) {
+  const langs = feeds.langsFor(lang);
   const gameId = String(params.gameId).slice(0, 64);
   const friends = await friendsWithPresence(auth.accountId);
   const playingNow = friends.filter((f) => f.presence.game_id === gameId)
@@ -504,13 +511,14 @@ async function game({ auth, params, url }) {
     const short = words.slice(0, Math.min(words.length, 2)).join(' ');
     n = (await db.query(
       `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news
-        WHERE game_id=$1 OR title ILIKE $2 OR title ILIKE $3
-        ORDER BY (title ILIKE $2) DESC, created_at DESC LIMIT 6`,
-      [gameId, `%${name.replace(/[%_\\]/g, '')}%`, `%${short.replace(/[%_\\]/g, '')}%`])).rows;
+        WHERE (lang = ANY($1) OR lang IS NULL) AND (game_id=$2 OR title ILIKE $3 OR title ILIKE $4)
+        ORDER BY (title ILIKE $3) DESC, ${NEWS_PREF}, created_at DESC LIMIT 6`,
+      [langs, gameId, `%${name.replace(/[%_\\]/g, '')}%`, `%${short.replace(/[%_\\]/g, '')}%`])).rows;
   }
   if (n.length < 3) {
     const more = (await db.query(
-      `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news WHERE ext_id IS NOT NULL ORDER BY created_at DESC LIMIT $1`, [6 - n.length])).rows;
+      `SELECT news_id::text, title, body, tag, game_id, color, created_at, source, link, (image_url IS NOT NULL) AS has_image FROM lab_news
+        WHERE ext_id IS NOT NULL AND lang = ANY($1) ORDER BY ${NEWS_PREF}, created_at DESC LIMIT $2`, [langs, 6 - n.length])).rows;
     n = n.concat(more.filter((m) => !n.some((x) => x.news_id === m.news_id)));
   }
   return {

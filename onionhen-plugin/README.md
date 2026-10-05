@@ -3,7 +3,8 @@
 Plugin per OnionHEN (id `OMGA00001`): aggiunge una
 pagina "Omega" al Toolbox, che si apre anche durante il gioco con la scorciatoia
 del Toolbox (Omega propone L2 + R3). Mostra il brano in corso con riproduci/pausa,
-avanti, indietro e volume, e quanti amici sono online.
+avanti, indietro e volume, quanti amici sono online e, se sei in un party, il
+party vocale: chi parla, microfono acceso/spento ed «Esci dal party».
 
 Non parla con il server: dati e comandi passano dal demone `omega_redirect`
 su `127.0.0.1:9095`. La pagina di OnionHEN non si ridisegna mentre è aperta,

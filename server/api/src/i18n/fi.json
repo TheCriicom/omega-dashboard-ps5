@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Tilit, sosiaaliset toiminnot ja homebrew-ohjelmien Store konsolille. Itsenäinen projekti, ei sidoksissa Sonyyn."
+  },
+  "system": {
+    "party_created": "· {actor} loi partyn",
+    "party_joined": "· {actor} liittyi partyyn",
+    "party_left": "· {actor} poistui partysta",
+    "group_created": "{actor} loi ryhmän ”{name}”",
+    "group_added": "{actor} lisäsi käyttäjän {user}",
+    "group_left": "{actor} poistui ryhmästä",
+    "group_renamed": "{actor} nimesi ryhmän uudelleen: ”{name}”",
+    "group_removed": "{actor} poisti käyttäjän {user}"
   }
 }

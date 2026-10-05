@@ -28,7 +28,7 @@ else()
   set(AVLIBS "-lavformat -lavcodec -lswresample -lavutil -lx264 -lvpx -lmp3lame -lopus -lvorbisenc -lvorbis -logg -ltheoraenc -ltheoradec -lwebp -lwebpmux -lxml2 -liconv -lzstd -lssl -lcrypto -lz -lbz2 -llzma")
 endif()
 target_include_directories(${basename} PUBLIC "${HB}/include")
-set(OURLIBS "-lSceAudioOut -lSceSystemService -lSceHttp -lSceSsl -lSceNet -lSceSysmodule -lSceLibcInternal -lkernel_sys")
+set(OURLIBS "-lopus -lSceAudioOut -lSceSystemService -lSceHttp -lSceSsl -lSceNet -lSceSysmodule -lSceLibcInternal -lkernel_sys")
 set_target_properties(${basename} PROPERTIES LINK_FLAGS
   "-Wl,--start-group ${AVLIBS} ${OURLIBS} -Wl,--end-group")
 target_link_directories(${basename} PUBLIC "${PROJECT_ROOT}/lib" "${HB}/lib")

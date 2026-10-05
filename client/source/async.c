@@ -179,6 +179,48 @@ static void bake_vignette(SDL_Surface *s) {
   SDL_UnlockSurface(s);
 }
 
+// Velatura del tema (prima theme_tint, disegnata a ogni fotogramma: due sfumature
+// a tutto schermo stirate col filtro lineare erano il 60% del tempo di disegno nel
+// renderer software). Ora si applica una volta sola allo sfondo, quando nasce:
+// in alto dal 42% di colore del tema a 0 (primo 45% dell'altezza), in basso da 0
+// al 26% (ultimo 30%).
+void bake_tint(SDL_Surface *s, SDL_Color c) {
+  if (!s || SDL_LockSurface(s) != 0) return;
+  Uint32 *px = s->pixels; int pitch = s->pitch / 4, w = s->w, h = s->h;
+  int top_h = h * 45 / 100, bot_y = h * 70 / 100;
+  for (int y = 0; y < h; y++) {
+    int a = 0;   // 0..256
+    if (y < top_h) a = (top_h - y) * 107 / top_h;
+    else if (y >= bot_y) a = (y - bot_y) * 66 / (h - bot_y);
+    if (!a) continue;
+    int ia = 256 - a, cr = c.r * a, cg = c.g * a, cb = c.b * a;
+    Uint32 *row = px + y * pitch;
+    for (int x = 0; x < w; x++) {
+      Uint32 v = row[x];
+      int r = (int)((v >> 16) & 255), g = (int)((v >> 8) & 255), b = (int)(v & 255);
+      r = (r * ia + cr) >> 8; g = (g * ia + cg) >> 8; b = (b * ia + cb) >> 8;
+      row[x] = (v & 0xFF000000u) | ((Uint32)r << 16) | ((Uint32)g << 8) | (Uint32)b;
+    }
+  }
+  SDL_UnlockSurface(s);
+}
+
+// Personalizza › Oscuramento dello sfondo: 0, 20, 38, 55% più scuro
+void bake_dim(SDL_Surface *s) {
+  static const int K[4] = { 256, 205, 159, 115 };
+  int k = K[g_prefs.bg_dim & 3];
+  if (!s || k == 256 || SDL_LockSurface(s) != 0) return;
+  Uint32 *px = s->pixels; int pitch = s->pitch / 4;
+  for (int y = 0; y < s->h; y++) {
+    Uint32 *row = px + y * pitch;
+    for (int x = 0; x < s->w; x++) {
+      Uint32 v = row[x];
+      row[x] = (v & 0xFF000000u) | ((((v >> 16) & 255) * k >> 8) << 16) | ((((v >> 8) & 255) * k >> 8) << 8) | ((v & 255) * k >> 8);
+    }
+  }
+  SDL_UnlockSurface(s);
+}
+
 // Sfondo generato: sfumatura dal colore medio della copertina + aloni di luce.
 SDL_Surface *gen_ambient(SDL_Color base, int w, int h) {
   SDL_Surface *s = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ARGB8888);
@@ -251,7 +293,7 @@ static int load_worker(void *arg) {
     } else if (j->kind == LOAD_BG) {
       if (j->path[0]) s = scaled(to_argb(IMG_Load(j->path)), j->w, j->h);
       if (!s) s = gen_ambient(j->avg, j->w, j->h);
-      if (s) bake_vignette(s);
+      if (s) { bake_vignette(s); bake_tint(s, g_theme_base); bake_dim(s); }
     }
     j->out = s;
     j->next = NULL;

@@ -173,6 +173,30 @@ static void app_meta(AppEntry *a) {
   if (!a->name[0]) snprintf(a->name, sizeof a->name, "%s", a->tid);
 }
 
+// "Ultimi giocati": quando si è avviato ogni titolo (OMEGA_DIR/recent.txt, "TID secondi")
+#define RECENT_FILE OMEGA_DIR "/recent.txt"
+static long recent_of(const char *tid) {
+  FILE *f = fopen(RECENT_FILE, "r"); if (!f) return 0;
+  char t[40]; long v, out = 0;
+  while (fscanf(f, "%39s %ld", t, &v) == 2) if (!strcmp(t, tid)) out = v;
+  fclose(f); return out;
+}
+static void recent_note(const char *tid) {
+  char lines[200][56]; int n = 0;
+  FILE *f = fopen(RECENT_FILE, "r");
+  if (f) { char t[40]; long v; while (n < 199 && fscanf(f, "%39s %ld", t, &v) == 2) if (strcmp(t, tid)) snprintf(lines[n++], sizeof lines[0], "%s %ld", t, v); fclose(f); }
+  f = fopen(RECENT_FILE, "w"); if (!f) return;
+  for (int i = 0; i < n; i++) fprintf(f, "%s\n", lines[i]);
+  fprintf(f, "%s %ld\n", tid, (long)time(NULL));
+  fclose(f);
+}
+
+static int app_cmp(const AppEntry *a, const AppEntry *b) {
+  if (g_prefs.sort == 1 && a->last_played != b->last_played) return a->last_played > b->last_played ? -1 : 1;
+  if (g_prefs.sort == 2) { int ka = a->hb || a->pld, kb = b->hb || b->pld; if (ka != kb) return ka - kb; }
+  return strcasecmp(a->name, b->name);
+}
+
 void scan_apps(void) {
   for (int i = 0; i < napps; i++) if (apps[i].tex) SDL_DestroyTexture(apps[i].tex);
   napps = 0;
@@ -196,7 +220,7 @@ void scan_apps(void) {
     closedir(dp);
   }
   // homebrew websrv: compaiono come i giochi, tranne Omega stessa
-  {
+  if (g_prefs.show_hb) {
     DIR *dp = opendir(OMEGA_HB_ROOT);
     struct dirent *e;
     while (dp && (e = readdir(dp)) && napps < MAX_APPS) {
@@ -217,9 +241,11 @@ void scan_apps(void) {
     }
     if (dp) closedir(dp);
   }
-  napps = payload_scan(apps, napps, MAX_APPS);
+  if (g_prefs.show_hb) napps = payload_scan(apps, napps, MAX_APPS);
+  if (g_prefs.ext_games) napps = drives_merge(apps, napps, MAX_APPS);   // giochi sui dischi esterni
+  for (int i = 0; i < napps; i++) apps[i].last_played = recent_of(apps[i].tid);
   for (int i = 0; i < napps; i++) for (int k = i + 1; k < napps; k++)
-    if (strcasecmp(apps[k].name, apps[i].name) < 0) { AppEntry t = apps[i]; apps[i] = apps[k]; apps[k] = t; }
+    if (app_cmp(&apps[k], &apps[i]) < 0) { AppEntry t = apps[i]; apps[i] = apps[k]; apps[k] = t; }
   omega_log("scan_apps: %d titoli", napps);
 }
 
@@ -242,6 +268,8 @@ static void request_icons(void) {
 }
 
 void home_enter(void) {
+  static int once;
+  if (!once) { once = 1; drives_after_game(); }   // giochi esterni rimasti montati dall'ultima partita
   scan_apps();
   for (int i = 0; i < napps; i++) tile_size[i] = 150;
   if (app_sel >= napps) app_sel = 0;
@@ -270,6 +298,12 @@ static int kill_running_game(const char *except_tid) {
 #endif
 
 static void do_launch(int idx) {
+  recent_note(apps[idx].tid);   // per l'ordine "Ultimi giocati"
+  if (apps[idx].ext) {
+    // gioco su disco esterno: si monta (sola lettura) e, la prima volta, si registra
+    char err[300];
+    if (drives_prepare_launch(&apps[idx], err, sizeof err) != 0) { set_msg(err, 1); social_presence("online", NULL, NULL); return; }
+  }
   if (apps[idx].hb) {
     // parametri già risolti da hb_step: qui parte solo la richiesta a websrv
     char err[400];
@@ -473,6 +507,27 @@ void news_art(const News *n, int x, int y, int w, int h, int radius, int alpha) 
 }
 
 // --------------------------------------------------------------- barra alta --
+// ora secondo Personalizza: 24 o 12 ore, con o senza secondi
+void clock_text(char *out, size_t n) {
+  time_t tt = time(NULL); struct tm *lt = localtime(&tt);
+  int h = lt ? lt->tm_hour : 0, m = lt ? lt->tm_min : 0, sec = lt ? lt->tm_sec : 0;
+  if (g_prefs.clock12) {
+    int h12 = h % 12 ? h % 12 : 12;
+    if (g_prefs.clock_sec) snprintf(out, n, "%d:%02d:%02d %s", h12, m, sec, h < 12 ? "AM" : "PM");
+    else snprintf(out, n, "%d:%02d %s", h12, m, h < 12 ? "AM" : "PM");
+  } else if (g_prefs.clock_sec) snprintf(out, n, "%02d:%02d:%02d", h, m, sec);
+  else snprintf(out, n, "%02d:%02d", h, m);
+}
+// "lun 5 ott", con i nomi tradotti
+void date_text(char *out, size_t n) {
+  static const char *const WD[7] = { N_("dom"), N_("lun"), NULL, N_("mer"), N_("gio"), N_("ven"), N_("sab") };
+  static const char *const MO[12] = { N_("gen"), N_("feb"), N_("mar"), N_("apr"), N_("mag"), N_("giu"), N_("lug"), N_("ago"), N_("set"), N_("ott"), N_("nov"), N_("dic") };
+  time_t tt = time(NULL); struct tm *lt = localtime(&tt);
+  if (!lt) { out[0] = 0; return; }
+  const char *wd = lt->tm_wday == 2 ? P_("giorno", "mar") : _(WD[lt->tm_wday % 7]);   // "mar" da solo è marzo
+  const char *mo = _(MO[lt->tm_mon % 12]);
+  snprintf(out, n, "%s %d %s", wd, lt->tm_mday, mo);
+}
 static void top_bar(int alpha) {
   sel_anim_top = approach(sel_anim_top, (float)top_sel, 18.0f);
   int focus = zone == Z_TOP;
@@ -488,11 +543,20 @@ static void top_bar(int alpha) {
     if (on) fill_rrect(x + w / 2 - (int)(20 + 10 * tab_anim), y + 58, (int)(40 + 20 * tab_anim), 4, 2, C_WHITE, alpha);
     x += w + 64;
   }
-  char clock[16]; time_t tt = time(NULL); struct tm *lt = localtime(&tt);
-  snprintf(clock, sizeof clock, "%02d:%02d", lt ? lt->tm_hour : 0, lt ? lt->tm_min : 0);
+  char clock[64]; clock_text(clock, sizeof clock);
   TTF_Font *cf = font(W_REG, 32);
   int rx = SCREEN_W - 80;
-  rx -= draw_text(cf, clock, rx, y + 6, C_TXT, alpha, AL_R) + 40;
+  rx -= draw_text(cf, clock, rx, y + 6, C_TXT, alpha, AL_R) + 22;
+  // data e temperatura accanto all'ora (Personalizza › Orologio e barra)
+  char extra[96] = "";
+  if (g_prefs.clock_date) date_text(extra, sizeof extra);
+  if (g_prefs.bar_temp) {
+    static int temp = -1; static Uint32 temp_at;
+    if (!temp_at || SDL_GetTicks() - temp_at > 5000) { temp = sys_cpu_temp(); temp_at = SDL_GetTicks(); }
+    if (temp > 0) { size_t l = strlen(extra); snprintf(extra + l, sizeof extra - l, "%s%d\xC2\xB0" "C", l ? "  \xC2\xB7  " : "", temp); }
+  }
+  if (extra[0]) rx -= draw_text(font(W_REG, 24), extra, rx, y + 14, C_DIM, alpha, AL_R) + 22;
+  rx -= 18;
   const int icons[8] = { IC_STORE, IC_MUSIC, IC_SEARCH, IC_GLOBE, IC_BELL, IC_FRIENDS, IC_GEAR, -1 };
   int badges[8] = { 0, 0, 0, 0, S.unread_notif, S.in_req + S.unread_msg + S.ninv, 0, 0 };
   int pos[8];
@@ -544,11 +608,14 @@ static void game_row(int y0, int alpha) {
     draw_text(font(W_REG, 26), _("I giochi e le app installati compariranno qui."), x + 200, y0 + 116, C_DIM, alpha, AL_L);
     return;
   }
+  // Personalizza › Dimensione delle icone: piccole, medie, grandi
+  static const float BASE[3] = { 124, 150, 178 }, BIG[3] = { 200, 236, 270 }, MID[3] = { 170, 200, 230 };
+  int ts = g_prefs.tiles % 3, gap = g_prefs.labels ? 30 : 22;
   for (int i = 0; i < napps; i++) {
-    float target = (i == app_sel && tab == T_GAMES) ? (zone == Z_ROW ? 236.0f : 200.0f) : 150.0f;
+    float target = (i == app_sel && tab == T_GAMES) ? (zone == Z_ROW ? BIG[ts] : MID[ts]) : BASE[ts];
     tile_size[i] = approach(tile_size[i], target, 14.0f);
   }
-  float before = 0; for (int i = 0; i < app_sel; i++) before += tile_size[i] + 22;
+  float before = 0; for (int i = 0; i < app_sel; i++) before += tile_size[i] + gap;
   row_scroll = approach(row_scroll, before, 12.0f);
   float x = 110 - row_scroll;
   float pulse = 0.5f + 0.5f * sinf((float)g_time * 3.2f);
@@ -572,6 +639,13 @@ static void game_row(int y0, int alpha) {
         draw_text_fit(font(W_REG, 20), ap->tid, tx + s / 2, ty + s - 46, s - 20, C_FAINT, a, AL_C);
       }
       if (foc && zone == Z_ROW && tab == T_GAMES) focus_ring(tx, ty, s, s, 28, pulse, a);
+      // gioco su disco esterno: piccolo disco in basso a destra
+      if (ap->ext) {
+        fill_circle(tx + s - 24, ty + s - 24, 19, RGB(10, 14, 24), a * 90 / 100);
+        draw_icon(IC_DRIVE, tx + s - 24, ty + s - 24, 24, C_ACC2, a);
+      }
+      // Personalizza › Nomi sotto le icone (quello scelto ha già il titolo grande)
+      if (g_prefs.labels && !foc) draw_text_fit(font(W_REG, 19), ap->name, tx + s / 2, ty + s + 8, s + 10, C_DIM, a * 85 / 100, AL_C);
       // amici che ci stanno giocando
       int playing = 0; for (int k = 0; k < S.nfriends; k++) if (!strcmp(S.friends[k].game_id, ap->tid)) playing++;
       if (playing) {
@@ -581,7 +655,7 @@ static void game_row(int y0, int alpha) {
         draw_text(font(W_BOLD, 20), n, tx + 50, ty + s - 38, C_TXT, a, AL_L);
       }
     }
-    x += s + 22;
+    x += s + gap;
   }
 }
 
@@ -598,6 +672,7 @@ static void game_info(int y0, int alpha) {
   char sub[256], pl[96]; int np = count_playing(ap->tid);
   if (np) { snprintf(pl, sizeof pl, np == 1 ? _("%d amico sta giocando") : _("%d amici stanno giocando"), np); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, pl); }
   else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
+  else if (ap->ext) { char on[96]; snprintf(on, sizeof on, _("Su %s"), ap->drive); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, on); }
   else snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, _("Installato"));
   int sx = 114;
   if (np) { fill_circle(sx + 8, y0 + 112, 7, C_OK, alpha); sx += 26; }
@@ -617,7 +692,7 @@ static int ncards(void) { return NCARD_FIXED + S.ngame_news; }
 
 static void card_frame(int x, int y, int w, int h, int focused, float fa, int alpha) {
   if (focused) shadow_rrect(x, y, w, h, 24, 24, alpha * 60 / 100);
-  fill_rrect(x, y, w, h, 24, C_PANEL, alpha * 88 / 100);
+  fill_rrect(x, y, w, h, 24, C_PANEL, pref_panel_alpha(alpha * 88 / 100));
   if (fa > 0.02f) stroke_rrect(x - 6, y - 6, w + 12, h + 12, 30, 4, C_WHITE, (int)(alpha * fa));
 }
 
@@ -796,7 +871,22 @@ static float row_scroll_target_diff(void) {
 }
 
 // ------------------------------------------------------------------ disegno --
+// disco collegato o tolto: si rifà la fila tenendo il gioco scelto, e lo si dice
+static void ext_rescan(void) {
+  static int seen;   // il primo giro (all'avvio) non va annunciato
+  char keep[16]; snprintf(keep, sizeof keep, "%s", napps ? apps[app_sel].tid : "");
+  int ext0 = 0; for (int i = 0; i < napps; i++) ext0 += apps[i].ext;
+  scan_apps();
+  int ext1 = 0; for (int i = 0; i < napps; i++) { ext1 += apps[i].ext; tile_size[i] = 150; }
+  app_sel = 0; for (int i = 0; i < napps; i++) if (!strcmp(apps[i].tid, keep)) app_sel = i;
+  request_icons();
+  if (seen && ext1 > ext0) { char m[160]; snprintf(m, sizeof m, ext1 - ext0 == 1 ? _("Disco collegato: 1 gioco in più in home") : _("Disco collegato: %d giochi in più in home"), ext1 - ext0); set_msg(m, 0); }
+  else if (seen && ext1 < ext0) set_msg(_("Disco scollegato: i suoi giochi sono spariti dalla home"), 0);
+  seen = 1;
+}
+
 void home_update(void) {
+  if (drives_changed() && launching < 0) ext_rescan();
   for (int i = 0; i < napps; i++) if (apps[i].tex_state == 0) { request_icons(); break; }
   // mentre la fila scorre o la pagina si muove, niente effetti costosi
   g_busy_motion = (fabsf(row_scroll_target_diff()) > 2 || fabsf(page_scroll - page_scroll_t) > 2) ? 1 : 0;
@@ -829,14 +919,16 @@ void home_draw(void) {
   int ps = (int)page_scroll;
   // velo più scuro quando la pagina scorre, per leggere le schede
   if (ps > 0) fill_rect(0, 0, SCREEN_W, SCREEN_H, RGB(4, 8, 18), (int)(150 * clampf(page_scroll / 470.0f, 0, 1)));
-  particles_draw(90);
+  particles_draw(90);   // quante e quali: Personalizza › Particelle
   SDL_Rect clip = { 0, 118, SCREEN_W, SCREEN_H - 118 };
   if (ps > 20 || tab == T_EXPLORE) SDL_RenderSetClipRect(R, &clip);
   if (tab == T_GAMES) {
     game_row(130 - ps, 255);
     game_info(440 - ps, 255);
-    game_cards(830 - ps, 255);
-    feed_row(1260 - ps, 255, &feed_sel, &sel_anim_feed, zone == Z_FEED);
+    if (g_prefs.cards) {   // Personalizza › Sotto il gioco scelto
+      game_cards(830 - ps, 255);
+      feed_row(1260 - ps, 255, &feed_sel, &sel_anim_feed, zone == Z_FEED);
+    }
   } else {
     explore_draw(255);
   }
@@ -852,6 +944,7 @@ void home_draw(void) {
   // i comandi si vedono solo nei primi secondi, poi la home resta pulita
   Uint32 since = SDL_GetTicks() - entered_at;
   int ha = since < 9000 ? 255 : since < 10000 ? (int)(255 * (10000 - since) / 1000) : 0;
+  if (g_prefs.hints == 0) ha = 0; else if (g_prefs.hints == 2) ha = 255;   // Personalizza › Barra dei comandi
   if (ov_depth() == 0 && ha > 0) {
     grad_v(0, SCREEN_H - 120, SCREEN_W, 120, RGB(4, 8, 18), 0, RGB(4, 8, 18), ha * 80 / 100);
     hints(ic, lb, n, ha);
@@ -963,14 +1056,14 @@ void home_input(int b) {
       if (b == B_LEFT && app_sel > 0) { app_sel--; focus_at = SDL_GetTicks(); }
       else if (b == B_RIGHT && app_sel < napps - 1) { app_sel++; focus_at = SDL_GetTicks(); }
       else if (b == B_UP) { zone = Z_TOP; top_sel = 0; }
-      else if (b == B_DOWN) { if (napps) { zone = Z_ACT; act_sel = 0; } else zone = Z_FEED; }
+      else if (b == B_DOWN) { if (napps) { zone = Z_ACT; act_sel = 0; } else if (g_prefs.cards) zone = Z_FEED; }
       else if (b == B_X && napps) launch_app(app_sel);
       break;
     case Z_ACT:
       if (b == B_LEFT && act_sel > 0) act_sel--;
       else if (b == B_RIGHT && act_sel < 1) act_sel++;
       else if (b == B_UP || b == B_O) zone = Z_ROW;
-      else if (b == B_DOWN) { zone = Z_CARDS; card_sel = 0; }
+      else if (b == B_DOWN && g_prefs.cards) { zone = Z_CARDS; card_sel = 0; }
       else if (b == B_X) {
         if (act_sel == 0) launch_app(app_sel);
         else { const char *it[] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Elimina dalla console"), _("Invita un amico a giocare") }; menu_open(apps[app_sel].name, it, 5, game_more_menu, NULL); }

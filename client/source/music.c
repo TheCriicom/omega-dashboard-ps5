@@ -777,7 +777,8 @@ static void draw_now(int a) {
       char p1[16], p2[16]; fmt_time(pos_now(), p1, sizeof p1); fmt_time(P.dur, p2, sizeof p2);
       draw_text(font(W_REG, 22), p1, tx, by + 34, C_DIM, a, AL_L); draw_text(font(W_REG, 22), p2, tx + tw, by + 34, C_DIM, a, AL_R);
     }
-    if (!strcmp(P.state, "error") && P.error[0]) draw_text_fit(font(W_REG, 22), P.error, tx, by + 70, tw, C_ERR, a, AL_L);
+    if (!strcmp(P.state, "error") && P.error[0])
+      draw_text_fit(font(W_REG, 22), !strcmp(P.error, "no_audio") ? _("La console non dà l'audio al servizio in background: la musica si sente con Omega aperta") : P.error, tx, by + 70, tw, C_ERR, a, AL_L);
     else if (!strcmp(P.state, "loading")) draw_text(font(W_REG, 22), _("Caricamento..."), tx, by + 70, C_DIM, a, AL_L);
   }
   // comandi

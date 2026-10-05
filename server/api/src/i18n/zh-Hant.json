@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "主機專用的帳號、社群功能及自製軟體商店。獨立專案，與 Sony 沒有關聯。"
+  },
+  "system": {
+    "party_created": "· {actor} 建立了派對",
+    "party_joined": "· {actor} 加入了派對",
+    "party_left": "· {actor} 離開了派對",
+    "group_created": "{actor} 建立了群組「{name}」",
+    "group_added": "{actor} 新增了 {user}",
+    "group_left": "{actor} 退出了群組",
+    "group_renamed": "{actor} 將群組重新命名為「{name}」",
+    "group_removed": "{actor} 移除了 {user}"
   }
 }

@@ -21,7 +21,10 @@
 
 #define R_ OMEGA_SYSROOT
 #define BUNDLE      OMEGA_HB_ROOT "/OmegaUI/payloads"
-#define SETUP_FILE  OMEGA_DIR "/hen-setup.txt"       // "<proprietario> <rifiutato 0/1>"
+#define SETUP_FILE  OMEGA_DIR "/hen-setup.txt"       // "<proprietario> <rifiutato 0/1> <richiesta>"
+// Sale quando il servizio porta qualcosa di nuovo che vale una seconda domanda
+// a chi aveva detto no (2: la voce del party continua in gioco solo col servizio).
+#define SETUP_ASK   2
 #define DAEMON      "omega_redirect.elf"
 #define PLUGIN      "OMGA00001.elf"
 #define ONION       R_ "/data/OnionHEN"
@@ -316,8 +319,8 @@ void hen_check(int ask) {
   if (!todo_count()) { if (ask > 1) set_msg(_("Tutto a posto: i componenti di Omega sono già installati e attivi"), 0); return; }
   if (ask == 1) {   // all'avvio: non insistere se l'utente ha detto "non chiedere più" per questo caricatore
     char *s = file_read(SETUP_FILE, 64, NULL);
-    int o = -1, no = 0; if (s) { sscanf(s, "%d %d", &o, &no); free(s); }
-    if (no && o == owner) return;
+    int o = -1, no = 0, gen = 0; if (s) { sscanf(s, "%d %d %d", &o, &no, &gen); free(s); }
+    if (no && o == owner && gen >= SETUP_ASK) return;
   }
   phase = 0; sel = 0; asking_home = 0;
   ov_push(OV_SETUP);
@@ -412,6 +415,6 @@ void setup_input(int b) {
     if (phase || owner == OWN_NONE) { ov_pop(); return; }
     if (sel == 0) { run_plan(); phase = 1; sel = 0; sfx_play(SFX_SELECT); }
     else if (sel == 1) ov_pop();
-    else { FILE *f = fopen(SETUP_FILE, "w"); if (f) { fprintf(f, "%d 1\n", owner); fclose(f); } ov_pop(); set_msg(_("Va bene: puoi farlo quando vuoi da Impostazioni › Sistema e strumenti"), 0); }
+    else { FILE *f = fopen(SETUP_FILE, "w"); if (f) { fprintf(f, "%d 1 %d\n", owner, SETUP_ASK); fclose(f); } ov_pop(); set_msg(_("Va bene: puoi farlo quando vuoi da Impostazioni › Sistema e strumenti"), 0); }
   }
 }

@@ -7,7 +7,8 @@
 //  · durante il gioco controlla ogni 8 s le notifiche nuove e le mostra come
 //    notifiche di sistema;
 //  · suona la musica (player.c) anche mentre si gioca, comandato dalla UI
-//    attraverso il server di controllo locale (ctl.c).
+//    attraverso il server di controllo locale (ctl.c);
+//  · porta avanti la voce del party quando la UI si chiude per un gioco (voice.c).
 // Quando la UI è in primo piano (ui-active recente) presenza e notifiche le
 // gestisce lei. Usa solo lo stato del primo piano e /hbldr di websrv.
 #include <arpa/inet.h>
@@ -30,6 +31,7 @@
 #include "lib.h"
 #include "json.h"
 #include "player.h"
+#include "voice.h"
 
 #ifndef OMEGA_BASE_URL
 #define OMEGA_BASE_URL "https://play.omegasuite.it"
@@ -60,6 +62,9 @@
 #define UI_FRESH_S       15    // la UI aggiorna ui-active ogni 2 s quando è in primo piano
 #define LOOP_S           2
 
+#ifndef OMEGA_DAEMON_VERSION
+#define OMEGA_DAEMON_VERSION "2026.10.05.4"
+#endif
 #define HTTP_GET  0
 #define HTTP_POST 1
 
@@ -165,6 +170,46 @@ static int http_ready(void) {
   return 1;
 }
 
+static void json_esc(char *dst, size_t n, const char *src);
+static int tmpl_ready(void) { return http_ready() ? tmpl : -1; }
+
+// ------------------------------------------------------------ diagnostica --
+// Codici tecnici (niente URL né nomi) verso /api/v1/diag/event, perché sulla
+// console nessuno legge il log. Chi segnala (lettore, voce) non deve mai
+// aspettare la rete: si mette in coda e il ciclo principale spedisce.
+#define DIAG_MAX 16
+static struct { char comp[16], ev[32], rc[16], detail[96]; int ok; } diag_q[DIAG_MAX];
+static int diag_n, diag_sent_boot;
+static pthread_mutex_t diag_mx = PTHREAD_MUTEX_INITIALIZER;
+void omega_diag(const char *comp, const char *ev, int ok, int rc, const char *detail) {
+  pthread_mutex_lock(&diag_mx);
+  if (diag_n < DIAG_MAX && diag_sent_boot < 40) {
+    snprintf(diag_q[diag_n].comp, sizeof diag_q[0].comp, "%s", comp);
+    snprintf(diag_q[diag_n].ev, sizeof diag_q[0].ev, "%s", ev);
+    snprintf(diag_q[diag_n].rc, sizeof diag_q[0].rc, "0x%x", (unsigned)rc);
+    snprintf(diag_q[diag_n].detail, sizeof diag_q[0].detail, "%s", detail ? detail : "");
+    diag_q[diag_n].ok = ok; diag_n++; diag_sent_boot++;
+  }
+  pthread_mutex_unlock(&diag_mx);
+}
+static int session_token(char *token, size_t n);
+static int post_json(const char *path, const char *token, const char *body);
+static void diag_flush(void) {
+  char token[700];
+  if (!diag_n || !session_token(token, sizeof token)) return;
+  for (;;) {
+    char body[400];
+    pthread_mutex_lock(&diag_mx);
+    if (!diag_n) { pthread_mutex_unlock(&diag_mx); break; }
+    char d[200]; json_esc(d, sizeof d, diag_q[0].detail);
+    snprintf(body, sizeof body, "{\"component\":\"%s\",\"event\":\"%s\",\"ok\":%s,\"rc\":\"%s\",\"detail\":\"%s\",\"version\":\"%s\"}",
+             diag_q[0].comp, diag_q[0].ev, diag_q[0].ok ? "true" : "false", diag_q[0].rc, d, OMEGA_DAEMON_VERSION);
+    memmove(&diag_q[0], &diag_q[1], sizeof diag_q[0] * (size_t)(diag_n - 1)); diag_n--;
+    pthread_mutex_unlock(&diag_mx);
+    post_json(OMEGA_API "/diag/event", token, body);
+  }
+}
+
 static int post_json(const char *path, const char *token, const char *body) {
   if (!http_ready()) return -1;
   char url[256]; snprintf(url, sizeof url, "%s%s", OMEGA_BASE_URL, path);
@@ -208,6 +253,7 @@ static int get_json(const char *path, const char *token, char *out, size_t n) {
 // Un URL qualsiasi (JSON della libreria), seguendo i redirect sulla connessione:
 // il template è condiviso con presenza e notifiche.
 static pthread_mutex_t http_mx = PTHREAD_MUTEX_INITIALIZER;
+int sceHttpSetResponseHeaderMaxSize(int id, size_t headerSize);
 static long fetch_url(const char *url, char *buf, size_t max) {
   pthread_mutex_lock(&http_mx);
   long got = -1;
@@ -215,15 +261,20 @@ static long fetch_url(const char *url, char *buf, size_t max) {
     int conn = sceHttpCreateConnectionWithURL(tmpl, url, 0);
     if (conn >= 0) {
       sceHttpSetAutoRedirect(conn, 1);
+      // github.com risponde con header oltre i 5 KB: col limite predefinito fallisce (0x80431073)
+      sceHttpSetResponseHeaderMaxSize(conn, 64 * 1024);
       int req = sceHttpCreateRequestWithURL(conn, HTTP_GET, url, 0);
       if (req >= 0) {
         sceHttpSetAutoRedirect(req, 1);
+        sceHttpSetResponseHeaderMaxSize(req, 64 * 1024);
+        sceHttpSetRecvTimeOut(req, 30 * 1000 * 1000);   // liste lunghe da server lenti
         int status = 0;
-        if (sceHttpSendRequest(req, NULL, 0) >= 0 && sceHttpGetStatusCode(req, &status) >= 0 && status == 200) {
+        int rc = sceHttpSendRequest(req, NULL, 0);
+        if (rc >= 0 && sceHttpGetStatusCode(req, &status) >= 0 && status >= 200 && status < 300) {
           size_t total = 0; int k;
           while (total < max && (k = sceHttpReadData(req, buf + total, max - total)) > 0) total += (size_t)k;
-          got = (long)total;
-        }
+          char extra; got = total >= max && sceHttpReadData(req, &extra, 1) > 0 ? -2 : (long)total;   // -2 = più grande del massimo
+        } else lg("libreria: download %s -> rc 0x%x, HTTP %d", url, rc, status);
         sceHttpDeleteRequest(req);
       }
       sceHttpDeleteConnection(conn);
@@ -345,6 +396,12 @@ static int ui_in_foreground(void) {
   return stat(OMEGA_UI_ACTIVE, &st) == 0 && time(NULL) - st.st_mtime < UI_FRESH_S;
 }
 
+static int session_json(char *buf, size_t n) { return read_small(OMEGA_SESSION, buf, n); }
+static int ui_active_age(void) {
+  struct stat st;
+  return stat(OMEGA_UI_ACTIVE, &st) == 0 ? (int)(time(NULL) - st.st_mtime) : -1;
+}
+
 static void notify_from_loop(void) {
   char token[700];
   if (session_token(token, sizeof token)) notify_tick(token, ui_in_foreground());
@@ -444,6 +501,7 @@ static void on_crash(int sig, siginfo_t *si, void *ucv) {
 #else
   (void)ucv;
 #endif
+  voice_on_crash();
   lg("CRASH segnale %d, indirizzo %p, codice %#lx, stack %#lx (main %p), ultima richiesta: %s", sig, si ? si->si_addr : NULL, rip, rsp, (void *)main, ctl_last_request());
 #if defined(PS5) && defined(__x86_64__)
   // catena delle chiamate dai frame pointer: indirizzi relativi a main, da
@@ -475,7 +533,7 @@ static void guard_signals(void) {
 int main(void) {
   guard_signals();
   migrate_data_dir();
-  lg("==== omega_redirect avvio ====");
+  lg("==== omega_redirect avvio (%s) ====", OMEGA_DAEMON_VERSION);
   { int v = sys_lang(); i18n_init(v); lg("lingua: %s (valore di sistema %d)", i18n_code(), v); }
   // Una sola copia: più caricatori (OnionHEN, etaHEN, Payload Manager, autoloader)
   // possono avviare il demone. La porta di controllo fa da lucchetto: se è già
@@ -490,6 +548,8 @@ int main(void) {
   player_init(PLAYER_STATE);
   lib_init(LIBRARY_FILE, fetch_url);
   player_on_track(on_track);
+  // voce del party quando la UI non c'è (in gioco): parte da sola se si è in un party
+  voice_start(OMEGA_BASE_URL, tmpl_ready, session_json, ui_active_age, sys_notify, i18n_code);
   sleep(BOOT_DELAY_S);
 
   // avviato a console accesa (dalla UI, dopo la configurazione dell'HEN): Omega è già aperta
@@ -512,6 +572,7 @@ int main(void) {
     last_home = home;
     if (now - last_presence >= PRESENCE_EVERY_S) { last_presence = now; presence_tick(); }
     if (now - last_notify >= NOTIFY_EVERY_S) { last_notify = now; notify_from_loop(); }
+    diag_flush();
     sleep(LOOP_S);
   }
   return 0;

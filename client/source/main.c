@@ -2,6 +2,7 @@
 // messaggi, sessione e comandi di debug da file.
 // Flusso: splash → (sessione valida ? scelta utente : accesso) → home.
 #include "app.h"
+#include <math.h>
 #include <signal.h>
 #include <SDL_image.h>
 #include <stdlib.h>
@@ -82,6 +83,8 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_FILES: files_draw(t); break;
     case OV_REMOTE: remote_draw(t); break;
     case OV_SETUP: setup_draw(t); break;
+    case OV_WHATSNEW: whatsnew_draw(t); break;
+    case OV_CUSTOM: custom_draw(t); break;
     default: break;
   }
 }
@@ -91,17 +94,20 @@ typedef struct { int icon; char actor[32]; int avatar; char title[200]; char bod
 static Toast toasts[MAX_TOASTS];
 
 void toast(int icon, const char *actor, int avatar, const char *title, const char *body) {
+  if (g_prefs.dnd == 2) return;   // Non disturbare › Nascoste: restano nel centro notifiche
   for (int i = MAX_TOASTS - 1; i > 0; i--) toasts[i] = toasts[i - 1];   // il più vecchio esce
   Toast *t = &toasts[0]; memset(t, 0, sizeof *t);
-  t->icon = icon; t->avatar = avatar; t->active = 1; t->life = TOAST_LIFE;
-  sfx_play(SFX_NOTIFY);
+  t->icon = icon; t->avatar = avatar; t->active = 1; t->life = pref_toast_life();
+  if (!g_prefs.dnd) sfx_play(SFX_NOTIFY);
   snprintf(t->actor, sizeof t->actor, "%s", actor ? actor : "");
   snprintf(t->title, sizeof t->title, "%s", title ? title : "");
   snprintf(t->body, sizeof t->body, "%s", body ? body : "");
 }
 
 static void toasts_draw(void) {
-  int y = 34;
+  // Personalizza › Posizione delle notifiche: alto a destra, alto a sinistra, basso a destra
+  int pos = g_prefs.toast_pos, left = pos == 1, bottom = pos == 2;
+  int y = bottom ? SCREEN_H - 170 : 34;
   for (int i = 0; i < MAX_TOASTS; i++) {
     Toast *t = &toasts[i];
     if (!t->active) continue;
@@ -110,10 +116,11 @@ static void toasts_draw(void) {
     if (t->life <= 0 && t->t < 0.02f) { t->active = 0; continue; }
     int w = 600, h = t->body[0] ? 128 : 100;
     float e = ease_out(t->t);
-    int x = SCREEN_W - 40 - (int)(w * e) + (int)((1 - e) * 60);
+    int x = left ? 40 + (int)(w * e) - w - (int)((1 - e) * 60) : SCREEN_W - 40 - (int)(w * e) + (int)((1 - e) * 60);
+    if (bottom) y -= (int)(h * e);
     int a = (int)(255 * t->t);
     shadow_rrect(x, y, w, h, 22, 24, a * 60 / 100);
-    fill_rrect(x, y, w, h, 22, C_PANEL, a * 96 / 100);
+    fill_rrect(x, y, w, h, 22, C_PANEL, pref_panel_alpha(a * 96 / 100));
     stroke_rrect(x, y, w, h, 22, 1, RGB(70, 80, 105), a / 2);
     int cx = x + 66, cy = y + h / 2;
     if (t->actor[0]) {
@@ -131,8 +138,8 @@ static void toasts_draw(void) {
     } else {
       draw_text_wrap(font(W_MED, 26), t->title, tx, y + 18, tw, 2, 32, C_TXT, a);
     }
-    if (t->life > 0) fill_rrect(x + 24, y + h - 8, (int)((w - 48) * (t->life / TOAST_LIFE)), 3, 2, C_ACC2, a * 70 / 100);
-    y += (int)((h + 16) * e);
+    if (t->life > 0) fill_rrect(x + 24, y + h - 8, (int)((w - 48) * (t->life / pref_toast_life())), 3, 2, C_ACC2, a * 70 / 100);
+    if (bottom) y -= (int)(16 * e); else y += (int)((h + 16) * e);
   }
 }
 
@@ -295,6 +302,8 @@ static void dispatch(int b) {
       case OV_FILES: files_input(b); break;
       case OV_REMOTE: remote_input(b); break;
       case OV_SETUP: setup_input(b); break;
+      case OV_WHATSNEW: whatsnew_input(b); break;
+      case OV_CUSTOM: custom_input(b); break;
       default: break;
     }
     return;
@@ -309,7 +318,48 @@ static void dispatch(int b) {
 }
 
 static int held = -1; static Uint32 held_at, held_next;
+// ------------------------------------------------------------ salvaschermo --
+// Personalizza › Salvaschermo: dopo N minuti senza tasti, sulla home.
+// Orologio grande che si sposta piano (niente segni sugli schermi OLED),
+// copertine dei giochi che scorrono, o schermo nero. Un tasto qualsiasi torna.
+Uint32 g_last_input;
+static int saver_on; static float saver_t;
+static int saver_due(void) {
+  static const int MIN[4] = { 0, 2, 5, 10 };
+  int m = MIN[g_prefs.saver_min & 3];
+  return m && g_scene == SC_HOME && SDL_GetTicks() - g_last_input > (Uint32)m * 60000u;
+}
+static void saver_draw(void) {
+  if (!saver_on && saver_due()) { saver_on = 1; omega_log("salvaschermo"); }
+  saver_t = approach(saver_t, saver_on ? 1 : 0, 2.5f);
+  if (saver_t < 0.01f) return;
+  int a = (int)(255 * saver_t);
+  fill_rect(0, 0, SCREEN_W, SCREEN_H, C_BLACK, g_prefs.saver_style == 2 ? a : a * 92 / 100);
+  if (g_prefs.saver_style == 2) return;
+  float tt = (float)g_time;
+  // posizione che vaga lentamente
+  int cx = SCREEN_W / 2 + (int)(520 * sinf(tt * 0.031f)), cy = SCREEN_H / 2 + (int)(260 * sinf(tt * 0.047f + 1.3f));
+  if (g_prefs.saver_style == 1 && napps) {
+    // copertine: una alla volta, ogni 8 s, con dissolvenza
+    int i = (int)(tt / 8.0f) % napps; float ph = fmodf(tt, 8.0f), k = ph < 1 ? ph : ph > 7 ? 8 - ph : 1;
+    AppEntry *ap = &apps[i];
+    int s = 340;
+    glow(cx, cy, s, ap->avg, (int)(a * 0.5f * k));
+    if (ap->tex) draw_tex(ap->tex, cx - s / 2, cy - s / 2, s, s, (int)(a * k));
+    draw_text(font(W_LIGHT, 40), ap->name, cx, cy + s / 2 + 30, C_WHITE, (int)(a * k), AL_C);
+    char c[64]; clock_text(c, sizeof c);
+    draw_text(font(W_LIGHT, 44), c, SCREEN_W - 90, SCREEN_H - 110, C_DIM, a, AL_R);
+    return;
+  }
+  char c[64], d[96]; clock_text(c, sizeof c); date_text(d, sizeof d);
+  draw_text(font(W_LIGHT, 150), c, cx, cy - 110, C_WHITE, a * 90 / 100, AL_C);
+  draw_text(font(W_REG, 40), d, cx, cy + 70, C_DIM, a, AL_C);
+  if (music_now_line()) draw_text_fit(font(W_REG, 30), music_now_line(), cx, cy + 140, 900, C_ACC2, a, AL_C);
+}
+
 static void press(int b) {
+  g_last_input = SDL_GetTicks();
+  if (saver_on) { saver_on = 0; return; }   // il tasto che sveglia non fa altro
   sfx_play(b <= B_RIGHT ? SFX_MOVE : b == B_X ? SFX_SELECT : b == B_O ? SFX_BACK : SFX_OPEN);
   dispatch(b);
   if (b <= B_RIGHT) { held = b; held_at = SDL_GetTicks(); held_next = held_at + REPEAT_DELAY_MS; }
@@ -371,6 +421,7 @@ int sceSystemServiceGetAppIdOfRunningBigApp(void);
 int sceSystemServiceGetAppTitleId(int appId, char *titleId);
 #endif
 char g_host_tid[64];   // titolo che ospita la UI: non va chiuso all'avvio di un gioco
+int g_ui_fg = 1; Uint32 g_ui_fg_since;   // UI in primo piano, e da quando (voice.c)
 static void foreground_tick(void) {
   static Uint32 last; static int was_fg = 1, inited; char *host = g_host_tid;
   Uint32 now = SDL_GetTicks();
@@ -384,6 +435,11 @@ static void foreground_tick(void) {
   if (!inited) { snprintf(host, sizeof g_host_tid, "%s", tid); inited = 1; }
   int fg = !strcmp(tid, host);
   audio_pause(!fg);
+  if (fg && !g_ui_fg) g_ui_fg_since = now;
+  g_ui_fg = fg;
+  // fuori dal primo piano ui-active si toglie subito: il servizio riprende
+  // presenza, notifiche e voce del party senza aspettare che invecchi
+  if (!fg && was_fg) unlink(OMEGA_UI_ACTIVE);
   if (fg) {
     FILE *f = fopen(OMEGA_UI_ACTIVE, "w");
     if (f) { fprintf(f, "%lu\n", (unsigned long)now); fclose(f); }
@@ -451,22 +507,83 @@ static void draw_scene(Scene s) {
   }
 }
 
+// Scena congelata. Con un pannello aperto e fermo, sotto non cambia niente: si
+// fotografa una volta la scena (già scurita dai veli del pannello) e poi a ogni
+// fotogramma si copia la foto e si disegna solo il pannello. Prima si ridisegnava
+// tutta la home e la si scuriva a tutto schermo: metà del tempo di un fotogramma.
+static SDL_Texture *frz; static int frz_valid, frz_top = -1, frz_n, frz_scene, frz_theme; static Overlay frz_o; static unsigned frz_rev;
+static Uint32 frz_at;
+static void frz_build(SDL_Surface *s) {
+  // i veli annotati mentre si disegnava il pannello, applicati alla foto
+  if (SDL_LockSurface(s) == 0) {
+    Uint32 *px = s->pixels; int pitch = s->pitch / 4;
+    for (int v = 0; v < g_nveils; v++) {
+      Veil *w = &g_veils[v];
+      int a = w->a > 255 ? 255 : w->a, ia = 255 - a;
+      int x0 = w->x < 0 ? 0 : w->x, y0 = w->y < 0 ? 0 : w->y;
+      int x1 = w->x + w->w > s->w ? s->w : w->x + w->w, y1 = w->y + w->h > s->h ? s->h : w->y + w->h;
+      int cr = w->c.r * a, cg = w->c.g * a, cb = w->c.b * a;
+      for (int y = y0; y < y1; y++) {
+        Uint32 *row = px + y * pitch;
+        for (int x = x0; x < x1; x++) {
+          Uint32 p = row[x];
+          int r = ((int)((p >> 16) & 255) * ia + cr) / 255, g = ((int)((p >> 8) & 255) * ia + cg) / 255, b = ((int)(p & 255) * ia + cb) / 255;
+          row[x] = 0xFF000000u | ((Uint32)r << 16) | ((Uint32)g << 8) | (Uint32)b;
+        }
+      }
+    }
+    SDL_UnlockSurface(s);
+  }
+  if (frz) SDL_DestroyTexture(frz);
+  frz = SDL_CreateTextureFromSurface(R, s);
+  if (frz) SDL_SetTextureBlendMode(frz, SDL_BLENDMODE_NONE);
+}
+
 void render_frame(void) {
-  bg_draw();
-  theme_tint(255);
-  hint_ok = ov_depth() == 0;
-  draw_scene(g_scene);
-  hint_ok = 1;
-  if (scene_t < 1) fill_rect(0, 0, SCREEN_W, SCREEN_H, C_BLACK, (int)(255 * (1 - ease_out(scene_t))));
-  if (g_scene != SC_SPLASH) {
-    int top = -1; for (int i = 0; i < novs; i++) if (!ovs[i].closing) top = i;
-    for (int i = 0; i < novs; i++) { hint_ok = i == top; ov_draw_one(ovs[i].o, ovs[i].t); }
+  int top = -1, stable = g_scene != SC_SPLASH && scene_t >= 1 && g_prefs.freeze;
+  for (int i = 0; i < novs; i++) { if (!ovs[i].closing) top = i; if (ovs[i].closing || ovs[i].t < 0.999f) stable = 0; }
+  // in Personalizza la home sotto deve muoversi: è l'anteprima dal vivo
+  stable = stable && top >= 0 && ovs[top].o != OV_CUSTOM;
+  // la foto vale finché restano uguali pannelli, scena e tema (e al massimo 10 s:
+  // sotto, la home si aggiorna da sola)
+  int same = stable && frz_valid && frz && frz_top == top && frz_n == novs && frz_o == ovs[top].o && frz_scene == (int)g_scene
+             && frz_theme == g_theme && frz_rev == g_prefs_rev && SDL_GetTicks() - frz_at < 10000;
+  if (same) {
+    draw_tex(frz, 0, 0, SCREEN_W, SCREEN_H, 255);
+    g_veil_skip = 1; hint_ok = 1;
+    ov_draw_one(ovs[top].o, ovs[top].t);
+    g_veil_skip = 0;
+  } else {
+    frz_valid = 0;
+    bg_draw();          // la velatura del tema è già dentro lo sfondo (bake_tint)
+    hint_ok = ov_depth() == 0;
+    draw_scene(g_scene);
     hint_ok = 1;
+    if (scene_t < 1) fill_rect(0, 0, SCREEN_W, SCREEN_H, C_BLACK, (int)(255 * (1 - ease_out(scene_t))));
+    if (g_scene != SC_SPLASH) {
+      SDL_Surface *shot = NULL;
+      for (int i = 0; i < novs; i++) {
+        if (stable && i == top) {
+          // tutto quello che sta sotto il pannello in cima, da fotografare
+          shot = SDL_CreateRGBSurfaceWithFormat(0, SCREEN_W, SCREEN_H, 32, SDL_PIXELFORMAT_ARGB8888);
+          if (shot && SDL_RenderReadPixels(R, NULL, SDL_PIXELFORMAT_ARGB8888, shot->pixels, shot->pitch) != 0) { SDL_FreeSurface(shot); shot = NULL; }
+          g_nveils = 0; g_veil_rec = shot != NULL;
+        }
+        hint_ok = i == top; ov_draw_one(ovs[i].o, ovs[i].t);
+        g_veil_rec = 0;
+      }
+      hint_ok = 1;
+      if (shot) {
+        frz_build(shot); SDL_FreeSurface(shot);
+        frz_valid = frz != NULL; frz_top = top; frz_n = novs; frz_o = ovs[top].o; frz_scene = (int)g_scene; frz_theme = g_theme; frz_rev = g_prefs_rev; frz_at = SDL_GetTicks();
+      }
+    }
   }
   upload_overlay(); files_overlay();
   install_overlay();
   toasts_draw();
   msg_draw();
+  saver_draw();
 }
 
 #ifdef OMEGA_DIR_LEGACY
@@ -545,7 +662,7 @@ int main(int argc, char **argv) {
     ov_update();
     scene_t = approach(scene_t, 1, 6.0f);
     if (g_scene == SC_SPLASH) splash_update();
-    if (g_scene == SC_HOME) { home_update(); terms_tick(); }
+    if (g_scene == SC_HOME) { home_update(); terms_tick(); whatsnew_tick(); }
 #ifdef OMEGA_UPDATES
     update_tick();
 #endif
@@ -560,9 +677,14 @@ int main(int argc, char **argv) {
     { static Uint32 acc, frames, worst, since;
       acc += spent; frames++; if (spent > worst) worst = spent;
       if (now - since > 15000) { if (since) omega_log("frame: media %.1f ms, peggiore %u ms (%u frame)", (double)acc / frames, worst, frames); acc = frames = worst = 0; since = now; } }
-    if (spent < FRAME_MS) SDL_Delay(FRAME_MS - spent);
+    // Personalizza › Fluidità: 60, 30, o automatica (30 quando la home è ferma da 5 s)
+    Uint32 frame_ms = FRAME_MS;
+    if (g_prefs.fps == 1) frame_ms = 33;
+    else if (g_prefs.fps == 2 && (saver_on || (g_scene == SC_HOME && ov_depth() == 0 && SDL_GetTicks() - g_last_input > 5000 && !g_busy_motion))) frame_ms = 33;
+    if (spent < frame_ms) SDL_Delay(frame_ms - spent);
   }
   voice_shutdown(); system_shutdown();
+  unlink(OMEGA_UI_ACTIVE);   // la UI si chiude (gioco avviato): la voce del party passa al servizio
   TTF_Quit(); SDL_Quit();
   return 0;
 }

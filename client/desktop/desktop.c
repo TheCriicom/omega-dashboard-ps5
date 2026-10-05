@@ -104,6 +104,32 @@ int omega_http_bin(const char *path, const char *token, unsigned char **out, siz
   return rc == CURLE_OK ? (int)st : -1;
 }
 
+// come net.c: un handle curl per OmegaKeep tiene viva la connessione
+void omega_keep_close(OmegaKeep *k) { if (k->curl) curl_easy_cleanup((CURL *)k->curl); k->curl = NULL; }
+int omega_keep_req(OmegaKeep *k, int method, const char *path, const char *token, const void *body, size_t blen,
+                   const char *ctype, unsigned char **out, size_t *olen, size_t max) {
+  if (out) { *out = NULL; *olen = 0; }
+  char url[1400]; full_url(path, &token, url, sizeof url);
+  if (!k->curl) k->curl = curl_easy_init();
+  CURL *c = k->curl; if (!c) return -1;
+  curl_easy_reset(c);
+  BBuf b = { malloc(4096), 0, 4096, max ? max : 4096 };
+  struct curl_slist *h = NULL; char auth[760], ct[96];
+  if (token) { snprintf(auth, sizeof auth, "Authorization: Bearer %s", token); h = curl_slist_append(h, auth); }
+  if (ctype) { snprintf(ct, sizeof ct, "Content-Type: %s", ctype); h = curl_slist_append(h, ct); }
+  h = lang_hdr(h);
+  curl_easy_setopt(c, CURLOPT_URL, url);
+  curl_easy_setopt(c, CURLOPT_USERAGENT, UA); curl_easy_setopt(c, CURLOPT_HTTPHEADER, h);
+  curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, wrb); curl_easy_setopt(c, CURLOPT_WRITEDATA, &b);
+  curl_easy_setopt(c, CURLOPT_TIMEOUT, 8L); curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
+  if (method == 1) { curl_easy_setopt(c, CURLOPT_POST, 1L); curl_easy_setopt(c, CURLOPT_POSTFIELDS, body ? body : ""); curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE, (long)blen); }
+  CURLcode rc = curl_easy_perform(c); long st = -1;
+  if (rc == CURLE_OK) curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &st);
+  curl_slist_free_all(h);
+  if (out && b.b) { unsigned char *x = realloc(b.b, b.len + 1); if (x) { b.b = x; b.b[b.len] = 0; } *out = b.b; *olen = b.len; } else free(b.b);
+  return rc == CURLE_OK ? (int)st : -1;
+}
+
 typedef struct { FILE *f; volatile long *done; volatile int *cancel; } DlCtx;
 static size_t dlwr(char *p, size_t s, size_t n, void *u) {
   DlCtx *d = u; if (d->cancel && *d->cancel) return 0;

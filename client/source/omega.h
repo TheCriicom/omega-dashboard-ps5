@@ -12,7 +12,7 @@
 #endif
 // versione dell'app: la usano gli aggiornamenti, va alzata a ogni rilascio.
 #ifndef OMEGA_VERSION
-#define OMEGA_VERSION "2026.10.05.2"
+#define OMEGA_VERSION "2026.10.05.5"
 #endif
 
 // Dati dell'app. Il demone omega_redirect legge session.json e ui-active da
@@ -59,6 +59,14 @@ int  omega_http(int method, const char *path, const char *token,
 int  omega_http_bin(const char *path, const char *token, unsigned char **out, size_t *len, size_t max);
 // POST di un corpo binario (application/octet-stream).
 int  omega_http_upload(const char *path, const char *token, const void *data, size_t len, char *out, size_t outlen);
+// Connessione che resta aperta tra una richiesta e l'altra (voce del party):
+// un solo thread per OmegaKeep. method 0 GET, 1 POST; *out (malloc, chiuso da
+// uno zero) solo se out non è NULL. Status HTTP o rc < 0.
+typedef struct { int conn; void *curl; } OmegaKeep;
+#define OMEGA_KEEP_INIT { -1, 0 }
+int  omega_keep_req(OmegaKeep *k, int method, const char *path, const char *token, const void *body, size_t blen,
+                    const char *ctype, unsigned char **out, size_t *olen, size_t max);
+void omega_keep_close(OmegaKeep *k);
 // Scarica un URL completo (anche di terzi) in dest seguendo i redirect.
 // Aggiorna *done/*total e si ferma se *cancel diventa 1. Status HTTP o rc < 0.
 int  omega_url_download(const char *url, const char *dest, volatile long *done, volatile long *total, volatile int *cancel);

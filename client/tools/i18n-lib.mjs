@@ -19,7 +19,7 @@ const pick = (...names) => path.join(ROOT, names.find((n) => fs.existsSync(path.
 const REDIRECT = pick('omega-redirect-src', 'daemon'), INSTALLER = pick('omega-installer-src', 'installer'), ONION = pick('omega-onion-plugin-src', 'onionhen-plugin');
 export const COMPONENTS = {
   ui: { dir: path.join(UI, 'source'), files: () => fs.readdirSync(path.join(UI, 'source')).filter(f => f.endsWith('.c') && f !== 'i18n_data.c').sort().map(f => path.join(UI, 'source', f)) },
-  redirect: { dir: path.join(REDIRECT, 'source'), files: () => ['main.c', 'ctl.c'].map(f => path.join(REDIRECT, 'source', f)) },
+  redirect: { dir: path.join(REDIRECT, 'source'), files: () => ['main.c', 'ctl.c', 'voice.c'].map(f => path.join(REDIRECT, 'source', f)) },
   installer: { dir: path.join(INSTALLER, 'source'), files: () => [path.join(INSTALLER, 'source', 'main.c')] },
   onion: { dir: path.join(ONION, 'source'), files: () => [path.join(ONION, 'source', 'main.c')] },
 };

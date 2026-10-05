@@ -28,11 +28,14 @@
 //   GET  /v1/queue            coda
 //   GET  /v1/cover            copertina incorporata nel brano (404 se non c'è)
 //   POST /v1/queue  {"mode":"replace|append|next","start":0,"play":true,"items":[{url,title,...}]}
+//   GET  /v1/voice            voce del party nel servizio: {active,party,members,mic,muted,talking}
+//   POST /v1/voice  {"cmd":"mute|unmute|toggle|leave"}
 //   POST /v1/cmd    {"cmd":"play|pause|toggle|next|prev|stop|seek|volume|shuffle|repeat|jump|remove|clear","value":n}
 #include "ctl.h"
 #include "json.h"
 #include "player.h"
 #include "lib.h"
+#include "voice.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -588,16 +591,27 @@ NOINLINE static void upload_file(int s, const char *qs) {
 }
 
 // la sincronizzazione scarica un file: va in un thread, il controllo resta libero
+// Un link nuovo che arriva mentre se ne sincronizza un altro non si perde: si
+// tiene da parte e parte appena finisce quello in corso.
 static volatile int syncing;
+static pthread_mutex_t sync_mx = PTHREAD_MUTEX_INITIALIZER;
+static char *sync_next; static int sync_next_set;
 static void *sync_thread(void *arg) {
   char *url = arg, err[64] = "";
-  if (url) { lib_set_source(url, err, sizeof err); free(url); } else lib_sync(err, sizeof err);
-  syncing = 0;
+  for (;;) {
+    if (url) { lib_set_source(url, err, sizeof err); free(url); } else lib_sync(err, sizeof err);
+    pthread_mutex_lock(&sync_mx);
+    if (!sync_next_set) { syncing = 0; pthread_mutex_unlock(&sync_mx); break; }
+    url = sync_next; sync_next = NULL; sync_next_set = 0;
+    pthread_mutex_unlock(&sync_mx);
+  }
   return NULL;
 }
 static void start_sync(const char *url) {
-  if (syncing) return;
+  pthread_mutex_lock(&sync_mx);
+  if (syncing) { if (url) { free(sync_next); sync_next = strdup(url); sync_next_set = 1; } pthread_mutex_unlock(&sync_mx); return; }
   syncing = 1;
+  pthread_mutex_unlock(&sync_mx);
   if (spawn(sync_thread, url ? strdup(url) : NULL) != 0) syncing = 0;
 }
 
@@ -620,7 +634,9 @@ NOINLINE static void do_library(int s, const char *what, JVal *j) {
     }
   } else if (!strcmp(what, "import")) {
     int r = lib_import(j, err, sizeof err);
-    if (r >= 0) { snprintf(b, sizeof b, "{\"added\":%d}", r); reply_json(s, 200, b); }
+    int ad = 0, up = 0, sk = 0; lib_last_import(&ad, &up, &sk);
+    if (r >= 0) { snprintf(b, sizeof b, "{\"added\":%d,\"updated\":%d,\"skipped\":%d}", r, up, sk); reply_json(s, 200, b); }
+    else if (sk) { snprintf(b, sizeof b, "{\"error\":\"%s\",\"skipped\":%d}", err, sk); reply_json(s, 400, b); }
     else { snprintf(b, sizeof b, "{\"error\":\"%s\"}", err); reply_json(s, 400, b); }
   } else if (!strcmp(what, "source")) {
     const char *u = jstr(j, "url", "");
@@ -718,11 +734,19 @@ static int handle(int s, int local) {
     if (!strcmp(path, "/v1/library")) {
       size_t cap = 8 * 1024 * 1024; char *b = malloc(cap);
       if (!b) { reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; }
-      size_t n = lib_list_json(b, cap); reply(s, 200, "application/json", b, n); free(b); return 0;
+      size_t n = lib_list_json_lite(b, cap, strstr(qcopy, "lite=1") != NULL); reply(s, 200, "application/json", b, n); free(b); return 0;
+    }
+    if (!strcmp(path, "/v1/library/item")) {
+      char id[48] = ""; const char *q = strstr(qcopy, "id="); if (q) snprintf(id, sizeof id, "%.*s", (int)strcspn(q + 3, "&"), q + 3);
+      char *b = malloc(64 * 1024); if (!b) { reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; }
+      size_t n = lib_item_json(id, b, 64 * 1024);
+      if (n) reply(s, 200, "application/json", b, n); else reply_json(s, 404, "{\"error\":\"not_found\"}");
+      free(b); return 0;
     }
     if (!strcmp(path, "/v1/library/space")) { char up[300], o[96]; up_root(up, sizeof up); snprintf(o, sizeof o, "{\"free\":%lld}", free_bytes(up)); reply_json(s, 200, o); return 0; }
     if (!strcmp(path, "/v1/library/file")) { upload_file(s, qcopy); return 0; }
     if (!strcmp(path, "/v1/library/upload/status")) { upload_status(s, qcopy); return 0; }
+    if (!strcmp(path, "/v1/voice")) { char o[1024]; voice_state_json(o, sizeof o); reply_json(s, 200, o); return 0; }
     if (!strcmp(path, "/v1/ping")) { char o[96]; snprintf(o, sizeof o, "{\"ok\":true,\"service\":\"omega\",\"started\":%ld}", (long)started_at); reply_json(s, 200, o); return 0; }
     reply_json(s, 404, "{\"error\":\"not_found\"}"); return 0;
   }
@@ -771,6 +795,7 @@ static int handle(int s, int local) {
       exit(0);
     }
   }
+  else if (!strcmp(path, "/v1/voice")) reply_json(s, voice_command(jstr(j, "cmd", "")) ? 200 : 400, "{}");
   else if (!strcmp(path, "/v1/cmd")) do_cmd(s, j);
   else if (!strcmp(path, "/v1/queue")) do_queue(s, j);
   else reply_json(s, 404, "{\"error\":\"not_found\"}");

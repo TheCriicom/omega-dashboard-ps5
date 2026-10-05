@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Account, funzioni social e Store di homebrew per la console. Progetto indipendente, non affiliato a Sony."
+  },
+  "system": {
+    "party_created": "· {actor} ha creato il party",
+    "party_joined": "· {actor} si è unito al party",
+    "party_left": "· {actor} ha lasciato il party",
+    "group_created": "{actor} ha creato il gruppo «{name}»",
+    "group_added": "{actor} ha aggiunto {user}",
+    "group_left": "{actor} è uscito dal gruppo",
+    "group_renamed": "{actor} ha rinominato il gruppo in «{name}»",
+    "group_removed": "{actor} ha rimosso {user}"
   }
 }

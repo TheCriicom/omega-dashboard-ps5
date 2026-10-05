@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "บัญชี ฟีเจอร์โซเชียล และ Store สำหรับ homebrew บนคอนโซล โครงการอิสระ ไม่มีส่วนเกี่ยวข้องกับ Sony"
+  },
+  "system": {
+    "party_created": "· {actor} สร้างปาร์ตี้แล้ว",
+    "party_joined": "· {actor} เข้าร่วมปาร์ตี้แล้ว",
+    "party_left": "· {actor} ออกจากปาร์ตี้แล้ว",
+    "group_created": "{actor} สร้างกลุ่ม “{name}” แล้ว",
+    "group_added": "{actor} เพิ่ม {user} แล้ว",
+    "group_left": "{actor} ออกจากกลุ่มแล้ว",
+    "group_renamed": "{actor} เปลี่ยนชื่อกลุ่มเป็น “{name}” แล้ว",
+    "group_removed": "{actor} นำ {user} ออกแล้ว"
   }
 }

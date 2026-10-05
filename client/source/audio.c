@@ -18,12 +18,18 @@ static int paused;
 static volatile int ext_music;            // il lettore musicale del demone sta suonando
 
 // -------------------------------------------------------- musica generativa --
-static const float CHORDS[4][4] = {      // frequenze (Hz): Cmaj9, Am9, Fmaj7#11, G6/9 — morbide, sospese
-  { 130.81f, 196.00f, 246.94f, 293.66f },
-  { 110.00f, 164.81f, 196.00f, 246.94f },
-  { 87.31f, 130.81f, 164.81f, 246.94f },
-  { 98.00f, 146.83f, 164.81f, 220.00f },
+// Personalizza › Musica di sottofondo: quattro atmosfere (accordi in Hz) e "spenta"
+static const float MOODS[4][4][4] = {
+  { { 130.81f, 196.00f, 246.94f, 293.66f }, { 110.00f, 164.81f, 196.00f, 246.94f },     // serena: Cmaj9, Am9,
+    { 87.31f, 130.81f, 164.81f, 246.94f }, { 98.00f, 146.83f, 164.81f, 220.00f } },     // Fmaj7#11, G6/9
+  { { 110.00f, 130.81f, 164.81f, 196.00f }, { 87.31f, 110.00f, 130.81f, 164.81f },      // notturna: Am7, Fmaj7,
+    { 98.00f, 116.54f, 146.83f, 174.61f }, { 82.41f, 123.47f, 146.83f, 196.00f } },     // Gm7, Em7
+  { { 65.41f, 98.00f, 146.83f, 196.00f }, { 73.42f, 110.00f, 164.81f, 220.00f },       // spaziale: quinte vuote,
+    { 58.27f, 87.31f, 130.81f, 174.61f }, { 61.74f, 92.50f, 138.59f, 185.00f } },       // basse e larghe
+  { { 146.83f, 185.00f, 220.00f, 277.18f }, { 123.47f, 155.56f, 185.00f, 246.94f },     // calda: Dmaj7, Bm7,
+    { 110.00f, 138.59f, 164.81f, 207.65f }, { 130.81f, 164.81f, 196.00f, 246.94f } },   // Amaj7, Cmaj7
 };
+#define CHORDS MOODS[g_prefs.music_mood % 4]
 static double mtime;                     // secondi di musica
 static float pad_phase[4][2];
 static float lp_l, lp_r;
@@ -34,6 +40,7 @@ static float frand(void) { rng = rng * 1664525u + 1013904223u; return (rng >> 8)
 
 static float osc(int wave, float ph) {
   if (wave == 1) { float x = ph / TAU; return 4.0f * fabsf(x - floorf(x + 0.5f)) - 1.0f; }
+  if (wave == 2) return ph < TAU / 2 ? 0.8f : -0.8f;   // quadra (suoni retrò)
   return sinf(ph);
 }
 
@@ -61,13 +68,17 @@ static void callback(void *ud, Uint8 *stream, int len) {
   // voce del party (48 kHz mono, già mescolata): quando qualcuno parla la musica si abbassa
   static float vbuf[4096];
   int talking = frames <= 4096 && voice_fill(vbuf, frames);
+  // musica del servizio (pcmlink.c): già col suo volume
+  static float ml[4096], mr[4096];
+  int ext = 0;
+  if (frames <= 4096) { memset(ml, 0, sizeof(float) * (size_t)frames); memset(mr, 0, sizeof(float) * (size_t)frames); ext = pcmlink_mix(ml, mr, frames); }
   static float duck = 1;
   for (int i = 0; i < frames; i++) {
     float l = 0, r = 0;
     duck += ((talking ? 0.25f : 1.0f) - duck) * 0.0005f;
-    if (music_on && !paused && !ext_music) {
+    if (music_on && !paused && !ext_music && g_prefs.music_mood != 4) {
       // accordo corrente con dissolvenza incrociata di 2 s ogni 9 s
-      double cyc = 9.0;
+      double cyc = g_prefs.music_mood == 2 ? 14.0 : g_prefs.music_mood == 1 ? 11.0 : 9.0;   // la spaziale va più piano
       int ci = (int)(mtime / cyc) % 4, cn = (ci + 1) % 4;
       float pos = (float)fmod(mtime, cyc);
       float x = pos > cyc - 2.0f ? (pos - (float)(cyc - 2.0)) / 2.0f : 0.0f;
@@ -104,6 +115,7 @@ static void callback(void *ud, Uint8 *stream, int len) {
       for (int v = 0; v < MAXV; v++) voice_sample(&sfx[v], &sl, &sr);
       l += sl * sfx_vol; r += sr * sfx_vol;
     }
+    if (ext) { l += ml[i] * duck; r += mr[i] * duck; }
     if (talking) { l += vbuf[i]; r += vbuf[i]; }
     if (l > 1) l = 1; if (l < -1) l = -1; if (r > 1) r = 1; if (r < -1) r = -1;
     out[i * 2] = (Sint16)(l * 30000); out[i * 2 + 1] = (Sint16)(r * 30000);
@@ -115,9 +127,25 @@ static Voice *free_voice(void) {
   return &sfx[0];
 }
 
+// Personalizza › Suoni dell'interfaccia: classici, morbidi, retrò 8 bit, cristallo, nessuno.
+// Lo stesso suono cambia altezza, durata e forma d'onda (2 = quadra).
+static void sfx_pack_tweak(const Voice *before) {
+  for (int i = 0; i < MAXV; i++) {
+    Voice *x = &sfx[i];
+    // solo le voci appena avviate da questa chiamata
+    if (!x->on || !memcmp(x, &before[i], sizeof *x)) continue;
+    switch (g_prefs.sfx_pack) {
+      case 1: x->freq *= 0.7f; x->freq_end *= 0.7f; x->amp *= 0.8f; x->decay *= 0.6f; x->dur *= 1.4f; x->wave = 0; break;   // morbidi
+      case 2: x->wave = 2; x->amp *= 0.55f; x->dur *= 0.8f; x->decay *= 1.2f; break;                                        // retrò
+      case 3: x->freq *= 1.5f; x->freq_end *= 1.5f; x->wave = 0; x->decay *= 0.5f; x->dur *= 1.8f; x->amp *= 0.7f; break;    // cristallo
+    }
+  }
+}
+
 void sfx_play(int kind) {
-  if (!dev || !sfx_on) return;
+  if (!dev || !sfx_on || g_prefs.sfx_pack == 4) return;
   SDL_LockAudioDevice(dev);
+  static Voice before[MAXV]; memcpy(before, sfx, sizeof sfx);
   switch (kind) {
     case SFX_MOVE:   start_voice(free_voice(), 1900, 1700, 0.10f, 0.06f, 70, 0, 0); break;
     case SFX_SELECT: start_voice(free_voice(), 880, 880, 0.16f, 0.35f, 9, -0.1f, 0);
@@ -129,6 +157,7 @@ void sfx_play(int kind) {
                      { Voice *v = free_voice(); start_voice(v, 440, 1760, 0.08f, 0.9f, 2.5f, 0, 0); } break;
     case SFX_OPEN:   start_voice(free_voice(), 520, 780, 0.09f, 0.16f, 16, 0, 0); break;
   }
+  if (g_prefs.sfx_pack) sfx_pack_tweak(before);
   SDL_UnlockAudioDevice(dev);
 }
 
@@ -148,6 +177,7 @@ void audio_init(void) {
   if (have.freq != SR || have.channels != 2 || have.format != AUDIO_S16SYS) omega_log("audio: formato %d Hz %d ch fmt 0x%x", have.freq, have.channels, have.format);
   next_bell = 2.0;
   SDL_PauseAudioDevice(dev, 0);
+  pcmlink_init();
   omega_log("audio pronto");
 }
 

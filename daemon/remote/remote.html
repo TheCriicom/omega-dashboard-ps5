@@ -139,6 +139,8 @@
   input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; margin-top:-6px; border-radius:50%; background:var(--ink); border:0; }
   input[type=range]::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--ink); border:0; }
 
+  .pstate { margin:0 0 12px; color:var(--ink2); }
+  .prow { gap:10px; flex-wrap:wrap; }
   .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .stat { display:flex; gap:12px; align-items:center; padding:12px; border-radius:11px; background:var(--bg2); min-width:0; }
   .stat .ico { display:grid; place-items:center; width:38px; height:38px; border-radius:10px; background:var(--s2); color:var(--ink2); flex:none; }
@@ -237,6 +239,7 @@
   <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
   <symbol id="i-games" viewBox="0 0 24 24"><path d="M7.5 7.5h9a4.5 4.5 0 0 1 4.4 5.5l-.8 3.4a2.4 2.4 0 0 1-4 1.2L14 16h-4l-2.1 1.6a2.4 2.4 0 0 1-4-1.2L3.1 13a4.5 4.5 0 0 1 4.4-5.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 10.5v3M6.5 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.5" cy="11" r="1.1" fill="currentColor"/><circle cx="17" cy="13.3" r="1.1" fill="currentColor"/></symbol>
   <symbol id="i-console" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-temp" viewBox="0 0 24 24"><path d="M10 4.5a2 2 0 0 1 4 0v9.2a4 4 0 1 1-4 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M8.2 15.8a5.4 5.4 0 0 1 0-7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 18.6a9.3 9.3 0 0 1 0-13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
@@ -293,6 +296,11 @@
             <div class="stat"><span class="ico"><svg aria-hidden="true"><use href="#i-games"/></svg></span><div><b id="game">—</b><span id="t_game"></span></div></div>
             <div class="stat"><span class="ico"><svg aria-hidden="true"><use href="#i-temp"/></svg></span><div><b id="temp">—</b><span id="t_temp"></span></div></div>
           </div>
+        </section>
+        <section class="card" id="partybox" hidden>
+          <h2><svg aria-hidden="true"><use href="#i-mic"/></svg><span id="t_party"></span></h2>
+          <p class="pstate" id="pstate"></p>
+          <div class="row prow"><button type="button" class="btn primary" id="pmic"></button><button type="button" class="btn ghost" id="pleave"></button></div>
         </section>
       </div>
 
@@ -376,7 +384,8 @@
   'use strict';
   // Testi: italiano e inglese qui; le altre lingue nel blocco T_MORE (generato).
   var T = {
-    en: { pair: 'Enter the PIN shown on the console in Omega › Settings › System and tools › Phone remote.', bad: 'Wrong PIN', locked: 'Too many attempts: wait a minute', off: 'offline', on: 'connected',
+    en: { party: 'Voice party', p_on: 'Mic on · {p}', p_muted: 'Mic off · {p}', p_nomic: 'Listening only (no mic) · {p}', p_silent: 'The mic sends only silence: check the mute button on the controller · {p}', p_mute: 'Turn mic off', p_unmute: 'Turn mic on', p_leave: 'Leave the party', p_leaveq: 'Leave the voice party?',
+          pair: 'Enter the PIN shown on the console in Omega › Settings › System and tools › Phone remote.', bad: 'Wrong PIN', locked: 'Too many attempts: wait a minute', off: 'offline', on: 'connected',
           music: 'Music', lib: 'My library', console: 'Console', game: 'Playing', none: 'Home', temp: 'Temperature', fav: 'Favourite radios', queue: 'Queue', live: 'Live', paused: 'Paused', loading: 'Loading…', stopped: 'Stopped', empty: 'Nothing in the queue',
           lib_help: 'Your own game backups, kept only on your console. Add a game with its download link and cover: it appears in Omega › Store › Library, ready to install.',
           add: 'Add a game', imp: 'Import JSON', f_new: 'New game', f_edit: 'Edit game', title: 'Title *', url: 'Download link (pkg, zip or elf) *', cover: 'Cover image link', plat: 'Platform', tid: 'Title ID', ver: 'Version', desc: 'Description',
@@ -389,7 +398,8 @@
           up_file: 'Choose a file', up_dir: 'Choose a folder', up_dir_s: 'game or homebrew', up_name: 'Name (optional)', up_sending: 'Sending {n} of {t} · {a} of {b}', up_wait: 'Keep this page open until it finishes.',
           up_space: 'Not enough space on the console: {a} free, {b} needed', up_lib: 'Done: it\'s in My library, ready to install', up_hb: 'Done: {name} is now in Omega\'s Home, with your homebrew',
           up_fail: 'Upload failed: ', up_unknown: 'Not recognised: choose a .pkg, .zip or .elf, or a folder with sce_sys/param.json, homebrew.js or eboot.elf', up_drop: 'or drag it here', from_upload: 'uploaded', up_nodir: 'This browser can\'t pick folders: use a computer, or upload a .zip', up_retry: 'Connection lost: retrying in {s} s (attempt {k} of {m}). Keep this page open.', up_gaveup: 'the console did not respond for several minutes. Choose the same files again to resume where it stopped.' },
-    it: { pair: 'Scrivi il PIN che vedi sulla console in Omega › Impostazioni › Sistema e strumenti › Telecomando.', bad: 'PIN errato', locked: 'Troppi tentativi: aspetta un minuto', off: 'non raggiungibile', on: 'collegato',
+    it: { party: 'Party vocale', p_on: 'Microfono acceso · {p}', p_muted: 'Microfono spento · {p}', p_nomic: 'Solo ascolto (microfono non disponibile) · {p}', p_silent: 'Dal microfono arriva solo silenzio: controlla il tasto mute del controller · {p}', p_mute: 'Spegni il microfono', p_unmute: 'Accendi il microfono', p_leave: 'Esci dal party', p_leaveq: 'Uscire dal party vocale?',
+          pair: 'Scrivi il PIN che vedi sulla console in Omega › Impostazioni › Sistema e strumenti › Telecomando.', bad: 'PIN errato', locked: 'Troppi tentativi: aspetta un minuto', off: 'non raggiungibile', on: 'collegato',
           music: 'Musica', lib: 'La mia libreria', console: 'Console', game: 'In gioco', none: 'Home', temp: 'Temperatura', fav: 'Radio preferite', queue: 'In coda', live: 'In diretta', paused: 'In pausa', loading: 'Caricamento…', stopped: 'Fermo', empty: 'La coda è vuota',
           lib_help: 'I backup dei tuoi giochi, salvati solo sulla tua console. Aggiungi un gioco con il link per scaricarlo e la copertina: lo trovi in Omega › Store › Libreria, pronto da installare.',
           add: 'Aggiungi un gioco', imp: 'Importa JSON', f_new: 'Nuovo gioco', f_edit: 'Modifica gioco', title: 'Titolo *', url: 'Link per scaricarlo (pkg, zip o elf) *', cover: 'Link dell\'immagine di copertina', plat: 'Piattaforma', tid: 'Title ID', ver: 'Versione', desc: 'Descrizione',
@@ -414,7 +424,7 @@
   function $(id) { return document.getElementById(id); }
   function tx(k) { return L[k] || T.en[k]; }
   function texts() {
-    var map = { t_pair: 'pair', t_console: 'console', t_game: 'game', t_temp: 'temp', t_fav: 'fav', t_queue: 'queue', t_lib: 'lib', t_lib_help: 'lib_help',
+    var map = { t_party: 'party', t_pair: 'pair', t_console: 'console', t_game: 'game', t_temp: 'temp', t_fav: 'fav', t_queue: 'queue', t_lib: 'lib', t_lib_help: 'lib_help',
       add_open: 'add', imp_open: 'imp', l_title: 'title', l_url: 'url', l_cover: 'cover', l_plat: 'plat', l_tid: 'tid', l_ver: 'ver', l_desc: 'desc', save: 'save', cancel: 'cancel',
       i_title: 'imp', i_help: 'i_help', l_file: 'file', i_paste_s: 'paste', i_paste_go: 'import_go', l_link: 'link', i_link_go: 'link_go', i_unlink: 'unlink', t_games: 'games',
       t_addmusic: 'addmusic', t_addmusic_help: 'addmusic_help', l_mfiles: 'mfiles', l_mlink: 'mlink', m_link_go: 'play', t_mfiles: 'onconsole',
@@ -649,13 +659,31 @@
 
   // importazione JSON
   $('imp_open_b').onclick = function () { $('imp').hidden = false; $('form').hidden = true; $('iok').textContent = $('ierr').textContent = ''; $('imp').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  // esito con i numeri: aggiunti, aggiornati (↻), saltati perché senza titolo o link (✕)
+  function counts(a, u, k) { return a + (u ? ' · ↻ ' + u : '') + (k ? ' · ✕ ' + k : ''); }
   function imported(j) {
-    if (j._status === 200) { $('iok').textContent = L.added + j.added; $('ierr').textContent = ''; libseq = -1; loadLib(); }
-    else { $('ierr').textContent = L.badjson; $('iok').textContent = ''; }
+    if (j._status === 200) { $('iok').textContent = L.added + counts(j.added, j.updated, j.skipped); $('ierr').textContent = ''; libseq = -1; loadLib(); }
+    else { $('ierr').textContent = L.badjson + (j.skipped ? ' (✕ ' + j.skipped + ')' : ''); $('iok').textContent = ''; }
   }
   function importText(txt) {
-    try { JSON.parse(txt); } catch (e) { $('ierr').textContent = L.badjson; $('iok').textContent = ''; return; }
-    api('POST', '/v1/library/import', { json: txt }).then(imported).catch(function () {});
+    var data;
+    // il BOM dei file salvati su Windows fa fallire JSON.parse
+    try { data = JSON.parse(String(txt).replace(/^\uFEFF/, '')); } catch (e) { $('ierr').textContent = L.badjson; $('iok').textContent = ''; return; }
+    // si manda il JSON così com'è (array, {"items"}, FPKGi {"DATA"}...): la console lo riconosce
+    api('POST', '/v1/library/import', Array.isArray(data) ? { items: data } : data).then(imported).catch(function () {});
+  }
+  // dopo "Collega": si guarda la libreria finché la sincronizzazione non finisce
+  function watchSync(from, tries) {
+    setTimeout(function () {
+      api('GET', '/v1/library').then(function (j) {
+        var src = j.source || {};
+        libseq = -1; loadLib();
+        if (src.last_sync === from && tries > 0) return watchSync(from, tries - 1);
+        var m = /^ok (\d+) (\d+)/.exec(src.status || '');
+        if (m) { $('iok').textContent = L.linked + counts(m[1], 0, +m[2]); $('ierr').textContent = ''; }
+        else if (src.status) { $('ierr').textContent = (src.status === 'fetch_failed' ? L.off : L.badjson) + ' (' + src.status + ')'; $('iok').textContent = ''; }
+      });
+    }, 2000);
   }
   $('i_file').onchange = function () {
     var f = this.files && this.files[0]; if (!f) return;
@@ -666,7 +694,10 @@
   $('i_link_go').onclick = function () {
     var u = $('i_link').value.trim();
     if (!/^https?:\/\//i.test(u)) { $('ierr').textContent = L.need; return; }
-    api('POST', '/v1/library/source', { url: u }).then(function () { $('iok').textContent = L.syncing; $('ierr').textContent = ''; setTimeout(function () { libseq = -1; loadLib(); }, 2500); setTimeout(function () { libseq = -1; loadLib(); }, 7000); });
+    api('GET', '/v1/library').then(function (j0) {
+      var from = (j0.source || {}).last_sync;
+      api('POST', '/v1/library/source', { url: u }).then(function () { $('iok').textContent = L.syncing; $('ierr').textContent = ''; watchSync(from, 15); });
+    });
   };
   $('i_unlink').onclick = function () { api('POST', '/v1/library/source', { url: '' }).then(function () { $('i_link').value = ''; libseq = -1; loadLib(); }); };
 
@@ -812,6 +843,16 @@
       if (j.lang) pickLang(j.lang);
       $('game').textContent = j.game || L.none;
       $('temp').textContent = j.cpu_t > 0 ? j.cpu_t + ' °C' : '—';
+    }).catch(function () {});
+    api('GET', '/v1/voice').then(function (v) {
+      $('partybox').hidden = !v.active;
+      if (!v.active) return;
+      var k = v.mic === 'none' ? 'p_nomic' : v.muted ? 'p_muted' : v.mic === 'silent' ? 'p_silent' : 'p_on';
+      $('pstate').textContent = tx(k).replace('{p}', v.party + (v.talking && v.talking.length ? ' · 🔊 ' + v.talking.join(', ') : ''));
+      $('pmic').textContent = tx(v.muted ? 'p_unmute' : 'p_mute'); $('pmic').hidden = v.mic === 'none';
+      $('pmic').onclick = function () { api('POST', '/v1/voice', { cmd: 'toggle' }).then(poll); };
+      $('pleave').textContent = tx('p_leave');
+      $('pleave').onclick = function () { if (confirm(tx('p_leaveq'))) api('POST', '/v1/voice', { cmd: 'leave' }).then(poll); };
     }).catch(function () {});
   }
   var saved = 'music'; try { saved = localStorage.getItem('omega-remote-tab') || 'music'; } catch (e) {}

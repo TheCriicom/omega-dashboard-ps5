@@ -35,12 +35,49 @@ token arriva da `/data/Omega/session.json`, scritto dalla UI; senza sessione
 il demone non contatta il server. Non fa injection: usa solo lo stato del primo
 piano e l'API di websrv.
 
+## Voce del party in gioco
+
+`source/voice.c`: quando l'utente è in un party e la UI non è in primo piano
+(si chiude da sola quando parte un gioco, e toglie `ui-active` uscendo) il
+servizio porta avanti la voce: microfono con `libSceAudioIn` caricata a runtime
+(prima l'utente in primo piano, poi 255; tipo 0, poi 1), Opus 16 kHz a frame da
+20 ms, invio e ricezione su **una connessione keep-alive per thread** (una
+connessione nuova a pacchetto costava 250-400 ms e la voce accumulava secondi
+di ritardo), buffer per persona che si allarga da 80 a 400 ms se la rete
+singhiozza, uscita su `sceAudioOut` (porta MAIN, mono). Controlla il party ogni
+4 s (`GET /api/v1/party`); appena la UI torna in primo piano (ui-active più
+giovane di 5 s) chiude il microfono e lascia la voce a lei.
+
+Comandi: `GET /v1/voice` (stato: party, microfono `ok|muted|silent|none`, chi
+parla) e `POST /v1/voice {"cmd":"mute|unmute|toggle|leave"}`. Li usano la
+pagina Omega del Toolbox di OnionHEN (in gioco: L2+R3 › Plugin › Omega) e il
+Telecomando dal telefono (scheda Party vocale).
+
+Non si può provare sul Mac con la console vera: c'è un banco di prova che
+compila `voice.c` con SceHttp su libcurl, microfono e altoparlante su file e
+ritardi di rete simulati (misure del 05/10/2026:
+~0,5 s di ritardo a 80 ms di RTT, ~0,7 s a 150 ms).
+
 ## Musica
 
 `source/player.c` decodifica con FFmpeg (radio, HLS, file locali e su USB,
-server Subsonic), converte a 48 kHz stereo e suona con `sceAudioOut`, quindi la
-musica continua anche dentro i giochi. Coda, volume e preferiti stanno in
+server Subsonic) e converte a 48 kHz stereo. **Sulla PS5 un payload in
+background non ha una sessione audio**: `sceAudioOut` si apre ma non si sente
+niente (05/10/2026: nessun homebrew noto suona così; suonano le app lanciate
+come "bigapp", come la UI). Quindi, quando la UI è aperta, il lettore le manda i
+blocchi già decodificati su `127.0.0.1:9096` (PCM s16 stereo, al ritmo del
+tempo reale con 150 ms di anticipo) e li suona lei (`omega-ui-src/source/pcmlink.c`).
+Senza UI ripiega su `sceAudioOut`; se la porta viene rifiutata lo stato diventa
+`error` con `no_audio`. Durante i giochi la musica quindi di norma non si sente. Coda, volume e preferiti stanno in
 `/data/Omega/music.json`; la UI comanda il lettore via HTTP su `127.0.0.1:9095`.
+
+## Diagnostica
+
+Il servizio manda da solo a `/api/v1/diag/event` i codici tecnici dell'uscita
+audio, dei flussi e del microfono (niente URL né nomi), in coda dal ciclo
+principale. Sul server finiscono in `MEDIA_DIR/diag/events-AAAA-MM-GG.jsonl`
+(volume `media-data`); i resoconti completi che l'utente manda da Impostazioni ›
+Sistema e strumenti › Invia diagnostica sono `report-*.json` nella stessa cartella.
 
 ## Telecomando e La mia libreria
 

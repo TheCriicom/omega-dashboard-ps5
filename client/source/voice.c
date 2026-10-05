@@ -1,8 +1,13 @@
 // Omega UI — voce nel party. Con un party attivo partono due thread:
-//  · tx: legge il microfono a 16 kHz mono, riconosce quando stai parlando e
-//    ogni 200 ms manda un pacchetto al server (POST /party/voice);
-//  · rx: long-poll di GET /party/voice, decodifica i pacchetti degli altri in
-//    un buffer per persona; la callback audio (audio.c) li mescola.
+//  · tx: legge il microfono a 16 kHz mono, riconosce il parlato a frame da 20 ms
+//    e manda tutto quello che è pronto (POST /party/voice) sulla stessa
+//    connessione keep-alive: una connessione nuova a pacchetto costava più del
+//    ritmo dei pacchetti e la voce accumulava secondi di ritardo;
+//  · rx: long-poll di GET /party/voice (stessa connessione), decodifica i
+//    pacchetti degli altri in un buffer per persona; la callback audio
+//    (audio.c) li mescola.
+// Quando la UI non è in primo piano (o si chiude per un gioco) la voce passa al
+// servizio omega_redirect, che resta acceso (omega-redirect-src/source/voice.c).
 // Codec Opus 16 kb/s su PS5 (libopus dell'SDK), IMA ADPCM sul desktop. Il server
 // inoltra i pacchetti senza decodificarli. Senza microfono si resta in ascolto.
 #include "app.h"
@@ -16,13 +21,19 @@
 
 #define VSR      16000
 #define FRAME    320                 // 20 ms
-#define NFRAMES  10                  // 200 ms per pacchetto
+#define NFRAMES  10                  // al massimo 200 ms per pacchetto
 #define CHUNK    (FRAME * NFRAMES)
+#define MAX_BACKLOG 25               // oltre 500 ms non spediti si butta il più vecchio
+#define HANG     15                  // frame di coda dopo il parlato (300 ms)
+#define PREROLL  3                   // frame tenuti da parte per l'attacco delle parole
 #define MAXSPK   8
 #define JIT      (VSR * 2)           // 2 s di buffer per persona
-#define PREBUF   (VSR / 8)           // 125 ms accumulati prima di suonare
+#define PREBUF_MIN (VSR * 2 / 25)    // 80 ms accumulati prima di suonare...
+#define PREBUF_MAX (VSR * 2 / 5)     // ...fino a 400 ms se la rete singhiozza
+#define MAXQ     (VSR * 6 / 10)      // oltre 600 ms in coda si salta avanti
+#define CATCHUP  (VSR * 2 / 10)
 #define MIC_RING (VSR * 2)
-#define VAD_RMS  600                 // soglia di energia per "sta parlando"
+#define VAD_RMS  300                 // soglia di energia per "sta parlando"
 #define OUT_SR   48000
 
 enum { CODEC_OPUS = 1, CODEC_ADPCM = 2 };
@@ -73,6 +84,7 @@ static int adpcm_decode(const uint8_t *in, int len, int16_t *pcm, int max) {
 typedef struct {
   char oid[32];
   int16_t ring[JIT]; int head, fill, playing;
+  int prebuf; Uint32 calm_since;     // margine adattivo
   Uint32 last;                       // ultimo pacchetto ricevuto
   float pos;                         // posizione frazionaria (16k → 48k)
 #ifdef HAVE_OPUS
@@ -93,6 +105,10 @@ static void mic_push(const int16_t *p, int n) {
   SDL_LockMutex(mic_mx);
   for (int i = 0; i < n; i++) { mic[mic_w] = p[i]; mic_w = (mic_w + 1) % MIC_RING; if (mic_w == mic_r) mic_r = (mic_r + 1) % MIC_RING; }
   SDL_UnlockMutex(mic_mx);
+}
+static int mic_avail(void) {
+  SDL_LockMutex(mic_mx); int have = (mic_w - mic_r + MIC_RING) % MIC_RING; SDL_UnlockMutex(mic_mx);
+  return have;
 }
 static int mic_take(int16_t *p, int n) {
   SDL_LockMutex(mic_mx);
@@ -174,39 +190,66 @@ static int i_am_muted(void) {
 
 static int tx_thread(void *arg) {
   int gen = (int)(intptr_t)arg;
-  static int16_t pcm[CHUNK]; static uint8_t pkt[8192]; char path[96], resp[256];
-  uint32_t seq = 0; int hang = 0;
+  static int16_t pcm[FRAME], pre[PREROLL][FRAME]; static uint8_t pkt[8192]; char path[96];
+  uint32_t seq = 0; int hang = 0, npre = 0, fails = 0;
+  OmegaKeep k = OMEGA_KEEP_INIT;
 #ifdef HAVE_OPUS
   int err = 0; OpusEncoder *enc = opus_encoder_create(VSR, 1, OPUS_APPLICATION_VOIP, &err);
-  if (enc) { opus_encoder_ctl(enc, OPUS_SET_BITRATE(16000)); opus_encoder_ctl(enc, OPUS_SET_DTX(1)); }
+  if (enc) {
+    opus_encoder_ctl(enc, OPUS_SET_BITRATE(20000)); opus_encoder_ctl(enc, OPUS_SET_INBAND_FEC(1));
+    opus_encoder_ctl(enc, OPUS_SET_PACKET_LOSS_PERC(5)); opus_encoder_ctl(enc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
+  }
 #endif
   while (SDL_AtomicGet(&run_gen) == gen) {
-    if (!mic_take(pcm, CHUNK)) { SDL_Delay(20); continue; }
-    // energia sopra soglia, più due pacchetti di coda per non tagliare le parole
-    double e = 0; for (int i = 0; i < CHUNK; i++) e += (double)pcm[i] * pcm[i];
-    double rms = sqrt(e / CHUNK);
-    if (rms > VAD_RMS) hang = 2; else if (hang > 0) hang--; else continue;
-    if (i_am_muted() || !g_token[0]) continue;
-    me_spoke = SDL_GetTicks();
-    int len = 0; const char *codec = "adpcm";
-#ifdef HAVE_OPUS
-    if (enc) {
-      codec = "opus";
-      for (int f = 0; f < NFRAMES; f++) {
-        int n = opus_encode(enc, pcm + f * FRAME, FRAME, pkt + len + 2, (opus_int32)(sizeof pkt - len - 2));
-        if (n < 0) n = 0;
-        pkt[len] = (uint8_t)(n & 0xff); pkt[len + 1] = (uint8_t)(n >> 8);
-        len += 2 + n;
+    int have = mic_avail() / FRAME;
+    if (have < 2) { SDL_Delay(10); continue; }             // si aspetta almeno 40 ms
+    while (have > MAX_BACKLOG) { mic_take(pcm, FRAME); have--; }   // rete lenta: meglio un buco che secondi di ritardo
+    int len = 0, frames = 0, adpcm_n = 0; const char *codec = "adpcm";
+    static int16_t raw[CHUNK];                              // ADPCM: un blocco solo con tutti i frame
+    for (int f = 0; f < have && f < NFRAMES; f++) {
+      mic_take(pcm, FRAME);
+      double e = 0; for (int i = 0; i < FRAME; i++) e += (double)pcm[i] * pcm[i];
+      int onset = 0;
+      if (sqrt(e / FRAME) > VAD_RMS) { onset = hang == 0; hang = HANG; }
+      else if (hang > 0) hang--;
+      else {   // silenzio: tenuto da parte nel caso stia per cominciare una parola
+        if (npre == PREROLL) { memmove(pre[0], pre[1], sizeof pre[0] * (PREROLL - 1)); npre--; }
+        memcpy(pre[npre++], pcm, sizeof pcm);
+        continue;
       }
-    } else
+      if (i_am_muted() || !g_token[0]) { npre = 0; continue; }
+      for (int q = 0; q <= (onset ? npre : 0); q++) {
+        const int16_t *src = (onset && q < npre) ? pre[q] : pcm;
+#ifdef HAVE_OPUS
+        if (enc) {
+          codec = "opus";
+          if (len + 2 + 400 > (int)sizeof pkt) break;
+          int n = opus_encode(enc, src, FRAME, pkt + len + 2, (opus_int32)(sizeof pkt - len - 2));
+          if (n < 0) n = 0;
+          pkt[len] = (uint8_t)(n & 0xff); pkt[len + 1] = (uint8_t)(n >> 8);
+          len += 2 + n; frames++;
+          continue;
+        }
 #endif
-    len = adpcm_encode(pcm, CHUNK, pkt);
+        if (adpcm_n + FRAME <= CHUNK) { memcpy(raw + adpcm_n, src, FRAME * sizeof *src); adpcm_n += FRAME; frames++; }
+      }
+      if (onset) npre = 0;
+    }
+    if (!frames) continue;
+    if (!strcmp(codec, "adpcm")) len = adpcm_encode(raw, adpcm_n, pkt);
+    me_spoke = SDL_GetTicks();
     snprintf(path, sizeof path, OMEGA_API "/party/voice?codec=%s&seq=%u", codec, seq++);
-    omega_http_upload(path, g_token, pkt, (size_t)len, resp, sizeof resp);
+    int st = omega_keep_req(&k, 1, path, g_token, pkt, (size_t)len, "application/octet-stream", NULL, NULL, 0);
+    if (st == 204) fails = 0;
+    else {
+      if (fails++ < 3) omega_log("voce: invio -> %d", st);
+      if (st == 403) SDL_Delay(500); else if (st < 0) SDL_Delay(200);
+    }
   }
 #ifdef HAVE_OPUS
   if (enc) opus_encoder_destroy(enc);
 #endif
+  omega_keep_close(&k);
   SDL_AtomicAdd(&live_threads, -1);
   return 0;
 }
@@ -222,6 +265,7 @@ static Speaker *speaker(const char *oid) {
   Speaker *s = free_s ? free_s : oldest;
   audio_lock(1);
   snprintf(s->oid, sizeof s->oid, "%s", oid); s->head = s->fill = s->playing = 0; s->pos = 0;
+  s->prebuf = PREBUF_MIN * 3 / 2; s->calm_since = SDL_GetTicks();
   audio_lock(0);
   return s;
 }
@@ -232,6 +276,8 @@ static void feed(Speaker *s, const int16_t *p, int n) {
     if (s->fill >= JIT) { s->head = (s->head + 1) % JIT; s->fill--; }      // troppo in ritardo: si scarta il più vecchio
     s->ring[(s->head + s->fill) % JIT] = p[i]; s->fill++;
   }
+  // troppo in ritardo (la rete ha consegnato tutto insieme): si salta avanti
+  if (s->fill > MAXQ + s->prebuf) { int drop = s->fill - CATCHUP - s->prebuf; s->head = (s->head + drop) % JIT; s->fill -= drop; }
   s->last = SDL_GetTicks();
   audio_lock(0);
 }
@@ -262,11 +308,12 @@ static uint32_t rd32(const uint8_t *p) { return (uint32_t)p[0] | (uint32_t)p[1] 
 static int rx_thread(void *arg) {
   int gen = (int)(intptr_t)arg;
   uint32_t cursor = 0; char path[96];
+  OmegaKeep k = OMEGA_KEEP_INIT;
   while (SDL_AtomicGet(&run_gen) == gen) {
     snprintf(path, sizeof path, OMEGA_API "/party/voice?after=%u&wait=1", cursor);
     unsigned char *b = NULL; size_t len = 0;
     Uint32 t0 = SDL_GetTicks();
-    int st = omega_http_bin(path, g_token[0] ? g_token : NULL, &b, &len, 256 * 1024);
+    int st = omega_keep_req(&k, 0, path, g_token[0] ? g_token : NULL, NULL, 0, NULL, &b, &len, 256 * 1024);
     // il server tiene aperta la richiesta fino a 1,5 s: se risponde subito e a
     // vuoto si aspetta un attimo, per non aprire connessioni a raffica
     if (SDL_GetTicks() - t0 < 100 && (st != 200 || len < 12)) SDL_Delay(300);
@@ -286,6 +333,7 @@ static int rx_thread(void *arg) {
     }
     free(b);
   }
+  omega_keep_close(&k);
   SDL_AtomicAdd(&live_threads, -1);
   return 0;
 }
@@ -298,15 +346,21 @@ int voice_fill(float *out, int frames) {
   for (int k = 0; k < MAXSPK; k++) {
     Speaker *s = &spk[k];
     if (!s->oid[0]) continue;
-    if (!s->playing) { if (s->fill < PREBUF) continue; s->playing = 1; }
+    if (!s->playing) { if (s->fill < s->prebuf) continue; s->playing = 1; }
     for (int i = 0; i < frames; i++) {
-      if (s->fill < 2) { s->playing = 0; break; }
+      if (s->fill < 2) {
+        s->playing = 0;
+        // vuoto a metà frase: la rete singhiozza, si alza il margine di 40 ms
+        if (SDL_GetTicks() - s->last < 1000) { s->calm_since = SDL_GetTicks(); if (s->prebuf < PREBUF_MAX) s->prebuf += VSR / 25; }
+        break;
+      }
       // da 16 a 48 kHz: interpolazione lineare
       float a = s->ring[s->head] / 32768.0f, b = s->ring[(s->head + 1) % JIT] / 32768.0f;
       out[i] += (a + (b - a) * s->pos) * 0.9f;
       s->pos += (float)VSR / OUT_SR;
       if (s->pos >= 1) { s->pos -= 1; s->head = (s->head + 1) % JIT; s->fill--; }
     }
+    if (s->prebuf > PREBUF_MIN && SDL_GetTicks() - s->calm_since > 20000) { s->prebuf -= VSR / 50; s->calm_since = SDL_GetTicks(); }
     any = 1;
   }
   if (any) for (int i = 0; i < frames; i++) { float x = out[i]; out[i] = x / (1 + fabsf(x)) * 1.4f; }   // limitatore morbido
@@ -346,10 +400,16 @@ static void start(void) {
   omega_log("voce: %s", has_mic ? "attiva" : "solo ascolto (microfono non disponibile)");
 }
 
+// La voce nella UI solo in primo piano e da almeno 2 s: prima il servizio deve
+// accorgersi che la UI è tornata e chiudere il suo microfono. Se il microfono
+// non si apre si riprova ogni 5 s (fino a 6 volte): può essere ancora suo.
 void voice_tick(void) {
-  int want = S.party.active && g_token[0] && g_scene == SC_HOME;
-  if (want && !state) start();
-  else if (!want && state) stop();
+  static Uint32 started_at; static int mic_retries;
+  Uint32 now = SDL_GetTicks();
+  int want = S.party.active && g_token[0] && g_scene == SC_HOME && g_ui_fg && now - g_ui_fg_since > 2000;
+  if (want && !state) { start(); started_at = now; if (state == 1) mic_retries = 0; }
+  else if (!want && state) { stop(); mic_retries = 0; }
+  else if (state == 2 && mic_retries < 6 && now - started_at > 5000) { mic_retries++; stop(); start(); started_at = now; }
 }
 
 // Alla chiusura dell'app: ferma la voce e aspetta (al massimo 3 s) che i thread

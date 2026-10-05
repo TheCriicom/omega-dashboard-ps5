@@ -20,6 +20,7 @@ module.exports = {
   adminInsecureCookie: process.env.ADMIN_INSECURE_COOKIE === '1',
 
   mediaDir: process.env.MEDIA_DIR || '/app/media',
+  updateDir: process.env.UPDATE_DIR || '/app/updates',
   siteDir: process.env.SITE_DIR || path.join(__dirname, '..', '..', 'site'),
   sourceDir: process.env.PUBLIC_SOURCE_DIR || '/app/src-pub',
   storeAssetDir: process.env.STORE_ASSET_DIR || path.join(__dirname, '..', 'store-assets'),

@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Účty, sociální funkce a Store s homebrew pro konzoli. Nezávislý projekt, který není přidružen ke společnosti Sony."
+  },
+  "system": {
+    "party_created": "· Uživatel {actor} vytvořil party",
+    "party_joined": "· Uživatel {actor} se připojil k party",
+    "party_left": "· Uživatel {actor} opustil party",
+    "group_created": "Uživatel {actor} vytvořil skupinu „{name}“",
+    "group_added": "Uživatel {actor} přidal uživatele {user}",
+    "group_left": "Uživatel {actor} opustil skupinu",
+    "group_renamed": "Uživatel {actor} přejmenoval skupinu na „{name}“",
+    "group_removed": "Uživatel {actor} odebral uživatele {user}"
   }
 }

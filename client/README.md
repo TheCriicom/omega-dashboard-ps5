@@ -57,6 +57,45 @@ comando per riga, e cancella il file dopo averlo letto:
 
 Funziona anche sulla console: si carica il file via FTP.
 
+## Personalizza
+
+Impostazioni › Personalizza (`source/custom.c`, opzioni in `source/prefs.c`):
+più di 30 opzioni in 8 categorie (aspetto, home, orologio e barra, movimento,
+suoni, notifiche, salvaschermo, prestazioni) e 7 stili rapidi. Ogni opzione è
+una riga della tabella `PREFS` con i suoi valori; il codice le legge da
+`g_prefs`. Si salvano in `OMEGA_DIR/prefs.txt` (`chiave=valore`; un valore
+sconosciuto torna al predefinito). Sfondo personale: `/data/Omega/wallpaper.jpg`
+o `.png`.
+
+## Giochi sui dischi esterni
+
+`source/drives.c` guarda ogni 4 s `/mnt/usb0..7`, `/mnt/ext0` e `/mnt/ext1` e
+cerca le cartelle di gioco (`sce_sys/param.json` o `param.sfo` più `eboot.bin`)
+nella radice e in `homebrew/`, `etaHEN/games/`, `games/`, `PS5/`, `PS4/`. I
+giochi compaiono in home con l'icona del disco e spariscono quando il disco si
+scollega. All'avvio la cartella si monta in sola lettura (nullfs) su
+`/system_ex/app/<TID>`, e la prima volta si registra il titolo; tornando in
+Omega si smonta. Sul disco non si scrive e non si cancella mai niente. Serve
+kstuff, come per ShadowMount e dump_runner. Installando un gioco a cartella o
+zip con un disco collegato, Omega chiede dove metterlo (`<disco>/homebrew/<TID>`).
+
+## Prestazioni
+
+Il renderer è software: ogni sfumatura e ogni velo a tutto schermo costano
+CPU. La velatura del tema è dentro le immagini di sfondo (`bake_tint`, una
+volta per immagine); con un pannello aperto e fermo la scena sotto si
+fotografa una volta già scurita e non si ridisegna (`render_frame`, «scena
+congelata»); con la home ferma si scende a 30 fotogrammi. Misure sul Mac col
+renderer software (05/10/2026): home da 6,6 a 3,5 ms, Game Base da 9,7 a 2,6,
+Centro di controllo da 11,3 a 3,5.
+
+## Novità dopo un aggiornamento
+
+Al primo avvio di una versione nuova (`OMEGA_VERSION` diversa da
+`OMEGA_DIR/version-seen.txt`) la UI mostra la finestra «Novità»
+(`source/whatsnew.c`). L'elenco `ITEMS` si riscrive a ogni rilascio, insieme
+alla versione; chi installa da zero non la vede.
+
 ## Lingue
 
 L'app è tradotta in 27 lingue: `it en ja fr es de nl pt-PT pt-BR ru ko zh-Hans

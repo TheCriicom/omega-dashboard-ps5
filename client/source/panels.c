@@ -307,11 +307,11 @@ void gb_open(int tab) {
 }
 
 static int item_height(const GbItem *it) {
-  switch (it->type) { case IT_HEADER: return 70; case IT_EMPTY: return 150; case IT_PARTYCARD: return 210; default: return 104; }
+  switch (it->type) { case IT_HEADER: return 70; case IT_EMPTY: return 150; case IT_PARTYCARD: return 262; default: return 104; }
 }
 
 static void draw_partycard(int x, int y, int w, int alpha) {
-  news_art(NULL, x, y, w, 190, 24, alpha);
+  news_art(NULL, x, y, w, 242, 24, alpha);
   draw_icon(IC_PARTY, x + 70, y + 70, 64, C_WHITE, alpha);
   draw_text_fit(font(W_MED, 34), S.party.name, x + 130, y + 40, w - 160, C_WHITE, alpha, AL_L);
   char mm[48], m[128]; snprintf(mm, sizeof mm, S.party.nmembers == 1 ? _("%d membro") : _("%d membri"), S.party.nmembers);
@@ -328,6 +328,11 @@ static void draw_partycard(int x, int y, int w, int alpha) {
     else if (pm->muted) { fill_circle(cx + 17, cy + 17, 11, RGB(160, 40, 50), alpha); draw_icon(IC_MICOFF, cx + 17, cy + 17, 14, C_WHITE, alpha); }
     draw_avatar(pm->oid, pm->avatar, cx, cy, 48, alpha);
   }
+  // in gioco la voce la porta avanti il servizio: come si comanda da lì
+  static int onion = -1; if (onion < 0) onion = strstr(hen_name(), "OnionHEN") != NULL;
+  draw_text_fit(font(W_REG, 20), onion ? _("In gioco: microfono con L2+R3 › Plugin › Omega; gli altri si sentono con Omega aperta")
+                                       : _("In gioco: microfono dal Telecomando; gli altri si sentono con Omega aperta"),
+                x + 34, y + 200, w - 68, RGB(200, 212, 245), alpha, AL_L);
 }
 
 void gb_draw(float t) {
@@ -996,7 +1001,7 @@ static void open_lang_menu(void) {
   menu_select(sel);
 }
 
-enum { SO_PROFILE, SO_AVATAR, SO_BIO, SO_THEME, SO_LANG, SO_AUDIO, SO_HOME, SO_SERVER, SO_SYSTEM, SO_PRIVACY, SO_ABOUT, SO_LOGOUT, SO_QUIT, N_OPT };
+enum { SO_PROFILE, SO_CUSTOM, SO_AVATAR, SO_BIO, SO_THEME, SO_LANG, SO_AUDIO, SO_HOME, SO_SERVER, SO_SYSTEM, SO_PRIVACY, SO_ABOUT, SO_LOGOUT, SO_QUIT, N_OPT };
 
 void settings_draw(float t) {
   int w = 780, x = side_panel(t, w), a = (int)(255 * t);
@@ -1011,19 +1016,19 @@ void settings_draw(float t) {
   snprintf(info, sizeof info, _("Amici: %d \xC2\xB7 online: %d \xC2\xB7 giochi: %d"), S.nfriends, friends_online_count(), napps);
   draw_text_fit(font(W_REG, 22), info, px + 140, y + 72, pw - 170, C_DIM, a, AL_L);
   y += 140;
-  static const char *opts[N_OPT] = { N_("Il mio profilo"), N_("Cambia avatar"), N_("Modifica bio"), N_("Tema"), N_("Lingua"), N_("Audio"), N_("Omega come Home"), N_("Server"), N_("Sistema e strumenti"),
+  static const char *opts[N_OPT] = { N_("Il mio profilo"), N_("Personalizza"), N_("Cambia avatar"), N_("Modifica bio"), N_("Tema"), N_("Lingua"), N_("Audio"), N_("Omega come Home"), N_("Server"), N_("Sistema e strumenti"),
                                      N_("Privacy e dati"), N_("Informazioni su Omega"), N_("Esci dall'account"), N_("Chiudi Omega") };
-  static const int oic[N_OPT] = { IC_USER, IC_STAR, IC_NEWS, IC_GEAR, IC_CHAT, IC_BELL, IC_GAMEPAD, IC_GLOBE, IC_FOLDER, IC_CHECK, IC_MORE, IC_EXIT, IC_POWER };
+  static const int oic[N_OPT] = { IC_USER, IC_BRUSH, IC_STAR, IC_NEWS, IC_GEAR, IC_CHAT, IC_BELL, IC_GAMEPAD, IC_GLOBE, IC_FOLDER, IC_CHECK, IC_MORE, IC_EXIT, IC_POWER };
   st_anim = approach(st_anim, (float)st_sel, 20.0f);
-  // 13 righe più l'intestazione stanno sopra la barra dei comandi (y 1018)
-  const int rs = 56, rh = 50;
+  // 14 righe più l'intestazione stanno sopra la barra dei comandi (y 1018)
+  const int rs = 52, rh = 46;
   TTF_Font *fo = font(W_MED, 27), *fv = font(W_REG, 23);
   for (int i = 0; i < N_OPT; i++) {
     int ry = y + i * rs;
     float fa = clampf(1 - fabsf(st_anim - i), 0, 1);
     row_bg(px, ry, pw, rh, fa, a);
-    fill_circle(px + 46, ry + rh / 2, 24, st_sel == i ? C_WHITE : RGB(44, 52, 72), a);
-    draw_icon(oic[i], px + 46, ry + rh / 2, 26, st_sel == i ? RGB(12, 14, 22) : C_TXT, a);
+    fill_circle(px + 46, ry + rh / 2, 21, st_sel == i ? C_WHITE : RGB(44, 52, 72), a);
+    draw_icon(oic[i], px + 46, ry + rh / 2, 23, st_sel == i ? RGB(12, 14, 22) : C_TXT, a);
     int vy = ry + (rh - TTF_FontHeight(fv)) / 2;
     const char *lbl = _(opts[i]);
     int vw = 0;   // spazio occupato a destra dal valore
@@ -1049,6 +1054,7 @@ void settings_input(int b) {
   else if (b == B_X) {
     switch (st_sel) {
       case SO_PROFILE: profile_open(S.me); break;
+      case SO_CUSTOM: custom_open(); break;
       case SO_AVATAR: ov_push(OV_AVATAR); break;
       case SO_BIO: { char bio[168]; snprintf(bio, sizeof bio, "%s", S.my_about); if (edit_text(_("La tua bio"), bio, sizeof bio, 0)) social_profile_update(bio, 0); break; }
       case SO_THEME: {

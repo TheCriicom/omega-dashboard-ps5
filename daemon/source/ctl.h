@@ -10,3 +10,5 @@ const char *ctl_last_request(void);              // per il log dei crash (metodo
 typedef void (*ctl_notify_fn)(const char *msg);   // notifica di sistema (avanzamento dei caricamenti)
 void ctl_on_notify(ctl_notify_fn fn);
 int omega_thread(void *(*fn)(void *), void *arg);   // thread staccato con 1 MB di stack nostro
+// codice tecnico verso il server (main.c): in coda, non blocca mai chi chiama
+void omega_diag(const char *comp, const char *ev, int ok, int rc, const char *detail);

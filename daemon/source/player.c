@@ -1,8 +1,12 @@
 // Omega — lettore musicale del demone. Due thread:
 //  · decode: FFmpeg apre il brano (file, http(s), HLS), decodifica e converte a
 //    48 kHz s16 stereo dentro un anello di ~3 s;
-//  · out: prende blocchi da 256 frame, applica il volume e li manda all'uscita
-//    (sceAudioOutOutput è bloccante e dà il ritmo).
+//  · out: prende blocchi da 256 frame, applica il volume e li manda all'uscita.
+// L'uscita: sulla PS5 un payload in background non ha una sessione audio (si
+// apre la porta ma non si sente niente: nessun homebrew suona così; suonano le
+// app lanciate come "bigapp", come la UI di Omega). Quindi, quando la UI è
+// aperta, i blocchi vanno a lei su 127.0.0.1:9096 (PCM grezzo, il ritmo lo dà
+// lei leggendo) e li suona con il suo audio; sceAudioOut resta il ripiego.
 // Comandi e stato passano da un mutex; chi comanda non aspetta mai la rete.
 #include "player.h"
 #include "ctl.h"
@@ -19,6 +23,11 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
+#include <sys/time.h>
 
 #define SR 48000
 #define BLOCK 256
@@ -32,11 +41,15 @@ int sceAudioOutInit(void);
 int sceAudioOutOpen(int userId, int type, int index, unsigned len, unsigned freq, unsigned param);
 int sceAudioOutOutput(int handle, const void *ptr);
 int sceAudioOutClose(int handle);
-static int aout = -1;
+static int aout = -1, aout_rc;
 static int aout_open(void) {
-  static int inited;
-  if (!inited) { sceAudioOutInit(); inited = 1; }
-  if (aout < 0) aout = sceAudioOutOpen(255, 0 /* MAIN */, 0, BLOCK, SR, 1 /* s16 stereo */);
+  static int inited, logged;
+  if (!inited) { int r = sceAudioOutInit(); inited = 1; if (r < 0 && r != (int)0x8026000E) player_log("lettore: sceAudioOutInit -> 0x%x", r); }
+  if (aout < 0) {
+    aout = sceAudioOutOpen(255, 0 /* MAIN */, 0, BLOCK, SR, 1 /* s16 stereo */);
+    aout_rc = aout;
+    if (logged < 5) { logged++; player_log("lettore: uscita della console (sceAudioOutOpen) -> 0x%x", aout); omega_diag("player", "audio_open", aout >= 0, aout, ""); }
+  }
   return aout >= 0;
 }
 static void aout_write(const int16_t *pcm) { if (aout >= 0) sceAudioOutOutput(aout, pcm); }
@@ -59,6 +72,48 @@ static void aout_write(const int16_t *pcm) {
 }
 static void aout_close(void) { if (aout) { SDL_CloseAudioDevice(aout); aout = 0; } }
 #endif
+
+// ------------------------------------------------- uscita verso la UI (9096) --
+#define PCM_PORT 9096
+static volatile int pcm_client = -1;
+static void *pcm_accept_thread(void *arg) {
+  (void)arg;
+  int ls = socket(AF_INET, SOCK_STREAM, 0);
+  int one = 1; setsockopt(ls, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
+  struct sockaddr_in a; memset(&a, 0, sizeof a);
+  a.sin_family = AF_INET; a.sin_port = htons(PCM_PORT); a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  if (ls < 0 || bind(ls, (struct sockaddr *)&a, sizeof a) != 0 || listen(ls, 2) != 0) { player_log("lettore: porta %d non disponibile", PCM_PORT); return NULL; }
+  for (;;) {
+    int c = accept(ls, NULL, NULL);
+    if (c < 0) { usleep(200000); continue; }
+    // la UI può essere sospesa (gioco avviato, tasto PS): una scrittura che resta
+    // ferma più di 1 s vuol dire "non c'è più", e si torna all'uscita della console
+    struct timeval tv = { 1, 0 }; setsockopt(c, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
+    int buf = 16 * 1024; setsockopt(c, SOL_SOCKET, SO_SNDBUF, &buf, sizeof buf);
+    setsockopt(c, IPPROTO_TCP, TCP_NODELAY, &one, sizeof one);
+#ifdef SO_NOSIGPIPE
+    setsockopt(c, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof one);
+#endif
+    int old = pcm_client; pcm_client = c;
+    if (old >= 0) close(old);
+    player_log("lettore: la UI suona la musica (uscita della UI collegata)");
+  }
+  return NULL;
+}
+// 0 = mandato alla UI; -1 = UI non collegata o sparita
+static int pcm_send(const int16_t *blk, size_t bytes) {
+  int c = pcm_client; if (c < 0) return -1;
+  const char *p = (const char *)blk; size_t left = bytes;
+  while (left) {
+    ssize_t k = send(c, p, left, 0);
+    if (k <= 0) {
+      if (__sync_bool_compare_and_swap(&pcm_client, c, -1)) { close(c); player_log("lettore: uscita della UI scollegata"); }
+      return -1;
+    }
+    p += k; left -= (size_t)k;
+  }
+  return 0;
+}
 
 // --------------------------------------------------------------------- stato --
 static pthread_mutex_t mx = PTHREAD_MUTEX_INITIALIZER;
@@ -348,7 +403,7 @@ static void *decode_thread(void *arg) {
       }
     }
   done:
-    if (why) player_log("lettore: errore su %s: %s", it.url, why);
+    if (why) { player_log("lettore: errore su %s: %s", it.url, why); omega_diag("player", "stream_open", 0, rc < 0 ? rc : -1, why); }
     av_packet_free(&pkt); av_frame_free(&fr);
     swr_free(&sw); avcodec_free_context(&cc);
     if (fc) avformat_close_input(&fc);
@@ -375,6 +430,7 @@ static void *decode_thread(void *arg) {
 // ------------------------------------------------------------ thread out --
 static void *out_thread(void *arg) {
   (void)arg;
+  double pcm_clock = 0;
   int16_t blk[BLOCK * 2];
   float gain = 0;            // volume effettivo, segue quello chiesto senza scatti
   int idle = 0, open = 0;
@@ -397,6 +453,27 @@ static void *out_thread(void *arg) {
     float target = volume / 100.0f; target *= target;     // curva più naturale all'orecchio
     pthread_mutex_unlock(&mx);
 
+    if (pcm_client >= 0) {
+      // la UI è aperta: suona lei. Il ritmo lo dà la sua lettura (send si blocca)
+      if (open) { aout_close(); open = 0; }
+      if (!got) { usleep(10000); continue; }
+      idle = 0;
+      for (int i = 0; i < BLOCK * 2; i++) {
+        gain += (target - gain) * 0.002f;
+        int v = (int)(blk[i] * gain);
+        blk[i] = (int16_t)(v > 32767 ? 32767 : v < -32768 ? -32768 : v);
+      }
+      // al ritmo del tempo reale con 150 ms di anticipo: i buffer restano piccoli,
+      // e pausa o cambio brano si sentono subito
+      struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
+      double now = ts.tv_sec + ts.tv_nsec / 1e9;
+      if (pcm_clock < now - 0.5) pcm_clock = now;            // ripartenza dopo una pausa
+      double ahead = pcm_clock - now - 0.15;
+      if (ahead > 0) usleep((useconds_t)(ahead * 1e6));
+      pcm_clock += (double)BLOCK / SR;
+      if (pcm_send(blk, sizeof blk) == 0) continue;
+      // UI sparita a metà blocco: il blocco va all'uscita della console qui sotto
+    }
     if (!got) {
       // niente da suonare: dopo 3 s si chiude l'uscita, così non resta occupata
       if (open && ++idle > (SR / BLOCK) * 3) { aout_close(); open = 0; }
@@ -405,7 +482,16 @@ static void *out_thread(void *arg) {
     } else {
       idle = 0;
       if (!open) open = aout_open();
-      if (!open) { usleep(100000); continue; }
+      if (!open) {
+        // uscita della console rifiutata e UI chiusa: lo si dice invece di restare muti
+        pthread_mutex_lock(&mx);
+        if (state == PL_PLAYING) {
+          snprintf(err, sizeof err, "no_audio");   // la UI lo traduce
+          state = PL_ERROR; bump();
+        }
+        pthread_mutex_unlock(&mx);
+        usleep(100000); continue;
+      }
     }
     for (int i = 0; i < BLOCK * 2; i++) {
       gain += (target - gain) * 0.002f;
@@ -447,6 +533,7 @@ void player_init(const char *file) {
   // stack nostro anche qui (vedi omega_thread in ctl.c): FFmpeg ne usa parecchio
   omega_thread(decode_thread, NULL);
   omega_thread(out_thread, NULL);
+  omega_thread(pcm_accept_thread, NULL);
   player_log("lettore pronto: %d brani in coda", count);
 }
 

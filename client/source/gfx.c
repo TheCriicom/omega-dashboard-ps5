@@ -3,6 +3,7 @@
 // angoli, cerchi e ombre come texture riusate a nove fette, icone vettoriali
 // rasterizzate con SDF all'avvio, sfondi già scalati.
 #include "app.h"
+#include <unistd.h>
 #include <SDL_image.h>
 #include <dirent.h>
 #include <math.h>
@@ -435,8 +436,17 @@ static void setc(SDL_Texture *t, Col c, int alpha) {
   SDL_SetTextureAlphaMod(t, (Uint8)(alpha < 0 ? 0 : alpha > 255 ? 255 : alpha));
 }
 
+// Veli scuri grandi (dietro i pannelli): con la scena congelata (main.c) sono già
+// dentro la fotografia della scena e non si ridisegnano; mentre la si fotografa
+// si annotano per applicarli una volta sola.
+int g_veil_skip, g_veil_rec;
+Veil g_veils[8]; int g_nveils;
 void fill_rect(int x, int y, int w, int h, Col c, int alpha) {
   if (w <= 0 || h <= 0 || alpha <= 0) return;
+  if (alpha < 255 && (long)w * h >= (long)SCREEN_W * SCREEN_H * 2 / 5) {
+    if (g_veil_skip) return;
+    if (g_veil_rec && g_nveils < 8) g_veils[g_nveils++] = (Veil){ x, y, w, h, c, alpha };
+  }
   SDL_SetRenderDrawBlendMode(R, alpha >= 255 ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
   SDL_SetRenderDrawColor(R, c.r, c.g, c.b, (Uint8)(alpha > 255 ? 255 : alpha));
   SDL_Rect rc = { x, y, w, h }; SDL_RenderFillRect(R, &rc);
@@ -494,6 +504,7 @@ static void corners(SDL_Texture *t, int x, int y, int w, int h, int r) {
 
 void fill_rrect(int x, int y, int w, int h, int r, Col c, int alpha) {
   if (w <= 0 || h <= 0 || alpha <= 0) return;
+  r = (int)(r * pref_corner_k());   // Personalizza › Angoli
   if (r * 2 > w) r = w / 2;
   if (r * 2 > h) r = h / 2;
   if (r < 2) { fill_rect(x, y, w, h, c, alpha); return; }
@@ -508,6 +519,7 @@ void fill_rrect(int x, int y, int w, int h, int r, Col c, int alpha) {
 
 void stroke_rrect(int x, int y, int w, int h, int r, int t, Col c, int alpha) {
   if (w <= 0 || h <= 0 || alpha <= 0) return;
+  r = (int)(r * pref_corner_k());
   if (r * 2 > w) r = w / 2;
   if (r * 2 > h) r = h / 2;
   if (r < t + 1) r = t + 1;
@@ -523,6 +535,7 @@ void stroke_rrect(int x, int y, int w, int h, int r, int t, Col c, int alpha) {
 
 // ombra morbida: angoli sfumati e bordi stirati da una riga o colonna della texture
 void shadow_rrect(int x, int y, int w, int h, int r, int spread, int alpha) {
+  r = (int)(r * pref_corner_k());
   int R2 = r + spread; if (R2 < 4) R2 = 4;
   if (R2 > 120) R2 = 120;
   SDL_Texture *t = cached(soft_cache, 32, R2, mk_soft);
@@ -704,9 +717,15 @@ int pill(int x, int y, int h, const char *label, int icon, int focused, float fa
   return w;
 }
 
+// Personalizza › Selezione: anello bianco, anello colorato, bagliore, entrambi
 void focus_ring(int x, int y, int w, int h, int r, float pulse, int alpha) {
   int a = (int)(alpha * (0.75f + 0.25f * pulse));
-  stroke_rrect(x - 6, y - 6, w + 12, h + 12, r + 6, 4, C_WHITE, a);
+  int st = g_prefs.focus;
+  if (st >= 2) {   // bagliore del colore d'accento dietro l'elemento, che respira
+    int gr = (w > h ? w : h) * 3 / 4;
+    glow(x + w / 2, y + h / 2, gr + (int)(10 * pulse), C_ACC, (int)(alpha * (0.30f + 0.18f * pulse)));
+  }
+  if (st != 2) stroke_rrect(x - 6, y - 6, w + 12, h + 12, r + 6, st == 1 ? 5 : 4, st == 1 || st == 3 ? C_ACC2 : C_WHITE, a);
 }
 
 // -------------------------------------------------------------- icone (SDF) --
@@ -775,6 +794,10 @@ static const Prim ICONS[IC_COUNT][12] = {
   [IC_FOLDER]  = { P_BOX(0.1f, 0.3f, 0.8f, 0.52f, 0.06f), P_BOX(0.1f, 0.2f, 0.32f, 0.16f, 0.05f), P_END },
   [IC_VOLUME]  = { P_BOX(0.12f, 0.38f, 0.16f, 0.24f, 0.02f), P_TRI(0.2f, 0.5f, 0.5f, 0.16f, 0.5f, 0.84f), P_ARC(0.5f, 0.5f, 0.16f, 0.045f, -0.9f, 0.9f), P_ARC(0.5f, 0.5f, 0.3f, 0.045f, -0.9f, 0.9f), P_END },
   [IC_ALBUM]   = { P_RING(0.5f, 0.5f, 0.3f, 0.12f), P_DISC(0.5f, 0.5f, 0.06f), P_END },
+  // disco esterno: corpo con la spia e la fessura
+  [IC_DRIVE]   = { P_BOX(0.1f, 0.3f, 0.8f, 0.4f, 0.08f), P_SUBD(0.74f, 0.5f, 0.06f), P_SUBB(0.2f, 0.47f, 0.36f, 0.06f, 0.02f), P_END },
+  // pennello (Personalizza)
+  [IC_BRUSH]   = { P_SEG(0.78f, 0.16f, 0.42f, 0.56f, 0.07f), P_DISC(0.32f, 0.68f, 0.14f), P_TRI(0.18f, 0.7f, 0.18f, 0.88f, 0.36f, 0.86f), P_END },
 };
 
 float sd_seg(float px, float py, float ax, float ay, float bx, float by) {
@@ -900,7 +923,7 @@ void draw_logo(int cx, int cy, int size, int alpha) {
 // --------------------------------------------------------------- animazioni --
 float clampf(float v, float a, float b) { return v < a ? a : v > b ? b : v; }
 float approach(float cur, float target, float speed) {
-  float k = 1.0f - expf(-speed * g_dt);
+  float k = 1.0f - expf(-speed * pref_anim_k() * g_dt);   // Personalizza › Velocità delle animazioni
   float v = cur + (target - cur) * k;
   if (fabsf(target - v) < 0.0005f) v = target;
   return v;
@@ -949,11 +972,29 @@ static const Theme THEMES[N_THEMES] = {
   { N_("Tramonto"),  { 200, 70, 40, 255 },  { 235, 90, 50, 255 },  { 255, 150, 90, 255 }, { 255, 190, 140, 255 } },
   { N_("Ametista"),  { 120, 40, 200, 255 }, { 140, 70, 240, 255 }, { 190, 130, 255, 255 }, { 210, 170, 255, 255 } },
   { N_("Carbone"),   { 60, 64, 72, 255 },   { 110, 120, 140, 255 }, { 180, 190, 210, 255 }, { 200, 205, 215, 255 } },
+  { N_("Neon"),      { 120, 0, 160, 255 },  { 255, 40, 170, 255 }, { 0, 230, 255, 255 },   { 255, 90, 220, 255 } },
+  { N_("Smeraldo"),  { 0, 110, 60, 255 },   { 20, 190, 100, 255 }, { 110, 240, 160, 255 }, { 150, 255, 190, 255 } },
+  { N_("Rubino"),    { 150, 10, 40, 255 },  { 225, 30, 70, 255 },  { 255, 110, 130, 255 }, { 255, 150, 160, 255 } },
+  { N_("Oro"),       { 150, 105, 20, 255 }, { 230, 170, 30, 255 }, { 255, 215, 110, 255 }, { 255, 225, 150, 255 } },
+  { N_("Ghiaccio"),  { 70, 140, 190, 255 }, { 90, 190, 240, 255 }, { 190, 235, 255, 255 }, { 220, 245, 255, 255 } },
+  { N_("Mezzanotte"),{ 8, 10, 18, 255 },    { 70, 110, 255, 255 }, { 140, 170, 255, 255 }, { 90, 110, 170, 255 } },
+};
+// colori d'accento scelti in Personalizza (0 = quello del tema)
+static const Col ACCENTS[8][2] = {
+  { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
+  { { 0, 140, 255, 255 }, { 90, 190, 255, 255 } },   // azzurro
+  { { 140, 80, 255, 255 }, { 195, 150, 255, 255 } }, // viola
+  { { 255, 60, 150, 255 }, { 255, 140, 200, 255 } }, // rosa
+  { { 20, 190, 110, 255 }, { 110, 240, 170, 255 } }, // verde
+  { { 255, 120, 30, 255 }, { 255, 180, 100, 255 } }, // arancio
+  { { 230, 175, 30, 255 }, { 255, 220, 120, 255 } }, // oro
+  { { 200, 205, 215, 255 }, { 255, 255, 255, 255 } }, // bianco
 };
 int g_theme = 0;
 Col g_theme_base = { 20, 70, 200, 255 };
 
-// velatura del tema su ogni schermata, anche sopra le copertine dei giochi
+// velatura del tema: ora è dentro gli sfondi (bake_tint in async.c). Resta per
+// chi la vuole sopra qualcos'altro.
 void theme_tint(int alpha) {
   grad_v(0, 0, SCREEN_W, SCREEN_H * 45 / 100, g_theme_base, alpha * 42 / 100, g_theme_base, 0);
   grad_v(0, SCREEN_H * 70 / 100, SCREEN_W, SCREEN_H * 30 / 100, g_theme_base, 0, g_theme_base, alpha * 26 / 100);
@@ -963,12 +1004,22 @@ const char *theme_name(int i) { return _(THEMES[(i < 0 ? 0 : i) % N_THEMES].name
 
 void theme_apply(int i, int save) {
   if (i < 0 || i >= N_THEMES) i = 0;
-  g_theme = i;
+  g_theme = i; g_prefs.theme = i;
   const Theme *t = &THEMES[i];
   C_ACC = t->acc; C_ACC2 = t->acc2; g_particle = t->particle;
+  if (g_prefs.accent > 0 && g_prefs.accent < 8) { C_ACC = ACCENTS[g_prefs.accent][0]; C_ACC2 = ACCENTS[g_prefs.accent][1]; }
   g_theme_base = t->base;
   C_PANEL = mix(RGB(20, 24, 36), t->base, 0.22f);
-  SDL_Surface *s = gen_ambient(t->base, SCREEN_W, SCREEN_H);
+  SDL_Surface *s = NULL;
+  if (g_prefs.bg_style == 2) {   // nero puro
+    s = SDL_CreateRGBSurfaceWithFormat(0, SCREEN_W, SCREEN_H, 32, SDL_PIXELFORMAT_ARGB8888);
+    if (s) SDL_FillRect(s, NULL, 0xFF000000u);
+  } else {
+    s = gen_ambient(t->base, SCREEN_W, SCREEN_H);
+    if (s) { bake_tint(s, t->base); bake_dim(s); }
+  }
+  // gli sfondi dei giochi già in memoria hanno la velatura del tema vecchio: si ricaricano
+  for (int k = 0; k < BG_CACHE; k++) if (bgc[k].t && bgc[k].t != bg_cur && bgc[k].t != bg_prev) { SDL_DestroyTexture(bgc[k].t); bgc[k].t = NULL; bgc[k].key[0] = 0; }
   if (s) {
     SDL_Texture *old = bg_default;
     bg_default = SDL_CreateTextureFromSurface(R, s); SDL_FreeSurface(s);
@@ -977,26 +1028,51 @@ void theme_apply(int i, int save) {
     if (old) SDL_DestroyTexture(old);
   }
   if (save) {
-    FILE *f = fopen(OMEGA_DIR "/theme.txt", "w");
+    FILE *f = fopen(OMEGA_DIR "/theme.txt", "w");   // per le versioni di prima
     if (f) { fprintf(f, "%d\n", i); fclose(f); }
+    g_prefs_rev++; prefs_save();
   }
 }
 
 void theme_load(void) {
-  int i = 0;
-  FILE *f = fopen(OMEGA_DIR "/theme.txt", "r");
-  if (f) { if (fscanf(f, "%d", &i) != 1) i = 0; fclose(f); }
-  theme_apply(i, 0);
+  prefs_load();            // legge anche theme.txt delle versioni di prima
+  theme_apply(g_prefs.theme, 0);
 }
 
+static void wall_request(void);
 void bg_init(void) {
   theme_load();
   bg_cur = bg_default;
+  if (g_prefs.bg_style == 3) wall_request();
+}
+
+// Immagine personale: /data/Omega/wallpaper.jpg (o .png), caricata come gli sfondi
+static int wall_ok;
+static void wall_loaded(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) {
+  (void)key; (void)avg; (void)ud;
+  if (!t) { wall_ok = 0; return; }
+  if (bg_default && bg_default != bg_cur && bg_default != bg_prev) SDL_DestroyTexture(bg_default);
+  bg_default = t; wall_ok = 1;
+  if (!bg_want[0]) bg_switch(bg_default);
+}
+static void wall_request(void) {
+  const char *c[3] = { OMEGA_DIR "/wallpaper.jpg", OMEGA_DIR "/wallpaper.png", OMEGA_DIR "/wallpaper.jpeg" };
+  for (int i = 0; i < 3; i++) if (access(c[i], 0) == 0) { load_req(LOAD_BG, "~wallpaper", c[i], SCREEN_W, SCREEN_H, 0, g_theme_base, wall_loaded, NULL); return; }
+}
+
+// Sfondo o oscuramento cambiati: si rifà lo sfondo del tema e si buttano quelli dei giochi
+void bg_refresh(void) {
+  for (int k = 0; k < BG_CACHE; k++) if (bgc[k].t && bgc[k].t != bg_cur && bgc[k].t != bg_prev) { SDL_DestroyTexture(bgc[k].t); bgc[k].t = NULL; bgc[k].key[0] = 0; }
+  bg_want[0] = 0;
+  theme_apply(g_theme, 0);
+  bg_switch(bg_default);
+  if (g_prefs.bg_style == 3) wall_request();
 }
 
 void bg_set_default(void) { bg_want[0] = 0; bg_switch(bg_default); }
 
 void bg_set_game(const char *tid, const char *art, Col avg) {
+  if (g_prefs.bg_style != 0) return;   // sfondo fisso: niente copertine
   if (!strcmp(bg_want, tid)) return;
   snprintf(bg_want, sizeof bg_want, "%s", tid);
   for (int i = 0; i < BG_CACHE; i++) if (bgc[i].t && !strcmp(bgc[i].key, tid)) { bgc[i].used = g_frame; bg_switch(bgc[i].t); return; }
@@ -1018,27 +1094,44 @@ void bg_draw(void) {
   }
 }
 
-// particelle luminose che salgono piano, come sullo sfondo della console
-#define NP 46
+// Particelle sullo sfondo (Personalizza › Particelle e Tipo di particelle):
+// luci che salgono, stelle che brillano ferme, neve che scende, lucciole che
+// vagano, bolle che salgono ondeggiando.
+#define NP 96
 static struct { float x, y, vy, vx, r, a, ph; } parts[NP];
-static int parts_init;
+static int parts_init, parts_style = -1;
 int g_busy_motion;
 int bg_fading(void) { return bg_prev && bg_fade < 1; }
-void particles_draw(int alpha) {
-  if (g_busy_motion > 0 || bg_fading()) return;
-  if (!parts_init) {
-    for (int i = 0; i < NP; i++) {
-      parts[i].x = (float)(rand() % SCREEN_W); parts[i].y = (float)(rand() % SCREEN_H);
-      parts[i].vy = 8 + (float)(rand() % 30); parts[i].vx = -6 + (float)(rand() % 12);
-      parts[i].r = 6 + (float)(rand() % 26); parts[i].a = 20 + (float)(rand() % 60); parts[i].ph = (float)(rand() % 628) / 100.0f;
-    }
-    parts_init = 1;
+static void part_reset(int i, int st, int anywhere) {
+  parts[i].x = (float)(rand() % SCREEN_W);
+  parts[i].y = anywhere ? (float)(rand() % SCREEN_H) : (st == 2 ? -40.0f : SCREEN_H + 40.0f);
+  parts[i].ph = (float)(rand() % 628) / 100.0f;
+  switch (st) {
+    case 1: parts[i].vy = 0; parts[i].vx = 0; parts[i].r = 3 + (float)(rand() % 6); parts[i].a = 60 + (float)(rand() % 140); break;        // stelle
+    case 2: parts[i].vy = -(20 + (float)(rand() % 40)); parts[i].vx = -10 + (float)(rand() % 20); parts[i].r = 4 + (float)(rand() % 9); parts[i].a = 90 + (float)(rand() % 90); break;   // neve (scende)
+    case 3: parts[i].vy = 4 + (float)(rand() % 10); parts[i].vx = -14 + (float)(rand() % 28); parts[i].r = 8 + (float)(rand() % 10); parts[i].a = 60 + (float)(rand() % 120); break;   // lucciole
+    case 4: parts[i].vy = 25 + (float)(rand() % 40); parts[i].vx = 0; parts[i].r = 10 + (float)(rand() % 26); parts[i].a = 40 + (float)(rand() % 60); break;   // bolle
+    default: parts[i].vy = 8 + (float)(rand() % 30); parts[i].vx = -6 + (float)(rand() % 12); parts[i].r = 6 + (float)(rand() % 26); parts[i].a = 20 + (float)(rand() % 60); break;   // luci
   }
-  for (int i = 0; i < NP; i++) {
+}
+void particles_draw(int alpha) {
+  static const int COUNT[4] = { 0, 20, 46, 96 };
+  int n = COUNT[g_prefs.particles & 3], st = g_prefs.particle_style;
+  if (!n || g_busy_motion > 0 || bg_fading()) return;
+  if (!parts_init || parts_style != st) { for (int i = 0; i < NP; i++) part_reset(i, st, 1); parts_init = 1; parts_style = st; }
+  static const Col SNOW = { 235, 242, 255, 255 }, FIRE = { 255, 220, 110, 255 };
+  for (int i = 0; i < n; i++) {
+    float tt = (float)g_time;
     parts[i].y -= parts[i].vy * g_dt; parts[i].x += parts[i].vx * g_dt;
-    if (parts[i].y < -40) { parts[i].y = SCREEN_H + 40; parts[i].x = (float)(rand() % SCREEN_W); }
-    float tw = 0.6f + 0.4f * sinf((float)g_time * 1.3f + parts[i].ph);
-    glow((int)parts[i].x, (int)parts[i].y, (int)parts[i].r, g_particle, (int)(parts[i].a * tw * alpha / 255));
+    if (st == 3) { parts[i].vx += sinf(tt * 0.7f + parts[i].ph) * 6 * g_dt; parts[i].vy += cosf(tt * 0.5f + parts[i].ph) * 3 * g_dt; }
+    if (st == 4) parts[i].x += sinf(tt * 1.5f + parts[i].ph) * 18 * g_dt;
+    if (parts[i].y < -60 || parts[i].y > SCREEN_H + 60 || parts[i].x < -60 || parts[i].x > SCREEN_W + 60) part_reset(i, st, st == 1 || st == 3);
+    float tw = st == 1 ? 0.35f + 0.65f * fabsf(sinf(tt * 1.8f + parts[i].ph)) : st == 3 ? 0.3f + 0.7f * fabsf(sinf(tt * 2.2f + parts[i].ph)) : 0.6f + 0.4f * sinf(tt * 1.3f + parts[i].ph);
+    int a = (int)(parts[i].a * tw * alpha / 255);
+    Col c = st == 2 ? SNOW : st == 3 ? FIRE : g_particle;
+    if (st == 4) ring((int)parts[i].x, (int)parts[i].y, (int)parts[i].r, 2, c, a);
+    else if (st == 2) fill_circle((int)parts[i].x, (int)parts[i].y, (int)(parts[i].r / 2), c, a);
+    else glow((int)parts[i].x, (int)parts[i].y, (int)parts[i].r, c, a);
   }
 }
 

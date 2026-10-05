@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Kontoer, sosiale funksjoner og en Store for homebrew til konsollen. Uavhengig prosjekt, ikke tilknyttet Sony."
+  },
+  "system": {
+    "party_created": "· {actor} opprettet partyet",
+    "party_joined": "· {actor} ble med i partyet",
+    "party_left": "· {actor} forlot partyet",
+    "group_created": "{actor} opprettet gruppen «{name}»",
+    "group_added": "{actor} la til {user}",
+    "group_left": "{actor} forlot gruppen",
+    "group_renamed": "{actor} endret navnet på gruppen til «{name}»",
+    "group_removed": "{actor} fjernet {user}"
   }
 }

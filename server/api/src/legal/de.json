@@ -11,38 +11,126 @@
   "privacy": {
     "title": "Datenschutzerklärung",
     "sections": [
-      { "id": "controller", "title": "Wer deine Daten verarbeitet", "body": "Verantwortlicher: {controller}. Kontakt für Datenschutzanfragen und Meldungen: {email}. Omega ist ein unabhängiges Projekt: Es steht in keiner Verbindung zu Sony Interactive Entertainment und nutzt weder dessen Konten noch dessen Server." },
-      { "id": "data", "title": "Welche Daten wir erheben", "body": "Konto: Online-ID, Passwort (nur als scrypt-Hash gespeichert, niemals im Klartext), E-Mail-Adresse, sofern du eine angibst, der von dir hochgeladene Avatar und das Titelbild, Profiltext, Registrierungsdatum und letzte Anmeldung. Soziale Funktionen: Freundschaften und Freundschaftsanfragen, Online-Status und der Titel, den du gerade nutzt (von deiner Konsole während des Spielens übermittelt), letzte Aktivitäten, Direktnachrichten, Party-Chats und -Einladungen, Benachrichtigungen. Store: die von dir veröffentlichten Homebrews, Kommentare, „Gefällt mir“/„Gefällt mir nicht“, Bewertungen, Meldungen, Anzahl der Installationen. Persönliche Bibliothek: die Adresse deiner JSON-Datei und die Liste der darin enthaltenen Titel (Name, Bilder, Links). Technische Daten: Bei jeder Anfrage an den Server protokollieren wir IP-Adresse, Datum und Uhrzeit, den angefragten Pfad (einschließlich der Adresse der mit dem Omega-Browser geöffneten Seiten), das Ergebnis und die Antwortzeiten. Passwörter, Tokens und Cookies werden unkenntlich gemacht und niemals in den Protokollen gespeichert." },
-      { "id": "purposes", "title": "Warum und auf welcher Rechtsgrundlage", "body": "Um dir den von dir angeforderten Dienst bereitzustellen (Konto, soziale Funktionen, Store, Bibliothek): Vertragserfüllung, Art. 6 Abs. 1 lit. b DSGVO. Für die Sicherheit, zur Verhinderung von Missbrauch und zur Bearbeitung von Meldungen: berechtigtes Interesse und rechtliche Verpflichtungen in Bezug auf gehostete Inhalte, Art. 6 Abs. 1 lit. f und lit. c DSGVO. Wir nutzen deine Daten nicht für Werbung oder Profiling und verkaufen sie nicht." },
-      { "id": "retention", "title": "Wie lange", "body": "Die technischen Anfrageprotokolle werden nach {days} Tagen gelöscht. Kontodaten und Inhalte bleiben gespeichert, bis du dein Konto löschst; Sitzungen laufen nach 24 Stunden ab. Abgeschlossene Meldungen und das Protokoll der Moderationsmaßnahmen werden so lange aufbewahrt, wie sie zum Nachweis des Umgangs mit den Inhalten erforderlich sind." },
-      { "id": "recipients", "title": "Wer sie sehen kann", "body": "Andere Nutzer sehen dein öffentliches Profil, deine Veröffentlichungen und, wenn ihr befreundet seid, deine Anwesenheit und Aktivitäten. Nachrichten sehen nur ihre Empfänger. Die Daten liegen auf einem Server, der vom Verantwortlichen{hosting_at} verwaltet wird, welcher als Auftragsverarbeiter tätig ist. Wenn du ein Homebrew installierst oder eine Webseite öffnest, verbindet sich die Konsole oder unser Server mit der Website, auf der diese Datei oder Seite liegt: Es gilt die Datenschutzerklärung dieser Website." },
-      { "id": "rights", "title": "Deine Rechte", "body": "Du kannst auf deine Daten zugreifen und sie herunterladen (Einstellungen → Datenschutz und Daten → Meine Daten herunterladen), sie berichtigen, sie löschen (Konto löschen), der Verarbeitung widersprechen oder deren Einschränkung verlangen, indem du an {email} schreibst. Außerdem kannst du Beschwerde bei der italienischen Datenschutzaufsichtsbehörde (Garante per la protezione dei dati personali, www.garanteprivacy.it) einlegen." },
-      { "id": "age", "title": "Mindestalter", "body": "Der Dienst ist Personen vorbehalten, die mindestens 14 Jahre alt sind." },
-      { "id": "version", "title": "Version", "body": "Zuletzt aktualisiert am {version}." }
+      {
+        "id": "controller",
+        "title": "Wer deine Daten verarbeitet",
+        "body": "Verantwortlicher: {controller}. Kontakt für Datenschutzanfragen und Meldungen: {email}. Omega ist ein unabhängiges Projekt: Es steht in keiner Verbindung zu Sony Interactive Entertainment und nutzt weder dessen Konten noch dessen Server."
+      },
+      {
+        "id": "data",
+        "title": "Welche Daten wir erheben",
+        "body": "Konto: Online-ID, Passwort (nur als scrypt-Hash gespeichert, niemals im Klartext), E-Mail-Adresse, sofern du eine angibst, der von dir hochgeladene Avatar und das Titelbild, Profiltext, Registrierungsdatum und letzte Anmeldung. Soziale Funktionen: Freundschaften und Freundschaftsanfragen, Online-Status und der Titel, den du gerade nutzt (von deiner Konsole während des Spielens übermittelt), letzte Aktivitäten, Direktnachrichten, Party-Chats und -Einladungen, Benachrichtigungen. Store: die von dir veröffentlichten Homebrews, Kommentare, „Gefällt mir“/„Gefällt mir nicht“, Bewertungen, Meldungen, Anzahl der Installationen. Persönliche Bibliothek: die Adresse deiner JSON-Datei und die Liste der darin enthaltenen Titel (Name, Bilder, Links). Technische Daten: Bei jeder Anfrage an den Server protokollieren wir IP-Adresse, Datum und Uhrzeit, den angefragten Pfad (einschließlich der Adresse der mit dem Omega-Browser geöffneten Seiten), das Ergebnis und die Antwortzeiten. Passwörter, Tokens und Cookies werden unkenntlich gemacht und niemals in den Protokollen gespeichert. Diagnose: Der Omega-Dienst auf der Konsole sendet automatisch technische Fehlercodes (zum Beispiel, ob Audio, das Mikrofon oder ein Radiosender geöffnet werden konnte), ohne Inhalte oder Adressen. Wenn du „Diagnose senden“ wählst, erhalten wir außerdem die Protokolle der App und des Dienstes, die die Namen der von dir genutzten Spiele, Titel und Radiosender enthalten können. Auch diese werden nach {days} Tagen gelöscht."
+      },
+      {
+        "id": "purposes",
+        "title": "Warum und auf welcher Rechtsgrundlage",
+        "body": "Um dir den von dir angeforderten Dienst bereitzustellen (Konto, soziale Funktionen, Store, Bibliothek): Vertragserfüllung, Art. 6 Abs. 1 lit. b DSGVO. Für die Sicherheit, zur Verhinderung von Missbrauch und zur Bearbeitung von Meldungen: berechtigtes Interesse und rechtliche Verpflichtungen in Bezug auf gehostete Inhalte, Art. 6 Abs. 1 lit. f und lit. c DSGVO. Wir nutzen deine Daten nicht für Werbung oder Profiling und verkaufen sie nicht."
+      },
+      {
+        "id": "retention",
+        "title": "Wie lange",
+        "body": "Die technischen Anfrageprotokolle werden nach {days} Tagen gelöscht. Kontodaten und Inhalte bleiben gespeichert, bis du dein Konto löschst; Sitzungen laufen nach 24 Stunden ab. Abgeschlossene Meldungen und das Protokoll der Moderationsmaßnahmen werden so lange aufbewahrt, wie sie zum Nachweis des Umgangs mit den Inhalten erforderlich sind."
+      },
+      {
+        "id": "recipients",
+        "title": "Wer sie sehen kann",
+        "body": "Andere Nutzer sehen dein öffentliches Profil, deine Veröffentlichungen und, wenn ihr befreundet seid, deine Anwesenheit und Aktivitäten. Nachrichten sehen nur ihre Empfänger. Die Daten liegen auf einem Server, der vom Verantwortlichen{hosting_at} verwaltet wird, welcher als Auftragsverarbeiter tätig ist. Wenn du ein Homebrew installierst oder eine Webseite öffnest, verbindet sich die Konsole oder unser Server mit der Website, auf der diese Datei oder Seite liegt: Es gilt die Datenschutzerklärung dieser Website."
+      },
+      {
+        "id": "rights",
+        "title": "Deine Rechte",
+        "body": "Du kannst auf deine Daten zugreifen und sie herunterladen (Einstellungen → Datenschutz und Daten → Meine Daten herunterladen), sie berichtigen, sie löschen (Konto löschen), der Verarbeitung widersprechen oder deren Einschränkung verlangen, indem du an {email} schreibst. Außerdem kannst du Beschwerde bei der italienischen Datenschutzaufsichtsbehörde (Garante per la protezione dei dati personali, www.garanteprivacy.it) einlegen."
+      },
+      {
+        "id": "age",
+        "title": "Mindestalter",
+        "body": "Der Dienst ist Personen vorbehalten, die mindestens 14 Jahre alt sind."
+      },
+      {
+        "id": "version",
+        "title": "Version",
+        "body": "Zuletzt aktualisiert am {version}."
+      }
     ]
   },
   "terms": {
     "title": "Nutzungsbedingungen",
     "sections": [
-      { "id": "service", "title": "Der Dienst", "body": "Omega ({url}) bietet kostenlos Konten, soziale Funktionen und einen Homebrew-Store für Konsolen, auf denen der Nutzer rechtmäßig Software von Drittanbietern installiert hat. Betrieben wird Omega von {name}. Omega ist ein unabhängiges Projekt und weder mit Sony Interactive Entertainment verbunden noch von Sony Interactive Entertainment gebilligt oder gesponsert. „PlayStation“ und „PS5“ sind Marken ihrer jeweiligen Inhaber." },
-      { "id": "risk", "title": "Nutzung auf eigenes Risiko", "body": "Der Dienst und die Homebrews im Store werden so bereitgestellt, wie sie sind. Die Installation inoffizieller Software kann Fehlfunktionen, Datenverlust oder den Verlust der Garantie der Konsole verursachen und erfolgt auf dein eigenes Risiko. Die Homebrews sind Werke ihrer jeweiligen Autoren und unterliegen deren Lizenzen." },
-      { "id": "prohibited", "title": "Was nicht erlaubt ist", "body": "Inhalte zu veröffentlichen oder zu teilen, an denen du keine Rechte hast – insbesondere Kopien kommerzieller Spiele oder Software, Links zu raubkopiertem Material, Werkzeuge zur Umgehung ihrer Schutzmaßnahmen zum Zweck der Piraterie –, Malware oder gefährliche Dateien, rechtswidrige oder beleidigende Inhalte oder Inhalte, die zu Hass aufstacheln, Spam, die Nutzung fremder Konten oder der Versuch, deren Sicherheit zu gefährden." },
-      { "id": "publishing", "title": "Im Store veröffentlichen", "body": "Mit der Veröffentlichung erklärst du, dass du der Autor des Homebrews bist oder dass dessen Lizenz die Weiterverbreitung erlaubt und dass der Link ohne schädliche Änderungen zu der angegebenen Datei führt. Du erlaubst uns, Name, Beschreibung und Bilder im Store anzuzeigen. Die Dateien bleiben auf der von dir angegebenen Website: Omega hostet nur den Eintrag dazu." },
-      { "id": "library", "title": "Persönliche Bibliothek", "body": "Die Bibliothek dient dazu, Sicherungskopien von Titeln, die du rechtmäßig besitzt, für den persönlichen Gebrauch zu organisieren und erneut zu installieren. Nutze sie nicht, um Kopien mit anderen zu teilen: Die Dateien bleiben dort, wo du sie aufbewahrst, und Omega hostet sie nicht." },
-      { "id": "moderation", "title": "Meldungen und Moderation", "body": "Du kannst ein Homebrew oder einen Kommentar im Store melden (Optionen → Melden) oder an {email} schreiben. Wir prüfen Meldungen und können Inhalte ausblenden oder entfernen sowie Konten sperren oder schließen, die gegen diese Bedingungen verstoßen; mehrfach gemeldete Inhalte werden bis zur Prüfung ausgeblendet." },
-      { "id": "liability", "title": "Haftung", "body": "Soweit gesetzlich zulässig, haften wir nicht für Schäden, die aus der Nutzung der Homebrews oder aus der Nichtverfügbarkeit des Dienstes entstehen, der sich ändern oder eingestellt werden kann. Zwingende Verbraucherschutzvorschriften bleiben unberührt." },
-      { "id": "changes", "title": "Änderungen und anwendbares Recht", "body": "Wenn sich die Bedingungen ändern, fragen wir dich in der App erneut. Es gilt italienisches Recht." },
-      { "id": "version", "title": "Version", "body": "Bedingungen gültig ab {version}." }
+      {
+        "id": "service",
+        "title": "Der Dienst",
+        "body": "Omega ({url}) bietet kostenlos Konten, soziale Funktionen und einen Homebrew-Store für Konsolen, auf denen der Nutzer rechtmäßig Software von Drittanbietern installiert hat. Betrieben wird Omega von {name}. Omega ist ein unabhängiges Projekt und weder mit Sony Interactive Entertainment verbunden noch von Sony Interactive Entertainment gebilligt oder gesponsert. „PlayStation“ und „PS5“ sind Marken ihrer jeweiligen Inhaber."
+      },
+      {
+        "id": "risk",
+        "title": "Nutzung auf eigenes Risiko",
+        "body": "Der Dienst und die Homebrews im Store werden so bereitgestellt, wie sie sind. Die Installation inoffizieller Software kann Fehlfunktionen, Datenverlust oder den Verlust der Garantie der Konsole verursachen und erfolgt auf dein eigenes Risiko. Die Homebrews sind Werke ihrer jeweiligen Autoren und unterliegen deren Lizenzen."
+      },
+      {
+        "id": "prohibited",
+        "title": "Was nicht erlaubt ist",
+        "body": "Inhalte zu veröffentlichen oder zu teilen, an denen du keine Rechte hast – insbesondere Kopien kommerzieller Spiele oder Software, Links zu raubkopiertem Material, Werkzeuge zur Umgehung ihrer Schutzmaßnahmen zum Zweck der Piraterie –, Malware oder gefährliche Dateien, rechtswidrige oder beleidigende Inhalte oder Inhalte, die zu Hass aufstacheln, Spam, die Nutzung fremder Konten oder der Versuch, deren Sicherheit zu gefährden."
+      },
+      {
+        "id": "publishing",
+        "title": "Im Store veröffentlichen",
+        "body": "Mit der Veröffentlichung erklärst du, dass du der Autor des Homebrews bist oder dass dessen Lizenz die Weiterverbreitung erlaubt und dass der Link ohne schädliche Änderungen zu der angegebenen Datei führt. Du erlaubst uns, Name, Beschreibung und Bilder im Store anzuzeigen. Die Dateien bleiben auf der von dir angegebenen Website: Omega hostet nur den Eintrag dazu."
+      },
+      {
+        "id": "library",
+        "title": "Persönliche Bibliothek",
+        "body": "Die Bibliothek dient dazu, Sicherungskopien von Titeln, die du rechtmäßig besitzt, für den persönlichen Gebrauch zu organisieren und erneut zu installieren. Nutze sie nicht, um Kopien mit anderen zu teilen: Die Dateien bleiben dort, wo du sie aufbewahrst, und Omega hostet sie nicht."
+      },
+      {
+        "id": "moderation",
+        "title": "Meldungen und Moderation",
+        "body": "Du kannst ein Homebrew oder einen Kommentar im Store melden (Optionen → Melden) oder an {email} schreiben. Wir prüfen Meldungen und können Inhalte ausblenden oder entfernen sowie Konten sperren oder schließen, die gegen diese Bedingungen verstoßen; mehrfach gemeldete Inhalte werden bis zur Prüfung ausgeblendet."
+      },
+      {
+        "id": "liability",
+        "title": "Haftung",
+        "body": "Soweit gesetzlich zulässig, haften wir nicht für Schäden, die aus der Nutzung der Homebrews oder aus der Nichtverfügbarkeit des Dienstes entstehen, der sich ändern oder eingestellt werden kann. Zwingende Verbraucherschutzvorschriften bleiben unberührt."
+      },
+      {
+        "id": "changes",
+        "title": "Änderungen und anwendbares Recht",
+        "body": "Wenn sich die Bedingungen ändern, fragen wir dich in der App erneut. Es gilt italienisches Recht."
+      },
+      {
+        "id": "version",
+        "title": "Version",
+        "body": "Bedingungen gültig ab {version}."
+      }
     ]
   },
   "licenses": {
     "title": "Open-Source-Lizenzen",
     "sections": [
-      { "id": "omega", "title": "Omega", "body": "Die Omega-App für die Konsole ist freie Software, die unter der GNU GPL Version 3 oder höher ohne jegliche Gewährleistung verbreitet wird. Der vollständige Quellcode kann unter {url}/source heruntergeladen werden." },
-      { "id": "developer", "title": "Entwickler", "body": "Omega wird von {developer} entwickelt — {developer_url}" },
-      { "id": "app_components", "title": "Von der App verwendete Komponenten", "body": "ps5-payload-sdk (GPL-3.0 oder höher) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib und minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
-      { "id": "server_components", "title": "Vom Server verwendete Komponenten", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 oder höher) · jxrlib (BSD-2-Clause)." },
-      { "id": "store_homebrew", "title": "Homebrews im Store", "body": "Jedes Homebrew im Katalog ist ein Open-Source-Projekt mit eigener Lizenz, die zusammen mit der Website des Projekts auf seiner Seite angegeben ist." }
+      {
+        "id": "omega",
+        "title": "Omega",
+        "body": "Die Omega-App für die Konsole ist freie Software, die unter der GNU GPL Version 3 oder höher ohne jegliche Gewährleistung verbreitet wird. Der vollständige Quellcode kann unter {url}/source heruntergeladen werden."
+      },
+      {
+        "id": "developer",
+        "title": "Entwickler",
+        "body": "Omega wird von {developer} entwickelt — {developer_url}"
+      },
+      {
+        "id": "app_components",
+        "title": "Von der App verwendete Komponenten",
+        "body": "ps5-payload-sdk (GPL-3.0 oder höher) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib und minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)."
+      },
+      {
+        "id": "server_components",
+        "title": "Vom Server verwendete Komponenten",
+        "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 oder höher) · jxrlib (BSD-2-Clause)."
+      },
+      {
+        "id": "store_homebrew",
+        "title": "Homebrews im Store",
+        "body": "Jedes Homebrew im Katalog ist ein Open-Source-Projekt mit eigener Lizenz, die zusammen mit der Website des Projekts auf seiner Seite angegeben ist."
+      }
     ]
   }
 }

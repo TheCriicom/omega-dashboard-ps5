@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "コンソール向けのアカウント、ソーシャル機能、ホームブリューのストア。Sonyとは提携していない独立したプロジェクトです。"
+  },
+  "system": {
+    "party_created": "· {actor}さんがパーティーを作成しました",
+    "party_joined": "· {actor}さんがパーティーに参加しました",
+    "party_left": "· {actor}さんがパーティーから退出しました",
+    "group_created": "{actor}さんがグループ「{name}」を作成しました",
+    "group_added": "{actor}さんが{user}さんを追加しました",
+    "group_left": "{actor}さんがグループから退出しました",
+    "group_renamed": "{actor}さんがグループ名を「{name}」に変更しました",
+    "group_removed": "{actor}さんが{user}さんを削除しました"
   }
 }

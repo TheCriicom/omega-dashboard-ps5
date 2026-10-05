@@ -53,6 +53,15 @@ static void ksyms(void) {
 }
 #endif
 
+// temperatura del processore per la barra della home (Personalizza), -1 se non si sa
+int sys_cpu_temp(void) {
+#ifdef PS5
+  ksyms(); int t = -1;
+  if (K.cpu_t && K.cpu_t(&t) == 0 && t > 0 && t < 130) return t;
+#endif
+  return -1;
+}
+
 // ------------------------------------------------------------ fotografia --
 typedef struct { char label[64], path[96]; double total, free; } Disk;
 typedef struct { const char *name; int port; int up; } Svc;
@@ -174,7 +183,7 @@ static void fan_menu(void) {
 }
 
 // ---------------------------------------------------------------- pannello --
-enum { SY_FILES, SY_REMOTE, SY_HEN, SY_FAN, SY_RESTART_DAEMON, SY_N };
+enum { SY_FILES, SY_REMOTE, SY_HEN, SY_FAN, SY_RESTART_DAEMON, SY_DIAG, SY_N };
 static char remote_pin[8];
 static void remote_done(int st, JVal *j, const char *raw, void *ud) { (void)raw; (void)ud; if (st == 200) jcpy(remote_pin, sizeof remote_pin, j, "pin"); else remote_pin[0] = 0; }
 void files_open(const char *start);
@@ -263,24 +272,24 @@ void system_draw(float t) {
     char s[64]; snprintf(s, sizeof s, "%s  :%d", _(si.svc[i].name), si.svc[i].port);
     draw_text(font(W_REG, 23), s, cx + 28, cy, si.svc[i].up ? C_TXT : C_FAINT, a, AL_L);
   }
-  ry += 3 * 42 + 30;
-  static const char *acts[SY_N] = { N_("Gestore dei file"), N_("Telecomando dal telefono"), N_("Componenti per il jailbreak"), N_("Soglia della ventola"), N_("Riavvia il lettore musicale") };
-  static const int aic[SY_N] = { IC_FOLDER, IC_GLOBE, IC_DOWNLOAD, IC_RELOAD, IC_MUSIC };
+  ry += 3 * 42 + 14;
+  static const char *acts[SY_N] = { N_("Gestore dei file"), N_("Telecomando dal telefono"), N_("Componenti per il jailbreak"), N_("Soglia della ventola"), N_("Riavvia il lettore musicale"), N_("Invia diagnostica allo sviluppatore") };
+  static const int aic[SY_N] = { IC_FOLDER, IC_GLOBE, IC_DOWNLOAD, IC_RELOAD, IC_MUSIC, IC_CHAT };
   sys_anim = approach(sys_anim, (float)sys_sel, 20.0f);
   for (int i = 0; i < SY_N; i++) {
-    int yy = ry + i * 64;
+    int yy = ry + i * 56;   // 6 voci: con 64 l'ultima finiva sotto la barra dei comandi
     float fa = clampf(1 - fabsf(sys_anim - i), 0, 1);
-    fill_rrect(rx, yy, 760, 56, 16, mix(RGB(34, 40, 56), C_WHITE, fa), a);
+    fill_rrect(rx, yy, 760, 50, 16, mix(RGB(34, 40, 56), C_WHITE, fa), a);
     Col fg = mix(C_TXT, RGB(12, 14, 22), fa);
-    draw_icon(aic[i], rx + 40, yy + 28, 28, fg, a);
+    draw_icon(aic[i], rx + 40, yy + 25, 28, fg, a);
     char lab[128]; snprintf(lab, sizeof lab, "%s", _(acts[i]));
     if (i == SY_REMOTE && remote_pin[0]) { size_t l = strlen(lab); snprintf(lab + l, sizeof lab - l, " \xC2\xB7 PIN %s", remote_pin); }
     if (i == SY_FAN && si.fan_threshold) { size_t l = strlen(lab); snprintf(lab + l, sizeof lab - l, " \xC2\xB7 %d \xC2\xB0""C", si.fan_threshold); }
-    draw_text_fit(font(W_MED, 25), lab, rx + 80, yy + 13, 660, fg, a, AL_L);
+    draw_text_fit(font(W_MED, 25), lab, rx + 80, yy + 10, 660, fg, a, AL_L);
   }
   if (remote_pin[0] && strcmp(si.ip, "\xE2\x80\x94")) {
     char m[200]; snprintf(m, sizeof m, _("Dal telefono, sulla stessa rete: http://%s:9095"), si.ip);
-    draw_text_fit(font(W_REG, 22), m, rx, ry + SY_N * 64 + 4, 760, C_DIM, a, AL_L);
+    draw_text_fit(font(W_REG, 22), m, rx, ry + SY_N * 56 + 2, 760, C_DIM, a, AL_L);
   }
   const int ic[] = { IC_BTN_X, IC_BTN_O };
   const char *lb[] = { _("Scegli"), _("Indietro") };
@@ -292,6 +301,46 @@ static void restart_done(int st, JVal *j, const char *raw, void *ud) {
   set_msg(st == 200 ? _("Lettore musicale fermato e coda svuotata") : _("Il lettore musicale non risponde"), st != 200);
 }
 
+// ------------------------------------------------------------ diagnostica --
+// I registri restano sulla console: con l'OK dell'utente li si manda al server
+// (/api/v1/diag/report), così si capisce perché musica o voce non vanno.
+static void diag_esc(char *out, size_t *o, size_t cap, const char *s) {
+  for (; *s && *o + 8 < cap; s++) {
+    unsigned char c = (unsigned char)*s;
+    if (c == '"' || c == '\\') { out[(*o)++] = '\\'; out[(*o)++] = (char)c; }
+    else if (c == '\n') { out[(*o)++] = '\\'; out[(*o)++] = 'n'; }
+    else if (c < 0x20) { *o += (size_t)snprintf(out + *o, cap - *o, "\\u%04x", c); }
+    else out[(*o)++] = (char)c;
+  }
+}
+static void diag_add(char *out, size_t *o, size_t cap, const char *name, const char *path, size_t tail) {
+  size_t len = 0; char *t = file_read(path, 4 * 1024 * 1024, &len);
+  if (!t) return;
+  const char *from = len > tail ? t + len - tail : t;
+  *o += (size_t)snprintf(out + *o, cap - *o, "%s\"%s\":\"", out[*o - 1] == '{' ? "" : ",", name);
+  diag_esc(out, o, cap, from);
+  if (*o + 2 < cap) out[(*o)++] = '"';
+  free(t);
+}
+static void diag_done(int st, JVal *j, const char *raw, void *ud) {
+  (void)j; (void)raw; (void)ud;
+  set_msg(st == 201 ? _("Diagnostica inviata: grazie!") : _("Invio della diagnostica non riuscito"), st != 201);
+}
+static void diag_send(int idx, void *ud) {
+  (void)idx; (void)ud;
+  size_t cap = 900 * 1024, o = 0; char *b = malloc(cap); if (!b) return;
+  o += (size_t)snprintf(b, cap, "{\"app_version\":\"%s\",\"logs\":{", OMEGA_VERSION);
+  diag_add(b, &o, cap, "ui", OMEGA_LOG, 160 * 1024);
+  diag_add(b, &o, cap, "service", OMEGA_DIR "/omega-redirect.log", 300 * 1024);
+  diag_add(b, &o, cap, "onion", OMEGA_DIR "/omega-onion.log", 30 * 1024);
+  diag_add(b, &o, cap, "voice_guard", OMEGA_DIR "/voice-guard.txt", 1024);
+  diag_add(b, &o, cap, "hen_setup", OMEGA_DIR "/hen-setup.txt", 1024);
+  if (o + 3 < cap) { b[o++] = '}'; b[o++] = '}'; b[o] = 0; } else { free(b); return; }
+  net_req(HTTP_POST, OMEGA_API "/diag/report", b, diag_done, NULL);
+  free(b);
+  set_msg(_("Invio della diagnostica..."), 0);
+}
+
 void system_input(int b) {
   if (b == B_O) { SDL_AtomicSet(&sys_running, 0); ov_pop(); return; }
   if (b == B_UP && sys_sel > 0) { sys_sel--; sfx_play(SFX_MOVE); }
@@ -301,6 +350,7 @@ void system_input(int b) {
     else if (sys_sel == SY_FAN) fan_menu();
     else if (sys_sel == SY_REMOTE) remote_open();
     else if (sys_sel == SY_HEN) hen_check(2);
+    else if (sys_sel == SY_DIAG) confirm_open(_("Mandare allo sviluppatore i registri di Omega? Contengono i nomi di giochi, brani e radio usati, non le password."), _("Invia"), diag_send, NULL);
     else net_req(HTTP_POST, "http://127.0.0.1:9095/v1/cmd", "{\"cmd\":\"clear\"}", restart_done, NULL);
   }
 }

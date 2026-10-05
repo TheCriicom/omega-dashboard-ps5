@@ -30,20 +30,20 @@ typedef struct {
 // voce di "La mia libreria": i dati arrivano tutti dal demone (lib.c), sulla console
 typedef struct {
   char id[40], title[128], platform[8], version[24], title_id[16], origin[8];
-  char url[1024], cover_url[1024], desc[1200], shots[4][512]; int nshots;
-  int kind; long size; int has_cover, nscreens;
+  char url[1024], cover_url[1024];        // descrizione e screenshot arrivano con la scheda (/v1/library/item)
+  int kind; long size; int has_cover;
   SDL_Texture *cover; int cover_state; Col avg; float appear, foc;
 } LItem;
 
 typedef struct { char id[16]; char author[32]; int avatar; char body[520]; char when[32]; int mine; } SComment;
 
 #define MAX_SAPP 80
-#define MAX_LITEM 300
+#define MAX_LITEM 2000                      // come il servizio (lib.c)
 #define MAX_SCOM 50
 #define MAX_SHOT 8
 
 static SApp sapp[MAX_SAPP]; static int nsapp;
-static LItem litem[MAX_LITEM]; static int nlitem;
+static LItem *litem; static int nlitem;     // allocato alla prima lettura
 
 static int tab;              // 0 homebrew, 1 libreria
 static int view;             // 0 elenco, 1 dettaglio, 2 pubblica, 3 visore immagini
@@ -86,6 +86,7 @@ static void build_shelves(void);
 // libreria: JSON collegato (facoltativo) e stato del demone
 #define CTL_URL "http://127.0.0.1:9095"
 static int src_set, src_loading, lib_down; static char src_url[1024], src_status[64];
+static long src_last; static long watch_from = -1; static Uint32 watch_until, watch_next;   // attesa dell'esito della sincronizzazione
 static const LItem *lib_find(const char *id);
 
 // dettaglio
@@ -185,9 +186,25 @@ static void on_items(int st, JVal *j, const char *raw, void *ud) {
   nlitem = 0;
   lib_down = st != 200 || !j;
   if (lib_down) return;
+  if (!litem && !(litem = calloc(MAX_LITEM, sizeof *litem))) { lib_down = 1; return; }
   JVal *src = jget(j, "source");
   jcpy(src_url, sizeof src_url, src, "url"); jcpy(src_status, sizeof src_status, src, "status");
-  src_set = src_url[0] != 0;
+  src_set = src_url[0] != 0; src_last = (long)jnum(src, "last_sync", 0);
+  // sincronizzazione finita (last_sync cambiato): si dice com'è andata
+  if (watch_from >= 0 && src_last != watch_from) {
+    watch_from = -1;
+    int tot = 0, skip = 0;
+    if (sscanf(src_status, "ok %d %d", &tot, &skip) >= 1) {
+      char m[200];
+      if (skip) snprintf(m, sizeof m, _("Link sincronizzato: %d giochi (%d voci senza titolo o link saltate)"), tot, skip);
+      else snprintf(m, sizeof m, _("Link sincronizzato: %d giochi"), tot);
+      set_msg(m, 0);
+    } else if (!strcmp(src_status, "html_not_json")) set_msg(_("Il link porta a una pagina web, non al file JSON: usa il link diretto al file"), 1);
+    else if (!strcmp(src_status, "invalid_json")) set_msg(_("Il file del link non è un JSON valido"), 1);
+    else if (!strcmp(src_status, "no_items") || !strcmp(src_status, "no_valid_items")) set_msg(_("Nel JSON non ci sono giochi: servono almeno titolo e link"), 1);
+    else if (!strcmp(src_status, "too_large")) set_msg(_("Il JSON è troppo grande (massimo 8 MB)"), 1);
+    else set_msg(_("Non riesco a scaricare il link: controlla l'indirizzo e la rete"), 1);
+  }
   JFOR(a, jget(j, "items")) {
     if (nlitem >= MAX_LITEM) break;
     if (!contains_ci(jstr(a, "title", ""), q)) continue;
@@ -195,20 +212,20 @@ static void on_items(int st, JVal *j, const char *raw, void *ud) {
     jcpy(s->id, sizeof s->id, a, "id"); jcpy(s->title, sizeof s->title, a, "title");
     jcpy(s->platform, sizeof s->platform, a, "platform"); jcpy(s->version, sizeof s->version, a, "version");
     jcpy(s->title_id, sizeof s->title_id, a, "title_id"); jcpy(s->origin, sizeof s->origin, a, "origin");
-    jcpy(s->url, sizeof s->url, a, "url"); jcpy(s->cover_url, sizeof s->cover_url, a, "cover"); jcpy(s->desc, sizeof s->desc, a, "description");
-    JFOR(sh, jget(a, "screenshots")) { if (s->nshots >= 4) break; snprintf(s->shots[s->nshots++], 512, "%s", sh->s ? sh->s : ""); }
+    jcpy(s->url, sizeof s->url, a, "url"); jcpy(s->cover_url, sizeof s->cover_url, a, "cover");
     s->kind = kind_of(jstr(a, "kind", "auto"));
     s->size = (long)jnum(a, "size", 0);
-    s->has_cover = s->cover_url[0] != 0; s->nscreens = s->nshots;
+    s->has_cover = s->cover_url[0] != 0;
     nlitem++;
   }
   if (sel >= nlitem) sel = nlitem ? nlitem - 1 : 0;
 }
 static void load_items(void) {
   loading = 1; gen++;
-  net_req(HTTP_GET, CTL_URL "/v1/library", NULL, on_items, (void *)(intptr_t)gen);
+  // elenco leggero: con 2000 giochi e le loro descrizioni non starebbe nel buffer di rete
+  net_req(HTTP_GET, CTL_URL "/v1/library?lite=1", NULL, on_items, (void *)(intptr_t)gen);
 }
-static const LItem *lib_find(const char *id) { for (int i = 0; i < nlitem; i++) if (!strcmp(litem[i].id, id)) return &litem[i]; return NULL; }
+static const LItem *lib_find(const char *id) { if (!litem) return NULL; for (int i = 0; i < nlitem; i++) if (!strcmp(litem[i].id, id)) return &litem[i]; return NULL; }
 
 // --------------------------------------- copertine, caricate quando servono --
 static void on_app_cover(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) {
@@ -289,15 +306,26 @@ static void on_detail(int st, JVal *j, const char *raw, void *ud) {
   }
 }
 
-// scheda di un gioco della libreria: tutto è già in memoria
+// descrizione e screenshot di un gioco della libreria, chiesti al servizio
+static void on_lib_item(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw; if ((int)(intptr_t)ud != gen || st != 200 || !j) return;
+  jcpy(d_desc, sizeof d_desc, j, "description");
+  d_nscreen_urls = 0;
+  JFOR(u, jget(j, "screenshots")) { if (d_nscreen_urls >= MAX_SHOT) break; snprintf(d_screens[d_nscreen_urls++], 1024, "%s", jstr(u, NULL, "")); }
+  d_nscreens = d_nscreen_urls;
+}
+
+// scheda di un gioco della libreria: i dati principali sono già in memoria
 static void lib_detail(const LItem *it) {
   det_loading = 0; det_loaded = 1;
-  snprintf(d_title, sizeof d_title, "%s", it->title); snprintf(d_desc, sizeof d_desc, "%s", it->desc);
+  snprintf(d_title, sizeof d_title, "%s", it->title); d_desc[0] = 0;
   snprintf(d_ver, sizeof d_ver, "%s", it->version); snprintf(d_tid, sizeof d_tid, "%s", it->title_id);
   snprintf(d_platform, sizeof d_platform, "%s", it->platform);
   snprintf(d_dl_url, sizeof d_dl_url, "%s", it->url); snprintf(d_cover_url, sizeof d_cover_url, "%s", it->cover_url);
-  d_kind = it->kind; d_has_cover = it->has_cover; d_nscreens = it->nshots; d_size = it->size;
-  d_nscreen_urls = 0; for (int i = 0; i < it->nshots && i < MAX_SHOT; i++) snprintf(d_screens[d_nscreen_urls++], 1024, "%s", it->shots[i]);
+  d_kind = it->kind; d_has_cover = it->has_cover; d_nscreens = 0; d_size = it->size;
+  d_nscreen_urls = 0;
+  char path[120]; snprintf(path, sizeof path, CTL_URL "/v1/library/item?id=%s", it->id);
+  net_req(HTTP_GET, path, NULL, on_lib_item, (void *)(intptr_t)gen);
   d_tagline[0] = d_cat[0] = d_author[0] = d_home[0] = d_license[0] = 0; d_mine = 0; d_comments = 0; nscom = 0; d_ntags = 0;
   d_likes = d_dislikes = d_ratings = 0; d_rating = 0; d_my_vote = d_my_rating = 0;
 }
@@ -555,6 +583,8 @@ static void do_publish(void) {
 static void lib_done(int st, JVal *j, const char *raw, void *ud) {
   (void)raw;
   const char *ok = ud;
+  // 202 = sincronizzazione partita: si riguarda la libreria finché non finisce (30 s al massimo)
+  if (st == 202) { watch_from = src_last; watch_until = SDL_GetTicks() + 30000; watch_next = SDL_GetTicks() + 2000; }
   if (st == 200 || st == 202) { if (ok) set_msg(ok, 0); }
   else set_msg(st < 0 ? _("Il servizio di Omega non risponde: aggiorna Omega o riavvia la console") :
                !strcmp(j ? jstr(j, "error", "") : "", "title_and_url_required") ? _("Servono il titolo e un link http(s)") : _("Operazione non riuscita"), 1);
@@ -1217,6 +1247,11 @@ void store_open(void) {
 }
 
 void store_draw(float t) {
+  if (watch_from >= 0) {
+    Uint32 now = SDL_GetTicks();
+    if (now > watch_until) watch_from = -1;
+    else if (now > watch_next && !loading) { watch_next = now + 2000; load_items(); }
+  }
   int a = (int)(255 * t);
   fill_rect(0, 0, SCREEN_W, SCREEN_H, ST_BG, t > 0.98f ? 255 : a);
   if (view == 3) { draw_shot_viewer(a); return; }

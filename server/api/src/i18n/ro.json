@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Conturi, funcții sociale și Store de homebrew pentru consolă. Proiect independent, neafiliat cu Sony."
+  },
+  "system": {
+    "party_created": "· {actor} a creat party-ul",
+    "party_joined": "· {actor} s-a alăturat party-ului",
+    "party_left": "· {actor} a părăsit party-ul",
+    "group_created": "{actor} a creat grupul „{name}”",
+    "group_added": "{actor} l-a adăugat pe {user}",
+    "group_left": "{actor} a părăsit grupul",
+    "group_renamed": "{actor} a redenumit grupul în „{name}”",
+    "group_removed": "{actor} l-a eliminat pe {user}"
   }
 }

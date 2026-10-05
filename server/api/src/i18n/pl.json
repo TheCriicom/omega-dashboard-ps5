@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Konta, funkcje społecznościowe i Store z homebrew na konsolę. Niezależny projekt, niepowiązany z Sony."
+  },
+  "system": {
+    "party_created": "· {actor} tworzy party",
+    "party_joined": "· {actor} dołącza do party",
+    "party_left": "· {actor} opuszcza party",
+    "group_created": "{actor} tworzy grupę „{name}”",
+    "group_added": "{actor} dodaje użytkownika {user}",
+    "group_left": "{actor} opuszcza grupę",
+    "group_renamed": "{actor} zmienia nazwę grupy na „{name}”",
+    "group_removed": "{actor} usuwa użytkownika {user}"
   }
 }

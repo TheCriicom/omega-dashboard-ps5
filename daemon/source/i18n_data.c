@@ -7,12 +7,16 @@
 #include <string.h>
 
 #define I18N_LANG_FILE "/data/Omega/lang.txt"   // scelta fatta nella UI (Impostazioni → Lingua)
-#define NMSG 5
+#define NMSG 9
 #define NTR 26
 
 static const char *const MSGID[NMSG] = {
   "Omega · %s",
   "Omega · %s: %s",
+  "Omega · microfono acceso",
+  "Omega · microfono spento",
+  "Omega · party %s: il tuo microfono resta collegato",
+  "Omega · sei uscito dal party",
   "Omega: %s è in La mia libreria, pronto da installare",
   "Omega: %s è tra gli homebrew",
   "Omega: ricevo i giochi dal telefono o dal PC (%d%%)",
@@ -22,6 +26,10 @@ static const char *const TR[NTR][NMSG] = {
   { // en
     0,
     0,
+    "Omega · mic on",
+    "Omega · mic off",
+    "Omega · party %s: your microphone stays connected",
+    "Omega · you left the party",
     "Omega: %s is in My library, ready to install",
     "Omega: %s is now with your homebrew",
     "Omega: receiving games from your phone or PC (%d%%)",
@@ -29,6 +37,10 @@ static const char *const TR[NTR][NMSG] = {
   { // ja
     0,
     "Omega · %s：%s",
+    "Omega · マイクをオンにしました",
+    "Omega · マイクをオフにしました",
+    "Omega · パーティー %s：マイクは接続されたままです",
+    "Omega · パーティーから退出しました",
     "Omega：%s がマイライブラリーに追加されました。インストールできます",
     "Omega：%s を自作ソフトに追加しました",
     "Omega：スマホまたはPCからゲームを受信中（%d%%）",
@@ -36,6 +48,10 @@ static const char *const TR[NTR][NMSG] = {
   { // fr
     0,
     "Omega · %s : %s",
+    "Omega · micro activé",
+    "Omega · micro coupé",
+    "Omega · party %s : ton micro reste connecté",
+    "Omega · vous avez quitté la party",
     "Omega : %s est dans Ma bibliothèque, prêt à installer",
     "Omega : %s est parmi tes homebrew",
     "Omega : réception des jeux depuis le téléphone ou le PC (%d%%)",
@@ -43,6 +59,10 @@ static const char *const TR[NTR][NMSG] = {
   { // es
     0,
     0,
+    "Omega · micro activado",
+    "Omega · micro desactivado",
+    "Omega · party %s: tu micrófono sigue conectado",
+    "Omega · has abandonado la party",
     "Omega: %s está en Mi biblioteca, listo para instalar",
     "Omega: %s ya está entre tus homebrew",
     "Omega: recibiendo juegos del móvil o el PC (%d%%)",
@@ -50,6 +70,10 @@ static const char *const TR[NTR][NMSG] = {
   { // de
     0,
     0,
+    "Omega · Mikro an",
+    "Omega · Mikro aus",
+    "Omega · Party %s: Dein Mikrofon bleibt verbunden",
+    "Omega · Du hast die Party verlassen",
     "Omega: %s ist in Meiner Bibliothek, bereit zur Installation",
     "Omega: %s ist jetzt bei deinen Homebrews",
     "Omega: Spiele vom Handy oder PC werden empfangen (%d%%)",
@@ -57,6 +81,10 @@ static const char *const TR[NTR][NMSG] = {
   { // nl
     0,
     0,
+    "Omega · microfoon aan",
+    "Omega · microfoon uit",
+    "Omega · party %s: je microfoon blijft verbonden",
+    "Omega · je hebt de party verlaten",
     "Omega: %s staat in Mijn bibliotheek, klaar om te installeren",
     "Omega: %s staat nu bij je homebrew",
     "Omega: games ontvangen van telefoon of pc (%d%%)",
@@ -64,6 +92,10 @@ static const char *const TR[NTR][NMSG] = {
   { // pt-PT
     0,
     0,
+    "Omega · microfone ligado",
+    "Omega · microfone desligado",
+    "Omega · party %s: o teu microfone continua ligado",
+    "Omega · saíste da party",
     "Omega: %s está n'A minha biblioteca, pronto a instalar",
     "Omega: %s está agora nos teus homebrew",
     "Omega: a receber jogos do telemóvel ou do PC (%d%%)",
@@ -71,6 +103,10 @@ static const char *const TR[NTR][NMSG] = {
   { // pt-BR
     0,
     0,
+    "Omega · microfone ligado",
+    "Omega · microfone desligado",
+    "Omega · party %s: seu microfone continua conectado",
+    "Omega · você saiu da party",
     "Omega: %s está na Minha biblioteca, pronto para instalar",
     "Omega: %s agora está nos seus homebrews",
     "Omega: recebendo jogos do celular ou do PC (%d%%)",
@@ -78,6 +114,10 @@ static const char *const TR[NTR][NMSG] = {
   { // ru
     0,
     0,
+    "Omega · микрофон включён",
+    "Omega · микрофон выключен",
+    "Omega · пати %s: ваш микрофон остаётся подключён",
+    "Omega · вы покинули пати",
     "Omega: %s в «Моей библиотеке», можно устанавливать",
     "Omega: %s теперь среди ваших homebrew",
     "Omega: получаю игры с телефона или ПК (%d%%)",
@@ -85,6 +125,10 @@ static const char *const TR[NTR][NMSG] = {
   { // ko
     0,
     0,
+    "Omega · 마이크 켜짐",
+    "Omega · 마이크 꺼짐",
+    "Omega · 파티 %s: 마이크가 계속 연결되어 있습니다",
+    "Omega · 파티에서 나갔습니다",
     "Omega: %s이(가) 내 라이브러리에 있습니다. 설치할 수 있습니다",
     "Omega: %s이(가) 홈브루에 추가되었습니다",
     "Omega: 휴대폰이나 PC에서 게임을 받는 중 (%d%%)",
@@ -92,6 +136,10 @@ static const char *const TR[NTR][NMSG] = {
   { // zh-Hans
     0,
     "Omega · %s：%s",
+    "Omega · 麦克风已打开",
+    "Omega · 麦克风已关闭",
+    "Omega · 派对 %s：你的麦克风保持连接",
+    "Omega · 你已离开派对",
     "Omega：%s 已在我的游戏库中，可以安装",
     "Omega：%s 已加入你的自制软件",
     "Omega：正在从手机或电脑接收游戏（%d%%）",
@@ -99,6 +147,10 @@ static const char *const TR[NTR][NMSG] = {
   { // zh-Hant
     0,
     "Omega · %s：%s",
+    "Omega · 麥克風已開啟",
+    "Omega · 麥克風已關閉",
+    "Omega · 派對 %s：你的麥克風保持連線",
+    "Omega · 你已離開派對",
     "Omega：%s 已在我的遊戲庫中，可以安裝",
     "Omega：%s 已加入你的自製軟體",
     "Omega：正在從手機或電腦接收遊戲（%d%%）",
@@ -106,6 +158,10 @@ static const char *const TR[NTR][NMSG] = {
   { // fi
     0,
     0,
+    "Omega · mikrofoni päällä",
+    "Omega · mikrofoni pois",
+    "Omega · party %s: mikrofonisi pysyy yhdistettynä",
+    "Omega · poistuit partysta",
     "Omega: %s on Omassa kirjastossa, valmiina asennettavaksi",
     "Omega: %s on nyt homebrew-sovelluksissasi",
     "Omega: vastaanotetaan pelejä puhelimesta tai PC:ltä (%d%%)",
@@ -113,6 +169,10 @@ static const char *const TR[NTR][NMSG] = {
   { // sv
     0,
     0,
+    "Omega · mikrofon på",
+    "Omega · mikrofon av",
+    "Omega · party %s: din mikrofon förblir ansluten",
+    "Omega · du lämnade partyt",
     "Omega: %s finns i Mitt bibliotek, redo att installeras",
     "Omega: %s finns nu bland dina homebrew",
     "Omega: tar emot spel från mobilen eller datorn (%d%%)",
@@ -120,6 +180,10 @@ static const char *const TR[NTR][NMSG] = {
   { // da
     0,
     0,
+    "Omega · mikrofon til",
+    "Omega · mikrofon fra",
+    "Omega · party %s: din mikrofon forbliver tilsluttet",
+    "Omega · du forlod partyen",
     "Omega: %s er i Mit bibliotek, klar til at blive installeret",
     "Omega: %s er nu blandt dine homebrew",
     "Omega: modtager spil fra telefonen eller pc'en (%d%%)",
@@ -127,6 +191,10 @@ static const char *const TR[NTR][NMSG] = {
   { // nb
     0,
     0,
+    "Omega · mikrofon på",
+    "Omega · mikrofon av",
+    "Omega · party %s: mikrofonen din forblir tilkoblet",
+    "Omega · du forlot partyet",
     "Omega: %s er i Mitt bibliotek, klar til å installeres",
     "Omega: %s er nå blant dine homebrew",
     "Omega: tar imot spill fra telefonen eller PC-en (%d%%)",
@@ -134,6 +202,10 @@ static const char *const TR[NTR][NMSG] = {
   { // pl
     0,
     0,
+    "Omega · mikrofon włączony",
+    "Omega · mikrofon wyłączony",
+    "Omega · party %s: twój mikrofon pozostaje połączony",
+    "Omega · opuszczono party",
     "Omega: %s jest w Mojej bibliotece, gotowe do instalacji",
     "Omega: %s jest już wśród twoich homebrew",
     "Omega: odbieram gry z telefonu lub komputera (%d%%)",
@@ -141,6 +213,10 @@ static const char *const TR[NTR][NMSG] = {
   { // tr
     0,
     0,
+    "Omega · mikrofon açık",
+    "Omega · mikrofon kapalı",
+    "Omega · parti %s: mikrofonun bağlı kalıyor",
+    "Omega · partiden ayrıldın",
     "Omega: %s Kitaplığım'da, kurulmaya hazır",
     "Omega: %s artık homebrew'larında",
     "Omega: telefondan veya bilgisayardan oyunlar alınıyor (%d%%)",
@@ -148,6 +224,10 @@ static const char *const TR[NTR][NMSG] = {
   { // cs
     0,
     0,
+    "Omega · mikrofon zapnut",
+    "Omega · mikrofon vypnut",
+    "Omega · party %s: váš mikrofon zůstává připojen",
+    "Omega · opustili jste party",
     "Omega: %s je v Mé knihovně, připraveno k instalaci",
     "Omega: %s je mezi tvými homebrew",
     "Omega: přijímám hry z telefonu nebo PC (%d %%)",
@@ -155,6 +235,10 @@ static const char *const TR[NTR][NMSG] = {
   { // hu
     0,
     0,
+    "Omega · mikrofon bekapcsolva",
+    "Omega · mikrofon kikapcsolva",
+    "Omega · party %s: a mikrofonod csatlakozva marad",
+    "Omega · kiléptél a partyból",
     "Omega: %s a Saját könyvtáramban van, telepíthető",
     "Omega: %s most a homebrew-id között van",
     "Omega: játékok fogadása telefonról vagy PC-ről (%d%%)",
@@ -162,6 +246,10 @@ static const char *const TR[NTR][NMSG] = {
   { // el
     0,
     0,
+    "Omega · μικρόφωνο ενεργό",
+    "Omega · μικρόφωνο ανενεργό",
+    "Omega · party %s: το μικρόφωνό σας παραμένει συνδεδεμένο",
+    "Omega · αποχωρήσατε από το party",
     "Omega: το %s είναι στη Βιβλιοθήκη μου, έτοιμο για εγκατάσταση",
     "Omega: το %s είναι πλέον στα homebrew σου",
     "Omega: λήψη παιχνιδιών από κινητό ή PC (%d%%)",
@@ -169,6 +257,10 @@ static const char *const TR[NTR][NMSG] = {
   { // ro
     0,
     0,
+    "Omega · microfon pornit",
+    "Omega · microfon oprit",
+    "Omega · party %s: microfonul tău rămâne conectat",
+    "Omega · ai părăsit party-ul",
     "Omega: %s e în Biblioteca mea, gata de instalat",
     "Omega: %s e acum printre homebrew-urile tale",
     "Omega: primesc jocuri de pe telefon sau PC (%d%%)",
@@ -176,6 +268,10 @@ static const char *const TR[NTR][NMSG] = {
   { // th
     0,
     0,
+    "Omega · เปิดไมค์แล้ว",
+    "Omega · ปิดไมค์แล้ว",
+    "Omega · ปาร์ตี้ %s: ไมโครโฟนของคุณยังเชื่อมต่ออยู่",
+    "Omega · คุณออกจากปาร์ตี้แล้ว",
     "Omega: %s อยู่ในคลังของฉันแล้ว พร้อมติดตั้ง",
     "Omega: %s อยู่ในโฮมบรูของคุณแล้ว",
     "Omega: กำลังรับเกมจากโทรศัพท์หรือ PC (%d%%)",
@@ -183,6 +279,10 @@ static const char *const TR[NTR][NMSG] = {
   { // vi
     0,
     0,
+    "Omega · đã bật micrô",
+    "Omega · đã tắt micrô",
+    "Omega · party %s: micrô của bạn vẫn được kết nối",
+    "Omega · bạn đã rời party",
     "Omega: %s đã có trong Thư viện của tôi, sẵn sàng cài đặt",
     "Omega: %s đã có trong homebrew của bạn",
     "Omega: đang nhận trò chơi từ điện thoại hoặc PC (%d%%)",
@@ -190,6 +290,10 @@ static const char *const TR[NTR][NMSG] = {
   { // id
     0,
     0,
+    "Omega · mik menyala",
+    "Omega · mik mati",
+    "Omega · party %s: mikrofonmu tetap terhubung",
+    "Omega · kamu keluar dari party",
     "Omega: %s ada di Pustaka saya, siap dipasang",
     "Omega: %s kini ada di homebrew-mu",
     "Omega: menerima game dari ponsel atau PC (%d%%)",
@@ -197,6 +301,10 @@ static const char *const TR[NTR][NMSG] = {
   { // uk
     0,
     0,
+    "Omega · мікрофон увімкнено",
+    "Omega · мікрофон вимкнено",
+    "Omega · Party %s: ваш мікрофон залишається підключеним",
+    "Omega · ви покинули Party",
     "Omega: %s у «Моїй бібліотеці», можна встановлювати",
     "Omega: %s тепер серед ваших homebrew",
     "Omega: отримую ігри з телефона або ПК (%d%%)",

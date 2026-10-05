@@ -42,7 +42,7 @@ int sceAppInstUtilAppUnInstall(const char *);
 #define CANCELLED (-102)       // omega_url_download: interrotto con *cancel
 
 // -------------------------------------------------------------------- stato --
-enum { KIND_AUTO = 0, KIND_PKG = 1, KIND_ZIP = 2, KIND_ELF = 3, KIND_FOLDER = 4 };
+enum { KIND_AUTO = 0, KIND_PKG = 1, KIND_ZIP = 2, KIND_ELF = 3, KIND_FOLDER = 4, KIND_HTML = 99 };
 
 static SDL_atomic_t g_state;          // 0 fermo, 1 in corso, 2 finito
 static volatile long g_done, g_total; // byte scaricati / totali
@@ -175,6 +175,11 @@ static int reg_app(const char *title_id, const char *dir) {
 }
 #endif
 
+#ifdef PS5
+// per drives.c: registrare un gioco esterno montato
+int app_register(const char *title_id, const char *dir) { return reg_app(title_id, dir); }
+#endif
+
 // ------------------------------------------------------ riconoscimento tipo --
 // file già sulla console (caricato da La mia libreria): file:///data/...
 static const char *local_path(const char *url) { return !strncmp(url, "file://", 7) ? url + 7 : NULL; }
@@ -194,6 +199,9 @@ static int detect_kind(int kind, const char *url) {
     if (m[0] == 'P' && m[1] == 'K' && m[2] == 3 && m[3] == 4) return KIND_ZIP;
     if (m[0] == 0x7F && m[1] == 'E' && m[2] == 'L' && m[3] == 'F') return KIND_ELF;
     if (m[0] == 0x7F && m[1] == 'C' && m[2] == 'N' && m[3] == 'T') return KIND_PKG;   // pkg PS4/PS5
+    // una pagina web al posto del file (Drive, Mega, pagine di download...)
+    int i = 0; while (i < got && (m[i] == ' ' || m[i] == '\n' || m[i] == '\r' || m[i] == '\t' || m[i] == 0xEF || m[i] == 0xBB || m[i] == 0xBF)) i++;
+    if (i < got && m[i] == '<') return KIND_HTML;
   }
   return KIND_PKG;
 }
@@ -245,14 +253,50 @@ static int download(const InstallReq *j, const char *dest) {
   unlink(dest);
   g_dl = 0;
   if (st == CANCELLED) snprintf(g_result, sizeof g_result, "%s", _("Installazione annullata"));
+  else if (st == -103) snprintf(g_result, sizeof g_result, "%s", _("Download interrotto a metà (connessione caduta): riprova"));
+  else if (st == 404 || st == 403 || st == 410) snprintf(g_result, sizeof g_result, _("Il link non funziona più (HTTP %d): aggiornalo nella libreria"), st);
   else snprintf(g_result, sizeof g_result, _("Download non riuscito (%d)"), st);
   return st == CANCELLED ? -2 : -1;
 }
 
+#ifdef PS5
+// codici dell'installatore di sistema (tabella di etaHEN) → una frase
+static const char *pkg_error(int rc) {
+  switch ((unsigned)rc) {
+    case 0x80A30002u: return _("spazio esaurito sulla console");
+    case 0x80A30003u: return _("pkg non valido o link sbagliato");
+    case 0x80A30006u: return _("pkg non installabile su questa console (tipo o licenza)");
+    case 0x80A30008u: return _("pkg danneggiato o scaricato a metà");
+    case 0x80A3000Cu: return _("il gioco è aperto: chiudilo e riprova");
+    case 0x80A3000Du: return _("serve un firmware più recente");
+    case 0x80A3000Fu: return _("il pkg non corrisponde al gioco già installato");
+    case 0x80A30015u: return _("c'è già un'installazione in corso nel sistema");
+    case 0x80A31000u: return _("installatore di sistema non pronto: riavvia Omega");
+  }
+  return NULL;
+}
+static void pkg_fail(int rc) {
+  const char *why = pkg_error(rc);
+  if (why) snprintf(g_result, sizeof g_result, _("Installazione non riuscita: %s (0x%08X)"), why, (unsigned)rc);
+  else snprintf(g_result, sizeof g_result, _("Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow."), (unsigned)rc);
+}
+
+// spazi e simboli nell'URL: l'installatore di sistema li vuole codificati
+static void url_clean(const char *in, char *out, size_t n) {
+  size_t o = 0;
+  for (const unsigned char *p = (const unsigned char *)in; *p && o + 4 < n; p++) {
+    if (*p == ' ' || *p == '"' || *p == '<' || *p == '>' || *p == '[' || *p == ']' || *p >= 0x80) o += (size_t)snprintf(out + o, n - o, "%%%02X", *p);
+    else out[o++] = (char)*p;
+  }
+  out[o] = 0;
+}
+#endif
+
 static int do_pkg(const InstallReq *j) {
 #ifdef PS5
   if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "%s", _("AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.")); return -1; }
-  const char *uri = local_path(j->url) ? local_path(j->url) : j->url;   // un pkg caricato si installa dal disco
+  char remote[1100]; url_clean(j->url, remote, sizeof remote);
+  const char *uri = local_path(j->url) ? local_path(j->url) : remote;   // un pkg caricato si installa dal disco
   // l'installatore di sistema rifiuta i percorsi con spazi e simboli: accanto al
   // file si crea un collegamento con un nome pulito e si installa da lì
   char clean[700];
@@ -275,7 +319,20 @@ static int do_pkg(const InstallReq *j) {
     meta.uri = furi; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg);
     rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
   }
-  if (rc) { snprintf(g_result, sizeof g_result, _("Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow."), (unsigned)rc); return -1; }
+  if (rc && !local_path(j->url) && rc != (int)0x80A30002 && rc != (int)0x80A3000D) {
+    // il sistema non ha accettato il link (redirect, https, server lento...):
+    // si scarica il pkg sulla console e si installa dal file
+    omega_log("install: link rifiutato (0x%08X), scarico il pkg sulla console", (unsigned)rc);
+    char dest[300]; snprintf(dest, sizeof dest, OMEGA_DIR "/dl/omega-install.pkg");
+    int d = download(j, dest);
+    if (d) return d;
+    snprintf(g_phase, sizeof g_phase, "%s", _("Installazione"));
+    meta.uri = dest; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg);
+    rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
+    if (rc) { char furi[340]; snprintf(furi, sizeof furi, "file://%s", dest); meta.uri = furi; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg); rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg); }
+    // il file serve all'installatore finché non ha finito: lo si toglie al prossimo pkg
+  }
+  if (rc) { pkg_fail(rc); return -1; }
   snprintf(g_result, sizeof g_result, "%s", _("Installazione avviata: comparirà nella Home della console"));
   return 0;
 #else
@@ -374,6 +431,18 @@ static int do_zip(const InstallReq *j) {
     return 0;
   }
   if (!j->title_id[0]) { if (!lp) unlink(zip); snprintf(g_result, sizeof g_result, "%s", _("Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID")); return -1; }
+  if (j->dest_mount[0]) {
+    // sul disco esterno: la cartella del gioco e basta; la home la trova da sola
+    // (drives.c) e la registra al primo avvio
+    char ed[300]; snprintf(ed, sizeof ed, "%s/homebrew/%s", j->dest_mount, j->title_id);
+    mkdirs(ed);
+    rc = unzip_to(zip, ed, zi.top);
+    if (!lp) unlink(zip);
+    if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
+    snprintf(g_result, sizeof g_result, _("%s installato su %s: lo trovi in home"), j->name[0] ? j->name : j->title_id, j->dest_label);
+    g_installed_title = 1;
+    return 0;
+  }
   char dest[200]; snprintf(dest, sizeof dest, APP_DIR "/%s", j->title_id);
 # ifdef PS5
   sceAppInstUtilInitialize();
@@ -404,17 +473,35 @@ static int do_folder(const InstallReq *j) {
   const char *src = local_path(j->url);
   if (!src || strlen(j->title_id) != 9) { snprintf(g_result, sizeof g_result, "%s", _("Cartella non valida: manca il Title ID")); return -1; }
   char dest[200]; snprintf(dest, sizeof dest, APP_DIR "/%s", j->title_id);
-# ifdef PS5
-  sceAppInstUtilInitialize();
-  sceAppInstUtilAppUnInstall(j->title_id);     // reinstallazione
-# endif
-  snprintf(g_phase, sizeof g_phase, "%s", _("Copia sulla console"));
-  mkdirs(APP_DIR);
-  // stessa partizione: si sposta e basta; altrimenti si copia
-  if (rename(src, dest) != 0 && copy_tree(src, dest) != 0) {
-    snprintf(g_result, sizeof g_result, "%s", g_cancel ? _("Installazione annullata") : _("Copia non riuscita"));
-    return g_cancel ? -2 : -1;
+  struct stat sst, dst;
+  int have_src = stat(src, &sst) == 0 && S_ISDIR(sst.st_mode), have_dest = stat(dest, &dst) == 0 && S_ISDIR(dst.st_mode);
+  if (!have_src && !have_dest) { snprintf(g_result, sizeof g_result, "%s", _("I file del gioco non ci sono più: caricalo di nuovo dal telefono")); return -1; }
+  if (j->dest_mount[0]) {
+    // sul disco esterno: si COPIA (la cartella caricata resta), poi la home la trova da sola
+    if (!have_src) { snprintf(g_result, sizeof g_result, "%s", _("I file del gioco non ci sono più: caricalo di nuovo dal telefono")); return -1; }
+    char ed[300], eh[300]; snprintf(eh, sizeof eh, "%s/homebrew", j->dest_mount); snprintf(ed, sizeof ed, "%s/%s", eh, j->title_id);
+    mkdirs(eh);
+    snprintf(g_phase, sizeof g_phase, _("Copia su %s"), j->dest_label);
+    if (copy_tree(src, ed) != 0) { snprintf(g_result, sizeof g_result, "%s", g_cancel ? _("Installazione annullata") : _("Copia non riuscita: c'è spazio sul disco?")); return g_cancel ? -2 : -1; }
+    snprintf(g_result, sizeof g_result, _("%s installato su %s: lo trovi in home"), j->name[0] ? j->name : j->title_id, j->dest_label);
+    return 0;
   }
+  if (have_src) {
+    // la cartella c'è: la versione installata si toglie solo adesso, non prima di
+    // sapere che c'è con cosa sostituirla (prima un secondo tentativo cancellava il gioco)
+# ifdef PS5
+    sceAppInstUtilInitialize();
+    if (have_dest) sceAppInstUtilAppUnInstall(j->title_id);     // reinstallazione
+# endif
+    snprintf(g_phase, sizeof g_phase, "%s", _("Copia sulla console"));
+    mkdirs(APP_DIR);
+    // stessa partizione: si sposta e basta; altrimenti si copia
+    if (rename(src, dest) != 0 && copy_tree(src, dest) != 0) {
+      snprintf(g_result, sizeof g_result, "%s", g_cancel ? _("Installazione annullata") : _("Copia non riuscita"));
+      return g_cancel ? -2 : -1;
+    }
+  }
+  // la cartella era già stata spostata in /user/app (installazione precedente): si registra di nuovo
 # ifdef PS5
   snprintf(g_phase, sizeof g_phase, "%s", _("Registrazione"));
   int rc = reg_app(j->title_id, "/user/app/");
@@ -433,7 +520,9 @@ static int install_thread(void *arg) {
   mkdir(OMEGA_DIR, 0777);
   int kind = detect_kind(j->kind, j->url);
   omega_log("install: %s kind=%d %s", j->name, kind, j->url);
-  int rc = kind == KIND_ZIP ? do_zip(j) : kind == KIND_ELF ? do_elf(j) : kind == KIND_FOLDER ? do_folder(j) : do_pkg(j);
+  int rc;
+  if (kind == KIND_HTML) { snprintf(g_result, sizeof g_result, "%s", _("Il link porta a una pagina web, non al file: serve il link diretto al pkg, zip o elf")); rc = -1; }
+  else rc = kind == KIND_ZIP ? do_zip(j) : kind == KIND_ELF ? do_elf(j) : kind == KIND_FOLDER ? do_folder(j) : do_pkg(j);
   g_result_err = rc == -1;
   omega_log("install: %s -> %s", j->name, g_result);
   free(j);
@@ -441,9 +530,34 @@ static int install_thread(void *arg) {
   return 0;
 }
 
+// Dove installare: con un disco esterno collegato si chiede, per i giochi che
+// Omega mette da sé (cartelle e zip con Title ID). I pkg li installa la console
+// nella sua memoria, gli homebrew e i payload vanno dove li cerca il caricatore.
+static InstallReq pending; static Drive pend_dr[12]; static int pend_nd;
+static void install_start(const InstallReq *r);
+static void dest_pick(int idx, void *ud) {
+  (void)ud;
+  if (idx < 0 || idx > pend_nd) return;
+  if (idx > 0) { snprintf(pending.dest_mount, sizeof pending.dest_mount, "%s", pend_dr[idx - 1].mount); snprintf(pending.dest_label, sizeof pending.dest_label, "%s", pend_dr[idx - 1].label); }
+  install_start(&pending);
+}
+
 void install_begin(const InstallReq *r) {
   if (SDL_AtomicGet(&g_state) == 1) { set_msg(_("C'è già un'installazione in corso"), 1); return; }
   if (!r || !r->url[0]) { set_msg(_("Link di download mancante"), 1); return; }
+  int game = r->title_id[0] && r->kind != KIND_PKG && r->kind != KIND_ELF;
+  if (game && !r->dest_mount[0] && (pend_nd = drives_list(pend_dr, 12)) > 0) {
+    pending = *r;
+    static char lab[13][96]; static const char *it[13];
+    snprintf(lab[0], sizeof lab[0], "%s", _("Memoria della console")); it[0] = lab[0];
+    for (int i = 0; i < pend_nd && i < 12; i++) { snprintf(lab[i + 1], sizeof lab[0], _("%s · %.0f GB liberi"), pend_dr[i].label, pend_dr[i].free_gb); it[i + 1] = lab[i + 1]; }
+    menu_open(_("Dove lo installo?"), it, pend_nd + 1, dest_pick, NULL);
+    return;
+  }
+  install_start(r);
+}
+
+static void install_start(const InstallReq *r) {
   InstallReq *j = malloc(sizeof *j);
   if (!j) { set_msg(_("Memoria insufficiente"), 1); return; }
   *j = *r;

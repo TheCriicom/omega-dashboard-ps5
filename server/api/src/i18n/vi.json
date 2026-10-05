@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Tài khoản, tính năng xã hội và Store homebrew dành cho máy chơi game. Dự án độc lập, không liên kết với Sony."
+  },
+  "system": {
+    "party_created": "· {actor} đã tạo party",
+    "party_joined": "· {actor} đã tham gia party",
+    "party_left": "· {actor} đã rời party",
+    "group_created": "{actor} đã tạo nhóm “{name}”",
+    "group_added": "{actor} đã thêm {user}",
+    "group_left": "{actor} đã rời nhóm",
+    "group_renamed": "{actor} đã đổi tên nhóm thành “{name}”",
+    "group_removed": "{actor} đã xóa {user}"
   }
 }

@@ -78,7 +78,16 @@
     "from_upload": "アップロード済み",
     "up_nodir": "このブラウザーではフォルダーを選べません: コンピューターを使うか、.zip をアップロードしてください",
     "up_retry": "接続が切れました：{s} 秒後に再試行します（{k}/{m} 回目）。このページは開いたままにしてください。",
-    "up_gaveup": "本体が数分間応答しません。同じファイルをもう一度選ぶと、止まったところから再開します。"
+    "up_gaveup": "本体が数分間応答しません。同じファイルをもう一度選ぶと、止まったところから再開します。",
+    "party": "ボイスパーティー",
+    "p_on": "マイク オン · {p}",
+    "p_muted": "マイク オフ · {p}",
+    "p_nomic": "聞くだけ（マイクなし） · {p}",
+    "p_silent": "マイクから無音しか届いていません：コントローラーのミュートボタンを確認してください · {p}",
+    "p_mute": "マイクをオフ",
+    "p_unmute": "マイクをオン",
+    "p_leave": "パーティーから退出",
+    "p_leaveq": "ボイスパーティーから退出しますか？"
   },
   "fr": {
     "pair": "Saisissez le PIN affiché sur la console dans Omega › Paramètres › Système et outils › Télécommande sur téléphone.",
@@ -159,7 +168,16 @@
     "from_upload": "envoyé",
     "up_nodir": "Ce navigateur ne peut pas choisir de dossiers : utilisez un ordinateur ou envoyez un .zip",
     "up_retry": "Connexion perdue : nouvel essai dans {s} s (tentative {k} sur {m}). Laisse cette page ouverte.",
-    "up_gaveup": "la console ne répond plus depuis plusieurs minutes. Choisis à nouveau les mêmes fichiers pour reprendre là où ça s'est arrêté."
+    "up_gaveup": "la console ne répond plus depuis plusieurs minutes. Choisis à nouveau les mêmes fichiers pour reprendre là où ça s'est arrêté.",
+    "party": "Party vocale",
+    "p_on": "Micro activé · {p}",
+    "p_muted": "Micro coupé · {p}",
+    "p_nomic": "Écoute seule (pas de micro) · {p}",
+    "p_silent": "Le micro n'envoie que du silence : vérifiez le bouton de sourdine de la manette · {p}",
+    "p_mute": "Couper le micro",
+    "p_unmute": "Activer le micro",
+    "p_leave": "Quitter la party",
+    "p_leaveq": "Quitter la party vocale ?"
   },
   "es": {
     "pair": "Introduce el PIN que aparece en la consola en Omega › Ajustes › Sistema y herramientas › Mando desde el teléfono.",
@@ -240,7 +258,16 @@
     "from_upload": "subido",
     "up_nodir": "Este navegador no puede elegir carpetas: usa un ordenador o sube un .zip",
     "up_retry": "Conexión perdida: reintento en {s} s (intento {k} de {m}). Mantén esta página abierta.",
-    "up_gaveup": "la consola no responde desde hace varios minutos. Elige de nuevo los mismos archivos para continuar donde se detuvo."
+    "up_gaveup": "la consola no responde desde hace varios minutos. Elige de nuevo los mismos archivos para continuar donde se detuvo.",
+    "party": "Party de voz",
+    "p_on": "Micro activado · {p}",
+    "p_muted": "Micro desactivado · {p}",
+    "p_nomic": "Solo escucha (sin micro) · {p}",
+    "p_silent": "El micro solo envía silencio: revisa el botón de silencio del mando · {p}",
+    "p_mute": "Desactivar el micro",
+    "p_unmute": "Activar el micro",
+    "p_leave": "Abandonar la party",
+    "p_leaveq": "¿Abandonar la party de voz?"
   },
   "de": {
     "pair": "Gib die PIN ein, die auf der Konsole unter Omega › Einstellungen › System und Tools › Fernbedienung per Telefon angezeigt wird.",
@@ -321,7 +348,16 @@
     "from_upload": "hochgeladen",
     "up_nodir": "Dieser Browser kann keine Ordner auswählen: Nutze einen Computer oder lade eine .zip hoch",
     "up_retry": "Verbindung verloren: neuer Versuch in {s} s (Versuch {k} von {m}). Lass diese Seite offen.",
-    "up_gaveup": "die Konsole antwortet seit einigen Minuten nicht. Wähle dieselben Dateien erneut, um dort weiterzumachen, wo es aufgehört hat."
+    "up_gaveup": "die Konsole antwortet seit einigen Minuten nicht. Wähle dieselben Dateien erneut, um dort weiterzumachen, wo es aufgehört hat.",
+    "party": "Voice-Party",
+    "p_on": "Mikro an · {p}",
+    "p_muted": "Mikro aus · {p}",
+    "p_nomic": "Nur zuhören (kein Mikro) · {p}",
+    "p_silent": "Das Mikro sendet nur Stille: Prüfe die Stummschalttaste am Controller · {p}",
+    "p_mute": "Mikro ausschalten",
+    "p_unmute": "Mikro einschalten",
+    "p_leave": "Party verlassen",
+    "p_leaveq": "Voice-Party verlassen?"
   },
   "nl": {
     "pair": "Voer de PIN in die op de console staat onder Omega › Instellingen › Systeem en tools › Afstandsbediening via telefoon.",
@@ -402,7 +438,16 @@
     "from_upload": "geüpload",
     "up_nodir": "Deze browser kan geen mappen kiezen: gebruik een computer of upload een .zip",
     "up_retry": "Verbinding verbroken: opnieuw over {s} s (poging {k} van {m}). Laat deze pagina open.",
-    "up_gaveup": "de console reageert al een paar minuten niet. Kies dezelfde bestanden opnieuw om verder te gaan waar het stopte."
+    "up_gaveup": "de console reageert al een paar minuten niet. Kies dezelfde bestanden opnieuw om verder te gaan waar het stopte.",
+    "party": "Voice-party",
+    "p_on": "Microfoon aan · {p}",
+    "p_muted": "Microfoon uit · {p}",
+    "p_nomic": "Alleen luisteren (geen microfoon) · {p}",
+    "p_silent": "De microfoon stuurt alleen stilte: controleer de dempknop op de controller · {p}",
+    "p_mute": "Microfoon uitzetten",
+    "p_unmute": "Microfoon aanzetten",
+    "p_leave": "Party verlaten",
+    "p_leaveq": "Voice-party verlaten?"
   },
   "pt-PT": {
     "pair": "Introduz o PIN mostrado na consola em Omega › Definições › Sistema e ferramentas › Comando pelo telemóvel.",
@@ -483,7 +528,16 @@
     "from_upload": "enviado",
     "up_nodir": "Este navegador não consegue escolher pastas: use um computador ou envie um .zip",
     "up_retry": "Ligação perdida: nova tentativa em {s} s (tentativa {k} de {m}). Mantém esta página aberta.",
-    "up_gaveup": "a consola não responde há alguns minutos. Escolhe os mesmos ficheiros outra vez para retomar onde parou."
+    "up_gaveup": "a consola não responde há alguns minutos. Escolhe os mesmos ficheiros outra vez para retomar onde parou.",
+    "party": "Party de voz",
+    "p_on": "Microfone ligado · {p}",
+    "p_muted": "Microfone desligado · {p}",
+    "p_nomic": "Só a ouvir (sem microfone) · {p}",
+    "p_silent": "O microfone só envia silêncio: verifica o botão de silêncio do comando · {p}",
+    "p_mute": "Desligar o microfone",
+    "p_unmute": "Ligar o microfone",
+    "p_leave": "Sair da party",
+    "p_leaveq": "Sair da party de voz?"
   },
   "pt-BR": {
     "pair": "Digite o PIN exibido no console em Omega › Configurações › Sistema e ferramentas › Controle remoto pelo celular.",
@@ -564,7 +618,16 @@
     "from_upload": "enviado",
     "up_nodir": "Este navegador não consegue escolher pastas: use um computador ou envie um .zip",
     "up_retry": "Conexão perdida: tentando de novo em {s} s (tentativa {k} de {m}). Mantenha esta página aberta.",
-    "up_gaveup": "o console não responde há alguns minutos. Escolha os mesmos arquivos de novo para continuar de onde parou."
+    "up_gaveup": "o console não responde há alguns minutos. Escolha os mesmos arquivos de novo para continuar de onde parou.",
+    "party": "Party de voz",
+    "p_on": "Microfone ligado · {p}",
+    "p_muted": "Microfone desligado · {p}",
+    "p_nomic": "Só ouvindo (sem microfone) · {p}",
+    "p_silent": "O microfone só está enviando silêncio: verifique o botão de mudo do controle · {p}",
+    "p_mute": "Desligar o microfone",
+    "p_unmute": "Ligar o microfone",
+    "p_leave": "Sair da party",
+    "p_leaveq": "Sair da party de voz?"
   },
   "ru": {
     "pair": "Введите PIN, который показан на консоли в Omega › Настройки › Система и инструменты › Пульт на телефоне.",
@@ -645,7 +708,16 @@
     "from_upload": "загружено",
     "up_nodir": "Этот браузер не может выбирать папки: используйте компьютер или загрузите .zip",
     "up_retry": "Соединение потеряно: повтор через {s} с (попытка {k} из {m}). Не закрывайте эту страницу.",
-    "up_gaveup": "консоль не отвечает уже несколько минут. Выберите те же файлы снова, чтобы продолжить с места остановки."
+    "up_gaveup": "консоль не отвечает уже несколько минут. Выберите те же файлы снова, чтобы продолжить с места остановки.",
+    "party": "Голосовая пати",
+    "p_on": "Микрофон включён · {p}",
+    "p_muted": "Микрофон выключен · {p}",
+    "p_nomic": "Только прослушивание (без микрофона) · {p}",
+    "p_silent": "С микрофона идёт только тишина: проверьте кнопку отключения звука на геймпаде · {p}",
+    "p_mute": "Выключить микрофон",
+    "p_unmute": "Включить микрофон",
+    "p_leave": "Покинуть пати",
+    "p_leaveq": "Покинуть голосовую пати?"
   },
   "ko": {
     "pair": "콘솔의 Omega › 설정 › 시스템 및 도구 › 휴대폰 리모컨에 표시된 PIN을 입력하세요.",
@@ -726,7 +798,16 @@
     "from_upload": "업로드됨",
     "up_nodir": "이 브라우저는 폴더를 선택할 수 없습니다: 컴퓨터를 사용하거나 .zip을 업로드하세요",
     "up_retry": "연결이 끊겼습니다: {s}초 후 다시 시도합니다 ({k}/{m}번째). 이 페이지를 열어 두세요.",
-    "up_gaveup": "본체가 몇 분째 응답하지 않습니다. 같은 파일을 다시 선택하면 멈춘 곳부터 이어서 진행합니다."
+    "up_gaveup": "본체가 몇 분째 응답하지 않습니다. 같은 파일을 다시 선택하면 멈춘 곳부터 이어서 진행합니다.",
+    "party": "음성 파티",
+    "p_on": "마이크 켜짐 · {p}",
+    "p_muted": "마이크 꺼짐 · {p}",
+    "p_nomic": "듣기 전용(마이크 없음) · {p}",
+    "p_silent": "마이크에서 무음만 전송되고 있습니다: 컨트롤러의 음소거 버튼을 확인하세요 · {p}",
+    "p_mute": "마이크 끄기",
+    "p_unmute": "마이크 켜기",
+    "p_leave": "파티 나가기",
+    "p_leaveq": "음성 파티에서 나갈까요?"
   },
   "zh-Hans": {
     "pair": "请输入主机上 Omega › 设置 › 系统与工具 › 手机遥控 中显示的 PIN。",
@@ -807,7 +888,16 @@
     "from_upload": "已上传",
     "up_nodir": "此浏览器无法选择文件夹:请使用电脑,或上传 .zip",
     "up_retry": "连接中断：{s} 秒后重试（第 {k}/{m} 次）。请保持此页面打开。",
-    "up_gaveup": "主机已几分钟没有响应。重新选择相同的文件即可从中断处继续。"
+    "up_gaveup": "主机已几分钟没有响应。重新选择相同的文件即可从中断处继续。",
+    "party": "语音派对",
+    "p_on": "麦克风已打开 · {p}",
+    "p_muted": "麦克风已关闭 · {p}",
+    "p_nomic": "仅收听（无麦克风） · {p}",
+    "p_silent": "麦克风只传出静音：请检查手柄上的静音按钮 · {p}",
+    "p_mute": "关闭麦克风",
+    "p_unmute": "打开麦克风",
+    "p_leave": "离开派对",
+    "p_leaveq": "要离开语音派对吗？"
   },
   "zh-Hant": {
     "pair": "請輸入主機上 Omega › 設定 › 系統與工具 › 手機遙控 中顯示的 PIN。",
@@ -888,7 +978,16 @@
     "from_upload": "已上傳",
     "up_nodir": "此瀏覽器無法選擇資料夾:請使用電腦,或上傳 .zip",
     "up_retry": "連線中斷：{s} 秒後重試（第 {k}/{m} 次）。請保持此頁面開啟。",
-    "up_gaveup": "主機已數分鐘沒有回應。重新選擇相同的檔案即可從中斷處繼續。"
+    "up_gaveup": "主機已數分鐘沒有回應。重新選擇相同的檔案即可從中斷處繼續。",
+    "party": "語音派對",
+    "p_on": "麥克風已開啟 · {p}",
+    "p_muted": "麥克風已關閉 · {p}",
+    "p_nomic": "僅收聽（無麥克風） · {p}",
+    "p_silent": "麥克風只傳出靜音：請檢查控制器上的靜音按鈕 · {p}",
+    "p_mute": "關閉麥克風",
+    "p_unmute": "開啟麥克風",
+    "p_leave": "離開派對",
+    "p_leaveq": "要離開語音派對嗎？"
   },
   "fi": {
     "pair": "Syötä PIN, joka näkyy konsolilla kohdassa Omega › Asetukset › Järjestelmä ja työkalut › Puhelin kaukosäätimenä.",
@@ -969,7 +1068,16 @@
     "from_upload": "ladattu",
     "up_nodir": "Tämä selain ei voi valita kansioita: käytä tietokonetta tai lataa .zip",
     "up_retry": "Yhteys katkesi: yritetään uudelleen {s} s kuluttua (yritys {k}/{m}). Pidä tämä sivu auki.",
-    "up_gaveup": "konsoli ei ole vastannut moneen minuuttiin. Valitse samat tiedostot uudelleen, niin jatketaan siitä mihin jäätiin."
+    "up_gaveup": "konsoli ei ole vastannut moneen minuuttiin. Valitse samat tiedostot uudelleen, niin jatketaan siitä mihin jäätiin.",
+    "party": "Äänipartyt",
+    "p_on": "Mikrofoni päällä · {p}",
+    "p_muted": "Mikrofoni pois · {p}",
+    "p_nomic": "Vain kuuntelu (ei mikrofonia) · {p}",
+    "p_silent": "Mikrofonista tulee vain hiljaisuutta: tarkista ohjaimen mykistyspainike · {p}",
+    "p_mute": "Mikrofoni pois",
+    "p_unmute": "Mikrofoni päälle",
+    "p_leave": "Poistu partysta",
+    "p_leaveq": "Poistutaanko äänipartysta?"
   },
   "sv": {
     "pair": "Ange PIN-koden som visas på konsolen under Omega › Inställningar › System och verktyg › Fjärrkontroll från telefonen.",
@@ -1050,7 +1158,16 @@
     "from_upload": "uppladdat",
     "up_nodir": "Den här webbläsaren kan inte välja mappar: använd en dator eller ladda upp en .zip",
     "up_retry": "Anslutningen bröts: nytt försök om {s} s (försök {k} av {m}). Låt sidan vara öppen.",
-    "up_gaveup": "konsolen har inte svarat på flera minuter. Välj samma filer igen för att fortsätta där det stannade."
+    "up_gaveup": "konsolen har inte svarat på flera minuter. Välj samma filer igen för att fortsätta där det stannade.",
+    "party": "Röstparty",
+    "p_on": "Mikrofon på · {p}",
+    "p_muted": "Mikrofon av · {p}",
+    "p_nomic": "Endast lyssning (ingen mikrofon) · {p}",
+    "p_silent": "Mikrofonen skickar bara tystnad: kontrollera ljud av-knappen på handkontrollen · {p}",
+    "p_mute": "Stäng av mikrofonen",
+    "p_unmute": "Slå på mikrofonen",
+    "p_leave": "Lämna partyt",
+    "p_leaveq": "Lämna röstpartyt?"
   },
   "da": {
     "pair": "Indtast den PIN-kode, der vises på konsollen under Omega › Indstillinger › System og værktøjer › Fjernbetjening fra telefonen.",
@@ -1131,7 +1248,16 @@
     "from_upload": "uploadet",
     "up_nodir": "Denne browser kan ikke vælge mapper: brug en computer, eller upload en .zip",
     "up_retry": "Forbindelsen blev afbrudt: prøver igen om {s} s (forsøg {k} af {m}). Hold siden åben.",
-    "up_gaveup": "konsollen har ikke svaret i flere minutter. Vælg de samme filer igen for at fortsætte, hvor det stoppede."
+    "up_gaveup": "konsollen har ikke svaret i flere minutter. Vælg de samme filer igen for at fortsætte, hvor det stoppede.",
+    "party": "Stemmeparty",
+    "p_on": "Mikrofon til · {p}",
+    "p_muted": "Mikrofon fra · {p}",
+    "p_nomic": "Kun lytning (ingen mikrofon) · {p}",
+    "p_silent": "Mikrofonen sender kun stilhed: tjek mute-knappen på controlleren · {p}",
+    "p_mute": "Sluk mikrofonen",
+    "p_unmute": "Tænd mikrofonen",
+    "p_leave": "Forlad party",
+    "p_leaveq": "Forlad stemmepartyen?"
   },
   "nb": {
     "pair": "Skriv inn PIN-koden som vises på konsollen under Omega › Innstillinger › System og verktøy › Fjernkontroll fra telefonen.",
@@ -1212,7 +1338,16 @@
     "from_upload": "lastet opp",
     "up_nodir": "Denne nettleseren kan ikke velge mapper: bruk en datamaskin, eller last opp en .zip",
     "up_retry": "Tilkoblingen ble brutt: prøver igjen om {s} s (forsøk {k} av {m}). Hold siden åpen.",
-    "up_gaveup": "konsollen har ikke svart på flere minutter. Velg de samme filene igjen for å fortsette der det stoppet."
+    "up_gaveup": "konsollen har ikke svart på flere minutter. Velg de samme filene igjen for å fortsette der det stoppet.",
+    "party": "Taleparty",
+    "p_on": "Mikrofon på · {p}",
+    "p_muted": "Mikrofon av · {p}",
+    "p_nomic": "Bare lytting (ingen mikrofon) · {p}",
+    "p_silent": "Mikrofonen sender bare stillhet: sjekk demp-knappen på kontrolleren · {p}",
+    "p_mute": "Slå av mikrofonen",
+    "p_unmute": "Slå på mikrofonen",
+    "p_leave": "Forlat partyet",
+    "p_leaveq": "Forlate talepartyet?"
   },
   "pl": {
     "pair": "Wpisz PIN widoczny na konsoli w Omega › Ustawienia › System i narzędzia › Pilot w telefonie.",
@@ -1293,7 +1428,16 @@
     "from_upload": "przesłano",
     "up_nodir": "Ta przeglądarka nie może wybierać folderów: użyj komputera lub prześlij plik .zip",
     "up_retry": "Utracono połączenie: ponowna próba za {s} s (próba {k} z {m}). Nie zamykaj tej strony.",
-    "up_gaveup": "konsola nie odpowiada od kilku minut. Wybierz te same pliki ponownie, aby wznowić od miejsca przerwania."
+    "up_gaveup": "konsola nie odpowiada od kilku minut. Wybierz te same pliki ponownie, aby wznowić od miejsca przerwania.",
+    "party": "Głosowe party",
+    "p_on": "Mikrofon włączony · {p}",
+    "p_muted": "Mikrofon wyłączony · {p}",
+    "p_nomic": "Tylko słuchanie (brak mikrofonu) · {p}",
+    "p_silent": "Z mikrofonu płynie tylko cisza: sprawdź przycisk wyciszenia na kontrolerze · {p}",
+    "p_mute": "Wyłącz mikrofon",
+    "p_unmute": "Włącz mikrofon",
+    "p_leave": "Opuść party",
+    "p_leaveq": "Opuścić głosowe party?"
   },
   "tr": {
     "pair": "Konsolda Omega › Ayarlar › Sistem ve araçlar › Telefondan kumanda bölümünde gösterilen PIN'i girin.",
@@ -1374,7 +1518,16 @@
     "from_upload": "yüklendi",
     "up_nodir": "Bu tarayıcı klasör seçemiyor: bir bilgisayar kullanın veya bir .zip yükleyin",
     "up_retry": "Bağlantı koptu: {s} sn sonra yeniden denenecek ({k}/{m}. deneme). Bu sayfayı açık tut.",
-    "up_gaveup": "konsol birkaç dakikadır yanıt vermiyor. Kaldığı yerden devam etmek için aynı dosyaları yeniden seç."
+    "up_gaveup": "konsol birkaç dakikadır yanıt vermiyor. Kaldığı yerden devam etmek için aynı dosyaları yeniden seç.",
+    "party": "Sesli parti",
+    "p_on": "Mikrofon açık · {p}",
+    "p_muted": "Mikrofon kapalı · {p}",
+    "p_nomic": "Yalnızca dinleme (mikrofon yok) · {p}",
+    "p_silent": "Mikrofondan yalnızca sessizlik geliyor: kumandadaki sessiz düğmesini kontrol et · {p}",
+    "p_mute": "Mikrofonu kapat",
+    "p_unmute": "Mikrofonu aç",
+    "p_leave": "Partiden ayrıl",
+    "p_leaveq": "Sesli partiden ayrılınsın mı?"
   },
   "cs": {
     "pair": "Zadejte PIN, který se zobrazuje na konzoli v Omega › Nastavení › Systém a nástroje › Dálkové ovládání z telefonu.",
@@ -1455,7 +1608,16 @@
     "from_upload": "nahráno",
     "up_nodir": "Tento prohlížeč neumí vybírat složky: použijte počítač nebo nahrajte .zip",
     "up_retry": "Spojení se přerušilo: další pokus za {s} s (pokus {k} z {m}). Nech tuto stránku otevřenou.",
-    "up_gaveup": "konzole už několik minut neodpovídá. Vyber znovu stejné soubory a pokračuje se tam, kde se přestalo."
+    "up_gaveup": "konzole už několik minut neodpovídá. Vyber znovu stejné soubory a pokračuje se tam, kde se přestalo.",
+    "party": "Hlasová party",
+    "p_on": "Mikrofon zapnut · {p}",
+    "p_muted": "Mikrofon vypnut · {p}",
+    "p_nomic": "Jen poslech (bez mikrofonu) · {p}",
+    "p_silent": "Z mikrofonu jde jen ticho: zkontrolujte tlačítko ztlumení na ovladači · {p}",
+    "p_mute": "Vypnout mikrofon",
+    "p_unmute": "Zapnout mikrofon",
+    "p_leave": "Opustit party",
+    "p_leaveq": "Opustit hlasovou party?"
   },
   "hu": {
     "pair": "Írd be a PIN-t, amely a konzolon az Omega › Beállítások › Rendszer és eszközök › Távirányító telefonról menüben látható.",
@@ -1536,7 +1698,16 @@
     "from_upload": "feltöltve",
     "up_nodir": "Ez a böngésző nem tud mappát választani: használj számítógépet, vagy tölts fel egy .zip fájlt",
     "up_retry": "Megszakadt a kapcsolat: újrapróbálás {s} mp múlva ({k}/{m}. próbálkozás). Hagyd nyitva ezt az oldalt.",
-    "up_gaveup": "a konzol percek óta nem válaszol. Válaszd ki újra ugyanazokat a fájlokat, és onnan folytatódik, ahol megállt."
+    "up_gaveup": "a konzol percek óta nem válaszol. Válaszd ki újra ugyanazokat a fájlokat, és onnan folytatódik, ahol megállt.",
+    "party": "Hangos party",
+    "p_on": "Mikrofon bekapcsolva · {p}",
+    "p_muted": "Mikrofon kikapcsolva · {p}",
+    "p_nomic": "Csak hallgatás (nincs mikrofon) · {p}",
+    "p_silent": "A mikrofon csak csendet küld: ellenőrizd a kontroller némítógombját · {p}",
+    "p_mute": "Mikrofon kikapcsolása",
+    "p_unmute": "Mikrofon bekapcsolása",
+    "p_leave": "Kilépés a partyból",
+    "p_leaveq": "Kilépsz a hangos partyból?"
   },
   "el": {
     "pair": "Πληκτρολόγησε το PIN που εμφανίζεται στην κονσόλα στο Omega › Ρυθμίσεις › Σύστημα και εργαλεία › Τηλεχειρισμός από το τηλέφωνο.",
@@ -1617,7 +1788,16 @@
     "from_upload": "μεταφορτώθηκε",
     "up_nodir": "Αυτό το πρόγραμμα περιήγησης δεν μπορεί να επιλέξει φακέλους: χρησιμοποιήστε υπολογιστή ή μεταφορτώστε ένα .zip",
     "up_retry": "Η σύνδεση χάθηκε: νέα προσπάθεια σε {s} δ (προσπάθεια {k} από {m}). Κράτα αυτή τη σελίδα ανοιχτή.",
-    "up_gaveup": "η κονσόλα δεν απαντά εδώ και λίγα λεπτά. Διάλεξε ξανά τα ίδια αρχεία για να συνεχίσεις από εκεί που σταμάτησε."
+    "up_gaveup": "η κονσόλα δεν απαντά εδώ και λίγα λεπτά. Διάλεξε ξανά τα ίδια αρχεία για να συνεχίσεις από εκεί που σταμάτησε.",
+    "party": "Φωνητικό party",
+    "p_on": "Μικρόφωνο ενεργό · {p}",
+    "p_muted": "Μικρόφωνο ανενεργό · {p}",
+    "p_nomic": "Μόνο ακρόαση (χωρίς μικρόφωνο) · {p}",
+    "p_silent": "Το μικρόφωνο στέλνει μόνο σιωπή: ελέγξτε το κουμπί σίγασης στο χειριστήριο · {p}",
+    "p_mute": "Απενεργοποίηση μικροφώνου",
+    "p_unmute": "Ενεργοποίηση μικροφώνου",
+    "p_leave": "Αποχώρηση από το party",
+    "p_leaveq": "Αποχώρηση από το φωνητικό party;"
   },
   "ro": {
     "pair": "Introdu PIN-ul afișat pe consolă în Omega › Setări › Sistem și instrumente › Telecomandă de pe telefon.",
@@ -1698,7 +1878,16 @@
     "from_upload": "încărcat",
     "up_nodir": "Acest browser nu poate alege foldere: folosește un computer sau încarcă un .zip",
     "up_retry": "Conexiune pierdută: reîncerc în {s} s (încercarea {k} din {m}). Ține pagina deschisă.",
-    "up_gaveup": "consola nu răspunde de câteva minute. Alege din nou aceleași fișiere ca să reiei de unde s-a oprit."
+    "up_gaveup": "consola nu răspunde de câteva minute. Alege din nou aceleași fișiere ca să reiei de unde s-a oprit.",
+    "party": "Party vocal",
+    "p_on": "Microfon pornit · {p}",
+    "p_muted": "Microfon oprit · {p}",
+    "p_nomic": "Doar ascultare (fără microfon) · {p}",
+    "p_silent": "Microfonul trimite doar liniște: verifică butonul de mute de pe controller · {p}",
+    "p_mute": "Oprește microfonul",
+    "p_unmute": "Pornește microfonul",
+    "p_leave": "Părăsește party-ul",
+    "p_leaveq": "Părăsești party-ul vocal?"
   },
   "th": {
     "pair": "ป้อน PIN ที่แสดงบนคอนโซลใน Omega › การตั้งค่า › ระบบและเครื่องมือ › รีโมตจากโทรศัพท์",
@@ -1779,7 +1968,16 @@
     "from_upload": "อัปโหลดแล้ว",
     "up_nodir": "เบราว์เซอร์นี้เลือกโฟลเดอร์ไม่ได้: ใช้คอมพิวเตอร์ หรืออัปโหลดไฟล์ .zip",
     "up_retry": "การเชื่อมต่อขาด: จะลองใหม่ใน {s} วินาที (ครั้งที่ {k} จาก {m}) เปิดหน้านี้ค้างไว้",
-    "up_gaveup": "เครื่องไม่ตอบสนองมาหลายนาทีแล้ว เลือกไฟล์เดิมอีกครั้งเพื่อทำต่อจากจุดที่หยุดไว้"
+    "up_gaveup": "เครื่องไม่ตอบสนองมาหลายนาทีแล้ว เลือกไฟล์เดิมอีกครั้งเพื่อทำต่อจากจุดที่หยุดไว้",
+    "party": "ปาร์ตี้เสียง",
+    "p_on": "เปิดไมค์ · {p}",
+    "p_muted": "ปิดไมค์ · {p}",
+    "p_nomic": "ฟังอย่างเดียว (ไม่มีไมค์) · {p}",
+    "p_silent": "ไมค์ส่งแต่ความเงียบ: ตรวจสอบปุ่มปิดเสียงบนคอนโทรลเลอร์ · {p}",
+    "p_mute": "ปิดไมค์",
+    "p_unmute": "เปิดไมค์",
+    "p_leave": "ออกจากปาร์ตี้",
+    "p_leaveq": "ออกจากปาร์ตี้เสียงไหม?"
   },
   "vi": {
     "pair": "Nhập mã PIN hiển thị trên console trong Omega › Cài đặt › Hệ thống và công cụ › Điều khiển từ điện thoại.",
@@ -1860,7 +2058,16 @@
     "from_upload": "đã tải lên",
     "up_nodir": "Trình duyệt này không chọn được thư mục: hãy dùng máy tính hoặc tải lên tệp .zip",
     "up_retry": "Mất kết nối: thử lại sau {s} giây (lần {k}/{m}). Hãy giữ trang này mở.",
-    "up_gaveup": "máy không phản hồi đã vài phút. Chọn lại đúng các tệp đó để tiếp tục từ chỗ đã dừng."
+    "up_gaveup": "máy không phản hồi đã vài phút. Chọn lại đúng các tệp đó để tiếp tục từ chỗ đã dừng.",
+    "party": "Party thoại",
+    "p_on": "Đã bật micrô · {p}",
+    "p_muted": "Đã tắt micrô · {p}",
+    "p_nomic": "Chỉ nghe (không có micrô) · {p}",
+    "p_silent": "Micrô chỉ gửi đi im lặng: hãy kiểm tra nút tắt tiếng trên tay cầm · {p}",
+    "p_mute": "Tắt micrô",
+    "p_unmute": "Bật micrô",
+    "p_leave": "Rời party",
+    "p_leaveq": "Rời party thoại?"
   },
   "id": {
     "pair": "Masukkan PIN yang tampil di konsol di Omega › Pengaturan › Sistem dan alat › Remote dari ponsel.",
@@ -1941,7 +2148,16 @@
     "from_upload": "diunggah",
     "up_nodir": "Browser ini tidak bisa memilih folder: gunakan komputer, atau unggah file .zip",
     "up_retry": "Koneksi terputus: mencoba lagi dalam {s} dtk (percobaan {k} dari {m}). Biarkan halaman ini terbuka.",
-    "up_gaveup": "konsol tidak merespons selama beberapa menit. Pilih lagi file yang sama untuk melanjutkan dari titik berhenti."
+    "up_gaveup": "konsol tidak merespons selama beberapa menit. Pilih lagi file yang sama untuk melanjutkan dari titik berhenti.",
+    "party": "Party suara",
+    "p_on": "Mik menyala · {p}",
+    "p_muted": "Mik mati · {p}",
+    "p_nomic": "Hanya mendengar (tanpa mik) · {p}",
+    "p_silent": "Mik hanya mengirim keheningan: periksa tombol bisu di controller · {p}",
+    "p_mute": "Matikan mik",
+    "p_unmute": "Nyalakan mik",
+    "p_leave": "Keluar dari party",
+    "p_leaveq": "Keluar dari party suara?"
   },
   "uk": {
     "pair": "Введіть PIN, показаний на консолі в Omega › Налаштування › Система та інструменти › Пульт на телефоні.",
@@ -2022,6 +2238,15 @@
     "from_upload": "завантажено",
     "up_nodir": "Цей браузер не може вибирати теки: скористайтеся комп'ютером або завантажте .zip",
     "up_retry": "З'єднання втрачено: повтор через {s} с (спроба {k} з {m}). Не закривайте цю сторінку.",
-    "up_gaveup": "консоль не відповідає вже кілька хвилин. Виберіть ті самі файли знову, щоб продовжити з місця зупинки."
+    "up_gaveup": "консоль не відповідає вже кілька хвилин. Виберіть ті самі файли знову, щоб продовжити з місця зупинки.",
+    "party": "Голосова Party",
+    "p_on": "Мікрофон увімкнено · {p}",
+    "p_muted": "Мікрофон вимкнено · {p}",
+    "p_nomic": "Лише прослуховування (без мікрофона) · {p}",
+    "p_silent": "З мікрофона йде лише тиша: перевірте кнопку вимкнення звуку на контролері · {p}",
+    "p_mute": "Вимкнути мікрофон",
+    "p_unmute": "Увімкнути мікрофон",
+    "p_leave": "Покинути Party",
+    "p_leaveq": "Покинути голосову Party?"
   }
 }

@@ -57,17 +57,61 @@ static const char *first(JVal *o, const char *const *keys) {
   for (int i = 0; keys[i]; i++) { const char *v = jstr(o, keys[i], NULL); if (v && *v) return v; }
   return "";
 }
+static int has_any(JVal *o, const char *const *keys) {
+  for (int i = 0; keys[i]; i++) if (jget(o, keys[i])) return 1;
+  return 0;
+}
 
-// un elemento da JSON (manuale o importato); 0 = valido
+// "45 GB", "1.2GB", "700 MB", "123456" o un numero → byte
+static double size_of(JVal *o) {
+  static const char *const K[] = { "size", "size_bytes", "filesize", "file_size", "pkg_size", "Size", NULL };
+  for (int i = 0; K[i]; i++) {
+    JVal *v = jget(o, K[i]); if (!v) continue;
+    if (v->t == J_NUM) return v->n > 0 ? v->n : 0;
+    if (v->t == J_STR && v->s) {
+      char *end; double x = strtod(v->s, &end);
+      if (x <= 0) continue;
+      while (*end == ' ') end++;
+      char u = (char)toupper((unsigned char)*end);
+      return u == 'T' ? x * 1e12 : u == 'G' ? x * 1e9 : u == 'M' ? x * 1e6 : u == 'K' ? x * 1e3 : x;
+    }
+  }
+  return 0;
+}
+
+// CUSA12345, anche dentro un Content ID (UP0001-CUSA12345_00-NOMEGIOCO0000000)
+static int tid_ok(const char *t) {
+  for (int i = 0; i < 9; i++) if (!(i < 4 ? isalpha((unsigned char)t[i]) : isdigit((unsigned char)t[i]))) return 0;
+  return 1;
+}
+static void tid_from(JVal *o, char *out, size_t on) {
+  static const char *const K_TID[] = { "title_id", "titleId", "titleID", "TITLE_ID", "tid", "TitleId", NULL };
+  static const char *const K_CID[] = { "content_id", "contentId", "contentID", "CONTENT_ID", "cid", NULL };
+  out[0] = 0;
+  const char *t = first(o, K_TID);
+  if (strlen(t) >= 9 && tid_ok(t)) { snprintf(out, on, "%.9s", t); }
+  else {
+    const char *c = first(o, K_CID);
+    if (strlen(c) >= 16 && c[6] == '-' && tid_ok(c + 7)) snprintf(out, on, "%.9s", c + 7);
+  }
+  for (char *p = out; *p; p++) *p = (char)toupper((unsigned char)*p);
+}
+
+// un elemento da JSON (manuale o importato); 0 = valido. I nomi dei campi sono
+// quelli dei formati che girano nella scena: il nostro, FPKGi, DPI di etaHEN,
+// le liste di pkg (pkg_url, icon_url, content_id...).
+static const char *const K_TITLE[] = { "title", "name", "content_name", "titleName", "title_name", "game", "Name", "Title", NULL };
+static const char *const K_URL[] = { "url", "pkg_url", "download_url", "downloadUrl", "download", "download_link", "file", "pkg", "link", "uri", "PKG_URL", "Url", NULL };
+static const char *const K_COVER[] = { "cover", "cover_url", "coverUrl", "icon_url", "iconUrl", "image", "image_url", "icon", "icon0", "thumbnail", "art", NULL };
+static const char *const K_DESC[] = { "description", "desc", "text", "notes", NULL };
+static const char *const K_VER[] = { "version", "ver", "app_ver", "Version", NULL };
+static const char *const K_PLAT[] = { "platform", "plat", "system", "console", NULL };
+static const char *const K_KIND[] = { "type", "kind", "file_kind", NULL };
+static const char *const K_SIZE[] = { "size", "size_bytes", "filesize", "file_size", "pkg_size", "Size", NULL };
+static const char *const K_SHOTS[] = { "screenshots", "images", NULL };
+static const char *const K_TIDS[] = { "title_id", "titleId", "titleID", "TITLE_ID", "tid", "TitleId", "content_id", "contentId", "contentID", "CONTENT_ID", "cid", NULL };
+
 static int item_from(Item *it, JVal *o, const char *origin, int idx) {
-  static const char *const K_TITLE[] = { "title", "name", NULL };
-  static const char *const K_URL[] = { "url", "download_url", "download", "file", "pkg", "link", NULL };
-  static const char *const K_COVER[] = { "cover", "cover_url", "image", "icon", NULL };
-  static const char *const K_DESC[] = { "description", "desc", "text", NULL };
-  static const char *const K_VER[] = { "version", "ver", NULL };
-  static const char *const K_TID[] = { "title_id", "titleId", "tid", NULL };
-  static const char *const K_PLAT[] = { "platform", "plat", NULL };
-  static const char *const K_KIND[] = { "type", "kind", "file_kind", NULL };
   memset(it, 0, sizeof *it);
   snprintf(it->title, sizeof it->title, "%s", first(o, K_TITLE));
   snprintf(it->url, sizeof it->url, "%s", first(o, K_URL));
@@ -75,18 +119,38 @@ static int item_from(Item *it, JVal *o, const char *origin, int idx) {
   const char *cv = first(o, K_COVER); if (is_http(cv)) snprintf(it->cover, sizeof it->cover, "%s", cv);
   snprintf(it->desc, sizeof it->desc, "%s", first(o, K_DESC));
   snprintf(it->version, sizeof it->version, "%s", first(o, K_VER));
-  const char *tid = first(o, K_TID);
-  if (strlen(tid) == 9) { int ok = 1; for (int i = 0; i < 9; i++) ok &= i < 4 ? (tid[i] >= 'A' && tid[i] <= 'Z') : (tid[i] >= '0' && tid[i] <= '9'); if (ok) snprintf(it->title_id, sizeof it->title_id, "%s", tid); }
+  tid_from(o, it->title_id, sizeof it->title_id);
   char pl[8]; snprintf(pl, sizeof pl, "%s", first(o, K_PLAT)); for (char *c = pl; *c; c++) *c = (char)toupper((unsigned char)*c);
   if (!strcmp(pl, "PS4") || !strcmp(pl, "PS5")) snprintf(it->platform, sizeof it->platform, "%s", pl);
+  else if (it->title_id[0]) snprintf(it->platform, sizeof it->platform, "%s", !strncmp(it->title_id, "PPSA", 4) ? "PS5" : "PS4");   // PPSA = PS5, il resto (CUSA...) = PS4
   kind_of(first(o, K_KIND), it->url, it->kind, sizeof it->kind);
-  it->size = jnum(o, "size", jnum(o, "size_bytes", 0));
+  it->size = size_of(o);
   JVal *sh = jget(o, "screenshots"); if (!sh) sh = jget(o, "images");
   JFOR(s, sh) { if (it->nshots >= 4) break; if (s->s && is_http(s->s)) snprintf(it->shots[it->nshots++], 512, "%s", s->s); }
   snprintf(it->origin, sizeof it->origin, "%s", origin);
   const char *ext = jstr(o, "id", NULL);
   if (ext && *ext) snprintf(it->id, sizeof it->id, "%c%.30s", origin[0], ext);
-  else snprintf(it->id, sizeof it->id, "%c%08x%04x", origin[0], fnv(it->url), (unsigned)(idx & 0xffff));
+  else snprintf(it->id, sizeof it->id, "%c%08x", origin[0], fnv(it->url));   // stabile: non cambia se la lista cambia ordine
+  (void)idx;
+  return 0;
+}
+
+// come item_from, ma con l'URL dato da fuori (FPKGi lo mette nella chiave)
+static int item_with_url(Item *it, JVal *o, const char *url, const char *origin) {
+  if (item_from(it, o, origin, 0) == 0) return 0;                 // c'era anche un url dentro
+  memset(it, 0, sizeof *it);
+  snprintf(it->title, sizeof it->title, "%s", first(o, K_TITLE));
+  snprintf(it->url, sizeof it->url, "%s", url);
+  if (!it->title[0] || !is_http(it->url)) return -1;
+  const char *cv = first(o, K_COVER); if (is_http(cv)) snprintf(it->cover, sizeof it->cover, "%s", cv);
+  snprintf(it->desc, sizeof it->desc, "%s", first(o, K_DESC));
+  snprintf(it->version, sizeof it->version, "%s", first(o, K_VER));
+  tid_from(o, it->title_id, sizeof it->title_id);
+  if (it->title_id[0]) snprintf(it->platform, sizeof it->platform, "%s", !strncmp(it->title_id, "PPSA", 4) ? "PS5" : "PS4");
+  kind_of(first(o, K_KIND), it->url, it->kind, sizeof it->kind);
+  it->size = size_of(o);
+  snprintf(it->origin, sizeof it->origin, "%s", origin);
+  snprintf(it->id, sizeof it->id, "%c%08x", origin[0], fnv(it->url));
   return 0;
 }
 
@@ -157,23 +221,44 @@ static size_t put(char *o, size_t cap, size_t at, const char *k, const char *v, 
   return at;
 }
 
-size_t lib_list_json(char *o, size_t cap) {
+static size_t item_json(char *o, size_t cap, size_t at, const Item *it, int lite) {
+  o[at++] = '{';
+  at = put(o, cap, at, "id", it->id, 0); at = put(o, cap, at, "title", it->title, 1); at = put(o, cap, at, "url", it->url, 1);
+  at = put(o, cap, at, "cover", it->cover, 1); at = put(o, cap, at, "platform", it->platform, 1); at = put(o, cap, at, "version", it->version, 1);
+  at = put(o, cap, at, "title_id", it->title_id, 1); at = put(o, cap, at, "kind", it->kind, 1); at = put(o, cap, at, "origin", it->origin, 1);
+  if (!lite) at = put(o, cap, at, "description", it->desc, 1);
+  at += (size_t)snprintf(o + at, cap - at, ",\"size\":%.0f", it->size);
+  if (!lite) {
+    at += (size_t)snprintf(o + at, cap - at, ",\"screenshots\":[");
+    for (int k = 0; k < it->nshots; k++) at = put(o, cap, at, NULL, it->shots[k], k > 0);
+    at += (size_t)snprintf(o + at, cap - at, "]");
+  }
+  at += (size_t)snprintf(o + at, cap - at, "}");
+  return at;
+}
+
+// Un gioco solo, completo (la UI chiede l'elenco leggero e la scheda quando la apri).
+size_t lib_item_json(const char *id, char *o, size_t cap) {
+  pthread_mutex_lock(&mx);
+  size_t at = 0;
+  for (int i = 0; i < n; i++) if (!strcmp(items[i].id, id)) { at = item_json(o, cap, 0, &items[i], 0); break; }
+  pthread_mutex_unlock(&mx);
+  if (at < cap) o[at] = 0;
+  return at;
+}
+
+size_t lib_list_json_lite(char *o, size_t cap, int lite);
+size_t lib_list_json(char *o, size_t cap) { return lib_list_json_lite(o, cap, 0); }
+size_t lib_list_json_lite(char *o, size_t cap, int lite) {
   pthread_mutex_lock(&mx);
   size_t at = (size_t)snprintf(o, cap, "{\"seq\":%u,\"source\":{", seq);
   at = put(o, cap, at, "url", src_url, 0);
   at += (size_t)snprintf(o + at, cap - at, ",\"last_sync\":%ld", src_sync);
   at = put(o, cap, at, "status", src_status, 1);
   at += (size_t)snprintf(o + at, cap - at, "},\"items\":[");
-  for (int i = 0; i < n && at + 4096 < cap; i++) {
-    Item *it = &items[i];
-    o[at++] = i ? ',' : ' '; o[at++] = '{';
-    at = put(o, cap, at, "id", it->id, 0); at = put(o, cap, at, "title", it->title, 1); at = put(o, cap, at, "url", it->url, 1);
-    at = put(o, cap, at, "cover", it->cover, 1); at = put(o, cap, at, "platform", it->platform, 1); at = put(o, cap, at, "version", it->version, 1);
-    at = put(o, cap, at, "title_id", it->title_id, 1); at = put(o, cap, at, "kind", it->kind, 1); at = put(o, cap, at, "origin", it->origin, 1);
-    at = put(o, cap, at, "description", it->desc, 1);
-    at += (size_t)snprintf(o + at, cap - at, ",\"size\":%.0f,\"screenshots\":[", it->size);
-    for (int k = 0; k < it->nshots; k++) at = put(o, cap, at, NULL, it->shots[k], k > 0);
-    at += (size_t)snprintf(o + at, cap - at, "]}");
+  for (int i = 0; i < n && at + 8192 < cap; i++) {
+    o[at++] = i ? ',' : ' ';
+    at = item_json(o, cap, at, &items[i], lite);
   }
   at += (size_t)snprintf(o + at, cap - at, "]}");
   pthread_mutex_unlock(&mx);
@@ -197,7 +282,21 @@ int lib_add(JVal *o, char *err, size_t en) {
   pthread_mutex_lock(&mx);
   int at = -1;
   if (id && *id) for (int i = 0; i < n; i++) if (!strcmp(items[i].id, id)) { at = i; break; }
-  if (at >= 0) { snprintf(it.id, sizeof it.id, "%s", items[at].id); snprintf(it.origin, sizeof it.origin, "%s", items[at].origin); items[at] = it; }
+  if (at >= 0) {
+    // modifica: i campi che la richiesta non manda restano com'erano (la UI ne
+    // manda solo alcuni, e prima descrizione, dimensione e screenshot sparivano)
+    Item *old = &items[at];
+    if (!has_any(o, K_COVER)) snprintf(it.cover, sizeof it.cover, "%s", old->cover);
+    if (!has_any(o, K_DESC)) snprintf(it.desc, sizeof it.desc, "%s", old->desc);
+    if (!has_any(o, K_VER)) snprintf(it.version, sizeof it.version, "%s", old->version);
+    if (!has_any(o, K_TIDS)) snprintf(it.title_id, sizeof it.title_id, "%s", old->title_id);
+    if (!has_any(o, K_PLAT) && !it.platform[0]) snprintf(it.platform, sizeof it.platform, "%s", old->platform);
+    if (!has_any(o, K_KIND) && !strcmp(it.url, old->url)) snprintf(it.kind, sizeof it.kind, "%s", old->kind);
+    if (!has_any(o, K_SIZE)) it.size = old->size;
+    if (!has_any(o, K_SHOTS)) { it.nshots = old->nshots; memcpy(it.shots, old->shots, sizeof it.shots); }
+    snprintf(it.id, sizeof it.id, "%s", old->id); snprintf(it.origin, sizeof it.origin, "%s", old->origin);
+    items[at] = it;
+  }
   else if (n >= MAX_ITEMS) { pthread_mutex_unlock(&mx); snprintf(err, en, "library_full"); return -1; }
   else { snprintf(it.id, sizeof it.id, "m%08x%04x", fnv(it.url) ^ (unsigned)time(NULL), (unsigned)(rand() & 0xffff)); items[n++] = it; }
   save_locked();
@@ -237,57 +336,92 @@ int lib_add_upload(const char *title, const char *url, const char *kind, const c
   return 0;
 }
 
-// Importa un JSON (array, oppure {"items"|"games"|"library":[...]}). replace_json:
-// toglie prima le voci arrivate da un JSON (sincronizzazione del link).
+// Esito dell'ultima importazione, per la risposta (ctl.c) e lo stato del link.
+static int last_added, last_updated, last_skipped;
+void lib_last_import(int *added, int *updated, int *skipped) {
+  pthread_mutex_lock(&mx); *added = last_added; *updated = last_updated; *skipped = last_skipped; pthread_mutex_unlock(&mx);
+}
+
+// L'elenco dei giochi dentro un JSON qualsiasi: un array; un oggetto con
+// items/games/library/packages/pkgs/list/apps/content/data; FPKGi, cioè
+// {"DATA":{"<url>":{...}}} con l'URL come chiave; un oggetto solo.
+static JVal *list_of(JVal *j, int *keyed) {
+  static const char *const K[] = { "items", "games", "library", "packages", "pkgs", "list", "apps", "content", "entries", "DATA", "data", "Data", NULL };
+  *keyed = 0;
+  if (!j) return NULL;
+  if (j->t == J_ARR) return j;
+  if (j->t != J_OBJ) return NULL;
+  for (int i = 0; K[i]; i++) {
+    JVal *v = jget(j, K[i]);
+    if (v && v->t == J_ARR) return v;
+    if (v && v->t == J_OBJ && v->child && v->child->t == J_OBJ) { *keyed = 1; return v; }   // FPKGi
+  }
+  if (*first(j, K_URL) || *first(j, K_TITLE)) return j;   // un gioco solo
+  return NULL;
+}
+
+// Importa un JSON. replace_json: toglie prima le voci arrivate dal link
+// (sincronizzazione), ma solo se il JSON nuovo ha almeno un gioco valido: un
+// link che oggi risponde male non deve svuotare la libreria.
 // origin: "json" = dal link collegato (rimpiazzato a ogni sincronizzazione),
 // "import" = importato una volta dal telefono (resta finché non lo togli tu)
+static int import_val(JVal *j, int replace_json, const char *origin, char *err, size_t en);
 static int import_buf(const char *buf, int replace_json, const char *origin, char *err, size_t en) {
   if (!items) { snprintf(err, en, "starting"); return -1; }
+  if (!strncmp(buf, "\xEF\xBB\xBF", 3)) buf += 3;              // BOM UTF-8 (file salvati da Windows)
+  while (*buf == ' ' || *buf == '\n' || *buf == '\r' || *buf == '\t') buf++;
+  if (*buf == '<') { snprintf(err, en, "html_not_json"); return -1; }   // pagina web al posto del file (Drive, GitHub "blob"...)
   JVal *j = json_parse(buf);
   if (!j) { snprintf(err, en, "invalid_json"); return -1; }
-  JVal *arr = j->t == J_ARR ? j : jget(j, "items");
-  if (!arr) arr = jget(j, "games"); if (!arr) arr = jget(j, "library");
-  if (!arr || arr->t != J_ARR) { json_free(j); snprintf(err, en, "no_items"); return -1; }
+  int r = import_val(j, replace_json, origin, err, en);
+  json_free(j);
+  return r;
+}
+static int import_val(JVal *j, int replace_json, const char *origin, char *err, size_t en) {
+  if (!items) { snprintf(err, en, "starting"); return -1; }
+  int keyed = 0;
+  JVal *arr = list_of(j, &keyed);
+  if (!arr) { snprintf(err, en, "no_items"); return -1; }
+  // prima si leggono tutte le voci, poi si tocca la libreria
+  int cap = MAX_ITEMS, nv = 0, skipped = 0, idx = 0;
+  Item *val = calloc((size_t)cap, sizeof *val);
+  if (!val) { snprintf(err, en, "memory"); return -1; }
+  if (arr == j && j->t == J_OBJ) { if (item_from(&val[0], j, origin, 0) == 0) nv = 1; else skipped = 1; }
+  else JFOR(o, arr) {
+    if (nv >= cap) { skipped++; continue; }
+    Item *it = &val[nv];
+    int ok;
+    if (keyed && o->key && is_http(o->key) && o->t == J_OBJ && !*first(o, K_URL)) {
+      // FPKGi: l'URL è la chiave dell'oggetto, i dati sono dentro
+      ok = item_with_url(it, o, o->key, origin) == 0;
+    } else ok = item_from(it, o, origin, idx) == 0;
+    idx++;
+    if (ok) nv++; else skipped++;
+  }
+  if (!nv) { free(val); snprintf(err, en, skipped ? "no_valid_items" : "no_items"); pthread_mutex_lock(&mx); last_added = last_updated = 0; last_skipped = skipped; pthread_mutex_unlock(&mx); return -1; }
   pthread_mutex_lock(&mx);
   if (replace_json) { int w = 0; for (int i = 0; i < n; i++) if (strcmp(items[i].origin, "json")) items[w++] = items[i]; n = w; }
-  int added = 0, idx = 0;
-  JFOR(o, arr) {
-    if (n >= MAX_ITEMS) break;
-    Item it; if (item_from(&it, o, origin, idx++) != 0) continue;
-    int dup = -1; for (int i = 0; i < n; i++) if (!strcmp(items[i].url, it.url)) { dup = i; break; }
-    if (dup >= 0) { if (!strcmp(items[dup].origin, origin)) items[dup] = it; continue; }
-    items[n++] = it; added++;
+  int added = 0, updated = 0;
+  for (int v = 0; v < nv; v++) {
+    Item *it = &val[v];
+    int dup = -1; for (int i = 0; i < n; i++) if (!strcmp(items[i].url, it->url)) { dup = i; break; }
+    if (dup >= 0) { if (!strcmp(items[dup].origin, origin)) { items[dup] = *it; updated++; } else skipped++; continue; }
+    if (n >= MAX_ITEMS) { skipped++; continue; }
+    items[n++] = *it; added++;
   }
+  last_added = added; last_updated = updated; last_skipped = skipped;
   save_locked();
   pthread_mutex_unlock(&mx);
-  json_free(j);
+  free(val);
+  player_log("libreria: importati %d nuovi, %d aggiornati, %d scartati", added, updated, skipped);
   return added;
 }
 
 int lib_import(JVal *body, char *err, size_t en) {
-  // {"items":[...]} o {"json":"<testo>"} dal telefono
+  // {"json":"<testo>"} dal telefono, oppure il JSON stesso ({"items":[...]}, FPKGi...)
   const char *txt = jstr(body, "json", NULL);
   if (txt && *txt) return import_buf(txt, 0, "import", err, en);
-  JVal *arr = jget(body, "items");
-  if (!arr) { snprintf(err, en, "no_items"); return -1; }
-  // si riserializza in un array per riusare lo stesso percorso
-  size_t cap = 4 * 1024 * 1024; char *b = malloc(cap); if (!b) { snprintf(err, en, "memory"); return -1; }
-  size_t at = 0; b[at++] = '[';
-  int k = 0;
-  JFOR(o, arr) {
-    Item it; if (item_from(&it, o, "json", k) != 0) continue;
-    if (at + 3000 > cap) break;
-    if (k++) b[at++] = ',';
-    b[at++] = '{';
-    at = put(b, cap, at, "title", it.title, 0); at = put(b, cap, at, "url", it.url, 1); at = put(b, cap, at, "cover", it.cover, 1);
-    at = put(b, cap, at, "platform", it.platform, 1); at = put(b, cap, at, "version", it.version, 1); at = put(b, cap, at, "title_id", it.title_id, 1);
-    at = put(b, cap, at, "kind", it.kind, 1); at = put(b, cap, at, "description", it.desc, 1);
-    b[at++] = '}';
-  }
-  b[at++] = ']'; b[at] = 0;
-  int r = import_buf(b, 0, "import", err, en);
-  free(b);
-  return r;
+  return import_val(body, 0, "import", err, en);
 }
 
 // Collega (o scollega, url vuoto) il link a un JSON e lo sincronizza subito.
@@ -301,21 +435,42 @@ int lib_set_source(const char *url, char *err, size_t en) {
   return src_url[0] ? lib_sync(err, en) : 0;
 }
 
+// Link "da browser" che non portano al file: GitHub blob, Dropbox, Google Drive.
+static void direct_link(const char *u, char *out, size_t on) {
+  const char *p;
+  if ((p = strstr(u, "://github.com/")) && strstr(u, "/blob/")) {
+    // https://github.com/<utente>/<repo>/blob/<ramo>/<file> → raw.githubusercontent.com/<utente>/<repo>/<ramo>/<file>
+    const char *rest = p + 14, *blob = strstr(rest, "/blob/");
+    snprintf(out, on, "https://raw.githubusercontent.com/%.*s/%s", (int)(blob - rest), rest, blob + 6);
+    return;
+  }
+  if (strstr(u, "dropbox.com/") && (p = strstr(u, "dl=0"))) { snprintf(out, on, "%.*sdl=1%s", (int)(p - u), u, p + 4); return; }
+  if ((p = strstr(u, "drive.google.com/file/d/"))) {
+    const char *id = p + 24; size_t L = strcspn(id, "/?");
+    snprintf(out, on, "https://drive.google.com/uc?export=download&id=%.*s", (int)L, id);
+    return;
+  }
+  snprintf(out, on, "%s", u);
+}
+
 int lib_sync(char *err, size_t en) {
   char url[1024];
   pthread_mutex_lock(&mx); snprintf(url, sizeof url, "%s", src_url); pthread_mutex_unlock(&mx);
   if (!url[0]) { snprintf(err, en, "no_source"); return -1; }
   if (!is_http(url)) { snprintf(err, en, "invalid_url"); return -1; }
   if (!fetch_fn) { snprintf(err, en, "no_network"); return -1; }
+  char fetch_url[1100]; direct_link(url, fetch_url, sizeof fetch_url);
   char *buf = malloc(MAX_JSON + 1); if (!buf) { snprintf(err, en, "memory"); return -1; }
-  long got = fetch_fn(url, buf, MAX_JSON);
+  long got = fetch_fn(fetch_url, buf, MAX_JSON);
   int r;
-  if (got <= 0) { snprintf(err, en, "fetch_failed"); r = -1; }
+  if (got <= 0) { snprintf(err, en, got == -2 ? "too_large" : "fetch_failed"); r = -1; }
   else { buf[got] = 0; r = import_buf(buf, 1, "json", err, en); }
   free(buf);
   pthread_mutex_lock(&mx);
   src_sync = (long)time(NULL);
-  snprintf(src_status, sizeof src_status, "%s", r >= 0 ? "ok" : err);
+  // "ok 12 3" = giochi dal link e scartati; altrimenti il codice d'errore
+  if (r >= 0) { int tot = 0; for (int i = 0; i < n; i++) tot += !strcmp(items[i].origin, "json"); snprintf(src_status, sizeof src_status, "ok %d %d", tot, last_skipped); }
+  else snprintf(src_status, sizeof src_status, "%s", err);
   save_locked();
   pthread_mutex_unlock(&mx);
   player_log("libreria: sincronizzazione %s -> %d", url, r);

@@ -10,6 +10,7 @@ const db = require('../db');
 const { HttpError, retryLater, readJson } = require('../http');
 const limiter = require('../ratelimit');
 const rel = require('../relations');
+const sysmsg = require('../sysmsg');
 const { multiline, oneLine, charLength } = require('../text');
 
 const MAX_MEMBERS = 32;
@@ -65,6 +66,11 @@ async function resolveFriends(me, list) {
   return out;
 }
 
+// Lingua salvata dell'account (dall'Accept-Language delle sue richieste; NULL = italiano).
+async function viewerLang(me) {
+  return ((await db.query('SELECT lang FROM lab_account WHERE account_id=$1', [me])).rows[0] || {}).lang || 'it';
+}
+
 // Scheda del gruppo vista da me: stessa forma in elenco e nelle risposte.
 async function groupCard(me, groupId) {
   const g = (await db.query(
@@ -76,7 +82,7 @@ async function groupCard(me, groupId) {
     `SELECT a.online_id, a.avatar, a.avatar_media, a.avatar_frames FROM lab_group_member m
        JOIN lab_account a USING (account_id) WHERE m.group_id=$1 ORDER BY m.joined_at, m.account_id`, [groupId])).rows;
   const last = (await db.query(
-    `SELECT a.online_id AS from, m.body AS text, m.created_at FROM lab_group_message m
+    `SELECT a.online_id AS from, m.body AS text, m.system, m.created_at FROM lab_group_message m
        LEFT JOIN lab_account a ON a.account_id=m.from_id
       WHERE m.group_id=$2 AND (m.from_id IS NULL OR m.from_id NOT IN ${rel.BLOCKED_SQL('$1')})
       ORDER BY m.message_id DESC LIMIT 1`, [me, groupId])).rows[0] || null;
@@ -87,7 +93,7 @@ async function groupCard(me, groupId) {
   return {
     group_id: String(g.group_id), name: g.name, owner: g.owner || (members[0] && members[0].online_id) || null,
     members: members.map(rel.userCard), member_count: members.length,
-    last_message: last ? { from: last.from, text: last.text, created_at: last.created_at } : null,
+    last_message: last ? { from: last.from, text: last.system ? sysmsg.translate(last.text, await viewerLang(me)) : last.text, created_at: last.created_at } : null,
     unread,
   };
 }
@@ -144,17 +150,17 @@ async function markRead(me, groupId) {
       WHERE group_id=$1 AND account_id=$2`, [groupId, me]);
 }
 
-function messageOut(m, me) {
+function messageOut(m, me, code) {
   return {
     message_id: String(m.message_id),
     from: m.online_id ? rel.userCard(m) : null,
-    text: m.body, created_at: m.created_at,
+    text: m.system ? sysmsg.translate(m.body, code) : m.body, created_at: m.created_at,
     mine: String(m.from_id) === String(me), system: m.system,
   };
 }
 
 // GET /api/v1/groups/:id/messages?after=<message_id>&limit=50  (segna come letti)
-async function messages({ auth, params, url }) {
+async function messages({ auth, params, url, lang, langExplicit }) {
   const g = await groupFor(auth.accountId, params.id);
   const after = Number.parseInt(url.searchParams.get('after') || '0', 10) || 0;
   const limit = Math.min(200, Math.max(1, Number.parseInt(url.searchParams.get('limit') || '50', 10) || 50));
@@ -168,7 +174,7 @@ async function messages({ auth, params, url }) {
         ORDER BY CASE WHEN $3 > 0 THEN m.message_id END ASC, m.message_id DESC
         LIMIT $4) t ORDER BY message_id`, [auth.accountId, g.group_id, after, limit]);
   await markRead(auth.accountId, g.group_id);
-  return { status: 200, body: { messages: r.rows.map((m) => messageOut(m, auth.accountId)) } };
+  return { status: 200, body: { messages: r.rows.map((m) => messageOut(m, auth.accountId, langExplicit ? lang : null)) } };
 }
 
 // POST /api/v1/groups/:id/messages  { text }

@@ -133,6 +133,46 @@ int omega_http_bin(const char *path, const char *token, unsigned char **out, siz
   return status;
 }
 
+// Voce del party: una connessione nuova costa TCP + TLS (250-400 ms misurati),
+// più del ritmo dei pacchetti. Qui la connessione si tiene e si riusa; se cade
+// se ne apre un'altra, una volta per richiesta.
+void omega_keep_close(OmegaKeep *k) { if (k->conn >= 0) sceHttpDeleteConnection(k->conn); k->conn = -1; }
+int omega_keep_req(OmegaKeep *k, int method, const char *path, const char *token, const void *body, size_t blen,
+                   const char *ctype, unsigned char **out, size_t *olen, size_t max) {
+  if (out) { *out = NULL; *olen = 0; }
+  char url[1400]; full_url(path, &token, url, sizeof url);
+  for (int attempt = 0; attempt < 2; attempt++) {
+    if (k->conn < 0) { k->conn = sceHttpCreateConnectionWithURL(g_tmpl, url, 1); if (k->conn < 0) return k->conn; }
+    int req = sceHttpCreateRequestWithURL(k->conn, method == 1 ? HTTP_POST : HTTP_GET, url, (uint64_t)blen);
+    if (req < 0) { omega_keep_close(k); continue; }
+    sceHttpSetRecvTimeOut(req, SEC(6));
+    if (token) { char b[700]; snprintf(b, sizeof b, "Bearer %s", token); sceHttpAddRequestHeader(req, "Authorization", b, 1); }
+    if (ctype) sceHttpAddRequestHeader(req, "Content-Type", ctype, 1);
+    sceHttpAddRequestHeader(req, "Accept-Language", i18n_code(), 1);
+    int status = -1;
+    int rc = sceHttpSendRequest(req, body, blen);
+    if (rc >= 0) {
+      sceHttpGetStatusCode(req, &status);
+      size_t cap = 4096, total = 0; unsigned char *buf = out ? malloc(cap + 1) : NULL, sink[512]; int r;
+      for (;;) {
+        if (buf && total == cap) {
+          if (cap >= max) break;
+          unsigned char *nb = realloc(buf, cap * 2 + 1); if (!nb) break; buf = nb; cap *= 2;
+        }
+        r = buf ? sceHttpReadData(req, buf + total, cap - total) : sceHttpReadData(req, sink, sizeof sink);
+        if (r <= 0) break;
+        if (buf) total += (size_t)r;
+      }
+      if (buf) buf[total] = 0;
+      if (out) { *out = buf; *olen = total; }
+    }
+    sceHttpDeleteRequest(req);
+    if (rc >= 0) return status;
+    omega_keep_close(k);
+  }
+  return -1;
+}
+
 // Redirect abilitati sulla connessione e non sul template, che è condiviso dai
 // worker della coda di rete.
 int omega_url_download(const char *url, const char *dest, volatile long *done, volatile long *total, volatile int *cancel) {
@@ -164,6 +204,8 @@ int omega_url_download(const char *url, const char *dest, volatile long *done, v
           got += k; if (done) *done = got;
         }
         if (cancel && *cancel) status = -102;
+        // connessione caduta a metà: un file troncato non va installato
+        else if (status == 200 && total && *total > 0 && got < *total) { omega_log("dl troncato: %ld di %ld byte", got, *total); status = -103; }
         free(buf); fclose(f);
         if (status == 200 && total && *total <= 0) *total = got;
       }

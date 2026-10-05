@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "面向主机的账号、社交功能和自制软件商店。独立项目，与 Sony 没有关联。"
+  },
+  "system": {
+    "party_created": "· {actor} 创建了派对",
+    "party_joined": "· {actor} 加入了派对",
+    "party_left": "· {actor} 离开了派对",
+    "group_created": "{actor} 创建了群组“{name}”",
+    "group_added": "{actor} 添加了 {user}",
+    "group_left": "{actor} 退出了群组",
+    "group_renamed": "{actor} 将群组重命名为“{name}”",
+    "group_removed": "{actor} 移除了 {user}"
   }
 }

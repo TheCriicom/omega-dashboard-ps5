@@ -11,38 +11,126 @@
   "privacy": {
     "title": "Politica de confidențialitate",
     "sections": [
-      { "id": "controller", "title": "Cine îți prelucrează datele", "body": "Operatorul de date: {controller}. Contact pentru confidențialitate și pentru raportări: {email}. Omega este un proiect independent: nu are legătură cu Sony Interactive Entertainment și nu folosește conturile sau serverele acesteia." },
-      { "id": "data", "title": "Ce date colectăm", "body": "Cont: ID online, parolă (stocată doar ca amprentă scrypt, niciodată în clar), adresa de e-mail, dacă o furnizezi, avatarul și imaginea de copertă pe care le încarci, textul profilului, data înregistrării și ultima conectare. Funcții sociale: prietenii și cereri de prietenie, starea online și titlul pe care îl folosești (trimis de consola ta în timp ce joci), activități recente, mesaje directe, chaturi și invitații de party, notificări. Store: homebrew-urile pe care le publici, comentarii, aprecieri/dezaprecieri, evaluări, raportări, numărul de instalări. Biblioteca personală: adresa fișierului tău JSON și lista titlurilor pe care le conține (nume, imagini, linkuri). Date tehnice: pentru fiecare cerere către server înregistrăm adresa IP, data și ora, calea solicitată (inclusiv adresa paginilor deschise cu browserul Omega), rezultatul și timpii de răspuns. Parolele, tokenurile și cookie-urile sunt mascate și nu sunt salvate niciodată în jurnale." },
-      { "id": "purposes", "title": "De ce și în temeiul cărei baze legale", "body": "Pentru a-ți furniza serviciul pe care l-ai solicitat (cont, funcții sociale, Store, bibliotecă): executarea contractului, art. 6 alin. (1) lit. (b) din GDPR. Pentru securitate, pentru prevenirea abuzurilor și pentru gestionarea raportărilor: interesul legitim și obligațiile legale privind conținutul găzduit, art. 6 alin. (1) lit. (f) și lit. (c). Nu folosim datele tale pentru publicitate sau creare de profiluri și nu le vindem." },
-      { "id": "retention", "title": "Pentru cât timp", "body": "Jurnalele tehnice ale cererilor se șterg după {days} zile. Datele contului și conținutul rămân până când îți ștergi contul; sesiunile expiră după 24 de ore. Raportările închise și registrul acțiunilor de moderare se păstrează atât timp cât sunt necesare pentru a demonstra modul de gestionare a conținutului." },
-      { "id": "recipients", "title": "Cine le poate vedea", "body": "Ceilalți utilizatori văd profilul tău public, ceea ce publici și, dacă sunteți prieteni, prezența și activitatea ta. Mesajele le văd doar destinatarii. Datele se află pe un server administrat de operator{hosting_at}, care acționează ca persoană împuternicită de operator. Când instalezi un homebrew sau deschizi o pagină web, consola sau serverul nostru se conectează la site-ul care găzduiește acel fișier sau acea pagină: se aplică politica de confidențialitate a site-ului respectiv." },
-      { "id": "rights", "title": "Drepturile tale", "body": "Poți să îți accesezi datele și să le descarci (Setări → Confidențialitate și date → Descarcă datele mele), să le rectifici, să le ștergi (Șterge contul), să te opui prelucrării sau să soliciți restricționarea acesteia, scriind la {email}. De asemenea, poți depune o plângere la Garante per la protezione dei dati personali, autoritatea italiană pentru protecția datelor (www.garanteprivacy.it)." },
-      { "id": "age", "title": "Vârsta minimă", "body": "Serviciul este rezervat persoanelor care au cel puțin 14 ani." },
-      { "id": "version", "title": "Versiune", "body": "Actualizată la {version}." }
+      {
+        "id": "controller",
+        "title": "Cine îți prelucrează datele",
+        "body": "Operatorul de date: {controller}. Contact pentru confidențialitate și pentru raportări: {email}. Omega este un proiect independent: nu are legătură cu Sony Interactive Entertainment și nu folosește conturile sau serverele acesteia."
+      },
+      {
+        "id": "data",
+        "title": "Ce date colectăm",
+        "body": "Cont: ID online, parolă (stocată doar ca amprentă scrypt, niciodată în clar), adresa de e-mail, dacă o furnizezi, avatarul și imaginea de copertă pe care le încarci, textul profilului, data înregistrării și ultima conectare. Funcții sociale: prietenii și cereri de prietenie, starea online și titlul pe care îl folosești (trimis de consola ta în timp ce joci), activități recente, mesaje directe, chaturi și invitații de party, notificări. Store: homebrew-urile pe care le publici, comentarii, aprecieri/dezaprecieri, evaluări, raportări, numărul de instalări. Biblioteca personală: adresa fișierului tău JSON și lista titlurilor pe care le conține (nume, imagini, linkuri). Date tehnice: pentru fiecare cerere către server înregistrăm adresa IP, data și ora, calea solicitată (inclusiv adresa paginilor deschise cu browserul Omega), rezultatul și timpii de răspuns. Parolele, tokenurile și cookie-urile sunt mascate și nu sunt salvate niciodată în jurnale. Diagnosticare: serviciul Omega de pe consolă trimite automat coduri tehnice de eroare (de exemplu, rezultatul deschiderii audio, a microfonului sau a unui post de radio), fără conținut și fără adrese. Dacă alegi „Trimite diagnosticarea”, primim și jurnalele aplicației și ale serviciului, care pot conține numele jocurilor, melodiilor și posturilor de radio pe care le-ai folosit. Și acestea se șterg după {days} zile."
+      },
+      {
+        "id": "purposes",
+        "title": "De ce și în temeiul cărei baze legale",
+        "body": "Pentru a-ți furniza serviciul pe care l-ai solicitat (cont, funcții sociale, Store, bibliotecă): executarea contractului, art. 6 alin. (1) lit. (b) din GDPR. Pentru securitate, pentru prevenirea abuzurilor și pentru gestionarea raportărilor: interesul legitim și obligațiile legale privind conținutul găzduit, art. 6 alin. (1) lit. (f) și lit. (c). Nu folosim datele tale pentru publicitate sau creare de profiluri și nu le vindem."
+      },
+      {
+        "id": "retention",
+        "title": "Pentru cât timp",
+        "body": "Jurnalele tehnice ale cererilor se șterg după {days} zile. Datele contului și conținutul rămân până când îți ștergi contul; sesiunile expiră după 24 de ore. Raportările închise și registrul acțiunilor de moderare se păstrează atât timp cât sunt necesare pentru a demonstra modul de gestionare a conținutului."
+      },
+      {
+        "id": "recipients",
+        "title": "Cine le poate vedea",
+        "body": "Ceilalți utilizatori văd profilul tău public, ceea ce publici și, dacă sunteți prieteni, prezența și activitatea ta. Mesajele le văd doar destinatarii. Datele se află pe un server administrat de operator{hosting_at}, care acționează ca persoană împuternicită de operator. Când instalezi un homebrew sau deschizi o pagină web, consola sau serverul nostru se conectează la site-ul care găzduiește acel fișier sau acea pagină: se aplică politica de confidențialitate a site-ului respectiv."
+      },
+      {
+        "id": "rights",
+        "title": "Drepturile tale",
+        "body": "Poți să îți accesezi datele și să le descarci (Setări → Confidențialitate și date → Descarcă datele mele), să le rectifici, să le ștergi (Șterge contul), să te opui prelucrării sau să soliciți restricționarea acesteia, scriind la {email}. De asemenea, poți depune o plângere la Garante per la protezione dei dati personali, autoritatea italiană pentru protecția datelor (www.garanteprivacy.it)."
+      },
+      {
+        "id": "age",
+        "title": "Vârsta minimă",
+        "body": "Serviciul este rezervat persoanelor care au cel puțin 14 ani."
+      },
+      {
+        "id": "version",
+        "title": "Versiune",
+        "body": "Actualizată la {version}."
+      }
     ]
   },
   "terms": {
     "title": "Termeni de utilizare",
     "sections": [
-      { "id": "service", "title": "Serviciul", "body": "Omega ({url}) oferă gratuit conturi, funcții sociale și un Store de homebrew pentru console pe care utilizatorul a instalat în mod legitim software de la terți. Este administrat de {name}. Omega este un proiect independent și nu este afiliat, aprobat sau sponsorizat de Sony Interactive Entertainment. „PlayStation” și „PS5” sunt mărci ale titularilor respectivi." },
-      { "id": "risk", "title": "Utilizare pe propriul risc", "body": "Serviciul și homebrew-urile din Store sunt furnizate „ca atare”. Instalarea de software neoficial poate provoca defecțiuni, pierderea datelor sau pierderea garanției consolei și se face pe propriul tău risc. Homebrew-urile sunt opere ale autorilor lor, sub licențele proprii." },
-      { "id": "prohibited", "title": "Ce nu este permis", "body": "Publicarea sau partajarea de conținut asupra căruia nu deții drepturi — în special copii ale unor jocuri sau programe software comerciale, linkuri către materiale piratate, instrumente pentru ocolirea protecțiilor acestora în scopuri de piraterie —, malware sau fișiere periculoase, conținut ilegal, ofensator sau care incită la ură, spam, utilizarea conturilor altor persoane sau încercarea de a le compromite securitatea." },
-      { "id": "publishing", "title": "Publicarea în Store", "body": "Prin publicare declari că ești autorul homebrew-ului sau că licența acestuia permite redistribuirea, și că linkul duce la fișierul indicat fără modificări dăunătoare. Ne autorizezi să afișăm numele, descrierea și imaginile în Store. Fișierele rămân pe site-ul pe care îl indici: Omega găzduiește doar fișa acestuia." },
-      { "id": "library", "title": "Biblioteca personală", "body": "Biblioteca servește la organizarea și reinstalarea copiilor de rezervă ale titlurilor pe care le deții în mod legitim, pentru uz personal. Nu o folosi pentru a partaja copii cu alte persoane: fișierele rămân acolo unde le păstrezi tu, iar Omega nu le găzduiește." },
-      { "id": "moderation", "title": "Raportări și moderare", "body": "Poți raporta un homebrew sau un comentariu din Store (Opțiuni → Raportează) sau scriind la {email}. Examinăm raportările și putem ascunde sau elimina conținut și putem suspenda sau închide conturile care încalcă acești termeni; conținutul cu mai multe raportări este ascuns până la verificare." },
-      { "id": "liability", "title": "Răspundere", "body": "În limitele permise de lege, nu răspundem pentru daunele rezultate din utilizarea homebrew-urilor sau din indisponibilitatea serviciului, care se poate modifica sau întrerupe. Protecțiile obligatorii prevăzute pentru consumatori rămân neafectate." },
-      { "id": "changes", "title": "Modificări și legea aplicabilă", "body": "Dacă termenii se modifică, te vom întreba din nou în aplicație. Se aplică legea italiană." },
-      { "id": "version", "title": "Versiune", "body": "Termeni în vigoare de la {version}." }
+      {
+        "id": "service",
+        "title": "Serviciul",
+        "body": "Omega ({url}) oferă gratuit conturi, funcții sociale și un Store de homebrew pentru console pe care utilizatorul a instalat în mod legitim software de la terți. Este administrat de {name}. Omega este un proiect independent și nu este afiliat, aprobat sau sponsorizat de Sony Interactive Entertainment. „PlayStation” și „PS5” sunt mărci ale titularilor respectivi."
+      },
+      {
+        "id": "risk",
+        "title": "Utilizare pe propriul risc",
+        "body": "Serviciul și homebrew-urile din Store sunt furnizate „ca atare”. Instalarea de software neoficial poate provoca defecțiuni, pierderea datelor sau pierderea garanției consolei și se face pe propriul tău risc. Homebrew-urile sunt opere ale autorilor lor, sub licențele proprii."
+      },
+      {
+        "id": "prohibited",
+        "title": "Ce nu este permis",
+        "body": "Publicarea sau partajarea de conținut asupra căruia nu deții drepturi — în special copii ale unor jocuri sau programe software comerciale, linkuri către materiale piratate, instrumente pentru ocolirea protecțiilor acestora în scopuri de piraterie —, malware sau fișiere periculoase, conținut ilegal, ofensator sau care incită la ură, spam, utilizarea conturilor altor persoane sau încercarea de a le compromite securitatea."
+      },
+      {
+        "id": "publishing",
+        "title": "Publicarea în Store",
+        "body": "Prin publicare declari că ești autorul homebrew-ului sau că licența acestuia permite redistribuirea, și că linkul duce la fișierul indicat fără modificări dăunătoare. Ne autorizezi să afișăm numele, descrierea și imaginile în Store. Fișierele rămân pe site-ul pe care îl indici: Omega găzduiește doar fișa acestuia."
+      },
+      {
+        "id": "library",
+        "title": "Biblioteca personală",
+        "body": "Biblioteca servește la organizarea și reinstalarea copiilor de rezervă ale titlurilor pe care le deții în mod legitim, pentru uz personal. Nu o folosi pentru a partaja copii cu alte persoane: fișierele rămân acolo unde le păstrezi tu, iar Omega nu le găzduiește."
+      },
+      {
+        "id": "moderation",
+        "title": "Raportări și moderare",
+        "body": "Poți raporta un homebrew sau un comentariu din Store (Opțiuni → Raportează) sau scriind la {email}. Examinăm raportările și putem ascunde sau elimina conținut și putem suspenda sau închide conturile care încalcă acești termeni; conținutul cu mai multe raportări este ascuns până la verificare."
+      },
+      {
+        "id": "liability",
+        "title": "Răspundere",
+        "body": "În limitele permise de lege, nu răspundem pentru daunele rezultate din utilizarea homebrew-urilor sau din indisponibilitatea serviciului, care se poate modifica sau întrerupe. Protecțiile obligatorii prevăzute pentru consumatori rămân neafectate."
+      },
+      {
+        "id": "changes",
+        "title": "Modificări și legea aplicabilă",
+        "body": "Dacă termenii se modifică, te vom întreba din nou în aplicație. Se aplică legea italiană."
+      },
+      {
+        "id": "version",
+        "title": "Versiune",
+        "body": "Termeni în vigoare de la {version}."
+      }
     ]
   },
   "licenses": {
     "title": "Licențe open source",
     "sections": [
-      { "id": "omega", "title": "Omega", "body": "Aplicația Omega pentru consolă este software liber distribuit sub licența GNU GPL versiunea 3 sau ulterioară, fără nicio garanție. Codul sursă complet se poate descărca de la {url}/source." },
-      { "id": "developer", "title": "Dezvoltator", "body": "Omega este dezvoltat de {developer} — {developer_url}" },
-      { "id": "app_components", "title": "Componente folosite de aplicație", "body": "ps5-payload-sdk (GPL-3.0 sau ulterioară) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib și minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
-      { "id": "server_components", "title": "Componente folosite de server", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 sau ulterioară) · jxrlib (BSD-2-Clause)." },
-      { "id": "store_homebrew", "title": "Homebrew-urile din Store", "body": "Fiecare homebrew din catalog este un proiect open source cu propria licență, indicată în fișa sa împreună cu site-ul proiectului." }
+      {
+        "id": "omega",
+        "title": "Omega",
+        "body": "Aplicația Omega pentru consolă este software liber distribuit sub licența GNU GPL versiunea 3 sau ulterioară, fără nicio garanție. Codul sursă complet se poate descărca de la {url}/source."
+      },
+      {
+        "id": "developer",
+        "title": "Dezvoltator",
+        "body": "Omega este dezvoltat de {developer} — {developer_url}"
+      },
+      {
+        "id": "app_components",
+        "title": "Componente folosite de aplicație",
+        "body": "ps5-payload-sdk (GPL-3.0 sau ulterioară) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib și minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)."
+      },
+      {
+        "id": "server_components",
+        "title": "Componente folosite de server",
+        "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 sau ulterioară) · jxrlib (BSD-2-Clause)."
+      },
+      {
+        "id": "store_homebrew",
+        "title": "Homebrew-urile din Store",
+        "body": "Fiecare homebrew din catalog este un proiect open source cu propria licență, indicată în fișa sa împreună cu site-ul proiectului."
+      }
     ]
   }
 }

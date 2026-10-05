@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Акаунти, соціальні функції та Store з homebrew для консолі. Незалежний проєкт, не афілійований із Sony."
+  },
+  "system": {
+    "party_created": "· {actor} створює паті",
+    "party_joined": "· {actor} приєднується до паті",
+    "party_left": "· {actor} залишає паті",
+    "group_created": "{actor} створює групу «{name}»",
+    "group_added": "{actor} додає: {user}",
+    "group_left": "{actor} залишає групу",
+    "group_renamed": "{actor} перейменовує групу на «{name}»",
+    "group_removed": "{actor} видаляє: {user}"
   }
 }

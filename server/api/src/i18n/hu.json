@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Fiókok, közösségi funkciók és homebrew Store a konzolhoz. Független projekt, nem áll kapcsolatban a Sony vállalattal."
+  },
+  "system": {
+    "party_created": "· {actor} létrehozta a partyt",
+    "party_joined": "· {actor} csatlakozott a partyhoz",
+    "party_left": "· {actor} kilépett a partyból",
+    "group_created": "{actor} létrehozta a(z) „{name}” csoportot",
+    "group_added": "{actor} hozzáadta: {user}",
+    "group_left": "{actor} kilépett a csoportból",
+    "group_renamed": "{actor} átnevezte a csoportot erre: „{name}”",
+    "group_removed": "{actor} eltávolította: {user}"
   }
 }

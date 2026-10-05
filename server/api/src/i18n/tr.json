@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Konsol için hesaplar, sosyal özellikler ve homebrew Store'u. Bağımsız bir projedir, Sony ile bağlantılı değildir."
+  },
+  "system": {
+    "party_created": "· {actor} partiyi oluşturdu",
+    "party_joined": "· {actor} partiye katıldı",
+    "party_left": "· {actor} partiden ayrıldı",
+    "group_created": "{actor} “{name}” grubunu oluşturdu",
+    "group_added": "{actor}, {user} kullanıcısını ekledi",
+    "group_left": "{actor} gruptan ayrıldı",
+    "group_renamed": "{actor} grubun adını “{name}” olarak değiştirdi",
+    "group_removed": "{actor}, {user} kullanıcısını çıkardı"
   }
 }

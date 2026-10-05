@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Λογαριασμοί, κοινωνικές λειτουργίες και Store με homebrew για την κονσόλα. Ανεξάρτητο έργο, χωρίς σχέση με τη Sony."
+  },
+  "system": {
+    "party_created": "· Ο χρήστης {actor} δημιούργησε το party",
+    "party_joined": "· Ο χρήστης {actor} συμμετέχει στο party",
+    "party_left": "· Ο χρήστης {actor} αποχώρησε από το party",
+    "group_created": "Ο χρήστης {actor} δημιούργησε την ομάδα «{name}»",
+    "group_added": "Ο χρήστης {actor} πρόσθεσε τον χρήστη {user}",
+    "group_left": "Ο χρήστης {actor} αποχώρησε από την ομάδα",
+    "group_renamed": "Ο χρήστης {actor} μετονόμασε την ομάδα σε «{name}»",
+    "group_removed": "Ο χρήστης {actor} αφαίρεσε τον χρήστη {user}"
   }
 }

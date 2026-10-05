@@ -43,7 +43,7 @@ const legalLib = require(path.join(API, 'src', 'legal.js'));
 const itDoc = await j('GET', '/api/v1/legal?lang=it');
 ok(itDoc.s === 200 && itDoc.b.lang === 'it' && itDoc.b.notice === null, 'legal it: nessun avviso di traduzione', itDoc.b.lang);
 ok(JSON.stringify(itDoc.b.available) === JSON.stringify(CODES), 'legal: available = 27 lingue', itDoc.b.available);
-ok(itDoc.b.version === legalLib.TERMS_VERSION && legalLib.TERMS_VERSION === '2026-10-03', 'TERMS_VERSION invariata');
+ok(itDoc.b.version === legalLib.TERMS_VERSION && legalLib.TERMS_VERSION === '2026-10-05', 'TERMS_VERSION attesa (05/10: diagnostica nell\'informativa)');
 ok(JSON.stringify(itDoc.b.developer) === JSON.stringify(DEV), 'legal: developer', itDoc.b.developer);
 const ids = (doc) => doc.sections.map((s) => s.id).join();
 for (const code of CODES) {
@@ -109,7 +109,7 @@ ok(adm.t.includes('data-lang="en"') && adm.t.includes('omega-admin-lang') && !/i
 const cat = JSON.parse(fs.readFileSync(path.join(API, 'config', 'store-catalog.json'), 'utf8'));
 const others = CODES.filter((c) => c !== 'it');
 const incomplete = cat.apps.filter((a) => !a.i18n || others.some((c) => !a.i18n[c] || !a.i18n[c].tagline || !a.i18n[c].description));
-ok(cat.apps.length === 49 && incomplete.length === 0, 'catalogo: 49 voci tradotte nelle 26 lingue', incomplete.map((a) => a.catalog_key));
+ok(cat.apps.length >= 49 && incomplete.length === 0, `catalogo: ${cat.apps.length} voci tradotte nelle 26 lingue`, incomplete.map((a) => a.catalog_key));
 const extra = cat.apps.filter((a) => a.i18n && Object.keys(a.i18n).some((c) => !others.includes(c)));
 ok(extra.length === 0, 'catalogo: solo codici noti in i18n');
 const diab = cat.apps.find((a) => a.catalog_key === 'ghcat:devilutionx');
@@ -136,6 +136,27 @@ ok(r.s === 200 && await langOf(users.none) === 'ja', '/sync aggiorna la lingua s
 r = await j('GET', '/api/v1/sync', null, A('none'));
 ok(await langOf(users.none) === 'ja', '/sync senza lingua non la cancella');
 await pool.query('UPDATE lab_account SET lang=NULL WHERE online_id=$1', [users.none]);
+
+// notizie nella lingua della richiesta, poi l'inglese; le altre lingue mai
+{
+  const ins = (l, t, min) => pool.query(
+    `INSERT INTO lab_news (title, body, tag, created_at, source, ext_id, lang) VALUES ($1,$1,'t', now() + make_interval(mins => $2), 't', $3, $4)`,
+    [t, min, `test:${sfx}:${t}`, l]);
+  await ins('es', `ES-${sfx}`, 1); await ins('en', `EN-${sfx}`, 2); await ins('it', `IT-${sfx}`, 3); await ins('pt-BR', `BR-${sfx}`, 4);
+  // b dopo a, oppure assente (con abbastanza notizie nella lingua l'inglese non serve)
+  const after = (t, a, b) => !t.includes(b) || t.indexOf(a) < t.indexOf(b);
+  const titles = async (h) => (await j('GET', '/api/v1/news', null, A('de', { 'accept-language': h }))).b.news.map((x) => x.title);
+  let t = await titles('es');
+  ok(t.indexOf(`ES-${sfx}`) >= 0 && after(t, `ES-${sfx}`, `EN-${sfx}`) && !t.includes(`IT-${sfx}`) && !t.includes(`BR-${sfx}`),
+    'news: prima lo spagnolo, poi l\'inglese, niente italiano', t.slice(0, 5));
+  t = await titles('pt-PT');
+  ok(t.includes(`BR-${sfx}`) && !t.includes(`ES-${sfx}`), 'news: pt-PT riceve anche pt-BR', t.slice(0, 5));
+  t = await titles('tr');
+  ok(t.includes(`EN-${sfx}`) && !t.includes(`IT-${sfx}`), 'news: lingua senza feed → inglese', t.slice(0, 5));
+  t = await titles('it');
+  ok(t.indexOf(`IT-${sfx}`) >= 0 && after(t, `IT-${sfx}`, `EN-${sfx}`), 'news: italiano per gli italiani', t.slice(0, 5));
+  await pool.query('DELETE FROM lab_news WHERE ext_id LIKE $1', [`test:${sfx}:%`]);
+}
 
 // notifiche nella lingua del destinatario
 const catDe = JSON.parse(fs.readFileSync(path.join(API, 'src', 'i18n', 'de.json'), 'utf8'));

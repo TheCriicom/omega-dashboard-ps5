@@ -11,38 +11,126 @@
   "privacy": {
     "title": "Thông báo về quyền riêng tư",
     "sections": [
-      { "id": "controller", "title": "Ai xử lý dữ liệu của bạn", "body": "Bên kiểm soát dữ liệu: {controller}. Liên hệ về quyền riêng tư và để gửi báo cáo: {email}. Omega là một dự án độc lập: không liên quan đến Sony Interactive Entertainment và không sử dụng tài khoản hay máy chủ của công ty này." },
-      { "id": "data", "title": "Chúng tôi thu thập những dữ liệu nào", "body": "Tài khoản: ID trực tuyến, mật khẩu (chỉ được lưu dưới dạng mã băm scrypt, không bao giờ ở dạng văn bản thuần), email nếu bạn cung cấp, ảnh đại diện và ảnh bìa bạn tải lên, nội dung hồ sơ, ngày đăng ký và lần đăng nhập gần nhất. Tính năng xã hội: quan hệ bạn bè và lời mời kết bạn, trạng thái trực tuyến và trò chơi hoặc ứng dụng bạn đang sử dụng (do máy chơi game của bạn gửi khi bạn chơi), hoạt động gần đây, tin nhắn trực tiếp, trò chuyện và lời mời tham gia party, thông báo. Store: các homebrew bạn đăng tải, bình luận, lượt thích/không thích, đánh giá, báo cáo, số lượt cài đặt. Thư viện cá nhân: địa chỉ tệp JSON của bạn và danh sách các trò chơi có trong đó (tên, hình ảnh, liên kết). Dữ liệu kỹ thuật: với mỗi yêu cầu gửi đến máy chủ, chúng tôi ghi lại địa chỉ IP, ngày và giờ, đường dẫn được yêu cầu (bao gồm địa chỉ các trang được mở bằng trình duyệt Omega), kết quả và thời gian xử lý. Mật khẩu, token và cookie được che đi và không bao giờ được lưu trong nhật ký." },
-      { "id": "purposes", "title": "Mục đích và cơ sở pháp lý", "body": "Để cung cấp dịch vụ mà bạn đã yêu cầu (tài khoản, tính năng xã hội, Store, thư viện): thực hiện hợp đồng, điểm b khoản 1 Điều 6 Quy định chung về bảo vệ dữ liệu (GDPR). Để bảo đảm an ninh, ngăn chặn hành vi lạm dụng và xử lý các báo cáo: lợi ích hợp pháp và nghĩa vụ pháp lý liên quan đến nội dung được lưu trữ, điểm f và điểm c khoản 1 Điều 6. Chúng tôi không sử dụng dữ liệu của bạn cho mục đích quảng cáo hay lập hồ sơ người dùng (profiling) và không bán dữ liệu đó." },
-      { "id": "retention", "title": "Thời gian lưu giữ", "body": "Nhật ký kỹ thuật về các yêu cầu được xóa sau {days} ngày. Dữ liệu tài khoản và nội dung được giữ lại cho đến khi bạn xóa tài khoản; phiên đăng nhập hết hạn sau 24 giờ. Các báo cáo đã đóng và nhật ký các hành động kiểm duyệt được lưu giữ trong thời gian cần thiết để chứng minh việc xử lý nội dung." },
-      { "id": "recipients", "title": "Ai có thể xem dữ liệu", "body": "Những người dùng khác có thể xem hồ sơ công khai của bạn, nội dung bạn đăng tải và, nếu các bạn là bạn bè, trạng thái hiện diện và hoạt động của bạn. Tin nhắn chỉ người nhận mới xem được. Dữ liệu được lưu trên một máy chủ do bên kiểm soát dữ liệu{hosting_at} quản lý; đơn vị lưu trữ máy chủ này hoạt động với tư cách là bên xử lý dữ liệu. Khi bạn cài đặt một homebrew hoặc mở một trang web, máy chơi game hoặc máy chủ của chúng tôi sẽ kết nối với trang web lưu trữ tệp hoặc trang đó: khi đó áp dụng thông báo về quyền riêng tư của trang web đó." },
-      { "id": "rights", "title": "Quyền của bạn", "body": "Bạn có thể truy cập và tải xuống dữ liệu của mình (Cài đặt → Quyền riêng tư và dữ liệu → Tải xuống dữ liệu của tôi), chỉnh sửa, xóa dữ liệu (Xóa tài khoản), phản đối việc xử lý hoặc yêu cầu hạn chế xử lý, bằng cách viết thư đến {email}. Bạn cũng có thể gửi khiếu nại đến Cơ quan bảo vệ dữ liệu cá nhân của Ý (Garante per la protezione dei dati personali, www.garanteprivacy.it)." },
-      { "id": "age", "title": "Độ tuổi tối thiểu", "body": "Dịch vụ chỉ dành cho người từ đủ 14 tuổi trở lên." },
-      { "id": "version", "title": "Phiên bản", "body": "Cập nhật ngày {version}." }
+      {
+        "id": "controller",
+        "title": "Ai xử lý dữ liệu của bạn",
+        "body": "Bên kiểm soát dữ liệu: {controller}. Liên hệ về quyền riêng tư và để gửi báo cáo: {email}. Omega là một dự án độc lập: không liên quan đến Sony Interactive Entertainment và không sử dụng tài khoản hay máy chủ của công ty này."
+      },
+      {
+        "id": "data",
+        "title": "Chúng tôi thu thập những dữ liệu nào",
+        "body": "Tài khoản: ID trực tuyến, mật khẩu (chỉ được lưu dưới dạng mã băm scrypt, không bao giờ ở dạng văn bản thuần), email nếu bạn cung cấp, ảnh đại diện và ảnh bìa bạn tải lên, nội dung hồ sơ, ngày đăng ký và lần đăng nhập gần nhất. Tính năng xã hội: quan hệ bạn bè và lời mời kết bạn, trạng thái trực tuyến và trò chơi hoặc ứng dụng bạn đang sử dụng (do máy chơi game của bạn gửi khi bạn chơi), hoạt động gần đây, tin nhắn trực tiếp, trò chuyện và lời mời tham gia party, thông báo. Store: các homebrew bạn đăng tải, bình luận, lượt thích/không thích, đánh giá, báo cáo, số lượt cài đặt. Thư viện cá nhân: địa chỉ tệp JSON của bạn và danh sách các trò chơi có trong đó (tên, hình ảnh, liên kết). Dữ liệu kỹ thuật: với mỗi yêu cầu gửi đến máy chủ, chúng tôi ghi lại địa chỉ IP, ngày và giờ, đường dẫn được yêu cầu (bao gồm địa chỉ các trang được mở bằng trình duyệt Omega), kết quả và thời gian xử lý. Mật khẩu, token và cookie được che đi và không bao giờ được lưu trong nhật ký. Chẩn đoán: dịch vụ Omega trên máy chơi game tự động gửi các mã lỗi kỹ thuật (ví dụ: kết quả mở âm thanh, micrô hoặc một đài phát thanh), không kèm nội dung hay địa chỉ. Nếu bạn chọn “Gửi chẩn đoán”, chúng tôi cũng nhận được nhật ký của ứng dụng và dịch vụ, có thể chứa tên các trò chơi, bài hát và đài phát thanh mà bạn đã sử dụng. Các nhật ký này cũng được xóa sau {days} ngày."
+      },
+      {
+        "id": "purposes",
+        "title": "Mục đích và cơ sở pháp lý",
+        "body": "Để cung cấp dịch vụ mà bạn đã yêu cầu (tài khoản, tính năng xã hội, Store, thư viện): thực hiện hợp đồng, điểm b khoản 1 Điều 6 Quy định chung về bảo vệ dữ liệu (GDPR). Để bảo đảm an ninh, ngăn chặn hành vi lạm dụng và xử lý các báo cáo: lợi ích hợp pháp và nghĩa vụ pháp lý liên quan đến nội dung được lưu trữ, điểm f và điểm c khoản 1 Điều 6. Chúng tôi không sử dụng dữ liệu của bạn cho mục đích quảng cáo hay lập hồ sơ người dùng (profiling) và không bán dữ liệu đó."
+      },
+      {
+        "id": "retention",
+        "title": "Thời gian lưu giữ",
+        "body": "Nhật ký kỹ thuật về các yêu cầu được xóa sau {days} ngày. Dữ liệu tài khoản và nội dung được giữ lại cho đến khi bạn xóa tài khoản; phiên đăng nhập hết hạn sau 24 giờ. Các báo cáo đã đóng và nhật ký các hành động kiểm duyệt được lưu giữ trong thời gian cần thiết để chứng minh việc xử lý nội dung."
+      },
+      {
+        "id": "recipients",
+        "title": "Ai có thể xem dữ liệu",
+        "body": "Những người dùng khác có thể xem hồ sơ công khai của bạn, nội dung bạn đăng tải và, nếu các bạn là bạn bè, trạng thái hiện diện và hoạt động của bạn. Tin nhắn chỉ người nhận mới xem được. Dữ liệu được lưu trên một máy chủ do bên kiểm soát dữ liệu{hosting_at} quản lý; đơn vị lưu trữ máy chủ này hoạt động với tư cách là bên xử lý dữ liệu. Khi bạn cài đặt một homebrew hoặc mở một trang web, máy chơi game hoặc máy chủ của chúng tôi sẽ kết nối với trang web lưu trữ tệp hoặc trang đó: khi đó áp dụng thông báo về quyền riêng tư của trang web đó."
+      },
+      {
+        "id": "rights",
+        "title": "Quyền của bạn",
+        "body": "Bạn có thể truy cập và tải xuống dữ liệu của mình (Cài đặt → Quyền riêng tư và dữ liệu → Tải xuống dữ liệu của tôi), chỉnh sửa, xóa dữ liệu (Xóa tài khoản), phản đối việc xử lý hoặc yêu cầu hạn chế xử lý, bằng cách viết thư đến {email}. Bạn cũng có thể gửi khiếu nại đến Cơ quan bảo vệ dữ liệu cá nhân của Ý (Garante per la protezione dei dati personali, www.garanteprivacy.it)."
+      },
+      {
+        "id": "age",
+        "title": "Độ tuổi tối thiểu",
+        "body": "Dịch vụ chỉ dành cho người từ đủ 14 tuổi trở lên."
+      },
+      {
+        "id": "version",
+        "title": "Phiên bản",
+        "body": "Cập nhật ngày {version}."
+      }
     ]
   },
   "terms": {
     "title": "Điều khoản sử dụng",
     "sections": [
-      { "id": "service", "title": "Dịch vụ", "body": "Omega ({url}) cung cấp miễn phí tài khoản, tính năng xã hội và một Store homebrew dành cho các máy chơi game mà người dùng đã cài đặt hợp pháp phần mềm của bên thứ ba. Dịch vụ do {name} vận hành. Omega là một dự án độc lập, không liên kết với, không được Sony Interactive Entertainment chứng thực hay tài trợ. \"PlayStation\" và \"PS5\" là nhãn hiệu của các chủ sở hữu tương ứng." },
-      { "id": "risk", "title": "Tự chịu rủi ro khi sử dụng", "body": "Dịch vụ và các homebrew trong Store được cung cấp theo nguyên trạng. Việc cài đặt phần mềm không chính thức có thể gây ra trục trặc, mất dữ liệu hoặc mất bảo hành của máy chơi game, và bạn tự chịu rủi ro. Các homebrew là tác phẩm của các tác giả tương ứng, theo giấy phép riêng của chúng." },
-      { "id": "prohibited", "title": "Những điều không được phép", "body": "Đăng tải hoặc chia sẻ nội dung mà bạn không có quyền — đặc biệt là bản sao của trò chơi hoặc phần mềm thương mại, liên kết đến tài liệu vi phạm bản quyền, công cụ vượt qua các biện pháp bảo vệ của chúng nhằm mục đích vi phạm bản quyền —, phần mềm độc hại hoặc tệp nguy hiểm, nội dung bất hợp pháp, xúc phạm hoặc kích động thù hận, thư rác, sử dụng tài khoản của người khác hoặc tìm cách xâm phạm an ninh của các tài khoản đó." },
-      { "id": "publishing", "title": "Đăng tải lên Store", "body": "Khi đăng tải, bạn cam đoan rằng bạn là tác giả của homebrew hoặc giấy phép của homebrew cho phép phân phối lại, và rằng liên kết dẫn đến đúng tệp đã nêu mà không có sửa đổi gây hại. Bạn cho phép chúng tôi hiển thị tên, mô tả và hình ảnh trong Store. Các tệp vẫn nằm trên trang web mà bạn chỉ định: Omega chỉ lưu trữ trang thông tin của chúng." },
-      { "id": "library", "title": "Thư viện cá nhân", "body": "Thư viện dùng để sắp xếp và cài đặt lại bản sao lưu của các trò chơi mà bạn sở hữu hợp pháp, cho mục đích sử dụng cá nhân. Không dùng thư viện để chia sẻ bản sao với người khác: các tệp vẫn nằm ở nơi bạn lưu giữ và Omega không lưu trữ chúng." },
-      { "id": "moderation", "title": "Báo cáo và kiểm duyệt", "body": "Bạn có thể báo cáo một homebrew hoặc một bình luận từ Store (Tùy chọn → Báo cáo) hoặc bằng cách viết thư đến {email}. Chúng tôi xem xét các báo cáo và có thể ẩn hoặc gỡ bỏ nội dung, cũng như tạm khóa hoặc đóng các tài khoản vi phạm các điều khoản này; nội dung bị báo cáo nhiều lần sẽ bị ẩn trong khi chờ xem xét." },
-      { "id": "liability", "title": "Trách nhiệm", "body": "Trong phạm vi pháp luật cho phép, chúng tôi không chịu trách nhiệm đối với thiệt hại phát sinh từ việc sử dụng homebrew hoặc từ việc dịch vụ không khả dụng; dịch vụ có thể thay đổi hoặc ngừng hoạt động. Các biện pháp bảo vệ bắt buộc dành cho người tiêu dùng vẫn được giữ nguyên." },
-      { "id": "changes", "title": "Thay đổi và luật áp dụng", "body": "Nếu các điều khoản thay đổi, chúng tôi sẽ hỏi lại bạn trong ứng dụng. Áp dụng pháp luật Ý." },
-      { "id": "version", "title": "Phiên bản", "body": "Điều khoản có hiệu lực từ {version}." }
+      {
+        "id": "service",
+        "title": "Dịch vụ",
+        "body": "Omega ({url}) cung cấp miễn phí tài khoản, tính năng xã hội và một Store homebrew dành cho các máy chơi game mà người dùng đã cài đặt hợp pháp phần mềm của bên thứ ba. Dịch vụ do {name} vận hành. Omega là một dự án độc lập, không liên kết với, không được Sony Interactive Entertainment chứng thực hay tài trợ. \"PlayStation\" và \"PS5\" là nhãn hiệu của các chủ sở hữu tương ứng."
+      },
+      {
+        "id": "risk",
+        "title": "Tự chịu rủi ro khi sử dụng",
+        "body": "Dịch vụ và các homebrew trong Store được cung cấp theo nguyên trạng. Việc cài đặt phần mềm không chính thức có thể gây ra trục trặc, mất dữ liệu hoặc mất bảo hành của máy chơi game, và bạn tự chịu rủi ro. Các homebrew là tác phẩm của các tác giả tương ứng, theo giấy phép riêng của chúng."
+      },
+      {
+        "id": "prohibited",
+        "title": "Những điều không được phép",
+        "body": "Đăng tải hoặc chia sẻ nội dung mà bạn không có quyền — đặc biệt là bản sao của trò chơi hoặc phần mềm thương mại, liên kết đến tài liệu vi phạm bản quyền, công cụ vượt qua các biện pháp bảo vệ của chúng nhằm mục đích vi phạm bản quyền —, phần mềm độc hại hoặc tệp nguy hiểm, nội dung bất hợp pháp, xúc phạm hoặc kích động thù hận, thư rác, sử dụng tài khoản của người khác hoặc tìm cách xâm phạm an ninh của các tài khoản đó."
+      },
+      {
+        "id": "publishing",
+        "title": "Đăng tải lên Store",
+        "body": "Khi đăng tải, bạn cam đoan rằng bạn là tác giả của homebrew hoặc giấy phép của homebrew cho phép phân phối lại, và rằng liên kết dẫn đến đúng tệp đã nêu mà không có sửa đổi gây hại. Bạn cho phép chúng tôi hiển thị tên, mô tả và hình ảnh trong Store. Các tệp vẫn nằm trên trang web mà bạn chỉ định: Omega chỉ lưu trữ trang thông tin của chúng."
+      },
+      {
+        "id": "library",
+        "title": "Thư viện cá nhân",
+        "body": "Thư viện dùng để sắp xếp và cài đặt lại bản sao lưu của các trò chơi mà bạn sở hữu hợp pháp, cho mục đích sử dụng cá nhân. Không dùng thư viện để chia sẻ bản sao với người khác: các tệp vẫn nằm ở nơi bạn lưu giữ và Omega không lưu trữ chúng."
+      },
+      {
+        "id": "moderation",
+        "title": "Báo cáo và kiểm duyệt",
+        "body": "Bạn có thể báo cáo một homebrew hoặc một bình luận từ Store (Tùy chọn → Báo cáo) hoặc bằng cách viết thư đến {email}. Chúng tôi xem xét các báo cáo và có thể ẩn hoặc gỡ bỏ nội dung, cũng như tạm khóa hoặc đóng các tài khoản vi phạm các điều khoản này; nội dung bị báo cáo nhiều lần sẽ bị ẩn trong khi chờ xem xét."
+      },
+      {
+        "id": "liability",
+        "title": "Trách nhiệm",
+        "body": "Trong phạm vi pháp luật cho phép, chúng tôi không chịu trách nhiệm đối với thiệt hại phát sinh từ việc sử dụng homebrew hoặc từ việc dịch vụ không khả dụng; dịch vụ có thể thay đổi hoặc ngừng hoạt động. Các biện pháp bảo vệ bắt buộc dành cho người tiêu dùng vẫn được giữ nguyên."
+      },
+      {
+        "id": "changes",
+        "title": "Thay đổi và luật áp dụng",
+        "body": "Nếu các điều khoản thay đổi, chúng tôi sẽ hỏi lại bạn trong ứng dụng. Áp dụng pháp luật Ý."
+      },
+      {
+        "id": "version",
+        "title": "Phiên bản",
+        "body": "Điều khoản có hiệu lực từ {version}."
+      }
     ]
   },
   "licenses": {
     "title": "Giấy phép mã nguồn mở",
     "sections": [
-      { "id": "omega", "title": "Omega", "body": "Ứng dụng Omega dành cho máy chơi game là phần mềm tự do, được phân phối theo giấy phép GNU GPL phiên bản 3 hoặc mới hơn, không kèm theo bất kỳ bảo đảm nào. Toàn bộ mã nguồn có thể được tải xuống tại {url}/source." },
-      { "id": "developer", "title": "Nhà phát triển", "body": "Omega được phát triển bởi {developer} — {developer_url}" },
-      { "id": "app_components", "title": "Các thành phần được ứng dụng sử dụng", "body": "ps5-payload-sdk (GPL-3.0 hoặc mới hơn) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib và minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)." },
-      { "id": "server_components", "title": "Các thành phần được máy chủ sử dụng", "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 hoặc mới hơn) · jxrlib (BSD-2-Clause)." },
-      { "id": "store_homebrew", "title": "Homebrew trong Store", "body": "Mỗi homebrew trong danh mục là một dự án mã nguồn mở với giấy phép riêng, được ghi trên trang thông tin của homebrew đó cùng với trang web của dự án." }
+      {
+        "id": "omega",
+        "title": "Omega",
+        "body": "Ứng dụng Omega dành cho máy chơi game là phần mềm tự do, được phân phối theo giấy phép GNU GPL phiên bản 3 hoặc mới hơn, không kèm theo bất kỳ bảo đảm nào. Toàn bộ mã nguồn có thể được tải xuống tại {url}/source."
+      },
+      {
+        "id": "developer",
+        "title": "Nhà phát triển",
+        "body": "Omega được phát triển bởi {developer} — {developer_url}"
+      },
+      {
+        "id": "app_components",
+        "title": "Các thành phần được ứng dụng sử dụng",
+        "body": "ps5-payload-sdk (GPL-3.0 hoặc mới hơn) · SDL2, SDL2_ttf, SDL2_image (zlib) · FreeType (FreeType License) · HarfBuzz (MIT) · libpng (libpng License) · libjpeg (IJG) · libwebp (BSD-3-Clause) · zlib và minizip (zlib) · bzip2 (bzip2 License) · QuickJS (MIT)."
+      },
+      {
+        "id": "server_components",
+        "title": "Các thành phần được máy chủ sử dụng",
+        "body": "Node.js (MIT) · node-postgres (MIT) · Mozilla Readability (Apache-2.0) · linkedom (ISC) · PostgreSQL (PostgreSQL License) · FFmpeg (LGPL-2.1 hoặc mới hơn) · jxrlib (BSD-2-Clause)."
+      },
+      {
+        "id": "store_homebrew",
+        "title": "Homebrew trong Store",
+        "body": "Mỗi homebrew trong danh mục là một dự án mã nguồn mở với giấy phép riêng, được ghi trên trang thông tin của homebrew đó cùng với trang web của dự án."
+      }
     ]
   }
 }

@@ -2,7 +2,9 @@
 // anche durante il gioco con la scorciatoia del Toolbox (es. L2+R3):
 //  · brano in corso del lettore di Omega, con riproduci/pausa, avanti, indietro
 //    e volume;
-//  · quanti amici sono online.
+//  · quanti amici sono online;
+//  · il party vocale, che durante il gioco porta avanti il servizio: chi parla,
+//    microfono acceso/spento, uscita dal party.
 // I dati e i comandi passano dal demone omega_redirect (127.0.0.1:9095). La
 // pagina di OnionHEN non si ridisegna mentre è aperta: si aggiorna riaprendola.
 #include <onion/client.h>
@@ -81,7 +83,7 @@ static void jfield(const char *js, const char *key, char *out, size_t n) {
 }
 
 // ---------------------------------------------------------------- pagina --
-typedef struct { char line[220], sub[160], friends[80]; int volume, ok; } View;
+typedef struct { char line[220], sub[160], friends[80]; int volume, ok; char party[220], pstate[200]; int pactive, pmuted, pnomic; } View;
 
 static void read_view(View *v) {
   static char st[8192], sy[1024];
@@ -109,6 +111,22 @@ static void read_view(View *v) {
     if (n >= 0) snprintf(v->friends, sizeof v->friends, n == 1 ? _("1 amico online") : _("%d amici online"), n);
   }
   if (!v->friends[0]) snprintf(v->friends, sizeof v->friends, "%s", _("Amici: apri Omega per aggiornare"));
+  static char vo[1024];
+  if (ctl("GET", "/v1/voice", NULL, vo, sizeof vo) == 200) {
+    char act[8], mic[16], mu[8], name[120];
+    jfield(vo, "active", act, sizeof act); jfield(vo, "mic", mic, sizeof mic); jfield(vo, "muted", mu, sizeof mu); jfield(vo, "party", name, sizeof name);
+    v->pactive = !strcmp(act, "true"); v->pmuted = !strcmp(mu, "true"); v->pnomic = !strcmp(mic, "none");
+    if (v->pactive) {
+      snprintf(v->party, sizeof v->party, "%s", name);
+      const char *t = v->pnomic ? _("Solo ascolto: microfono non disponibile") : v->pmuted ? _("Microfono spento")
+                    : !strcmp(mic, "silent") ? _("Dal microfono arriva solo silenzio: controlla il tasto mute del controller") : _("Microfono acceso");
+      snprintf(v->pstate, sizeof v->pstate, "%s", t);
+      // chi sta parlando: "talking":["a","b"]
+      const char *tk = strstr(vo, "\"talking\":["); char who[120] = "";
+      if (tk) { tk += 11; size_t i = 0; while (*tk && *tk != ']' && i + 1 < sizeof who) { if (*tk != '"') who[i++] = *tk; tk++; } who[i] = 0; }
+      if (who[0]) { size_t l = strlen(v->party); snprintf(v->party + l, sizeof v->party - l, " \xC2\xB7 \xF0\x9F\x94\x8A %s", who); }
+    }
+  }
 }
 
 static onion_ui_node_desc_v1 node(uint32_t kind, const char *id, const char *parent, const char *title) {
@@ -133,7 +151,7 @@ static onion_status build(const View *v, onion_ui_document **out) {
   snprintf(desc.plugin_id, sizeof desc.plugin_id, "OMGA00001");
   snprintf(desc.contribution_id, sizeof desc.contribution_id, "omega_main");
   snprintf(desc.title, sizeof desc.title, "Omega");
-  snprintf(desc.description, sizeof desc.description, "%s", _("Musica e amici di Omega, anche durante il gioco"));
+  snprintf(desc.description, sizeof desc.description, "%s", _("Musica, amici e party vocale di Omega, anche durante il gioco"));
   snprintf(desc.root_page_id, sizeof desc.root_page_id, "main");
   onion_status s = onion_ui_document_create(&desc, out);
   if (s != ONION_OK) return s;
@@ -160,6 +178,14 @@ static onion_status build(const View *v, onion_ui_document **out) {
       if ((s = add(d, &n)) != ONION_OK) goto fail;
     }
   }
+  if (v->pactive) {
+    n = node(ONION_UI_NODE_GROUP, "party", "main", _("Party vocale")); if ((s = add(d, &n)) != ONION_OK) goto fail;
+    n = node(ONION_UI_NODE_LABEL, "pstate", "party", v->party);
+    snprintf(n.description, sizeof n.description, "%s", v->pstate);
+    if ((s = add(d, &n)) != ONION_OK) goto fail;
+    if (!v->pnomic && (s = action(d, "mic", "party", v->pmuted ? _("Accendi il microfono") : _("Spegni il microfono"))) != ONION_OK) goto fail;
+    if ((s = action(d, "leave", "party", _("Esci dal party"))) != ONION_OK) goto fail;
+  }
   n = node(ONION_UI_NODE_GROUP, "social", "main", _("Amici")); if ((s = add(d, &n)) != ONION_OK) goto fail;
   n = node(ONION_UI_NODE_LABEL, "friends", "social", v->friends);
   snprintf(n.description, sizeof n.description, "%s", _("La pagina si aggiorna quando la riapri"));
@@ -176,6 +202,10 @@ static void on_event(const onion_ui_event_v1 *e) {
   if (!strcmp(e->node_id, "toggle") || !strcmp(e->node_id, "next") || !strcmp(e->node_id, "prev")) {
     snprintf(body, sizeof body, "{\"cmd\":\"%s\"}", e->node_id);
     ctl("POST", "/v1/cmd", body, out, sizeof out);
+  } else if (!strcmp(e->node_id, "mic")) {
+    ctl("POST", "/v1/voice", "{\"cmd\":\"toggle\"}", out, sizeof out);
+  } else if (!strcmp(e->node_id, "leave")) {
+    ctl("POST", "/v1/voice", "{\"cmd\":\"leave\"}", out, sizeof out);
   } else if (!strcmp(e->node_id, "volume") || !strncmp(e->node_id, "vol_", 4)) {
     int v = atoi(e->value[0] ? e->value : e->node_id + 4);
     snprintf(body, sizeof body, "{\"cmd\":\"volume\",\"value\":%d}", v < 0 ? 0 : v > 100 ? 100 : v);

@@ -44,5 +44,15 @@
   },
   "api": {
     "description": "Akun, fitur sosial, dan Store homebrew untuk konsol. Proyek independen, tidak berafiliasi dengan Sony."
+  },
+  "system": {
+    "party_created": "· {actor} membuat party",
+    "party_joined": "· {actor} bergabung ke party",
+    "party_left": "· {actor} keluar dari party",
+    "group_created": "{actor} membuat grup “{name}”",
+    "group_added": "{actor} menambahkan {user}",
+    "group_left": "{actor} keluar dari grup",
+    "group_renamed": "{actor} mengganti nama grup menjadi “{name}”",
+    "group_removed": "{actor} mengeluarkan {user}"
   }
 }

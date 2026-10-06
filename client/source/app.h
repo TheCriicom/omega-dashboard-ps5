@@ -206,7 +206,7 @@ typedef struct {
   char tid[16]; char name[96]; char icon[256]; char art[256];
   int hb; char dir[256]; char sub[96];        // homebrew websrv nella cartella dir (tid = "HB" + hash)
   int pld;                                    // payload ELF: dir è il percorso dell'elf (tid = "PL" + hash)
-  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima)
+  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima), 2 = cartella (tid = fid)
   int ext; char src[300]; char drive[40];     // gioco su un disco esterno (drives.c): cartella e nome del disco
   long last_played;                           // per l'ordine "Ultimi giocati"
   SDL_Texture *tex; int tex_state; Col avg;   // tex_state: 0 nulla, 1 in caricamento, 2 pronta
@@ -240,6 +240,24 @@ extern Social S;
 extern char g_token[700];
 extern AppEntry apps[MAX_APPS];
 extern int napps;
+// Disposizione della home (homelayout.c): app nascoste e cartelle. Dopo
+// scan_apps le prime nrow voci di apps[] sono le tessere della fila; le altre
+// (dentro una cartella o nascoste) restano installate e cercabili per tid.
+extern int nrow;
+void layout_apply(void);
+int  layout_is_hidden(const char *tid);
+const char *layout_folder_of(const char *tid);
+const char *layout_folder_name(const char *fid);
+int  layout_folder_count(const char *fid);
+int  layout_folder_app(const char *fid, int k);          // indice in apps[] o -1
+void layout_hide(const char *tid, int hide);
+void layout_unfold(const char *tid);
+void layout_move_menu(const char *tid);
+void layout_folder_menu(const char *fid);
+int  layout_hidden_count(void);
+void hidden_menu(void);                                  // Impostazioni › App nascoste
+void folder_open(const char *fid); void folder_draw(float t); void folder_input(int b);
+void home_relayout(const char *keep_tid);                // home.c: rifà la fila dopo un cambio (keep_tid NULL = la tessera a fuoco)
 // dischi esterni (drives.c)
 typedef struct { char mount[128], label[48]; double free_gb, total_gb; } Drive;
 int drives_list(Drive *out, int max);                      // dischi collegati adesso
@@ -327,7 +345,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);

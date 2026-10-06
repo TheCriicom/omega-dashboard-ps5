@@ -11,6 +11,8 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
+  N_("Nuovo: cartelle in home. Dalle opzioni di un gioco scegli \xC2\xABSposta in una cartella\xC2\xBB; la cartella mostra le prime quattro icone."),
+  N_("Puoi nascondere i giochi e le app che non usi: opzioni del gioco \xE2\x80\xBA Nascondi dalla home. Li rimetti in Impostazioni \xE2\x80\xBA App nascoste."),
   N_("Avatar: 16 personaggi nuovi, dal drago al cyborg. Li trovi in Impostazioni \xE2\x80\xBA Cambia avatar."),
   N_("La Community ora \xC3\xA8 in home, prima dei giochi: bacheca, gruppi, persone e tempo di gioco a un tasto di distanza."),
   N_("Nuovo: Record. Il tempo di gioco di tutti gli iscritti: giocatori, giochi pi\xC3\xB9 giocati e maratone, della settimana o di sempre."),

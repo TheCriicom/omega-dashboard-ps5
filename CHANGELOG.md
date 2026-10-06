@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026.10.05.8
+
+- **Folders on the Home**: game options › Move to a folder (existing folder or
+  a new one). A folder is a tile with a 2×2 mosaic of its first icons; it opens
+  a panel with its games (X plays, Triangle for the app's options, Square to
+  rename or delete the folder). Deleting a folder puts its apps back on the
+  Home; nothing is uninstalled.
+- **Hide apps**: game options › Hide from Home. Hidden apps come back from
+  Settings › Hidden apps. Hidden and foldered apps stay installed and keep
+  working everywhere else (profiles, records, notifications).
+- The layout is stored on the console (`/data/Omega/home-layout.txt`).
+
 ## 2026.10.05.7
 
 - **16 new illustrated avatars** (32 in total): dragon, unicorn, shark,

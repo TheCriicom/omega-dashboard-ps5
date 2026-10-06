@@ -78,6 +78,7 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_DOC: doc_draw(t); break;
     case OV_COMMUNITY: community_draw(t); break;
     case OV_TROPHIES: trophies_draw(t); break;
+    case OV_FOLDER: folder_draw(t); break;
     case OV_ABOUT: about_draw(t); break;
     case OV_MUSIC: music_draw(t); break;
     case OV_SYSTEM: system_draw(t); break;
@@ -300,6 +301,7 @@ static void dispatch(int b) {
       case OV_DOC: doc_input(b); break;
       case OV_COMMUNITY: community_input(b); break;
       case OV_TROPHIES: trophies_input(b); break;
+      case OV_FOLDER: folder_input(b); break;
       case OV_ABOUT: about_input(b); break;
       case OV_MUSIC: music_input(b); break;
       case OV_SYSTEM: system_input(b); break;
@@ -343,9 +345,11 @@ static void saver_draw(void) {
   float tt = (float)g_time;
   // posizione che vaga lentamente
   int cx = SCREEN_W / 2 + (int)(520 * sinf(tt * 0.031f)), cy = SCREEN_H / 2 + (int)(260 * sinf(tt * 0.047f + 1.3f));
-  if (g_prefs.saver_style == 1 && napps) {
-    // copertine: una alla volta, ogni 8 s, con dissolvenza
-    int i = (int)(tt / 8.0f) % napps; float ph = fmodf(tt, 8.0f), k = ph < 1 ? ph : ph > 7 ? 8 - ph : 1;
+  // copertine: una alla volta, ogni 8 s, con dissolvenza (solo i giochi in home, non cartelle né app nascoste)
+  int ncov = 0; for (int j = 0; j < nrow; j++) ncov += !apps[j].builtin;
+  if (g_prefs.saver_style == 1 && ncov) {
+    int i = (int)(tt / 8.0f) % ncov; float ph = fmodf(tt, 8.0f), k = ph < 1 ? ph : ph > 7 ? 8 - ph : 1;
+    for (int j = 0; j < nrow; j++) if (!apps[j].builtin && i-- == 0) { i = j; break; }
     AppEntry *ap = &apps[i];
     int s = 340;
     glow(cx, cy, s, ap->avg, (int)(a * 0.5f * k));
@@ -489,6 +493,7 @@ static void cmd_poll(void) {
   else if (!strcmp(c, "files")) files_open(NULL);
   else if (!strcmp(c, "store")) store_open();
   else if (!strcmp(c, "avatar")) ov_push(OV_AVATAR);
+  else if (!strcmp(c, "settings")) ov_push(OV_SETTINGS);
 }
 
 static void save_shot(void) {

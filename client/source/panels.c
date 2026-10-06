@@ -1025,7 +1025,7 @@ static void open_lang_menu(void) {
   menu_select(sel);
 }
 
-enum { SO_PROFILE, SO_CUSTOM, SO_AVATAR, SO_BIO, SO_THEME, SO_LANG, SO_AUDIO, SO_HOME, SO_SERVER, SO_SYSTEM, SO_PRIVACY, SO_ABOUT, SO_LOGOUT, SO_QUIT, N_OPT };
+enum { SO_PROFILE, SO_CUSTOM, SO_AVATAR, SO_BIO, SO_THEME, SO_LANG, SO_AUDIO, SO_HOME, SO_HIDDEN, SO_SERVER, SO_SYSTEM, SO_PRIVACY, SO_ABOUT, SO_LOGOUT, SO_QUIT, N_OPT };
 
 void settings_draw(float t) {
   int w = 780, x = side_panel(t, w), a = (int)(255 * t);
@@ -1040,12 +1040,12 @@ void settings_draw(float t) {
   snprintf(info, sizeof info, _("Amici: %d \xC2\xB7 online: %d \xC2\xB7 giochi: %d"), S.nfriends, friends_online_count(), napps);
   draw_text_fit(font(W_REG, 22), info, px + 140, y + 72, pw - 170, C_DIM, a, AL_L);
   y += 140;
-  static const char *opts[N_OPT] = { N_("Il mio profilo"), N_("Personalizza"), N_("Cambia avatar"), N_("Modifica bio"), N_("Tema"), N_("Lingua"), N_("Audio"), N_("Omega come Home"), N_("Server"), N_("Sistema e strumenti"),
+  static const char *opts[N_OPT] = { N_("Il mio profilo"), N_("Personalizza"), N_("Cambia avatar"), N_("Modifica bio"), N_("Tema"), N_("Lingua"), N_("Audio"), N_("Omega come Home"), N_("App nascoste"), N_("Server"), N_("Sistema e strumenti"),
                                      N_("Privacy"), N_("Informazioni su Omega"), N_("Esci dall'account"), N_("Chiudi Omega") };
-  static const int oic[N_OPT] = { IC_USER, IC_BRUSH, IC_STAR, IC_NEWS, IC_GEAR, IC_CHAT, IC_BELL, IC_GAMEPAD, IC_GLOBE, IC_FOLDER, IC_CHECK, IC_MORE, IC_EXIT, IC_POWER };
+  static const int oic[N_OPT] = { IC_USER, IC_BRUSH, IC_STAR, IC_NEWS, IC_GEAR, IC_CHAT, IC_BELL, IC_GAMEPAD, IC_CLOSE, IC_GLOBE, IC_FOLDER, IC_CHECK, IC_MORE, IC_EXIT, IC_POWER };
   st_anim = approach(st_anim, (float)st_sel, 20.0f);
-  // 14 righe più l'intestazione stanno sopra la barra dei comandi (y 1018)
-  const int rs = 52, rh = 46;
+  // 15 righe più l'intestazione stanno sopra la barra dei comandi (y 1018)
+  const int rs = 49, rh = 44;
   TTF_Font *fo = font(W_MED, 27), *fv = font(W_REG, 23);
   for (int i = 0; i < N_OPT; i++) {
     int ry = y + i * rs;
@@ -1064,6 +1064,7 @@ void settings_draw(float t) {
     if (i == SO_LANG) vw = draw_text_fit(fv, i18n_lang_name(i18n_code()), px + pw - 30, vy, 260, C_DIM, a, AL_R);
     if (i == SO_SERVER) vw = draw_text_fit(fv, server_label(), px + pw - 30, vy, 260, C_DIM, a, AL_R);
     if (i == SO_HOME) vw = draw_text(fv, home_mode() == 1 ? _("s\xC3\xAC") : _("no"), px + pw - 30, vy, C_DIM, a, AL_R);
+    if (i == SO_HIDDEN) { char nh[16]; snprintf(nh, sizeof nh, "%d", layout_hidden_count()); vw = draw_text(fv, nh, px + pw - 30, vy, C_DIM, a, AL_R); }
     draw_text_fit(fo, lbl, px + 92, ry + (rh - TTF_FontHeight(fo)) / 2, pw - 92 - 30 - (vw ? vw + 24 : 0), i == SO_QUIT ? C_ERR : C_TXT, a, AL_L);
   }
   const int ic[] = { IC_BTN_X, IC_BTN_O };
@@ -1091,6 +1092,7 @@ void settings_input(int b) {
       case SO_AUDIO: open_audio_menu(); break;
       case SO_SERVER: server_menu(); break;
       case SO_HOME: home_mode_menu(); break;
+      case SO_HIDDEN: hidden_menu(); break;
       case SO_SYSTEM: system_open(); break;
       case SO_PRIVACY: privacy_menu(); break;
       case SO_ABOUT: ov_push(OV_ABOUT); break;

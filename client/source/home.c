@@ -255,7 +255,8 @@ void scan_apps(void) {
     snprintf(a->name, sizeof a->name, "%s", _("Community"));
     napps++;
   }
-  omega_log("scan_apps: %d titoli", napps);
+  layout_apply();        // cartelle e app nascoste: la fila sono le prime nrow voci
+  omega_log("scan_apps: %d titoli, %d tessere in home", napps, nrow);
 }
 
 static void on_icon(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) {
@@ -280,15 +281,15 @@ void home_enter(void) {
   static int once;
   if (!once) { once = 1; drives_after_game(); }   // giochi esterni rimasti montati dall'ultima partita
   scan_apps();
-  for (int i = 0; i < napps; i++) tile_size[i] = 150;
-  if (app_sel >= napps) app_sel = 0;
+  for (int i = 0; i < nrow; i++) tile_size[i] = 150;
+  if (app_sel >= nrow) app_sel = 0;
   zone = Z_ROW; tab = T_GAMES; page_scroll = page_scroll_t = 0;
   request_icons();
   consync_start(0);      // nomi e icone dei giochi, trofei della console
   focus_at = SDL_GetTicks(); focus_loaded = -1;
   social_load_news(); social_load_activity(); social_load_friends();
   last_feed = SDL_GetTicks(); entered_at = SDL_GetTicks();
-  if (!napps) bg_set_default();
+  if (!nrow) bg_set_default();
 }
 
 // ---------------------------------------------------------------- avvio app --
@@ -413,7 +414,8 @@ static void hb_pick(int i, void *ud) {
 
 void launch_app(int idx) {
   if (idx < 0 || idx >= napps || launching >= 0 || SDL_AtomicGet(&hb_state)) return;
-  if (apps[idx].builtin) { community_open(0); return; }
+  if (apps[idx].builtin == 1) { community_open(0); return; }
+  if (apps[idx].builtin == 2) { folder_open(apps[idx].tid); return; }
   if (apps[idx].hb) { hb_step(idx, -1); return; }
   if (apps[idx].pld) {
     char err[400];
@@ -611,7 +613,7 @@ static void top_activate(void) {
 
 // -------------------------------------------------------------- fila giochi --
 static void game_row(int y0, int alpha) {
-  if (!napps) {
+  if (!nrow) {
     int w = 900, h = 220, x = 110;
     fill_rrect(x, y0, w, h, 26, C_PANEL, alpha * 80 / 100);
     draw_icon(IC_GAMEPAD, x + 110, y0 + h / 2, 90, C_DIM, alpha);
@@ -622,7 +624,7 @@ static void game_row(int y0, int alpha) {
   // Personalizza › Dimensione delle icone: piccole, medie, grandi
   static const float BASE[3] = { 124, 150, 178 }, BIG[3] = { 200, 236, 270 }, MID[3] = { 170, 200, 230 };
   int ts = g_prefs.tiles % 3, gap = g_prefs.labels ? 30 : 22;
-  for (int i = 0; i < napps; i++) {
+  for (int i = 0; i < nrow; i++) {
     float target = (i == app_sel && tab == T_GAMES) ? (zone == Z_ROW ? BIG[ts] : MID[ts]) : BASE[ts];
     tile_size[i] = approach(tile_size[i], target, 14.0f);
   }
@@ -630,7 +632,7 @@ static void game_row(int y0, int alpha) {
   row_scroll = approach(row_scroll, before, 12.0f);
   float x = 110 - row_scroll;
   float pulse = 0.5f + 0.5f * sinf((float)g_time * 3.2f);
-  for (int i = 0; i < napps; i++) {
+  for (int i = 0; i < nrow; i++) {
     int s = (int)tile_size[i];
     int tx = (int)x, ty = y0;
     if (tx > SCREEN_W) break;
@@ -640,7 +642,21 @@ static void game_row(int y0, int alpha) {
       AppEntry *ap = &apps[i];
       int foc = i == app_sel;
       if (foc) shadow_rrect(tx, ty, s, s, 28, 26, a * 70 / 100);
-      if (ap->builtin) {
+      if (ap->builtin == 2) {
+        // cartella: le prime quattro icone in un mosaico 2×2
+        fill_rrect(tx, ty, s, s, 28, mix(C_PANEL, C_WHITE, 0.08f), a);
+        stroke_rrect(tx, ty, s, s, 28, 2, C_WHITE, a * 18 / 100);
+        int pad = s / 12, cell = (s - 3 * pad) / 2, k = 0;
+        for (; k < 4; k++) {
+          int j = layout_folder_app(ap->tid, k); if (j < 0) break;
+          int cx = tx + pad + (k % 2) * (cell + pad), cy = ty + pad + (k / 2) * (cell + pad);
+          if (apps[j].tex) draw_tex(apps[j].tex, cx, cy, cell, cell, a); else fill_rrect(cx, cy, cell, cell, 12, RGB(40, 48, 70), a);
+        }
+        if (!g_prefs.labels || foc) {
+          fill_rrect(tx + 10, ty + s - 40, s - 20, 30, 15, RGB(8, 10, 20), a * 70 / 100);
+          draw_text_fit(font(W_MED, 19), ap->name, tx + s / 2, ty + s - 37, s - 36, C_WHITE, a, AL_C);
+        }
+      } else if (ap->builtin) {
         fill_rrect(tx, ty, s, s, 28, mix(C_ACC, RGB(12, 16, 30), 0.35f), a);
         draw_icon(IC_FRIENDS, tx + s / 2, ty + s / 2 - s / 12, s * 44 / 100, C_WHITE, a);
         draw_text_fit(font(W_MED, s > 190 ? 24 : 19), _("Community"), tx + s / 2, ty + s - (s > 190 ? 50 : 38), s - 20, C_WHITE, a, AL_C);
@@ -681,12 +697,13 @@ static int count_playing(const char *tid) {
 }
 
 static void game_info(int y0, int alpha) {
-  if (!napps) return;
+  if (!nrow) return;
   AppEntry *ap = &apps[app_sel];
   TTF_Font *tf = font(W_LIGHT, 72);
   draw_text_fit(tf, ap->name, 110, y0, 1300, C_WHITE, alpha, AL_L);
   char sub[256], pl[96]; int np = count_playing(ap->tid);
   if (np) { snprintf(pl, sizeof pl, np == 1 ? _("%d amico sta giocando") : _("%d amici stanno giocando"), np); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, pl); }
+  else if (ap->builtin == 2) { int c = layout_folder_count(ap->tid); snprintf(sub, sizeof sub, c == 1 ? _("Cartella \xC2\xB7 %d app") : _("Cartella \xC2\xB7 %d app"), c); }
   else if (ap->builtin) snprintf(sub, sizeof sub, "%s", _("Bacheca, gruppi, record e trofei di tutti gli iscritti"));
   else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
   else if (ap->ext) { char on[96]; snprintf(on, sizeof on, _("Su %s"), ap->drive); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, on); }
@@ -698,8 +715,8 @@ static void game_info(int y0, int alpha) {
   sel_anim_act = approach(sel_anim_act, zone == Z_ACT ? (float)act_sel : -1.0f, 16.0f);
   int by = y0 + 168;
   float f0 = clampf(1 - fabsf(sel_anim_act - 0), 0, 1), f1 = clampf(1 - fabsf(sel_anim_act - 1), 0, 1);
-  int w0 = pill(110, by, 84, ap->builtin ? _("Apri") : _("Gioca"), ap->builtin ? IC_FRIENDS : IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
-  if (!ap->builtin) pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
+  int w0 = pill(110, by, 84, ap->builtin ? _("Apri") : _("Gioca"), ap->builtin == 1 ? IC_FRIENDS : ap->builtin ? IC_FOLDER : IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
+  if (ap->builtin != 1) pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
   if (zone == Z_ACT) focus_ring(act_sel == 0 ? 110 : 110 + w0 + 20, by, act_sel == 0 ? w0 : 84, 84, 42, 0.5f + 0.5f * sinf((float)g_time * 3.2f), (int)(alpha * (act_sel == 0 ? f0 : f1)));
 }
 
@@ -891,11 +908,11 @@ static float row_scroll_target_diff(void) {
 // disco collegato o tolto: si rifà la fila tenendo il gioco scelto, e lo si dice
 static void ext_rescan(void) {
   static int seen;   // il primo giro (all'avvio) non va annunciato
-  char keep[16]; snprintf(keep, sizeof keep, "%s", napps ? apps[app_sel].tid : "");
+  char keep[16]; snprintf(keep, sizeof keep, "%s", nrow ? apps[app_sel].tid : "");
   int ext0 = 0; for (int i = 0; i < napps; i++) ext0 += apps[i].ext;
   scan_apps();
   int ext1 = 0; for (int i = 0; i < napps; i++) { ext1 += apps[i].ext; tile_size[i] = 150; }
-  app_sel = 0; for (int i = 0; i < napps; i++) if (!strcmp(apps[i].tid, keep)) app_sel = i;
+  app_sel = 0; for (int i = 0; i < nrow; i++) if (!strcmp(apps[i].tid, keep)) app_sel = i;
   request_icons();
   if (seen && ext1 > ext0) { char m[160]; snprintf(m, sizeof m, ext1 - ext0 == 1 ? _("Disco collegato: 1 gioco in più in home") : _("Disco collegato: %d giochi in più in home"), ext1 - ext0); set_msg(m, 0); }
   else if (seen && ext1 < ext0) set_msg(_("Disco scollegato: i suoi giochi sono spariti dalla home"), 0);
@@ -907,7 +924,7 @@ void home_update(void) {
   for (int i = 0; i < napps; i++) if (apps[i].tex_state == 0) { request_icons(); break; }
   // mentre la fila scorre o la pagina si muove, niente effetti costosi
   g_busy_motion = (fabsf(row_scroll_target_diff()) > 2 || fabsf(page_scroll - page_scroll_t) > 2) ? 1 : 0;
-  if (napps && tab == T_GAMES && launching < 0) {
+  if (nrow && tab == T_GAMES && launching < 0) {
     if (focus_loaded != app_sel && SDL_GetTicks() - focus_at > FOCUS_MS) {
       focus_loaded = app_sel;
       bg_set_game(apps[app_sel].tid, apps[app_sel].art, apps[app_sel].avg);
@@ -916,11 +933,11 @@ void home_update(void) {
     }
   }
   if (tab == T_EXPLORE) bg_set_default();
-  else if (focus_loaded == app_sel && napps && SDL_GetTicks() - focus_at > FOCUS_MS) bg_set_game(apps[app_sel].tid, apps[app_sel].art, apps[app_sel].avg);
+  else if (focus_loaded == app_sel && nrow && SDL_GetTicks() - focus_at > FOCUS_MS) bg_set_game(apps[app_sel].tid, apps[app_sel].art, apps[app_sel].avg);
   if (SDL_GetTicks() - last_feed > 30000) {
     last_feed = SDL_GetTicks();
     social_load_activity(); social_load_news();
-    if (napps && tab == T_GAMES && !apps[app_sel].hb && !apps[app_sel].builtin) { S.game_loading = 0; social_load_game(apps[app_sel].tid); }
+    if (nrow && tab == T_GAMES && !apps[app_sel].hb && !apps[app_sel].builtin) { S.game_loading = 0; social_load_game(apps[app_sel].tid); }
   }
   hb_poll();
   if (launching >= 0) {
@@ -955,7 +972,7 @@ void home_draw(void) {
   if (ps > 20 || tab == T_EXPLORE) grad_v(0, 118, SCREEN_W, 70, RGB(4, 8, 18), (int)(170 * clampf(page_scroll / 200.0f + (tab == T_EXPLORE), 0, 1)), RGB(4, 8, 18), 0);
   top_bar(255);
   int ic[4]; const char *lb[4]; int n = 0;
-  ic[n] = IC_BTN_X; lb[n++] = tab == T_GAMES && zone <= Z_ACT ? (napps && apps[app_sel].builtin ? _("Apri") : _("Gioca")) : _("Seleziona");
+  ic[n] = IC_BTN_X; lb[n++] = tab == T_GAMES && zone <= Z_ACT ? (nrow && apps[app_sel].builtin ? _("Apri") : _("Gioca")) : _("Seleziona");
   ic[n] = IC_BTN_TRI; lb[n++] = _("Game Base");
   ic[n] = IC_BTN_SQ; lb[n++] = _("Notifiche");
   ic[n] = IC_BTN_OPT; lb[n++] = _("Centro di controllo");
@@ -987,38 +1004,77 @@ void home_draw(void) {
 // I giochi si disinstallano, homebrew e payload si cancellano dalla loro cartella.
 static void delete_confirmed(int idx, void *ud) {
   (void)ud;
-  if (idx != 0 || !napps) return;
+  if (idx != 0 || !nrow) return;
   AppEntry *ap = &apps[app_sel];
   char name[96]; snprintf(name, sizeof name, "%s", ap->name);
   int rc = ap->hb ? hb_remove(ap->dir, OMEGA_HB_ROOT) : ap->pld ? payload_remove(ap->dir) : store_uninstall(ap->tid);
   omega_log("elimina %s (%s): rc=0x%x", name, ap->hb ? ap->dir : ap->tid, (unsigned)rc);
   if (rc != 0) { char m[160]; snprintf(m, sizeof m, _("Eliminazione non riuscita (0x%x)"), (unsigned)rc); set_msg(m, 1); return; }
   scan_apps();
-  for (int i = 0; i < napps; i++) tile_size[i] = 150;
-  if (app_sel >= napps) app_sel = napps ? napps - 1 : 0;
+  for (int i = 0; i < nrow; i++) tile_size[i] = 150;
+  if (app_sel >= nrow) app_sel = nrow ? nrow - 1 : 0;
   focus_at = SDL_GetTicks(); focus_loaded = -1;
-  if (!napps) bg_set_default();
+  if (!nrow) bg_set_default();
   char m[256]; snprintf(m, sizeof m, _("%s eliminato dalla console"), name);
   set_msg(m, 0);
 }
 
+// Opzioni di un gioco in home. Le voci: Gioca, Proponi al party, Aggiorna
+// informazioni, Sposta in una cartella, Nascondi dalla home, Invita un amico,
+// Elimina dalla console.
+enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_DELETE, GM_N };
 static void game_more_menu(int idx, void *ud) {
   (void)ud;
-  if (!napps) return;
+  if (!nrow) return;
   AppEntry *ap = &apps[app_sel];
-  if (idx == 4) { invite_to_game_menu(ap->tid, ap->name); return; }
-  if (idx == 3) {
-    static char q[512];
-    snprintf(q, sizeof q, ap->hb ? _("Eliminare l'homebrew %s dalla console?") : _("Eliminare %s dalla console? Il gioco verrà disinstallato."), ap->name);
-    confirm_open(q, _("Elimina"), delete_confirmed, NULL);
-    return;
+  switch (idx) {
+    case GM_PLAY: launch_app(app_sel); break;
+    case GM_PARTY: {
+      if (!S.party.active) { set_msg(_("Non sei in un party: creane uno dalla Game Base"), 1); return; }
+      char m[200]; snprintf(m, sizeof m, _("Giochiamo a %s?"), ap->name);
+      social_party_send(m); set_msg(_("Invito a giocare inviato al party"), 0);
+      break;
+    }
+    case GM_REFRESH: S.game_loading = 0; social_load_game(ap->tid); set_msg(_("Informazioni aggiornate"), 0); break;
+    case GM_FOLDER: layout_move_menu(ap->tid); break;
+    case GM_HIDE: {
+      char m[200]; snprintf(m, sizeof m, _("%s nascosta: la rimetti in Impostazioni \xE2\x80\xBA App nascoste"), ap->name);
+      layout_hide(ap->tid, 1); set_msg(m, 0);
+      break;
+    }
+    case GM_INVITE: invite_to_game_menu(ap->tid, ap->name); break;
+    case GM_DELETE: {
+      static char q[512];
+      snprintf(q, sizeof q, ap->hb ? _("Eliminare l'homebrew %s dalla console?") : _("Eliminare %s dalla console? Il gioco verrà disinstallato."), ap->name);
+      confirm_open(q, _("Elimina"), delete_confirmed, NULL);
+      break;
+    }
   }
-  if (idx == 0) launch_app(app_sel);
-  else if (idx == 1) {
-    if (!S.party.active) { set_msg(_("Non sei in un party: creane uno dalla Game Base"), 1); return; }
-    char m[200]; snprintf(m, sizeof m, _("Giochiamo a %s?"), ap->name);
-    social_party_send(m); set_msg(_("Invito a giocare inviato al party"), 0);
-  } else if (idx == 2) { S.game_loading = 0; social_load_game(ap->tid); set_msg(_("Informazioni aggiornate"), 0); }
+}
+
+// Dopo un cambio di cartelle o di app nascoste: si rifà la fila senza
+// rileggere i dischi, tenendo a fuoco keep_tid (o la tessera di prima, o la
+// cartella in cui è finita).
+void home_relayout(const char *keep_tid) {
+  char keep[16]; snprintf(keep, sizeof keep, "%s", keep_tid ? keep_tid : nrow && app_sel < nrow ? apps[app_sel].tid : "");
+  // via le tessere delle cartelle, poi Community in testa e le app nell'ordine scelto
+  int n = 0;
+  for (int i = 0; i < napps; i++) if (apps[i].builtin != 2) apps[n++] = apps[i];
+  napps = n;
+  for (int i = 0; i < napps; i++) for (int k = i + 1; k < napps; k++) {
+    int before = apps[k].builtin == 1 || (!apps[i].builtin && app_cmp(&apps[k], &apps[i]) < 0);
+    if (before) { AppEntry t = apps[i]; apps[i] = apps[k]; apps[k] = t; }
+  }
+  layout_apply();
+  const char *f = keep[0] ? layout_folder_of(keep) : NULL;
+  int sel = -1;
+  for (int i = 0; i < nrow; i++) if (!strcmp(apps[i].tid, f ? f : keep)) sel = i;
+  if (sel < 0) sel = app_sel < nrow ? app_sel : nrow - 1;
+  app_sel = sel < 0 ? 0 : sel;
+  for (int i = 0; i < nrow; i++) tile_size[i] = 150;
+  if (zone == Z_ACT && apps[app_sel].builtin == 1) act_sel = 0;
+  focus_at = SDL_GetTicks(); focus_loaded = -1;
+  if (!nrow) bg_set_default();
 }
 
 static UserRef pick_list[16]; static int npick;
@@ -1072,19 +1128,23 @@ void home_input(int b) {
   switch (zone) {
     case Z_ROW:
       if (b == B_LEFT && app_sel > 0) { app_sel--; focus_at = SDL_GetTicks(); }
-      else if (b == B_RIGHT && app_sel < napps - 1) { app_sel++; focus_at = SDL_GetTicks(); }
+      else if (b == B_RIGHT && app_sel < nrow - 1) { app_sel++; focus_at = SDL_GetTicks(); }
       else if (b == B_UP) { zone = Z_TOP; top_sel = 0; }
-      else if (b == B_DOWN) { if (napps) { zone = Z_ACT; act_sel = 0; } else if (g_prefs.cards) zone = Z_FEED; }
-      else if (b == B_X && napps) launch_app(app_sel);
+      else if (b == B_DOWN) { if (nrow) { zone = Z_ACT; act_sel = 0; } else if (g_prefs.cards) zone = Z_FEED; }
+      else if (b == B_X && nrow) launch_app(app_sel);
       break;
     case Z_ACT:
       if (b == B_LEFT && act_sel > 0) act_sel--;
-      else if (b == B_RIGHT && act_sel < 1 && !apps[app_sel].builtin) act_sel++;
+      else if (b == B_RIGHT && act_sel < 1 && apps[app_sel].builtin != 1) act_sel++;
       else if (b == B_UP || b == B_O) zone = Z_ROW;
       else if (b == B_DOWN && g_prefs.cards) { zone = Z_CARDS; card_sel = 0; }
       else if (b == B_X) {
         if (act_sel == 0) launch_app(app_sel);
-        else { const char *it[] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Elimina dalla console"), _("Invita un amico a giocare") }; menu_open(apps[app_sel].name, it, 5, game_more_menu, NULL); }
+        else if (apps[app_sel].builtin == 2) layout_folder_menu(apps[app_sel].tid);
+        else {
+          const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Elimina dalla console") };
+          menu_open(apps[app_sel].name, it, GM_N, game_more_menu, NULL);
+        }
       }
       break;
     case Z_CARDS:
@@ -1102,7 +1162,7 @@ void home_input(int b) {
       int n = feed_count();
       if (b == B_LEFT && feed_sel > 0) feed_sel--;
       else if (b == B_RIGHT && feed_sel < n - 1) feed_sel++;
-      else if (b == B_UP || b == B_O) zone = napps ? Z_CARDS : Z_ROW;
+      else if (b == B_UP || b == B_O) zone = nrow ? Z_CARDS : Z_ROW;
       else if (b == B_X) { const Activity *a = feed_item(feed_sel); if (a) profile_open(a->oid); }
       break;
     }

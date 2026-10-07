@@ -12,7 +12,11 @@
     "admin_report": "Hlášení: {title}",
     "admin_social_report": "Hlášení: {kind} {title}",
     "report_on_comment": " (komentář)",
-    "report_hidden": " — skryto"
+    "report_hidden": " — skryto",
+    "feedback_bug": "Chybu nahlásil(a) {actor}",
+    "feedback_idea": "Návrh funkce od uživatele {actor}",
+    "store_recommend": "Uživatel {actor} vám doporučuje {app}",
+    "store_update": "{app} bylo aktualizováno na verzi {version}"
   },
   "report_kind": {
     "user": "uživatel",

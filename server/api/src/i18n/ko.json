@@ -12,7 +12,11 @@
     "admin_report": "신고: {title}",
     "admin_social_report": "신고: {kind} {title}",
     "report_on_comment": " (댓글)",
-    "report_hidden": " — 숨겨짐"
+    "report_hidden": " — 숨겨짐",
+    "feedback_bug": "{actor}님의 버그 신고",
+    "feedback_idea": "{actor}님의 기능 요청",
+    "store_recommend": "{actor}님이 {app}을(를) 추천했습니다",
+    "store_update": "{app}이(가) 버전 {version}(으)로 업데이트되었습니다"
   },
   "report_kind": {
     "user": "사용자",

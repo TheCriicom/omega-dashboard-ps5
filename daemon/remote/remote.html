@@ -98,6 +98,19 @@
   .upbox .bar { margin-top:10px; }
   @media (max-width: 420px) { .ups { grid-template-columns:1fr; } }
 
+  .chk { display:flex; align-items:center; gap:10px; margin-top:14px; font-size:14px; color:var(--ink2); cursor:pointer; }
+  .chk input { width:20px; height:20px; accent-color:var(--acc); }
+  .ways { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-top:16px; }
+  .way { padding:14px; border-radius:12px; background:var(--bg2); border:1px solid var(--line); }
+  .way b { display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:6px; }
+  .way b i { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:var(--acc); color:#fff; font-style:normal; font-size:12px; }
+  .way span { color:var(--ink3); font-size:13px; }
+  .fields { width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:13px; }
+  .fields td { padding:6px 8px; border-top:1px solid var(--line); vertical-align:top; color:var(--ink2); }
+  .fields td:first-child { font-family:ui-monospace,"SF Mono",Menlo,monospace; color:var(--acc2); white-space:nowrap; }
+  pre.ex { margin:10px 0 0; padding:12px; border-radius:10px; background:var(--bg2); border:1px solid var(--line); font:12.5px/1.5 ui-monospace,"SF Mono",Menlo,monospace; color:var(--ink2); overflow:auto; max-height:320px; }
+  .game .inst { display:flex; width:100%; margin-top:8px; min-height:36px; font-size:13px; padding:0 10px; }
+
   /* ---------- PIN ---------- */
   .pair { width:calc(100% - 32px); max-width:420px; margin:8vh auto 0; text-align:center; padding:28px 22px; }
   .pair .logo { width:56px; height:56px; margin:0 auto 14px; }
@@ -250,6 +263,7 @@
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 19h3.5L19 8.5 15.5 5 5 15.5zM13.5 7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l.8 12a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L17 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-folder" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
 </svg>
 
@@ -328,6 +342,11 @@
           <span class="ico"><svg aria-hidden="true"><use href="#i-games"/></svg></span>
           <div><h1 id="t_lib"></h1><p class="help" id="t_lib_help"></p></div>
         </div>
+        <div class="ways">
+          <div class="way"><b><i>1</i><span id="w1t"></span></b><span id="w1"></span></div>
+          <div class="way"><b><i>2</i><span id="w2t"></span></b><span id="w2"></span></div>
+          <div class="way"><b><i>3</i><span id="w3t"></span></b><span id="w3"></span></div>
+        </div>
         <div class="actions"><button class="btn primary" type="button" id="add_open_b"><svg aria-hidden="true"><use href="#i-plus"/></svg><span id="add_open"></span></button><button class="btn" type="button" id="imp_open_b"><svg aria-hidden="true"><use href="#i-code"/></svg><span id="imp_open"></span></button></div>
       </section>
 
@@ -339,6 +358,7 @@
           <label class="drop" id="up_drop2"><span class="ico"><svg aria-hidden="true"><use href="#i-folder"/></svg></span><span><b id="l_updir"></b><span id="l_updir_s"></span></span><input type="file" id="up_dir" webkitdirectory directory multiple></label>
         </div>
         <label class="f" for="up_name" id="l_upname"></label><input type="text" id="up_name" maxlength="120">
+        <label class="chk"><input type="checkbox" id="up_inst" checked><span id="l_upinst"></span></label>
         <div class="upbox" id="upbox" hidden>
           <div class="txt" id="up_txt"></div>
           <div class="bar"><i id="up_prog"></i></div>
@@ -366,6 +386,12 @@
         <section class="card" id="imp" hidden>
           <h2><svg aria-hidden="true"><use href="#i-code"/></svg><span id="i_title"></span></h2>
           <p class="help" id="i_help"></p>
+          <details open><summary><svg aria-hidden="true"><use href="#i-chev"/></svg><span id="jh_t"></span></summary>
+            <p class="help" id="jh"></p>
+            <table class="fields"><tbody id="jfields"></tbody></table>
+            <pre class="ex" id="jex"></pre>
+            <div class="actions"><button class="btn" type="button" id="jdl"><svg aria-hidden="true"><use href="#i-down"/></svg><span id="jdl_l"></span></button><button class="btn ghost" type="button" id="jcp"><span id="jcp_l"></span></button><button class="btn ghost" type="button" id="jtry"><span id="jtry_l"></span></button></div>
+          </details>
           <label class="drop"><span class="ico"><svg aria-hidden="true"><use href="#i-folder"/></svg></span><span><b id="l_file"></b><span>.json</span></span><input type="file" id="i_file" accept=".json,application/json,text/plain"></label>
           <label class="f" for="i_link" id="l_link"></label>
           <div class="row"><input type="url" id="i_link" placeholder="https://…/library.json"><button class="btn" type="button" id="i_link_go"></button></div>
@@ -397,7 +423,12 @@
           up: 'Upload from this device', up_help: 'Choose a .pkg, .zip or .elf file, or the folder of a game or homebrew: it is copied to the console over Wi-Fi. Homebrew folders (with homebrew.js or eboot.elf) go straight to Omega\'s Home; games appear in My library, ready to install.',
           up_file: 'Choose a file', up_dir: 'Choose a folder', up_dir_s: 'game or homebrew', up_name: 'Name (optional)', up_sending: 'Sending {n} of {t} · {a} of {b}', up_wait: 'Keep this page open until it finishes.',
           up_space: 'Not enough space on the console: {a} free, {b} needed', up_lib: 'Done: it\'s in My library, ready to install', up_hb: 'Done: {name} is now in Omega\'s Home, with your homebrew',
-          up_fail: 'Upload failed: ', up_unknown: 'Not recognised: choose a .pkg, .zip or .elf, or a folder with sce_sys/param.json, homebrew.js or eboot.elf', up_drop: 'or drag it here', from_upload: 'uploaded', up_nodir: 'This browser can\'t pick folders: use a computer, or upload a .zip', up_retry: 'Connection lost: retrying in {s} s (attempt {k} of {m}). Keep this page open.', up_gaveup: 'the console did not respond for several minutes. Choose the same files again to resume where it stopped.' },
+          up_fail: 'Upload failed: ', up_unknown: 'Not recognised: choose a .pkg, .zip or .elf, or a folder with sce_sys/param.json, homebrew.js or eboot.elf', up_drop: 'or drag it here', from_upload: 'uploaded', up_nodir: 'This browser can\'t pick folders: use a computer, or upload a .zip', up_retry: 'Connection lost: retrying in {s} s (attempt {k} of {m}). Keep this page open.', up_gaveup: 'the console did not respond for several minutes. Choose the same files again to resume where it stopped.',
+          up_inst: 'Install it on the console as soon as it arrives', up_installing: 'Done: the console is installing it now. Watch the progress bar on Omega\'s Home', inst: 'Install on console', inst_ok: 'Sent: the console is installing it (progress on Omega\'s Home)', inst_fail: 'The console did not accept the request',
+          w1t: 'From this PC or phone', w1: 'Upload a .pkg, .zip, .elf or a game folder below: it is copied over Wi-Fi and installed by itself.', w2t: 'With a link', w2: 'Add a game with its direct download link and cover: the console downloads and installs it.', w3t: 'With a JSON list', w3: 'Import or link a JSON with many games at once: they all appear in Store › Library.',
+          jh_t: 'How the games JSON works', jh: 'A plain text file with a list of games. Each game needs at least a title and a direct link to the file; the rest is optional. Save it as .json, then import it here or put it online and link it: when linked, the list stays in sync and updates by itself.',
+          jdl: 'Download the example', jcp: 'Copy', jtry: 'Import the example', copied: 'Copied',
+          f_title: 'name of the game (required)', f_url: 'direct link to the .pkg, .zip or .elf (required); also download, link, pkg', f_cover: 'link to a square image; also image, icon', f_images: 'list of screenshot links; also screenshots', f_platform: 'PS5 or PS4', f_tid: 'Title ID, e.g. CUSA12345 or PPSA01234', f_ver: 'version, e.g. 1.00', f_desc: 'a few lines about the game', f_type: 'pkg, zip, elf (guessed from the link if missing)' },
     it: { party: 'Party vocale', p_on: 'Microfono acceso · {p}', p_muted: 'Microfono spento · {p}', p_nomic: 'Solo ascolto (microfono non disponibile) · {p}', p_silent: 'Dal microfono arriva solo silenzio: controlla il tasto mute del controller · {p}', p_mute: 'Spegni il microfono', p_unmute: 'Accendi il microfono', p_leave: 'Esci dal party', p_leaveq: 'Uscire dal party vocale?',
           pair: 'Scrivi il PIN che vedi sulla console in Omega › Impostazioni › Sistema e strumenti › Telecomando.', bad: 'PIN errato', locked: 'Troppi tentativi: aspetta un minuto', off: 'non raggiungibile', on: 'collegato',
           music: 'Musica', lib: 'La mia libreria', console: 'Console', game: 'In gioco', none: 'Home', temp: 'Temperatura', fav: 'Radio preferite', queue: 'In coda', live: 'In diretta', paused: 'In pausa', loading: 'Caricamento…', stopped: 'Fermo', empty: 'La coda è vuota',
@@ -411,7 +442,12 @@
           up: 'Carica da questo dispositivo', up_help: 'Scegli un file .pkg, .zip o .elf, oppure la cartella di un gioco o di un homebrew: viene copiato sulla console via Wi-Fi. Le cartelle di homebrew (con homebrew.js o eboot.elf) finiscono subito nella Home di Omega; i giochi compaiono in La mia libreria, pronti da installare.',
           up_file: 'Scegli un file', up_dir: 'Scegli una cartella', up_dir_s: 'gioco o homebrew', up_name: 'Nome (facoltativo)', up_sending: 'Invio {n} di {t} · {a} di {b}', up_wait: 'Tieni aperta questa pagina finché non finisce.',
           up_space: 'Spazio insufficiente sulla console: liberi {a}, servono {b}', up_lib: 'Fatto: lo trovi in La mia libreria, pronto da installare', up_hb: 'Fatto: {name} ora è nella Home di Omega, tra i tuoi homebrew',
-          up_fail: 'Caricamento non riuscito: ', up_unknown: 'Non riconosciuto: scegli un .pkg, .zip o .elf, oppure una cartella con sce_sys/param.json, homebrew.js o eboot.elf', up_drop: 'oppure trascinalo qui', from_upload: 'caricato', up_nodir: 'Questo browser non sceglie le cartelle: usa un computer, o carica uno .zip', up_retry: 'Connessione persa: riprovo tra {s} s (tentativo {k} di {m}). Tieni aperta questa pagina.', up_gaveup: 'la console non risponde da alcuni minuti. Scegli di nuovo gli stessi file per riprendere da dove si era fermato.' }
+          up_fail: 'Caricamento non riuscito: ', up_unknown: 'Non riconosciuto: scegli un .pkg, .zip o .elf, oppure una cartella con sce_sys/param.json, homebrew.js o eboot.elf', up_drop: 'oppure trascinalo qui', from_upload: 'caricato', up_nodir: 'Questo browser non sceglie le cartelle: usa un computer, o carica uno .zip', up_retry: 'Connessione persa: riprovo tra {s} s (tentativo {k} di {m}). Tieni aperta questa pagina.', up_gaveup: 'la console non risponde da alcuni minuti. Scegli di nuovo gli stessi file per riprendere da dove si era fermato.',
+          up_inst: 'Installalo sulla console appena arriva', up_installing: 'Fatto: la console lo sta installando, segui la barra nella Home di Omega', inst: 'Installa sulla console', inst_ok: 'Inviato: la console lo sta installando (barra nella Home di Omega)', inst_fail: 'La console non ha accettato la richiesta',
+          w1t: 'Da questo PC o telefono', w1: 'Carica qui sotto un .pkg, .zip, .elf o la cartella di un gioco: arriva via Wi-Fi e si installa da solo.', w2t: 'Con un link', w2: 'Aggiungi un gioco con il link diretto per scaricarlo e la copertina: la console lo scarica e lo installa.', w3t: 'Con un elenco JSON', w3: 'Importa o collega un JSON con tanti giochi insieme: compaiono tutti in Store › Libreria.',
+          jh_t: 'Come funziona il JSON dei giochi', jh: 'Un semplice file di testo con l\'elenco dei giochi. Per ogni gioco servono almeno il titolo e il link diretto al file; il resto è facoltativo. Salvalo come .json e importalo qui, oppure mettilo online e collegalo: collegato, l\'elenco resta sincronizzato e si aggiorna da solo.',
+          jdl: 'Scarica l\'esempio', jcp: 'Copia', jtry: 'Importa l\'esempio', copied: 'Copiato',
+          f_title: 'nome del gioco (obbligatorio)', f_url: 'link diretto al .pkg, .zip o .elf (obbligatorio); anche download, link, pkg', f_cover: 'link a un\'immagine quadrata; anche image, icon', f_images: 'elenco di link agli screenshot; anche screenshots', f_platform: 'PS5 o PS4', f_tid: 'Title ID, es. CUSA12345 o PPSA01234', f_ver: 'versione, es. 1.00', f_desc: 'qualche riga sul gioco', f_type: 'pkg, zip, elf (dedotto dal link se manca)' }
   };
   /*T_MORE*/
   var L = T.en;
@@ -428,11 +464,27 @@
       add_open: 'add', imp_open: 'imp', l_title: 'title', l_url: 'url', l_cover: 'cover', l_plat: 'plat', l_tid: 'tid', l_ver: 'ver', l_desc: 'desc', save: 'save', cancel: 'cancel',
       i_title: 'imp', i_help: 'i_help', l_file: 'file', i_paste_s: 'paste', i_paste_go: 'import_go', l_link: 'link', i_link_go: 'link_go', i_unlink: 'unlink', t_games: 'games',
       t_addmusic: 'addmusic', t_addmusic_help: 'addmusic_help', l_mfiles: 'mfiles', l_mlink: 'mlink', m_link_go: 'play', t_mfiles: 'onconsole',
-      t_up: 'up', t_up_help: 'up_help', l_upfile: 'up_file', l_updir: 'up_dir', l_updir_s: 'up_dir_s', l_upname: 'up_name', up_wait: 'up_wait', up_cancel: 'cancel' };
+      t_up: 'up', t_up_help: 'up_help', l_upfile: 'up_file', l_updir: 'up_dir', l_updir_s: 'up_dir_s', l_upname: 'up_name', up_wait: 'up_wait', up_cancel: 'cancel',
+      l_upinst: 'up_inst', w1t: 'w1t', w1: 'w1', w2t: 'w2t', w2: 'w2', w3t: 'w3t', w3: 'w3', jh_t: 'jh_t', jh: 'jh', jdl_l: 'jdl', jcp_l: 'jcp', jtry_l: 'jtry' };
     Object.keys(map).forEach(function (k) { var el = $(k); if (el) el.textContent = tx(map[k]); });
     each('.l_music', function (el) { el.textContent = tx('music'); });
     each('.l_lib', function (el) { el.textContent = tx('lib'); });
     $('toggle').title = tx('play');
+    jsonHelp();
+  }
+  // Esempio scaricabile: gli stessi campi che la console accetta (lib.c)
+  var EXAMPLE = { name: 'My games', games: [
+    { title: 'Homebrew Game', url: 'https://example.com/games/homebrew-game.pkg', cover: 'https://example.com/covers/homebrew-game.jpg',
+      images: ['https://example.com/shots/homebrew-game-1.jpg'], platform: 'PS4', title_id: 'CUSA12345', version: '1.00', description: 'A short description of the game.', type: 'pkg' },
+    { title: 'My Emulator', url: 'https://example.com/apps/my-emulator.zip', cover: 'https://example.com/covers/my-emulator.png', platform: 'PS5', version: '2.1', type: 'zip' },
+    { title: 'Payload Tool', url: 'https://example.com/payloads/tool.elf', type: 'elf' }
+  ] };
+  function jsonHelp() {
+    var tb = $('jfields'); if (!tb) return; tb.textContent = '';
+    [['title', 'f_title'], ['url', 'f_url'], ['cover', 'f_cover'], ['images', 'f_images'], ['platform', 'f_platform'], ['title_id', 'f_tid'], ['version', 'f_ver'], ['description', 'f_desc'], ['type', 'f_type']].forEach(function (r) {
+      var tr = el('tr'); tr.appendChild(el('td', '', r[0])); tr.appendChild(el('td', '', tx(r[1]))); tb.appendChild(tr);
+    });
+    $('jex').textContent = JSON.stringify(EXAMPLE, null, 2);
   }
   function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
   function icon(id) { return '<svg aria-hidden="true"><use href="#' + id + '"/></svg>'; }
@@ -627,6 +679,16 @@
         var info = el('div', 'info');
         info.appendChild(el('b', '', g.title));
         info.appendChild(el('span', '', [g.platform, g.title_id, g.version, (g.kind || '').toUpperCase()].filter(Boolean).join(' · ') || ' '));
+        var ib = el('button', 'btn inst'); ib.type = 'button'; ib.innerHTML = icon('i-down'); ib.appendChild(el('span', '', tx('inst')));
+        ib.onclick = function () {
+          ib.disabled = true;
+          api('POST', '/v1/library/install', { id: g.id }).then(function (r) {
+            ib.lastChild.textContent = r._status === 200 ? '✓' : '✕';
+            if (r._status === 200) $('upok').textContent = tx('inst_ok'); else alert(tx('inst_fail'));
+            setTimeout(function () { ib.disabled = false; ib.lastChild.textContent = tx('inst'); }, 4000);
+          }).catch(function () { ib.disabled = false; });
+        };
+        info.appendChild(ib);
         li.appendChild(info);
         ul.appendChild(li);
       });
@@ -691,6 +753,17 @@
     this.value = '';
   };
   $('i_paste_go').onclick = function () { importText($('i_text').value); };
+  $('jdl').onclick = function () {
+    var b = new Blob([JSON.stringify(EXAMPLE, null, 2) + '\n'], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'omega-games-example.json';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  };
+  $('jcp').onclick = function () {
+    var t = JSON.stringify(EXAMPLE, null, 2), done = function () { $('jcp_l').textContent = tx('copied'); setTimeout(function () { $('jcp_l').textContent = tx('jcp'); }, 1500); };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, function () {});
+    else { var ta = el('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove(); }
+  };
+  $('jtry').onclick = function () { $('i_text').value = JSON.stringify(EXAMPLE, null, 2); $('i_text').closest('details').open = true; $('i_text').focus(); };
   $('i_link_go').onclick = function () {
     var u = $('i_link').value.trim();
     if (!/^https?:\/\//i.test(u)) { $('ierr').textContent = L.need; return; }
@@ -746,12 +819,12 @@
         tick();
       };
       var finish = function () {
-        api('POST', '/v1/library/upload/done', { b: batch, title: $('up_name').value.trim() }).then(function (r) {
+        api('POST', '/v1/library/upload/done', { b: batch, title: $('up_name').value.trim(), install: $('up_inst').checked }).then(function (r) {
           if (r._status === 409) { retry(finish); return; }   // un file non è ancora completo sul disco
           upEnd();
           try { localStorage.removeItem(key); localStorage.removeItem(key + '-started'); } catch (e) {}
           if (r.homebrew) upMsg(fill(tx('up_hb'), { name: r.homebrew }), '');
-          else if (r.added) { upMsg(tx('up_lib'), ''); $('up_name').value = ''; libseq = -1; loadLib(); }
+          else if (r.added) { upMsg(tx(r.installing ? 'up_installing' : 'up_lib'), ''); $('up_name').value = ''; libseq = -1; loadLib(); }
           else upMsg('', /unknown|title_id/.test(r.error || '') ? tx('up_unknown') : tx('up_fail') + (r.error || ''));
         }).catch(function () { retry(finish); });
       };

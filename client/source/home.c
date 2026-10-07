@@ -50,7 +50,8 @@ static Uint32 last_feed;
 static Uint32 entered_at;
 static int launching = -1; static float launch_t; static Uint32 launch_done_at;
 
-#define TOP_N 10  // Giochi, Esplora, Store, Musica, Cerca, Browser, Notifiche, Game Base, Impostazioni, Profilo
+#define TOP_ICONS 6
+#define TOP_N (2 + TOP_ICONS)  // Giochi, Esplora, Musica, Cerca, Notifiche, Game Base, Impostazioni, Profilo
 #define META_MAX (128 * 1024 - 1)
 #define FOCUS_MS 300   // il fuoco deve restare fermo tanto prima di caricare sfondo e scheda
 
@@ -246,14 +247,21 @@ void scan_apps(void) {
   for (int i = 0; i < napps; i++) apps[i].last_played = recent_of(apps[i].tid);
   for (int i = 0; i < napps; i++) for (int k = i + 1; k < napps; k++)
     if (app_cmp(&apps[k], &apps[i]) < 0) { AppEntry t = apps[i]; apps[i] = apps[k]; apps[k] = t; }
-  // la Community sta in home come una tessera, prima dei giochi: bacheca, gruppi, record e trofei
-  if (g_token[0] && napps < MAX_APPS) {
-    memmove(&apps[1], &apps[0], sizeof(AppEntry) * (size_t)napps);
-    AppEntry *a = &apps[0]; memset(a, 0, sizeof *a);
-    a->builtin = 1; a->tex_state = 2; a->avg = C_ACC;
-    snprintf(a->tid, sizeof a->tid, "%s", TID_COMMUNITY);
-    snprintf(a->name, sizeof a->name, "%s", _("Community"));
-    napps++;
+  // Le app di Omega stanno in home come tessere, prima dei giochi: Community
+  // (bacheca, gruppi, record e trofei), Store, Browser e Installa PKG.
+  {
+    static const struct { int b; const char *tid, *name; int need_login; } SYS[] = {
+      { 1, TID_COMMUNITY, N_("Community"), 1 }, { 3, TID_STORE, N_("Store"), 1 }, { 4, TID_BROWSER, N_("Browser"), 0 }, { 5, TID_PKGS, N_("Installa PKG"), 0 } };
+    int k = 0;
+    for (unsigned d = 0; d < sizeof SYS / sizeof *SYS; d++) {
+      if ((SYS[d].need_login && !g_token[0]) || napps >= MAX_APPS) continue;
+      memmove(&apps[k + 1], &apps[k], sizeof(AppEntry) * (size_t)(napps - k));
+      AppEntry *a = &apps[k++]; memset(a, 0, sizeof *a);
+      a->builtin = SYS[d].b; a->tex_state = 2; a->avg = C_ACC;
+      snprintf(a->tid, sizeof a->tid, "%s", SYS[d].tid);
+      snprintf(a->name, sizeof a->name, "%s", _(SYS[d].name));
+      napps++;
+    }
   }
   layout_apply();        // cartelle e app nascoste: la fila sono le prime nrow voci
   omega_log("scan_apps: %d titoli, %d tessere in home", napps, nrow);
@@ -279,7 +287,7 @@ static void request_icons(void) {
 
 void home_enter(void) {
   static int once;
-  if (!once) { once = 1; drives_after_game(); }   // giochi esterni rimasti montati dall'ultima partita
+  if (!once) { once = 1; drives_after_game(); install_cleanup(); }   // giochi esterni rimasti montati dall'ultima partita, file orfani
   scan_apps();
   for (int i = 0; i < nrow; i++) tile_size[i] = 150;
   if (app_sel >= nrow) app_sel = 0;
@@ -308,6 +316,50 @@ static int kill_running_game(const char *except_tid) {
 }
 #endif
 
+// ------------------------------------------------ avvio degli homebrew --
+static SDL_atomic_t hbl_state;   // 0 libero, 1 richiesta in corso, 2 risposta arrivata
+static int hbl_rc; static char hbl_err[400], hbl_dir[256], hbl_name[96]; static Uint32 hbl_at;
+static int hbl_thread(void *ud) {
+  (void)ud;
+  hbl_rc = hb_launch(hbl_dir, -1, 0, hbl_err, sizeof hbl_err, NULL, 0, NULL);
+  SDL_AtomicSet(&hbl_state, 2);
+  return 0;
+}
+static void hbl_start(int idx) {
+  if (SDL_AtomicGet(&hbl_state)) return;
+  snprintf(hbl_dir, sizeof hbl_dir, "%s", apps[idx].dir); snprintf(hbl_name, sizeof hbl_name, "%s", apps[idx].name);
+  hbl_at = SDL_GetTicks(); hbl_err[0] = 0;
+  prefs_save();                  // websrv ci chiude di colpo: niente da perdere
+  SDL_AtomicSet(&hbl_state, 1);
+  SDL_Thread *t = SDL_CreateThreadWithStackSize(hbl_thread, "hblaunch", 256 * 1024, NULL);
+  if (t) SDL_DetachThread(t); else hbl_thread(NULL);
+}
+static void hbl_poll(void) {
+  int st = SDL_AtomicGet(&hbl_state);
+  if (!st) return;
+  Uint32 age = SDL_GetTicks() - hbl_at;
+  if (st == 1) {
+    // websrv bloccato (issue #52): la richiesta non torna mai
+    if (age > 20000) { set_msg(_("websrv non risponde più: rimandalo dal caricatore di payload e riprova"), 1); unlink(OMEGA_DIR "/hb-launching"); SDL_AtomicSet(&hbl_state, 3); }
+    return;
+  }
+  if (st == 3) return;           // il thread appeso finirà da sé
+  if (hbl_rc < 0) { set_msg(hbl_err, 1); social_presence("online", NULL, NULL); SDL_AtomicSet(&hbl_state, 0); return; }
+  if (hbl_rc == 2) {             // demone (es. Transmission): Omega resta aperta
+    char m[256]; snprintf(m, sizeof m, _("%s avviato in background"), hbl_name);
+    set_msg(m, 0); social_presence("online", NULL, NULL); SDL_AtomicSet(&hbl_state, 0); return;
+  }
+#ifdef PS5
+  // websrv ha risposto ma Omega è ancora viva: di norma ci chiude prima di
+  // rispondere. Si aspetta qualche secondo, poi si dice cosa fare.
+  if (age < 12000) return;
+  unlink(OMEGA_DIR "/hb-launching");
+  set_msg(_("L'homebrew non è partito: websrv ha risposto ma non ha chiuso Omega. Prova ad aprirlo dalla Home di sistema o rimanda websrv."), 1);
+#endif
+  social_presence("online", NULL, NULL);
+  SDL_AtomicSet(&hbl_state, 0);
+}
+
 static void do_launch(int idx) {
   recent_note(apps[idx].tid);   // per l'ordine "Ultimi giocati"
   if (apps[idx].ext) {
@@ -316,17 +368,10 @@ static void do_launch(int idx) {
     if (drives_prepare_launch(&apps[idx], err, sizeof err) != 0) { set_msg(err, 1); social_presence("online", NULL, NULL); return; }
   }
   if (apps[idx].hb) {
-    // parametri già risolti da hb_step: qui parte solo la richiesta a websrv
-    char err[400];
-    int r = hb_launch(apps[idx].dir, -1, 0, err, sizeof err, NULL, 0, NULL);
-    if (r < 0) { set_msg(err, 1); social_presence("online", NULL, NULL); return; }
-    if (r == 2) {              // demone (es. Transmission): Omega resta aperta
-      char m[256]; snprintf(m, sizeof m, _("%s avviato in background"), apps[idx].name);
-      set_msg(m, 0); social_presence("online", NULL, NULL); return;
-    }
-#ifdef PS5
-    app_quit_later(4000);
-#endif
+    // parametri già risolti da hb_step: qui parte solo la richiesta a websrv,
+    // in un thread (può aspettare la rete); l'esito arriva in hbl_poll().
+    // Omega non si chiude da sola: la chiude websrv quando avvia l'homebrew.
+    hbl_start(idx);
     return;
   }
 #ifdef PS5
@@ -414,8 +459,12 @@ static void hb_pick(int i, void *ud) {
 
 void launch_app(int idx) {
   if (idx < 0 || idx >= napps || launching >= 0 || SDL_AtomicGet(&hb_state)) return;
+  if (SDL_AtomicGet(&hbl_state) == 1) { set_msg(_("Avvio già in corso..."), 0); return; }
   if (apps[idx].builtin == 1) { community_open(0); return; }
   if (apps[idx].builtin == 2) { folder_open(apps[idx].tid); return; }
+  if (apps[idx].builtin == 3) { sfx_play(SFX_OPEN); store_open(); return; }
+  if (apps[idx].builtin == 4) { sfx_play(SFX_OPEN); browser_open(NULL); return; }
+  if (apps[idx].builtin == 5) { sfx_play(SFX_OPEN); pkgs_open(); return; }
   if (apps[idx].hb) { hb_step(idx, -1); return; }
   if (apps[idx].pld) {
     char err[400];
@@ -570,16 +619,17 @@ static void top_bar(int alpha) {
   }
   if (extra[0]) rx -= draw_text(font(W_REG, 24), extra, rx, y + 14, C_DIM, alpha, AL_R) + 22;
   rx -= 18;
-  const int icons[8] = { IC_STORE, IC_MUSIC, IC_SEARCH, IC_GLOBE, IC_BELL, IC_FRIENDS, IC_GEAR, -1 };
-  int badges[8] = { 0, 0, 0, 0, S.unread_notif, S.in_req + S.unread_msg + S.ninv, 0, 0 };
-  int pos[8];
-  // da destra: avatar, impostazioni, amici, notifiche, browser, cerca, musica, store
+  // Store e Browser sono tessere della fila, come le app
+  const int icons[TOP_ICONS] = { IC_MUSIC, IC_SEARCH, IC_BELL, IC_FRIENDS, IC_GEAR, -1 };
+  int badges[TOP_ICONS] = { 0, 0, S.unread_notif, S.in_req + S.unread_msg + S.ninv, 0, 0 };
+  int pos[TOP_ICONS];
+  // da destra: avatar, impostazioni, amici, notifiche, cerca, musica
   int cx = rx - 30;
-  for (int k = 7; k >= 0; k--) { pos[k] = cx; cx -= k == 7 ? 96 : 84; }
-  for (int k = 0; k < 8; k++) {
+  for (int k = TOP_ICONS - 1; k >= 0; k--) { pos[k] = cx; cx -= k == TOP_ICONS - 1 ? 96 : 84; }
+  for (int k = 0; k < TOP_ICONS; k++) {
     int idx = 2 + k, foc = focus && top_sel == idx;
     int px = pos[k], py = y + 24;
-    if (k == 7) {
+    if (k == TOP_ICONS - 1) {
       if (foc) ring(px, py, 38, 3, C_WHITE, alpha);
       draw_avatar(S.me, S.my_avatar, px, py, 60, alpha);
       fill_circle(px + 22, py + 22, 9, RGB(10, 14, 24), alpha);
@@ -600,18 +650,18 @@ static void top_activate(void) {
   switch (top_sel) {
     case 0: tab = T_GAMES; tab_anim = 0; break;
     case 1: tab = T_EXPLORE; tab_anim = 0; social_load_news(); social_load_activity(); break;
-    case 2: store_open(); break;
-    case 3: music_open(); break;
-    case 4: search_open(); break;
-    case 5: browser_open(NULL); break;
-    case 6: social_load_notifications(); ov_push(OV_NOTIF); break;
-    case 7: gb_open(0); break;
-    case 8: ov_push(OV_SETTINGS); break;
-    case 9: profile_open(S.me); break;
+    case 2: music_open(); break;
+    case 3: search_open(); break;
+    case 4: social_load_notifications(); ov_push(OV_NOTIF); break;
+    case 5: gb_open(0); break;
+    case 6: ov_push(OV_SETTINGS); break;
+    case 7: profile_open(S.me); break;
   }
 }
 
 // -------------------------------------------------------------- fila giochi --
+static int job_tiles(InstallView *iv);
+static void draw_jobs(int *px, int ty, int s, int gap, int a);
 static void game_row(int y0, int alpha) {
   if (!nrow) {
     int w = 900, h = 220, x = 110;
@@ -628,11 +678,16 @@ static void game_row(int y0, int alpha) {
     float target = (i == app_sel && tab == T_GAMES) ? (zone == Z_ROW ? BIG[ts] : MID[ts]) : BASE[ts];
     tile_size[i] = approach(tile_size[i], target, 14.0f);
   }
+  // tessere di lavoro (installazioni, ricezioni dal PC) dopo le app di Omega
+  int nsys = 0; while (nsys < nrow && SYS_TILE(&apps[nsys])) nsys++;
+  InstallView iv; int njob = job_tiles(&iv); int jobw = njob * ((int)BASE[ts] + gap + 60);
   float before = 0; for (int i = 0; i < app_sel; i++) before += tile_size[i] + gap;
+  if (app_sel >= nsys) before += jobw;
   row_scroll = approach(row_scroll, before, 12.0f);
   float x = 110 - row_scroll;
   float pulse = 0.5f + 0.5f * sinf((float)g_time * 3.2f);
   for (int i = 0; i < nrow; i++) {
+    if (i == nsys && njob) { int jx = (int)x; draw_jobs(&jx, y0 + (int)(BIG[ts] - BASE[ts]) / 2, (int)BASE[ts], gap, alpha); x = (float)jx; }
     int s = (int)tile_size[i];
     int tx = (int)x, ty = y0;
     if (tx > SCREEN_W) break;
@@ -657,10 +712,8 @@ static void game_row(int y0, int alpha) {
           draw_text_fit(font(W_MED, 19), ap->name, tx + s / 2, ty + s - 37, s - 36, C_WHITE, a, AL_C);
         }
       } else if (ap->builtin) {
-        fill_rrect(tx, ty, s, s, 28, mix(C_ACC, RGB(12, 16, 30), 0.35f), a);
-        draw_icon(IC_FRIENDS, tx + s / 2, ty + s / 2 - s / 12, s * 44 / 100, C_WHITE, a);
-        draw_text_fit(font(W_MED, s > 190 ? 24 : 19), _("Community"), tx + s / 2, ty + s - (s > 190 ? 50 : 38), s - 20, C_WHITE, a, AL_C);
-        if (S.unread_groups) draw_badge(tx + s - 22, ty + 22, S.unread_groups, a);
+        sys_tile_draw(ap, tx, ty, s, a);
+        if (ap->builtin == 1 && S.unread_groups) draw_badge(tx + s - 22, ty + 22, S.unread_groups, a);
       } else if (ap->tex) {
         ap->appear = approach(ap->appear, 1, 8.0f);
         SDL_SetTextureColorMod(ap->tex, 255, 255, 255);
@@ -691,6 +744,128 @@ static void game_row(int y0, int alpha) {
   }
 }
 
+// Tessere delle app di Omega: sfumatura propria, icona grande e nome.
+void sys_tile_draw(const AppEntry *ap, int tx, int ty, int s, int a) {
+  Col c1, c2; int ic;
+  switch (ap->builtin) {
+    case 3: c1 = RGB(255, 120, 60); c2 = RGB(200, 40, 110); ic = IC_STORE; break;
+    case 4: c1 = RGB(40, 200, 220); c2 = RGB(30, 90, 210); ic = IC_GLOBE; break;
+    case 5: c1 = RGB(70, 210, 130); c2 = RGB(20, 120, 110); ic = IC_BOX; break;
+    default: c1 = mix(C_ACC, C_WHITE, 0.15f); c2 = mix(C_ACC, RGB(12, 16, 30), 0.45f); ic = IC_FRIENDS; break;
+  }
+  // sfumatura dall'alto: strati arrotondati sempre più bassi, niente bordi squadrati
+  fill_rrect(tx, ty, s, s, 28, c2, a);
+  for (int k = 0; k < 6; k++) fill_rrect(tx, ty, s, s - k * s / 7, 28, c1, a * 13 / 100);
+  draw_icon(ic, tx + s / 2, ty + s / 2 - s / 12, s * 44 / 100, C_WHITE, a);
+  draw_text_fit(font(W_MED, s > 190 ? 24 : 19), ap->name, tx + s / 2, ty + s - (s > 190 ? 50 : 38), s - 20, C_WHITE, a, AL_C);
+}
+
+// ------------------------------------------- installazioni e caricamenti --
+// Come sulla PS4: ciò che si sta installando (o arriva dal PC) compare nella
+// fila con la sua icona e la barra che avanza; gli errori restano scritti lì.
+static struct { int active; char name[96]; long long done, total; int files, nfiles; } upj;
+static Uint32 jobs_at;
+static void on_jobs(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw; (void)ud;
+  if (st != 200 || !j) { upj.active = 0; return; }
+  JVal *u = jget(j, "upload");
+  upj.active = jbool(u, "active");
+  jcpy(upj.name, sizeof upj.name, u, "name");
+  upj.done = (long long)jnum(u, "done", 0); upj.total = (long long)jnum(u, "total", 0);
+  // giochi che il telefono o il PC hanno chiesto di installare subito
+  JFOR(it, jget(j, "install")) {
+    InstallReq r; memset(&r, 0, sizeof r);
+    jcpy(r.url, sizeof r.url, it, "url"); jcpy(r.name, sizeof r.name, it, "title");
+    jcpy(r.title_id, sizeof r.title_id, it, "title_id"); jcpy(r.icon, sizeof r.icon, it, "cover");
+    jcpy(r.lib_id, sizeof r.lib_id, it, "id");
+    const char *k = jstr(it, "kind", "auto");
+    r.kind = !strcmp(k, "pkg") ? 1 : !strcmp(k, "zip") ? 2 : !strcmp(k, "elf") ? 3 : !strcmp(k, "folder") ? 4 : 0;
+    if (strncmp(r.url, "file://", 7)) r.lib_id[0] = 0;   // solo i file caricati si tolgono dopo
+    if (r.url[0]) install_begin(&r);
+  }
+}
+static void jobs_poll(void) {
+  Uint32 now = SDL_GetTicks();
+  if (now - jobs_at < (upj.active ? 1000u : 2500u)) return;
+  jobs_at = now;
+  net_req(HTTP_GET, "http://127.0.0.1:9095/v1/console/jobs", NULL, on_jobs, NULL);
+}
+
+// icone delle tessere di lavoro (file locali o URL), in una piccola cache
+typedef struct { char key[320]; SDL_Texture *t; int st; } JobIcon;
+static JobIcon jicon[4];
+static void on_jicon(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) {
+  (void)avg; (void)ud;
+  int i = key[0] == 'j' ? key[1] - '0' : -1;   // chiave corta "jN": il caricatore tiene 47 caratteri
+  if (i >= 0 && i < 4 && jicon[i].st == 1) { jicon[i].t = t; jicon[i].st = t ? 2 : 3; return; }
+  if (t) SDL_DestroyTexture(t);
+}
+static SDL_Texture *job_icon(const char *path) {
+  if (!path || !path[0]) return NULL;
+  for (int i = 0; i < 4; i++) if (jicon[i].st && !strcmp(jicon[i].key, path)) return jicon[i].t;
+  static int next; int slot = next++ % 4; JobIcon *j = &jicon[slot];
+  if (j->st == 1) return NULL;
+  if (j->t) SDL_DestroyTexture(j->t);
+  memset(j, 0, sizeof *j); snprintf(j->key, sizeof j->key, "%s", path); j->st = 1;
+  int url = !strncmp(path, "http", 4);
+  char k[4] = { 'j', (char)('0' + slot), 0, 0 };
+  load_req(url ? LOAD_URL : LOAD_ICON, k, path, 256, 256, 30, RGB(30, 60, 140), on_jicon, NULL);
+  return NULL;
+}
+
+// una tessera di lavoro: icona velata, barra in basso, stato sotto
+static void job_tile(int tx, int ty, int s, int a, const char *name, const char *icon, int fallback_ic, float prog, const char *line, int err, int done) {
+  SDL_Texture *t = job_icon(icon);
+  shadow_rrect(tx, ty, s, s, 28, 18, a * 50 / 100);
+  if (t) { SDL_SetTextureColorMod(t, 255, 255, 255); draw_tex(t, tx, ty, s, s, done ? a : a * 55 / 100); }
+  else {
+    fill_rrect(tx, ty, s, s, 28, RGB(26, 34, 56), a);
+    draw_icon(fallback_ic, tx + s / 2, ty + s / 2 - 16, s / 3, C_DIM, a);
+    draw_text_fit(font(W_MED, 18), name, tx + s / 2, ty + s - 70, s - 24, C_TXT, a, AL_C);
+  }
+  if (!done) fill_rrect(tx, ty, s, s, 28, RGB(6, 8, 16), a * 35 / 100);
+  // barra: indeterminata se il totale non si conosce
+  int bx = tx + 14, bw = s - 28, by = ty + s - 26;
+  fill_rrect(bx, by, bw, 10, 5, RGB(0, 0, 0), a * 55 / 100);
+  if (err) fill_rrect(bx, by, bw, 10, 5, C_ERR, a);
+  else if (prog >= 0) fill_rrect(bx, by, (int)(bw * clampf(prog, 0.02f, 1)), 10, 5, done ? C_OK : C_ACC2, a);
+  else { int iw = bw / 3, ix = (int)(fmodf((float)g_time * 260, (float)(bw + iw)) - iw); int x0 = ix < 0 ? 0 : ix, x1 = ix + iw > bw ? bw : ix + iw; if (x1 > x0) fill_rrect(bx + x0, by, x1 - x0, 10, 5, C_ACC2, a); }
+  // segno in alto a destra: scaricamento, fatto o errore
+  int cx = tx + s - 24, cy = ty + 24;
+  fill_circle(cx, cy, 18, err ? C_ERR : done ? RGB(0, 150, 90) : RGB(10, 14, 24), a);
+  if (err) draw_text(font(W_BOLD, 24), "!", cx, cy - TTF_FontHeight(font(W_BOLD, 24)) / 2, C_WHITE, a, AL_C);
+  else draw_icon(done ? IC_CHECK : IC_DOWNLOAD, cx, cy, 20, C_WHITE, a);
+  if (!err && !done && prog >= 0) { char pc[8]; snprintf(pc, sizeof pc, "%d%%", (int)(prog * 100)); draw_text(font(W_BOLD, 26), pc, tx + s / 2, ty + s / 2 - 16, C_WHITE, a, AL_C); }
+  // stato sotto la tessera (due righe per gli errori)
+  draw_text_fit(font(W_MED, 19), name, tx, ty + s + 10, s + 60, C_TXT, a, AL_L);
+  if (err) draw_text_wrap(font(W_REG, 17), line, tx, ty + s + 36, s + 120, 3, 21, C_ERR, a);
+  else draw_text_fit(font(W_REG, 17), line, tx, ty + s + 36, s + 80, C_DIM, a, AL_L);
+}
+
+// quante tessere di lavoro ci sono adesso e quanto spazio prendono
+static int job_tiles(InstallView *iv) {
+  int n = install_view(iv);
+  return n + (upj.active ? 1 : 0);
+}
+static void draw_jobs(int *px, int ty, int s, int gap, int a) {
+  InstallView iv; int n = install_view(&iv);
+  if (n) {
+    char line[200];
+    if (iv.active) snprintf(line, sizeof line, "%s%s", iv.phase, iv.queued ? "" : "");
+    else snprintf(line, sizeof line, "%s", iv.result);
+    if (iv.active && iv.queued) { size_t l = strlen(line); snprintf(line + l, sizeof line - l, _("  ·  altri %d in coda"), iv.queued); }
+    job_tile(*px, ty, s, a, iv.name, iv.icon, IC_BOX, iv.active ? iv.prog : 1, line, iv.err, !iv.active && !iv.err);
+    *px += s + gap + 60;
+  }
+  if (upj.active) {
+    char line[160];
+    float p = upj.total > 0 ? (float)upj.done / (float)upj.total : -1;
+    snprintf(line, sizeof line, _("Dal PC  ·  %.0f / %.0f MB"), upj.done / 1048576.0, upj.total / 1048576.0);
+    job_tile(*px, ty, s, a, upj.name[0] ? upj.name : _("Ricezione"), NULL, IC_CLOUD, p, line, 0, 0);
+    *px += s + gap + 60;
+  }
+}
+
 // ------------------------------------------------------- dettagli del gioco --
 static int count_playing(const char *tid) {
   int n = 0; for (int k = 0; k < S.nfriends; k++) if (!strcmp(S.friends[k].game_id, tid)) n++; return n;
@@ -704,6 +879,9 @@ static void game_info(int y0, int alpha) {
   char sub[256], pl[96]; int np = count_playing(ap->tid);
   if (np) { snprintf(pl, sizeof pl, np == 1 ? _("%d amico sta giocando") : _("%d amici stanno giocando"), np); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, pl); }
   else if (ap->builtin == 2) { int c = layout_folder_count(ap->tid); snprintf(sub, sizeof sub, c == 1 ? _("Cartella \xC2\xB7 %d app") : _("Cartella \xC2\xB7 %d app"), c); }
+  else if (ap->builtin == 3) snprintf(sub, sizeof sub, "%s", _("Homebrew della community e La mia libreria, con voti, commenti e amici"));
+  else if (ap->builtin == 4) snprintf(sub, sizeof sub, "%s", _("Naviga il web dalla console: segnalibri, cronologia e lettura comoda"));
+  else if (ap->builtin == 5) snprintf(sub, sizeof sub, "%s", _("Installa i .pkg da chiavette, dischi USB e cartelle a scelta"));
   else if (ap->builtin) snprintf(sub, sizeof sub, "%s", _("Bacheca, gruppi, record e trofei di tutti gli iscritti"));
   else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
   else if (ap->ext) { char on[96]; snprintf(on, sizeof on, _("Su %s"), ap->drive); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, on); }
@@ -715,8 +893,8 @@ static void game_info(int y0, int alpha) {
   sel_anim_act = approach(sel_anim_act, zone == Z_ACT ? (float)act_sel : -1.0f, 16.0f);
   int by = y0 + 168;
   float f0 = clampf(1 - fabsf(sel_anim_act - 0), 0, 1), f1 = clampf(1 - fabsf(sel_anim_act - 1), 0, 1);
-  int w0 = pill(110, by, 84, ap->builtin ? _("Apri") : _("Gioca"), ap->builtin == 1 ? IC_FRIENDS : ap->builtin ? IC_FOLDER : IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
-  if (ap->builtin != 1) pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
+  int w0 = pill(110, by, 84, ap->builtin ? _("Apri") : _("Gioca"), ap->builtin == 2 ? IC_FOLDER : SYS_TILE(ap) ? IC_ARROW_R : IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
+  if (!SYS_TILE(ap)) pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
   if (zone == Z_ACT) focus_ring(act_sel == 0 ? 110 : 110 + w0 + 20, by, act_sel == 0 ? w0 : 84, 84, 42, 0.5f + 0.5f * sinf((float)g_time * 3.2f), (int)(alpha * (act_sel == 0 ? f0 : f1)));
 }
 
@@ -909,9 +1087,11 @@ static float row_scroll_target_diff(void) {
 static void ext_rescan(void) {
   static int seen;   // il primo giro (all'avvio) non va annunciato
   char keep[16]; snprintf(keep, sizeof keep, "%s", nrow ? apps[app_sel].tid : "");
-  int ext0 = 0; for (int i = 0; i < napps; i++) ext0 += apps[i].ext;
+  int ext0 = 0, n0 = napps; for (int i = 0; i < napps; i++) ext0 += apps[i].ext;
   scan_apps();
   int ext1 = 0; for (int i = 0; i < napps; i++) { ext1 += apps[i].ext; tile_size[i] = 150; }
+  int in0 = n0 - ext0, in1 = napps - ext1;   // titoli installati, homebrew e payload
+  if (seen && in1 > in0) { char m[160]; snprintf(m, sizeof m, in1 - in0 == 1 ? _("Nuovo titolo in home") : _("%d nuovi titoli in home"), in1 - in0); set_msg(m, 0); }
   app_sel = 0; for (int i = 0; i < nrow; i++) if (!strcmp(apps[i].tid, keep)) app_sel = i;
   request_icons();
   if (seen && ext1 > ext0) { char m[160]; snprintf(m, sizeof m, ext1 - ext0 == 1 ? _("Disco collegato: 1 gioco in più in home") : _("Disco collegato: %d giochi in più in home"), ext1 - ext0); set_msg(m, 0); }
@@ -920,6 +1100,8 @@ static void ext_rescan(void) {
 }
 
 void home_update(void) {
+  hbl_poll();
+  jobs_poll();
   if (drives_changed() && launching < 0) ext_rescan();
   for (int i = 0; i < napps; i++) if (apps[i].tex_state == 0) { request_icons(); break; }
   // mentre la fila scorre o la pagina si muove, niente effetti costosi
@@ -948,7 +1130,47 @@ void home_update(void) {
   tab_anim = approach(tab_anim, 1, 8.0f);
 }
 
+enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_DELETE, GM_N };
+static void game_more_menu(int idx, void *ud);
+
+// ------------------------------------------- per le altre modalità del menu --
+// homestyles.c disegna la home in altri modi (PS4, XMB, griglia...) ma usa la
+// stessa selezione: sfondo, scheda del gioco e avvio restano quelli di qui.
+int  home_selected(void) { return app_sel; }
+void home_set_sel(int i) { if (i >= 0 && i < nrow && i != app_sel) { app_sel = i; focus_at = SDL_GetTicks(); } }
+int  home_launching(void) { return launching; }
+void home_more(int i) {
+  if (i < 0 || i >= nrow) return;
+  app_sel = i;
+  if (SYS_TILE(&apps[i])) { launch_app(i); return; }
+  if (apps[i].builtin == 2) { layout_folder_menu(apps[i].tid); return; }
+  const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Elimina dalla console") };
+  menu_open(apps[i].name, it, GM_N, game_more_menu, NULL);
+}
+void home_tile(int i, int x, int y, int s, int a) {   // una tessera come nella fila (icona, cartella, app di Omega)
+  if (i < 0 || i >= napps) return;
+  AppEntry *ap = &apps[i];
+  if (ap->builtin == 2) {
+    fill_rrect(x, y, s, s, s / 6, mix(C_PANEL, C_WHITE, 0.08f), a);
+    int pad = s / 12, cell = (s - 3 * pad) / 2;
+    for (int k = 0; k < 4; k++) { int j = layout_folder_app(ap->tid, k); if (j < 0) break; int cx = x + pad + (k % 2) * (cell + pad), cy = y + pad + (k / 2) * (cell + pad); if (apps[j].tex) draw_tex(apps[j].tex, cx, cy, cell, cell, a); else fill_rrect(cx, cy, cell, cell, 8, RGB(40, 48, 70), a); }
+  } else if (ap->builtin) sys_tile_draw(ap, x, y, s, a);
+  else if (ap->tex) { SDL_SetTextureColorMod(ap->tex, 255, 255, 255); draw_tex(ap->tex, x, y, s, s, a); }
+  else { fill_rrect(x, y, s, s, s / 6, RGB(30, 38, 60), a); draw_icon(IC_GAMEPAD, x + s / 2, y + s / 2, s / 3, C_DIM, a); }
+  if (ap->ext && s >= 90) { fill_circle(x + s - s / 7, y + s - s / 7, s / 9, RGB(10, 14, 24), a * 90 / 100); draw_icon(IC_DRIVE, x + s - s / 7, y + s - s / 7, s / 7, C_ACC2, a); }
+}
+void home_top(int which) { top_sel = which; top_activate(); }
+// tessere di lavoro (installazioni, ricezioni) per le altre modalità
+int home_jobs(int x, int y, int s, int a) { InstallView iv; if (!job_tiles(&iv)) return 0; int jx = x; draw_jobs(&jx, y, s, 22, a); return jx - x; }
+
+static void launch_overlay(void);
 void home_draw(void) {
+  if (g_prefs.home_style && tab == T_GAMES) {
+    particles_draw(90);
+    hs_draw();
+    launch_overlay();
+    return;
+  }
   page_scroll_t = tab == T_GAMES ? (zone == Z_CARDS ? 470.0f : zone == Z_FEED ? 860.0f : 0.0f) : 0.0f;
   page_scroll = approach(page_scroll, page_scroll_t, 9.0f);
   int ps = (int)page_scroll;
@@ -985,7 +1207,11 @@ void home_draw(void) {
     hints(ic, lb, n, ha);
   }
 
-  // avvio gioco: il riquadro "vola" verso il centro e lo schermo si spegne
+  launch_overlay();
+}
+
+// avvio gioco: il riquadro "vola" verso il centro e lo schermo si spegne
+static void launch_overlay(void) {
   if (launching >= 0) {
     float t = clampf(launch_t / 0.75f, 0, 1), e = ease_in_out(t);
     AppEntry *ap = &apps[launching];
@@ -1022,7 +1248,6 @@ static void delete_confirmed(int idx, void *ud) {
 // Opzioni di un gioco in home. Le voci: Gioca, Proponi al party, Aggiorna
 // informazioni, Sposta in una cartella, Nascondi dalla home, Invita un amico,
 // Elimina dalla console.
-enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_DELETE, GM_N };
 static void game_more_menu(int idx, void *ud) {
   (void)ud;
   if (!nrow) return;
@@ -1062,7 +1287,8 @@ void home_relayout(const char *keep_tid) {
   for (int i = 0; i < napps; i++) if (apps[i].builtin != 2) apps[n++] = apps[i];
   napps = n;
   for (int i = 0; i < napps; i++) for (int k = i + 1; k < napps; k++) {
-    int before = apps[k].builtin == 1 || (!apps[i].builtin && app_cmp(&apps[k], &apps[i]) < 0);
+    int si = SYS_TILE(&apps[i]), sk = SYS_TILE(&apps[k]);
+    int before = sk ? (!si || sys_tile_order(apps[k].builtin) < sys_tile_order(apps[i].builtin)) : (!si && app_cmp(&apps[k], &apps[i]) < 0);
     if (before) { AppEntry t = apps[i]; apps[i] = apps[k]; apps[k] = t; }
   }
   layout_apply();
@@ -1072,7 +1298,7 @@ void home_relayout(const char *keep_tid) {
   if (sel < 0) sel = app_sel < nrow ? app_sel : nrow - 1;
   app_sel = sel < 0 ? 0 : sel;
   for (int i = 0; i < nrow; i++) tile_size[i] = 150;
-  if (zone == Z_ACT && apps[app_sel].builtin == 1) act_sel = 0;
+  if (zone == Z_ACT && SYS_TILE(&apps[app_sel])) act_sel = 0;
   focus_at = SDL_GetTicks(); focus_loaded = -1;
   if (!nrow) bg_set_default();
 }
@@ -1093,6 +1319,7 @@ void home_input(int b) {
   if (b == B_TRI) { gb_open(0); return; }
   if (b == B_OPT) { ov_push(OV_CC); return; }
   if (b == B_SQ) { social_load_notifications(); ov_push(OV_NOTIF); return; }
+  if (g_prefs.home_style && tab == T_GAMES && hs_input(b)) return;
   if (b == B_L1 || b == B_R1) { tab = b == B_L1 ? T_GAMES : T_EXPLORE; tab_anim = 0; if (tab == T_EXPLORE) { social_load_news(); social_load_activity(); } return; }
 
   if (zone == Z_TOP) {
@@ -1135,7 +1362,7 @@ void home_input(int b) {
       break;
     case Z_ACT:
       if (b == B_LEFT && act_sel > 0) act_sel--;
-      else if (b == B_RIGHT && act_sel < 1 && apps[app_sel].builtin != 1) act_sel++;
+      else if (b == B_RIGHT && act_sel < 1 && !SYS_TILE(&apps[app_sel])) act_sel++;
       else if (b == B_UP || b == B_O) zone = Z_ROW;
       else if (b == B_DOWN && g_prefs.cards) { zone = Z_CARDS; card_sel = 0; }
       else if (b == B_X) {

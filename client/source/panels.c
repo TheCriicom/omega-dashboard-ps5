@@ -1025,59 +1025,165 @@ static void open_lang_menu(void) {
   menu_select(sel);
 }
 
-enum { SO_PROFILE, SO_CUSTOM, SO_AVATAR, SO_BIO, SO_THEME, SO_LANG, SO_AUDIO, SO_HOME, SO_HIDDEN, SO_SERVER, SO_SYSTEM, SO_PRIVACY, SO_ABOUT, SO_LOGOUT, SO_QUIT, N_OPT };
+// Impostazioni in sezioni: a sinistra Account, Aspetto, Home e giochi, Sistema,
+// Aiuto; a destra le voci della sezione con il valore attuale. Prima era un
+// unico elenco di 15 righe: ora ogni cosa sta dove la si cerca.
+enum {
+  SO_PROFILE, SO_AVATAR, SO_BIO, SO_PRIVACY, SO_LOGOUT,
+  SO_CUSTOM, SO_STYLE, SO_THEME, SO_LANG, SO_AUDIO,
+  SO_HOME, SO_HIDDEN, SO_PATHS, SO_PKGS, SO_AUTOMOUNT,
+  SO_SYSTEM, SO_REMOTE, SO_SERVER, SO_FILES,
+  SO_WHY, SO_FEEDBACK, SO_ABOUT, SO_QUIT, N_OPT
+};
+static const struct { const char *name; int ic; int first, n; } ST_SECT[] = {
+  { N_("Account"), IC_USER, SO_PROFILE, 5 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 5 },
+  { N_("Sistema"), IC_GEAR, SO_SYSTEM, 4 }, { N_("Aiuto"), IC_IDEA, SO_WHY, 4 },
+};
+#define ST_NSECT (int)(sizeof ST_SECT / sizeof *ST_SECT)
+static int st_sect, st_col; static float st_sect_anim;   // st_col: 0 sezioni, 1 voci
+static const char *st_label(int o) {
+  static const char *L[N_OPT] = { N_("Il mio profilo"), N_("Cambia avatar"), N_("Modifica bio"), N_("Privacy"), N_("Esci dall'account"),
+    N_("Personalizza"), N_("Modalità del menu"), N_("Tema"), N_("Lingua"), N_("Audio"),
+    N_("Omega come Home"), N_("App nascoste"), N_("Cartelle di giochi e PKG"), N_("Installa PKG"), N_("Montaggio automatico"),
+    N_("Sistema e strumenti"), N_("Telecomando dal telefono"), N_("Server"), N_("Gestore dei file"),
+    N_("Perché Omega"), N_("Segnala un bug o chiedi una funzione"), N_("Informazioni su Omega"), N_("Chiudi Omega") };
+  return _(L[o]);
+}
+static int st_icon(int o) {
+  static const int I[N_OPT] = { IC_USER, IC_STAR, IC_NEWS, IC_SHIELD, IC_EXIT, IC_BRUSH, IC_GRID, IC_GEAR, IC_CHAT, IC_VOLUME,
+    IC_HOME, IC_CLOSE, IC_DRIVE, IC_BOX, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
+  return I[o];
+}
+static void st_value(int o, char *v, size_t n) {
+  v[0] = 0;
+  switch (o) {
+    case SO_AUDIO: snprintf(v, n, _("Musica %s \xC2\xB7 Effetti %s"), audio_music_on() ? _("s\xC3\xAC") : _("no"), audio_sfx_on() ? _("s\xC3\xAC") : _("no")); break;
+    case SO_THEME: snprintf(v, n, "%s", theme_name(g_theme)); break;
+    case SO_LANG: snprintf(v, n, "%s", i18n_lang_name(i18n_code())); break;
+    case SO_SERVER: snprintf(v, n, "%s", server_label()); break;
+    case SO_HOME: snprintf(v, n, "%s", home_mode() == 1 ? _("s\xC3\xAC") : _("no")); break;
+    case SO_HIDDEN: snprintf(v, n, "%d", layout_hidden_count()); break;
+    case SO_STYLE: snprintf(v, n, "%s", hs_name(g_prefs.home_style)); break;
+    case SO_AUTOMOUNT: snprintf(v, n, "%s", g_prefs.automount ? _("s\xC3\xAC") : _("no")); break;
+    case SO_PATHS: { char g[32][300], k[32][300]; snprintf(v, n, _("%d giochi \xC2\xB7 %d pkg"), paths_list(0, g, 32), paths_list(1, k, 32)); break; }
+  }
+}
 
 void settings_draw(float t) {
-  int w = 780, x = side_panel(t, w), a = (int)(255 * t);
+  int w = 1240, x = side_panel(t, w), a = (int)(255 * t);
   int px = x + 50, pw = w - 100;
   draw_icon(IC_GEAR, px + 22, 74, 44, C_TXT, a);
   draw_text(font(W_LIGHT, 44), _("Impostazioni"), px + 60, 46, C_WHITE, a, AL_L);
   int y = 132;
-  fill_rrect(px, y, pw, 128, 24, RGB(255, 255, 255), a * 6 / 100);
-  draw_avatar(S.me, S.my_avatar, px + 72, y + 64, 88, a);
-  draw_text_fit(font(W_MED, 32), S.me, px + 140, y + 22, pw - 170, C_TXT, a, AL_L);
+  fill_rrect(px, y, pw, 112, 24, RGB(255, 255, 255), a * 6 / 100);
+  draw_avatar(S.me, S.my_avatar, px + 66, y + 56, 80, a);
+  draw_text_fit(font(W_MED, 32), S.me, px + 130, y + 18, pw - 170, C_TXT, a, AL_L);
   char info[160];
   snprintf(info, sizeof info, _("Amici: %d \xC2\xB7 online: %d \xC2\xB7 giochi: %d"), S.nfriends, friends_online_count(), napps);
-  draw_text_fit(font(W_REG, 22), info, px + 140, y + 72, pw - 170, C_DIM, a, AL_L);
-  y += 140;
-  static const char *opts[N_OPT] = { N_("Il mio profilo"), N_("Personalizza"), N_("Cambia avatar"), N_("Modifica bio"), N_("Tema"), N_("Lingua"), N_("Audio"), N_("Omega come Home"), N_("App nascoste"), N_("Server"), N_("Sistema e strumenti"),
-                                     N_("Privacy"), N_("Informazioni su Omega"), N_("Esci dall'account"), N_("Chiudi Omega") };
-  static const int oic[N_OPT] = { IC_USER, IC_BRUSH, IC_STAR, IC_NEWS, IC_GEAR, IC_CHAT, IC_BELL, IC_GAMEPAD, IC_CLOSE, IC_GLOBE, IC_FOLDER, IC_CHECK, IC_MORE, IC_EXIT, IC_POWER };
+  draw_text_fit(font(W_REG, 22), info, px + 130, y + 64, pw - 170, C_DIM, a, AL_L);
+  y += 136;
+  // sezioni
+  int sw = 330;
+  st_sect_anim = approach(st_sect_anim, (float)st_sect, 20.0f);
+  for (int i = 0; i < ST_NSECT; i++) {
+    int ry = y + i * 74, on = i == st_sect;
+    float fa = clampf(1 - fabsf(st_sect_anim - i), 0, 1);
+    Col bg = on ? (st_col == 0 ? C_WHITE : RGB(52, 60, 82)) : RGB(255, 255, 255);
+    fill_rrect(px, ry, sw, 62, 20, bg, on ? a : (int)(a * (4 + 6 * fa) / 100));
+    Col fg = on && st_col == 0 ? RGB(12, 14, 22) : C_TXT;
+    draw_icon(ST_SECT[i].ic, px + 40, ry + 31, 26, fg, a);
+    draw_text_fit(font(on ? W_MED : W_REG, 27), _(ST_SECT[i].name), px + 76, ry + 14, sw - 96, fg, a, AL_L);
+  }
+  // voci della sezione
+  int ix = px + sw + 30, iw = pw - sw - 30, rs = 78, rh = 66;
   st_anim = approach(st_anim, (float)st_sel, 20.0f);
-  // 15 righe più l'intestazione stanno sopra la barra dei comandi (y 1018)
-  const int rs = 49, rh = 44;
-  TTF_Font *fo = font(W_MED, 27), *fv = font(W_REG, 23);
-  for (int i = 0; i < N_OPT; i++) {
-    int ry = y + i * rs;
-    float fa = clampf(1 - fabsf(st_anim - i), 0, 1);
-    row_bg(px, ry, pw, rh, fa, a);
-    fill_circle(px + 46, ry + rh / 2, 21, st_sel == i ? C_WHITE : RGB(44, 52, 72), a);
-    draw_icon(oic[i], px + 46, ry + rh / 2, 23, st_sel == i ? RGB(12, 14, 22) : C_TXT, a);
-    int vy = ry + (rh - TTF_FontHeight(fv)) / 2;
-    const char *lbl = _(opts[i]);
-    int vw = 0;   // spazio occupato a destra dal valore
-    if (i == SO_AUDIO) {
-      char au[96]; snprintf(au, sizeof au, _("Musica %s \xC2\xB7 Effetti %s"), audio_music_on() ? _("s\xC3\xAC") : _("no"), audio_sfx_on() ? _("s\xC3\xAC") : _("no"));
-      vw = draw_text(font(W_REG, 22), au, px + pw - 30, ry + (rh - TTF_FontHeight(font(W_REG, 22))) / 2, C_DIM, a, AL_R);
-    }
-    if (i == SO_THEME) { vw = draw_text(fv, theme_name(g_theme), px + pw - 30, vy, C_DIM, a, AL_R); fill_circle(px + pw - 40 - vw - 20, ry + rh / 2, 10, C_ACC, a); vw += 40; }
-    if (i == SO_LANG) vw = draw_text_fit(fv, i18n_lang_name(i18n_code()), px + pw - 30, vy, 260, C_DIM, a, AL_R);
-    if (i == SO_SERVER) vw = draw_text_fit(fv, server_label(), px + pw - 30, vy, 260, C_DIM, a, AL_R);
-    if (i == SO_HOME) vw = draw_text(fv, home_mode() == 1 ? _("s\xC3\xAC") : _("no"), px + pw - 30, vy, C_DIM, a, AL_R);
-    if (i == SO_HIDDEN) { char nh[16]; snprintf(nh, sizeof nh, "%d", layout_hidden_count()); vw = draw_text(fv, nh, px + pw - 30, vy, C_DIM, a, AL_R); }
-    draw_text_fit(fo, lbl, px + 92, ry + (rh - TTF_FontHeight(fo)) / 2, pw - 92 - 30 - (vw ? vw + 24 : 0), i == SO_QUIT ? C_ERR : C_TXT, a, AL_L);
+  const int f0 = ST_SECT[st_sect].first, nn = ST_SECT[st_sect].n;
+  for (int k = 0; k < nn; k++) {
+    int o = f0 + k, ry = y + k * rs;
+    float fa = st_col ? clampf(1 - fabsf(st_anim - k), 0, 1) : 0;
+    row_bg(ix, ry, iw, rh, fa, a);
+    int on = st_col && st_sel == k;
+    fill_circle(ix + 48, ry + rh / 2, 24, on ? C_WHITE : RGB(44, 52, 72), a);
+    draw_icon(st_icon(o), ix + 48, ry + rh / 2, 25, on ? RGB(12, 14, 22) : C_TXT, a);
+    char v[128]; st_value(o, v, sizeof v);
+    int vw = v[0] ? draw_text_fit(font(W_REG, 23), v, ix + iw - 30, ry + (rh - TTF_FontHeight(font(W_REG, 23))) / 2, 340, C_DIM, a, AL_R) : 0;
+    TTF_Font *fo = font(W_MED, 28);
+    draw_text_fit(fo, st_label(o), ix + 92, ry + (rh - TTF_FontHeight(fo)) / 2, iw - 92 - 30 - (vw ? vw + 24 : 0), o == SO_QUIT || o == SO_LOGOUT ? C_ERR : C_TXT, a, AL_L);
   }
   const int ic[] = { IC_BTN_X, IC_BTN_O };
   const char *lb[] = { _("Seleziona"), _("Indietro") };
   hints(ic, lb, 2, a);
 }
 
+// ------------------------------------------------- bug e richieste --
+static int fb_kind;
+static void fb_done(int st, JVal *j, const char *raw, void *ud) {
+  (void)j; (void)raw; (void)ud;
+  set_msg(st == 201 ? _("Grazie! Il messaggio è arrivato allo sviluppatore") : st == 429 ? _("Troppi messaggi: riprova più tardi") : _("Invio non riuscito: controlla la rete"), st != 201);
+}
+static void fb_send(int with_logs) {
+  char text[900] = "";
+  if (!edit_text(fb_kind ? _("Descrivi la funzione che vorresti") : _("Descrivi il problema: cosa facevi e cosa è successo"), text, sizeof text, 0) || strlen(text) < 4) return;
+  size_t cap = with_logs ? 200 * 1024 : 4096, o = 0; char *b = malloc(cap); if (!b) return;
+  char esc[1900]; json_escape(esc, sizeof esc, text);
+  o += (size_t)snprintf(b, cap, "{\"kind\":\"%s\",\"text\":\"%s\",\"app_version\":\"%s\",\"lang\":\"%s\"", fb_kind ? "idea" : "bug", esc, OMEGA_VERSION, i18n_code());
+  if (with_logs) {
+    // le ultime righe del registro aiutano a capire il problema (niente password)
+    size_t len = 0; char *lg = file_read(OMEGA_LOG, 2 * 1024 * 1024, &len);
+    if (lg) {
+      const char *from = len > 60000 ? lg + len - 60000 : lg;
+      o += (size_t)snprintf(b + o, cap - o, ",\"log\":\"");
+      for (const unsigned char *c = (const unsigned char *)from; *c && o + 8 < cap - 4; c++) {
+        if (*c == '"' || *c == '\\') { b[o++] = '\\'; b[o++] = (char)*c; }
+        else if (*c == '\n') { b[o++] = '\\'; b[o++] = 'n'; }
+        else if (*c >= 0x20) b[o++] = (char)*c;
+      }
+      b[o++] = '"';
+      free(lg);
+    }
+  }
+  if (o + 2 < cap) { b[o++] = '}'; b[o] = 0; }
+  net_req(HTTP_POST, OMEGA_API "/feedback", b, fb_done, NULL);
+  free(b);
+  set_msg(_("Invio..."), 0);
+}
+static void fb_logs(int idx, void *ud) { (void)ud; if (idx >= 0) fb_send(idx == 0); }
+static void fb_pick(int idx, void *ud) {
+  (void)ud; if (idx < 0) return;
+  fb_kind = idx;
+  if (idx == 0) { static const char *it[2]; it[0] = _("Sì, allega il registro (consigliato)"); it[1] = _("No, solo il testo"); menu_open(_("Allegare il registro di Omega? Aiuta a trovare il problema"), it, 2, fb_logs, NULL); }
+  else fb_send(0);
+}
+void feedback_open(void) {
+  static const char *it[2]; it[0] = _("Segnala un bug"); it[1] = _("Chiedi una funzione nuova");
+  menu_open(_("Scrivi allo sviluppatore"), it, 2, fb_pick, NULL);
+}
+
+static void style_pick(int idx, void *ud) {
+  (void)ud; if (idx < 0 || idx > 5) return;
+  int n = 0; const PrefDef *t = prefs_table(&n);
+  for (int i = 0; i < n; i++) if (!strcmp(t[i].key, "home_style")) pref_set(&t[i], idx);
+}
+static void automount_toggle(void) {
+  int n = 0; const PrefDef *t = prefs_table(&n);
+  for (int i = 0; i < n; i++) if (!strcmp(t[i].key, "automount")) pref_set(&t[i], !g_prefs.automount);
+  set_msg(g_prefs.automount ? _("Montaggio automatico attivo: i giochi dei dischi si registrano da soli") : _("Montaggio automatico spento"), 0);
+}
+
 void settings_input(int b) {
-  if (b == B_O) { ov_pop(); return; }
-  if (b == B_UP && st_sel > 0) st_sel--;
-  else if (b == B_DOWN && st_sel < N_OPT - 1) st_sel++;
+  int nn = ST_SECT[st_sect].n;
+  if (st_col == 0) {
+    if (b == B_O) { ov_pop(); return; }
+    if (b == B_UP && st_sect > 0) { st_sect--; st_sel = 0; sfx_play(SFX_MOVE); }
+    else if (b == B_DOWN && st_sect < ST_NSECT - 1) { st_sect++; st_sel = 0; sfx_play(SFX_MOVE); }
+    else if (b == B_RIGHT || b == B_X) { st_col = 1; st_sel = 0; sfx_play(SFX_SELECT); }
+    return;
+  }
+  if (b == B_O || b == B_LEFT) { st_col = 0; return; }
+  if (b == B_UP && st_sel > 0) { st_sel--; sfx_play(SFX_MOVE); }
+  else if (b == B_DOWN && st_sel < nn - 1) { st_sel++; sfx_play(SFX_MOVE); }
   else if (b == B_X) {
-    switch (st_sel) {
+    switch (ST_SECT[st_sect].first + st_sel) {
       case SO_PROFILE: profile_open(S.me); break;
       case SO_CUSTOM: custom_open(); break;
       case SO_AVATAR: ov_push(OV_AVATAR); break;
@@ -1088,18 +1194,80 @@ void settings_input(int b) {
         menu_open(_("Tema"), names, N_THEMES, theme_pick, NULL);
         break;
       }
+      case SO_STYLE: { static const char *it[6]; for (int i = 0; i < 6; i++) it[i] = hs_name(i); menu_open(_("Modalità del menu"), it, 6, style_pick, NULL); menu_select(g_prefs.home_style); break; }
       case SO_LANG: open_lang_menu(); break;
       case SO_AUDIO: open_audio_menu(); break;
       case SO_SERVER: server_menu(); break;
       case SO_HOME: home_mode_menu(); break;
       case SO_HIDDEN: hidden_menu(); break;
+      case SO_PATHS: paths_menu(); break;
+      case SO_PKGS: pkgs_open(); break;
+      case SO_AUTOMOUNT: automount_toggle(); break;
       case SO_SYSTEM: system_open(); break;
+      case SO_REMOTE: remote_open(); break;
+      case SO_FILES: files_open(NULL); break;
       case SO_PRIVACY: privacy_menu(); break;
+      case SO_WHY: ov_push(OV_WHY); break;
+      case SO_FEEDBACK: feedback_open(); break;
       case SO_ABOUT: ov_push(OV_ABOUT); break;
       case SO_LOGOUT: confirm_open(_("Vuoi uscire dal tuo account Omega?"), _("Esci"), st_logout_yes, NULL); break;
       case SO_QUIT: confirm_open(_("Chiudere Omega e tornare alla home di sistema?"), _("Chiudi"), st_quit_yes, NULL); break;
     }
   }
+}
+
+// ---------------------------------------------------------- perché Omega --
+// I motivi per usare la dash, detti in breve: si apre da Impostazioni › Aiuto
+// e dalla finestra delle novità.
+static float why_scroll; static int why_sel;
+static const struct { int ic; const char *t, *d; } WHY[] = {
+  { IC_GAMEPAD, N_("Tutti i tuoi giochi in un posto"), N_("Giochi installati, homebrew, payload e giochi sui dischi esterni nella stessa fila, con cartelle, ordine e app nascoste.") },
+  { IC_USB, N_("Dischi e chiavette senza pensieri"), N_("Colleghi un disco e i suoi giochi compaiono da soli, anche nella Home della console: il montaggio automatico fa il lavoro di ShadowMount.") },
+  { IC_BOX, N_("Installi i PKG con un tasto"), N_("Da chiavette, dischi, cartelle a scelta o dal PC via Wi-Fi, con l'icona del gioco e la barra che avanza come sulla PS4, in coda uno alla volta.") },
+  { IC_FRIENDS, N_("Amici, party e chat"), N_("Vedi chi gioca e a cosa, parli in party con la voce, scrivi messaggi e inviti gli amici: un social pensato per la console con jailbreak.") },
+  { IC_STORE, N_("Uno Store della community"), N_("Homebrew pubblicati dagli utenti con voti, stelle, commenti, novità degli amici e liste dei desideri; e La mia libreria per i tuoi backup.") },
+  { IC_TROPHY, N_("Trofei e record"), N_("I trofei della console nel profilo e in classifica, il tempo di gioco della settimana e le maratone di tutti gli iscritti.") },
+  { IC_GLOBE, N_("Il telefono diventa un telecomando"), N_("Musica, caricamento dei giochi dal PC, libreria e JSON, temperatura della console: tutto dal browser del telefono, con un PIN.") },
+  { IC_MUSIC, N_("Musica e radio"), N_("Radio, file e server personali, con il lettore che continua anche fuori dalla home e i comandi nel menu in gioco.") },
+  { IC_GRID, N_("Fatta a modo tuo"), N_("Sei modalità del menu (Omega, PS4, XMB, Griglia, Carosello, Cinema), temi, sfondi, suoni e più di trenta opzioni.") },
+  { IC_HEART, N_("Gratis, aperta e nella tua lingua"), N_("Sorgente GPL scaricabile, 27 lingue, nessun account Sony, aggiornamenti automatici e un tasto per segnalare bug o chiedere funzioni.") },
+};
+#define NWHY (int)(sizeof WHY / sizeof *WHY)
+void why_draw(float t) {
+  backdrop(t, 185);
+  int w = 1500, h = 900, x = SCREEN_W / 2 - w / 2, y = SCREEN_H / 2 - h / 2 + (int)((1 - ease_out(t)) * 40), a = (int)(255 * t);
+  shadow_rrect(x, y, w, h, 34, 40, a * 70 / 100);
+  fill_rrect(x, y, w, h, 34, RGB(16, 20, 34), a);
+  glow(x + 160, y + 120, 320, C_ACC, a * 20 / 100);
+  draw_logo(x + 110, y + 104, 96, a);
+  draw_text(font(W_LIGHT, 50), _("Perché Omega"), x + 190, y + 58, C_WHITE, a, AL_L);
+  draw_text(font(W_REG, 24), _("Dieci buoni motivi per usarla come Home"), x + 192, y + 124, C_DIM, a, AL_L);
+  int cw = (w - 150) / 2, ch = 150, top = y + 196, vis = h - 280;
+  int row = why_sel / 2;
+  why_scroll = approach(why_scroll, (float)(row > 1 ? (row - 1) * (ch + 18) : 0), 12.0f);
+  SDL_Rect clip = { x, top - 6, w, vis + 12 }; SDL_RenderSetClipRect(R, &clip);
+  for (int i = 0; i < NWHY; i++) {
+    int cx = x + 50 + (i % 2) * (cw + 50), cy = top + (i / 2) * (ch + 18) - (int)why_scroll;
+    if (cy + ch < top - 6 || cy > top + vis) continue;
+    int on = i == why_sel;
+    fill_rrect(cx, cy, cw, ch, 22, C_WHITE, a * (on ? 12 : 5) / 100);
+    if (on) stroke_rrect(cx - 3, cy - 3, cw + 6, ch + 6, 25, 3, C_WHITE, a);
+    fill_circle(cx + 56, cy + 56, 34, mix(C_ACC, C_WHITE, 0.1f), a);
+    draw_icon(WHY[i].ic, cx + 56, cy + 56, 32, C_WHITE, a);
+    draw_text_fit(font(W_MED, 28), _(WHY[i].t), cx + 110, cy + 20, cw - 130, C_WHITE, a, AL_L);
+    draw_text_wrap(font(W_REG, 21), _(WHY[i].d), cx + 110, cy + 60, cw - 130, 3, 26, C_DIM, a);
+  }
+  SDL_RenderSetClipRect(R, NULL);
+  const int ic[] = { IC_BTN_O };
+  const char *lb[] = { _("Chiudi") };
+  hints(ic, lb, 1, a);
+}
+void why_input(int b) {
+  if (b == B_O || b == B_X) { ov_pop(); return; }
+  if (b == B_LEFT && why_sel % 2) why_sel--;
+  else if (b == B_RIGHT && why_sel % 2 == 0 && why_sel + 1 < NWHY) why_sel++;
+  else if (b == B_UP && why_sel >= 2) why_sel -= 2;
+  else if (b == B_DOWN && why_sel + 2 < NWHY) why_sel += 2;
 }
 
 // --------------------------------------------------------- informazioni --

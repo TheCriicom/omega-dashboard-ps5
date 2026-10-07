@@ -264,6 +264,20 @@ Sono accettati anche `items`/`library` al posto di `games`,
 `download_url`/`file`/`pkg` per `url`, `image`/`icon` per `cover`, `screenshots`
 per `images`, `kind` per `type` (altrimenti si deduce dall'estensione).
 
+### Social dello Store e segnalazioni
+
+`lab_store_install` registra chi ha installato cosa (da `…/download`):
+`GET store/apps?sort=friends|trending` e i campi `friends`, `friends_count`,
+`wished` di ogni scheda alimentano gli scaffali «Popolari tra i tuoi amici» e
+«Di tendenza». `POST store/apps/:id/wish {on}` è la lista dei desideri: quando
+l'autore pubblica una versione nuova arriva una notifica `store_update` a chi
+l'ha desiderata o installata. `POST store/apps/:id/recommend {online_id}`
+consiglia un homebrew a un amico (notifica `store_recommend`),
+`GET store/creators` dà i creatori in evidenza. `POST feedback {kind: bug|idea,
+text, log?}` salva i bug e le richieste di funzioni mandati dall'app
+(`lab_feedback`, notifica agli amministratori); nel pannello si leggono in
+«Bug e richieste».
+
 ### Voce nel party
 
 Relay in memoria (ultimi 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

@@ -47,3 +47,9 @@ int main(int argc, char **argv) {
   if (ctl_start(OMEGA_CTL_PORT, dir) != 0) { fprintf(stderr, "porta %d occupata\n", OMEGA_CTL_PORT); return 1; }
   for (;;) sleep(60);
 }
+
+// Sul Mac non c'è la voce del party né la diagnostica verso il server: il
+// controllo (ctl.c) e il lettore le chiamano comunque.
+int voice_command(const char *cmd) { (void)cmd; return 0; }
+void voice_state_json(char *out, size_t n) { snprintf(out, n, "{\"active\":false}"); }
+void omega_diag(const char *comp, const char *ev, int ok, int rc, const char *detail) { (void)comp; (void)ev; (void)ok; (void)rc; (void)detail; }

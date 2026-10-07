@@ -97,7 +97,9 @@ async function sourceTar({ res }) {
   if (!fs.existsSync(`${SRC_DIR}/omega-ui-src`)) throw new HttpError(503, 'source_unavailable');
   const parts = ['omega-ui-src', 'omega-redirect-src'].filter((p) => fs.existsSync(`${SRC_DIR}/${p}`));
   const tar = spawn('tar', ['-czf', '-', '-C', SRC_DIR,
-    '--exclude=build', '--exclude=*.o', '--exclude=omega-ui-desktop', '--exclude=data', '--exclude=.DS_Store', ...parts]);
+    '--exclude=build', '--exclude=*.o', '--exclude=omega-ui-desktop', '--exclude=data', '--exclude=.DS_Store',
+    // script di rilascio e segreti non vanno mai nell'archivio pubblico
+    '--exclude=publish-update.sh', '--exclude=.env*', '--exclude=*.pem', '--exclude=*.key', ...parts]);
   res.writeHead(200, { 'content-type': 'application/gzip', 'content-disposition': 'attachment; filename="omega-src.tar.gz"', 'cache-control': 'no-store' });
   tar.stdout.pipe(res);
   tar.stderr.on('data', () => {});

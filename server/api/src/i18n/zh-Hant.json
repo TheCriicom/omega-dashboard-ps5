@@ -12,7 +12,11 @@
     "admin_report": "檢舉：{title}",
     "admin_social_report": "檢舉：{kind} {title}",
     "report_on_comment": "（留言）",
-    "report_hidden": "——已隱藏"
+    "report_hidden": "——已隱藏",
+    "feedback_bug": "{actor} 回報了一個錯誤",
+    "feedback_idea": "{actor} 提出了功能請求",
+    "store_recommend": "{actor} 向你推薦 {app}",
+    "store_update": "{app} 已更新至 {version} 版"
   },
   "report_kind": {
     "user": "使用者",

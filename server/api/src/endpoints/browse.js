@@ -151,7 +151,7 @@ async function search(q) {
   return { url: `omega://cerca?q=${encodeURIComponent(q)}`, title: `${q} - Cerca`, site: 'Ricerca', mode: 'search', blocks };
 }
 
-async function page(rawUrl) {
+async function page(rawUrl, full = false) {
   const { res, url } = await safeFetch(rawUrl, 'text/html,application/xhtml+xml;q=0.9,image/*;q=0.8,*/*;q=0.5');
   const ctype = res.headers.get('content-type') || '';
   if (/^image\//.test(ctype)) {
@@ -175,7 +175,7 @@ async function page(rawUrl) {
   // gli articoli in modalità lettura
   let mode = 'page', blocks = null;
   try {
-    if (isProbablyReaderable(document, { minContentLength: 400 })) {
+    if (!full && isProbablyReaderable(document, { minContentLength: 400 })) {
       const art = new Readability(parseHTML(html).document, { charThreshold: 400 }).parse();
       if (art && art.content && (art.textContent || '').length > 600) {
         const { document: d2 } = parseHTML(`<html><body>${art.content}</body></html>`);
@@ -209,7 +209,7 @@ async function browse({ auth, url }) {
   try {
     if (q) return { status: 200, body: await search(q.slice(0, 200)) };
     if (!target) throw new HttpError(400, 'missing_url');
-    return { status: 200, body: await page(target.slice(0, 2000)) };
+    return { status: 200, body: await page(target.slice(0, 2000), url.searchParams.get('full') === '1') };
   } catch (err) {
     if (err instanceof HttpError) throw err;
     const msg = err.name === 'TimeoutError' ? 'timeout' : 'fetch_failed';

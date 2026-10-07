@@ -14,6 +14,16 @@
 // sceAppInstUtilAppInstallTitleDir. Quando il gioco non è più in esecuzione
 // (ritorno in Omega) si smonta, così scollegare il disco è sicuro.
 // Sul disco esterno non si scrive e non si cancella mai niente.
+//
+// In più:
+//  · cartelle scelte dall'utente (Impostazioni › Giochi e PKG, paths.txt):
+//    giochi anche sulla memoria interna o in percorsi non standard;
+//  · montaggio automatico (Personalizza › Home): appena un disco compare i suoi
+//    giochi si montano e si registrano da soli, come fa ShadowMount, quindi
+//    compaiono anche nella Home della console; se il disco sparisce si smontano;
+//  · si guardano anche /user/appmeta, /system_ex/app, /user/app e le cartelle
+//    degli homebrew: un gioco montato da ShadowMount, un pkg appena installato o
+//    un homebrew caricato dal telefono compaiono in home senza riavviare Omega.
 #include "app.h"
 #include <dirent.h>
 #include <errno.h>
@@ -28,8 +38,8 @@
 typedef struct { char tid[16], name[96], src[300], icon[320], art[320], drive[40]; } ExtGame;
 
 static ExtGame found[MAX_EXT]; static int nfound;     // ultimo risultato (sotto mx)
-static SDL_mutex *mx; static SDL_atomic_t changed;
-static unsigned last_sig;
+static SDL_mutex *mx; static SDL_atomic_t changed, wake;
+static unsigned last_sig, last_apps_sig;
 
 // --------------------------------------------------------------- dischi --
 #ifdef PS5
@@ -73,6 +83,53 @@ int drives_list(Drive *out, int max) {
   }
   return n;
 }
+
+// ------------------------------------------------- cartelle dell'utente --
+// OMEGA_DIR/paths.txt: una riga per cartella, "game <percorso>" o "pkg <percorso>".
+#define PATHS_FILE OMEGA_DIR "/paths.txt"
+static SDL_mutex *pmx;
+static void pm_lock(int on) { if (!pmx) pmx = SDL_CreateMutex(); if (on) SDL_LockMutex(pmx); else SDL_UnlockMutex(pmx); }
+
+int paths_list(int kind, char (*out)[300], int max) {
+  pm_lock(1);
+  int n = 0; FILE *f = fopen(PATHS_FILE, "r");
+  if (f) {
+    char line[400]; const char *pre = kind ? "pkg " : "game "; size_t pl = strlen(pre);
+    while (n < max && fgets(line, sizeof line, f)) {
+      line[strcspn(line, "\r\n")] = 0;
+      if (strncmp(line, pre, pl) || !line[pl]) continue;
+      snprintf(out[n++], 300, "%s", line + pl);
+    }
+    fclose(f);
+  }
+  pm_lock(0);
+  return n;
+}
+// aggiunge (add=1) o toglie una cartella; 1 fatto, 0 niente da fare, -1 errore
+int paths_set(int kind, const char *path, int add) {
+  static char g[32][300], k[32][300];
+  if (!path || !path[0]) return -1;
+  char p[300]; snprintf(p, sizeof p, "%s", path);
+  size_t L = strlen(p); while (L > 1 && p[L - 1] == '/') p[--L] = 0;
+  int ng = paths_list(0, g, 32), nk = paths_list(1, k, 32);
+  char (*l)[300] = kind ? k : g; int *n = kind ? &nk : &ng, at = -1;
+  for (int i = 0; i < *n; i++) if (!strcmp(l[i], p)) at = i;
+  if (add) { if (at >= 0) return 0; if (*n >= 32) return -1; snprintf(l[(*n)++], 300, "%s", p); }
+  else { if (at < 0) return 0; memmove(l[at], l[at + 1], (size_t)(*n - at - 1) * 300); (*n)--; }
+  pm_lock(1);
+  FILE *f = fopen(PATHS_FILE ".tmp", "w");
+  if (f) {
+    for (int i = 0; i < ng; i++) fprintf(f, "game %s\n", g[i]);
+    for (int i = 0; i < nk; i++) fprintf(f, "pkg %s\n", k[i]);
+    fclose(f); rename(PATHS_FILE ".tmp", PATHS_FILE);
+  }
+  pm_lock(0);
+  SDL_AtomicSet(&wake, 1);   // il controllo dei dischi riparte subito
+  return f ? 1 : -1;
+}
+
+// cartelle della memoria interna dove gli strumenti della scena mettono i giochi
+static const char *INTERNAL_GAMES[] = { "/data/etaHEN/games", "/data/games", "/data/homebrew-games" };
 
 // -------------------------------------------------------- param.json/sfo --
 static char *slurp(const char *p, size_t max, size_t *len) {
@@ -152,12 +209,47 @@ static void scan_dir(const char *base, const char *drive, ExtGame *list, int *n)
 }
 
 static void scan_all(ExtGame *list, int *n) {
-  static const char *SUB[] = { "", "/homebrew", "/etaHEN/games", "/games", "/Games", "/PS5", "/PS4" };
+  static const char *SUB[] = { "", "/homebrew", "/etaHEN/games", "/games", "/Games", "/PS5", "/PS4", "/ShadowMount", "/backups" };
   *n = 0;
   Drive dr[16]; int nd = drives_list(dr, 16);
   for (int i = 0; i < nd; i++)
     for (unsigned k = 0; k < sizeof SUB / sizeof *SUB; k++) { char b[200]; snprintf(b, sizeof b, "%s%s", dr[i].mount, SUB[k]); scan_dir(b, dr[i].label, list, n); }
+  for (unsigned k = 0; k < sizeof INTERNAL_GAMES / sizeof *INTERNAL_GAMES; k++) {
+    char b[200]; snprintf(b, sizeof b, ROOT "%s", INTERNAL_GAMES[k]);
+    scan_dir(b, _("Memoria interna"), list, n);
+  }
+  // cartelle scelte dall'utente: la cartella stessa può essere un gioco, o contenerne
+  static char cp[32][300]; int nc = paths_list(0, cp, 32);
+  for (int i = 0; i < nc; i++) {
+    struct stat st; if (stat(cp[i], &st) != 0 || !S_ISDIR(st.st_mode)) continue;   // disco scollegato
+    char lab[40]; snprintf(lab, sizeof lab, "%s", _("Memoria interna"));
+    for (int d = 0; d < nd; d++) if (!strncmp(cp[i], dr[d].mount, strlen(dr[d].mount))) snprintf(lab, sizeof lab, "%s", dr[d].label);
+    probe(cp[i], lab, list, n);
+    scan_dir(cp[i], lab, list, n);
+  }
 }
+
+// Firma dei titoli installati e degli homebrew: cambia quando ShadowMount monta
+// un gioco, un pkg finisce di installarsi o arriva un homebrew dal telefono.
+// Somma delle firme dei nomi, così non dipende dall'ordine di readdir.
+static unsigned apps_sig(void) {
+  static const char *DIRS[] = { ROOT "/user/appmeta", ROOT "/system_ex/app", ROOT "/user/app", OMEGA_HB_ROOT, OMEGA_PLD_ROOT };
+  unsigned h = 2166136261u;
+  for (unsigned k = 0; k < sizeof DIRS / sizeof *DIRS; k++) {
+    DIR *d = opendir(DIRS[k]); if (!d) continue;
+    struct dirent *e; unsigned acc = 0;
+    while ((e = readdir(d))) {
+      if (e->d_name[0] == '.') continue;
+      unsigned x = 2166136261u; for (const char *c = e->d_name; *c; c++) { x ^= (unsigned char)*c; x *= 16777619u; }
+      acc += x;
+    }
+    closedir(d);
+    h ^= acc + k; h *= 16777619u;
+  }
+  return h;
+}
+
+static void automount_tick(ExtGame *list, int n);
 
 static int scan_thread(void *arg) {
   (void)arg;
@@ -174,7 +266,15 @@ static int scan_thread(void *arg) {
       last_sig = sig; SDL_AtomicSet(&changed, 1);
       omega_log("dischi esterni: %d giochi", n);
     }
-    SDL_Delay(4000);
+    if (g_prefs.ext_games && g_prefs.automount) automount_tick(tmp, n);
+    unsigned as = apps_sig();
+    if (as != last_apps_sig) {
+      if (last_apps_sig) { SDL_AtomicSet(&changed, 1); omega_log("titoli o homebrew cambiati: si rifà la home"); }
+      last_apps_sig = as;
+    }
+    // ogni 3 s, subito se una cartella è appena stata aggiunta o tolta
+    for (int i = 0; i < 30 && !SDL_AtomicGet(&wake); i++) SDL_Delay(100);
+    SDL_AtomicSet(&wake, 0);
   }
   return 0;
 }
@@ -289,7 +389,8 @@ void drives_after_game(void) {
 #endif
   while (fscanf(f, "%31s", tid) == 1) {
 #ifdef PS5
-    if (!strcmp(tid, run)) { kl += (size_t)snprintf(keep + kl, sizeof keep - kl, "%s\n", tid); continue; }
+    // col montaggio automatico i giochi restano montati finché c'è il disco
+    if (!strcmp(tid, run) || (g_prefs.automount && g_prefs.ext_games)) { kl += (size_t)snprintf(keep + kl, sizeof keep - kl, "%s\n", tid); continue; }
     char dst[64]; snprintf(dst, sizeof dst, "/system_ex/app/%s", tid);
     int rc = unmount(dst, 0);
     omega_log("dischi: smontato %s -> %d", tid, rc);
@@ -297,4 +398,43 @@ void drives_after_game(void) {
   }
   fclose(f);
   f = fopen(OMEGA_DIR "/ext-mounted.txt", "w"); if (f) { fputs(keep, f); fclose(f); }
+}
+
+// ---------------------------------------------------- montaggio automatico --
+// Come ShadowMount: ogni gioco trovato si monta e si registra subito (così è
+// anche nella Home della console); quando la sua cartella sparisce (disco
+// tolto) il mount si toglie. Un gioco che non si riesce a montare non si
+// riprova finché i dischi non spariscono tutti.
+static char am_tid[MAX_EXT][16], am_src[MAX_EXT][300]; static int am_n;
+static char am_bad[MAX_EXT][300]; static int am_nbad;
+static void automount_tick(ExtGame *list, int n) {
+  for (int i = 0; i < am_n; ) {
+    char p[400]; snprintf(p, sizeof p, "%s/eboot.bin", am_src[i]);
+    if (access(p, 0) == 0) { i++; continue; }
+#ifdef PS5
+    char dst[64]; snprintf(dst, sizeof dst, "/system_ex/app/%s", am_tid[i]);
+    int rc = unmount(dst, MNT_FORCE);
+    omega_log("montaggio automatico: %s scollegato, smontato -> %d", am_tid[i], rc);
+#endif
+    memmove(am_tid[i], am_tid[i + 1], (size_t)(am_n - i - 1) * 16);
+    memmove(am_src[i], am_src[i + 1], (size_t)(am_n - i - 1) * 300);
+    am_n--;
+  }
+  if (!n) am_nbad = 0;
+  for (int i = 0; i < n && am_n < MAX_EXT; i++) {
+    int have = 0;
+    for (int k = 0; k < am_n && !have; k++) have = !strcmp(am_tid[k], list[i].tid);
+    for (int k = 0; k < am_nbad && !have; k++) have = !strcmp(am_bad[k], list[i].src);
+    if (have) continue;
+    AppEntry a; memset(&a, 0, sizeof a);
+    snprintf(a.tid, sizeof a.tid, "%s", list[i].tid); snprintf(a.src, sizeof a.src, "%s", list[i].src); snprintf(a.drive, sizeof a.drive, "%s", list[i].drive);
+    char err[300];
+    if (drives_prepare_launch(&a, err, sizeof err) == 0) {
+      snprintf(am_tid[am_n], 16, "%s", a.tid); snprintf(am_src[am_n], 300, "%s", a.src); am_n++;
+      omega_log("montaggio automatico: %s pronto da %s", a.tid, a.src);
+    } else {
+      omega_log("montaggio automatico: %s non montato: %s", a.tid, err);
+      if (am_nbad < MAX_EXT) snprintf(am_bad[am_nbad++], 300, "%s", a.src);
+    }
+  }
 }

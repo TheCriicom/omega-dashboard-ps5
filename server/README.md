@@ -268,6 +268,20 @@ Also accepted: `items`/`library` instead of `games`,
 `download_url`/`file`/`pkg` for `url`, `image`/`icon` for `cover`, `screenshots`
 for `images`, `kind` for `type` (otherwise it is inferred from the extension).
 
+### Store social features and feedback
+
+`lab_store_install` records who installed what (from `…/download`):
+`GET store/apps?sort=friends|trending` and the `friends`, `friends_count` and
+`wished` fields of every card feed the "Popular with your friends" and
+"Trending" shelves. `POST store/apps/:id/wish {on}` is the wish list: when the
+author publishes a new version, everyone who wished for or installed the app
+gets a `store_update` notification. `POST store/apps/:id/recommend {online_id}`
+recommends a homebrew to a friend (`store_recommend` notification) and
+`GET store/creators` returns the featured creators. `POST feedback {kind:
+bug|idea, text, log?}` stores bug reports and feature requests sent from the app
+(`lab_feedback`, admins are notified); read them in the panel under "Bugs &
+requests".
+
 ### Party voice
 
 In-memory relay (last 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

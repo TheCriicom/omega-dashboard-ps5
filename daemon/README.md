@@ -100,6 +100,12 @@ o un file diventa una voce di La mia libreria con link `file://`, che la UI
 installa senza scaricare niente (le cartelle in `/user/app/<Title ID>`).
 Togliendo la voce si cancellano anche i file caricati.
 
+La UI chiede ogni pochi secondi `GET /v1/console/jobs` (solo da 127.0.0.1):
+il caricamento in corso, per la tessera che avanza nella home, e i giochi che il
+telefono o il PC hanno chiesto di installare subito (`POST /v1/library/install
+{"id"}` o `"install": true` in `upload/done`); la coda si svuota a ogni lettura.
+I lotti caricati che non sono finiti in libreria si cancellano dopo un giorno.
+
 Per provarlo sul Mac: `desktop/build-desktop.sh` (FFmpeg e SDL2 di Homebrew),
 poi `desktop/omega-player-desktop /tmp/omega/player.json` e apri
 `http://127.0.0.1:9095`.

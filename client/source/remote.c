@@ -86,7 +86,7 @@ void remote_draw(float t) {
   fill_rect(0, 0, SCREEN_W, SCREEN_H, bg, t > 0.98f ? 255 : a);
   glow(380, 520, 520, C_ACC, a * 14 / 100);
   draw_icon(IC_GLOBE, 132, 74, 44, C_ACC2, a);
-  draw_text(font(W_LIGHT, 38), _("Telecomando dal telefono"), 172, 52, C_WHITE, a, AL_L);
+  draw_text(font(W_LIGHT, 38), _("Telecomando dal telefono o dal PC"), 172, 52, C_WHITE, a, AL_L);
 
   // codice QR
   int qs = 500, qx = 130, qy = 190;
@@ -110,15 +110,18 @@ void remote_draw(float t) {
     draw_text(font(W_BOLD, 58), state == 1 ? big : "\xE2\x80\xA6", x + 64 + 210, y + 270, C_WHITE, a, AL_C);
 
     draw_text(font(W_MED, 28), _("Dal telefono puoi"), x, y + 410, C_TXT, a, AL_L);
-    const char *can[4] = { _("comandare la musica, anche mentre giochi, e scegliere le radio preferite"),
-                           _("mandare file audio alla console o ascoltare un link"),
-                           _("aggiungere giochi a La mia libreria o importare un JSON"),
-                           _("vedere il gioco in corso e la temperatura") };
-    for (int i = 0; i < 4; i++) {
-      draw_icon(IC_CHECK, x + 14, y + 470 + i * 46 + 14, 24, C_OK, a);
-      draw_text_fit(font(W_REG, 25), can[i], x + 44, y + 466 + i * 46, w - 44, C_DIM, a, AL_L);
+    // cosa si fa dal telefono o dal PC: prima i giochi, il motivo per cui lo si apre più spesso
+    const int cic[5] = { IC_CLOUD, IC_BOX, IC_IDEA, IC_MUSIC, IC_GAMEPAD };
+    const char *can[5] = { _("caricare giochi dal PC alla console: .pkg, .zip, .elf o cartelle intere, anche trascinandoli"),
+                           _("installarli subito: compaiono in home con l'icona e la barra che avanza"),
+                           _("importare un JSON di giochi, collegarlo da un link o scaricare l'esempio da modificare"),
+                           _("comandare la musica, anche mentre giochi, e mandare file audio"),
+                           _("vedere il gioco in corso, la temperatura e il party vocale") };
+    for (int i = 0; i < 5; i++) {
+      draw_icon(cic[i], x + 16, y + 464 + i * 42 + 14, 26, i < 3 ? C_ACC2 : C_OK, a);
+      draw_text_fit(font(W_REG, 24), can[i], x + 48, y + 462 + i * 42, w - 48, i < 3 ? C_TXT : C_DIM, a, AL_L);
     }
-    draw_text_wrap(font(W_REG, 21), _("Il PIN abbina il telefono una volta sola. Con un nuovo PIN i telefoni già abbinati vanno abbinati di nuovo."), x, y + 670, w, 2, 30, C_FAINT, a);
+    draw_text_wrap(font(W_REG, 21), _("Il PIN abbina il telefono una volta sola. Con un nuovo PIN i telefoni già abbinati vanno abbinati di nuovo."), x, y + 690, w, 2, 30, C_FAINT, a);
   }
   int ic[2] = { IC_BTN_X, IC_BTN_O }; const char *lb[2] = { _("Nuovo PIN"), _("Indietro") };
   hints(ic, lb, 2, a);

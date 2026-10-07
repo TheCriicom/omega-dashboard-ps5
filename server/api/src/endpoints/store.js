@@ -19,7 +19,7 @@ const { notify, notifyAdmins } = require('../notify');
 const messages = require('../messages');
 const { safeFetch, readLimited } = require('../safefetch');
 const limiter = require('../ratelimit');
-const { userCard } = require('../relations');
+const { userCard, FRIENDS_SQL, areFriends, accountByOnlineId } = require('../relations');
 const { multiline, likePattern } = require('../text');
 
 const MAX_SHOTS = 8;
@@ -153,6 +153,22 @@ const AGG = `
   (SELECT count(*)::int FROM lab_store_rating r WHERE r.app_id=a.app_id)                AS ratings,
   (SELECT count(*)::int FROM lab_store_comment c WHERE c.app_id=a.app_id AND NOT c.hidden) AS comments`;
 
+// Amici che hanno installato ogni app (fino a `max` schede) e quanti sono,
+// più se l'app è nella mia lista dei desideri: una query per tutto l'elenco.
+async function addFriends(cards, me, max) {
+  if (!cards.length) return;
+  const ids = cards.map((c) => Number(c.app_id));
+  const fr = (await db.query(
+    `SELECT i.app_id::text, acc.online_id, acc.avatar, acc.avatar_media, acc.avatar_frames
+       FROM lab_store_install i JOIN lab_account acc ON acc.account_id=i.account_id
+      WHERE i.app_id = ANY($2::bigint[]) AND i.account_id IN ${FRIENDS_SQL('$1')} AND NOT acc.disabled
+      ORDER BY i.created_at DESC`, [me, ids])).rows;
+  const wished = new Set((await db.query('SELECT app_id::text FROM lab_store_wish WHERE account_id=$1 AND app_id = ANY($2::bigint[])', [me, ids])).rows.map((x) => x.app_id));
+  const by = new Map();
+  for (const x of fr) { const l = by.get(x.app_id) || []; l.push(userCard(x)); by.set(x.app_id, l); }
+  for (const c of cards) { const l = by.get(c.app_id) || []; c.friends_count = l.length; c.friends = l.slice(0, max); c.wished = wished.has(c.app_id); }
+}
+
 // ------------------------------------------------------------- homebrew --
 // GET /api/v1/store/apps?sort=recent|top|downloads&q=&tag=&mine=1
 async function listApps({ auth, url, lang }) {
@@ -160,9 +176,18 @@ async function listApps({ auth, url, lang }) {
   const q = String(url.searchParams.get('q') || '').trim().slice(0, 48);
   const tag = String(url.searchParams.get('tag') || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 24);
   const mine = url.searchParams.get('mine') === '1';
+  const wish = url.searchParams.get('wish') === '1';
   const where = ['a.published'];
   const args = [];
   if (mine) { args.push(auth.accountId); where.push(`a.author_id=$${args.length}`); }
+  if (wish) { args.push(auth.accountId); where.push(`a.app_id IN (SELECT app_id FROM lab_store_wish WHERE account_id=$${args.length})`); }
+  if (sort === 'friends') {
+    // installati, votati o desiderati dagli amici
+    args.push(auth.accountId);
+    const f = FRIENDS_SQL(`$${args.length}`);
+    where.push(`a.app_id IN (SELECT app_id FROM lab_store_install WHERE account_id IN ${f}
+                             UNION SELECT app_id FROM lab_store_vote WHERE value=1 AND account_id IN ${f})`);
+  }
   if (q) {
     // si cerca anche nel sottotitolo tradotto mostrato all'utente
     args.push(likePattern(q), lang);
@@ -170,7 +195,9 @@ async function listApps({ auth, url, lang }) {
     where.push(`(a.title ILIKE ${p} OR a.tagline ILIKE ${p} OR a.i18n->$${args.length}->>'tagline' ILIKE ${p})`);
   }
   if (tag) { args.push(tag); where.push(`$${args.length} = ANY(a.hashtags)`); }
-  const order = sort === 'downloads' ? 'a.downloads DESC, a.created_at DESC'
+  const order = sort === 'friends' ? 'a.downloads DESC, likes DESC'
+    : sort === 'trending' ? `(SELECT count(*) FROM lab_store_install i WHERE i.app_id=a.app_id AND i.created_at > now() - interval '7 days') DESC, likes DESC, a.created_at DESC`
+    : sort === 'downloads' ? 'a.downloads DESC, a.created_at DESC'
     : sort === 'top' ? 'likes DESC, rating DESC, a.created_at DESC'
     : 'a.created_at DESC';
   const r = await db.query(
@@ -178,7 +205,9 @@ async function listApps({ auth, url, lang }) {
        FROM lab_store_app a JOIN lab_account acc ON acc.account_id=a.author_id
       WHERE ${where.join(' AND ')}
       ORDER BY ${order} LIMIT 80`, args);
-  return { status: 200, body: { apps: r.rows.map((row) => appCard(row, auth.accountId, lang)) } };
+  const cards = r.rows.map((row) => appCard(row, auth.accountId, lang));
+  await addFriends(cards, auth.accountId, 3);
+  return { status: 200, body: { apps: cards } };
 }
 
 async function appById(appId) {
@@ -215,6 +244,9 @@ async function getApp({ auth, params, lang }) {
     my_rating: myRating ? myRating.stars : 0,
     comments: comments.map((c) => ({ comment_id: c.comment_id, body: c.body, created_at: c.created_at, mine: c.mine, author: userCard(c) })),
   };
+  await addFriends([body], auth.accountId, 8);
+  body.wishes = (await db.query('SELECT count(*)::int AS n FROM lab_store_wish WHERE app_id=$1', [row.app_id])).rows[0].n;
+  body.installed_by_me = (await db.query('SELECT 1 FROM lab_store_install WHERE app_id=$1 AND account_id=$2', [row.app_id, auth.accountId])).rowCount > 0;
   // all'autore servono i valori originali per la modifica
   if (mine) body.edit = { download_url: row.download_url, icon_url: row.icon_url, cover_url: row.cover_url, screenshots: screens };
   return { status: 200, body };
@@ -273,7 +305,54 @@ async function updateApp({ req, auth, params }) {
      WHERE app_id=$1`,
     [row.app_id, a.title, a.tagline, a.description, a.category, a.version, a.title_id, a.icon_url, a.cover_url, a.screenshots, a.hashtags, a.download_url, a.file_kind, a.size_bytes, a.platform, a.homepage_url, a.license]);
   dropCachedImages(`app:${row.app_id}:`);
+  // versione nuova: lo dicono a chi l'ha nella lista dei desideri o l'ha installata
+  if (a.version && a.version !== row.version) {
+    const who = (await db.query(
+      `SELECT account_id FROM lab_store_wish WHERE app_id=$1 UNION SELECT account_id FROM lab_store_install WHERE app_id=$1`, [row.app_id])).rows;
+    for (const w of who) {
+      if (String(w.account_id) === String(auth.accountId)) continue;
+      await notify(w.account_id, 'store_update', { actorId: auth.accountId, title: (l) => messages.t(l, 'notify.store_update', { app: a.title, version: a.version }), ref: String(row.app_id) });
+    }
+  }
   return { status: 200, body: { result: 'ok' } };
+}
+
+// POST /api/v1/store/apps/:id/wish {on: true|false} — lista dei desideri
+async function wish({ req, auth, params }) {
+  const row = await appById(params.id);
+  if (!row) throw new HttpError(404, 'app_not_found');
+  const b = await readJson(req);
+  if (b.on === false) await db.query('DELETE FROM lab_store_wish WHERE app_id=$1 AND account_id=$2', [row.app_id, auth.accountId]);
+  else await db.query('INSERT INTO lab_store_wish (app_id, account_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [row.app_id, auth.accountId]);
+  const n = (await db.query('SELECT count(*)::int AS n FROM lab_store_wish WHERE app_id=$1', [row.app_id])).rows[0].n;
+  return { status: 200, body: { wished: b.on !== false, wishes: n } };
+}
+
+// POST /api/v1/store/apps/:id/recommend {online_id} — consiglia a un amico
+async function recommend({ req, auth, params }) {
+  if (limiter.hit(`store_rec|${auth.accountId}`, 30, 3600)) throw new HttpError(429, 'too_many_recommendations');
+  const row = await appById(params.id);
+  if (!row || !row.published) throw new HttpError(404, 'app_not_found');
+  const b = await readJson(req);
+  const to = await accountByOnlineId(b.online_id);
+  if (!to) throw new HttpError(404, 'user_not_found');
+  if (!(await areFriends(auth.accountId, to.account_id))) throw new HttpError(403, 'not_friends');
+  await notify(to.account_id, 'store_recommend', { actorId: auth.accountId, title: (l) => messages.t(l, 'notify.store_recommend', { actor: auth.onlineId, app: row.title }),
+    body: String(b.note || '').slice(0, 200) || null, ref: String(row.app_id) });
+  return { status: 200, body: { result: 'ok' } };
+}
+
+// GET /api/v1/store/creators — chi pubblica di più e meglio
+async function creators() {
+  const r = await db.query(
+    `SELECT acc.online_id, acc.avatar, acc.avatar_media, acc.avatar_frames, count(*)::int AS apps,
+            coalesce(sum(a.downloads),0)::bigint AS downloads,
+            (SELECT count(*)::int FROM lab_store_vote v JOIN lab_store_app x ON x.app_id=v.app_id WHERE x.author_id=a.author_id AND v.value=1) AS likes
+       FROM lab_store_app a JOIN lab_account acc ON acc.account_id=a.author_id
+      WHERE a.published AND a.catalog_key IS NULL AND NOT acc.disabled AND acc.banned_at IS NULL
+      GROUP BY a.author_id, acc.online_id, acc.avatar, acc.avatar_media, acc.avatar_frames
+      ORDER BY downloads DESC, likes DESC LIMIT 12`);
+  return { status: 200, body: { creators: r.rows.map((x) => ({ ...userCard(x), apps: x.apps, downloads: Number(x.downloads), likes: x.likes })) } };
 }
 
 // DELETE /api/v1/store/apps/:id
@@ -402,6 +481,7 @@ async function appDownload({ auth, params, lang }) {
   const row = await appById(params.id);
   if (!row || (!row.published && String(row.author_id) !== String(auth.accountId))) throw new HttpError(404, 'app_not_found');
   await db.query('UPDATE lab_store_app SET downloads=downloads+1 WHERE app_id=$1', [row.app_id]);
+  await db.query('INSERT INTO lab_store_install (app_id, account_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [row.app_id, auth.accountId]);
   const info = await resolveDownload(row.download_url, row.file_kind);
   return {
     status: 200,
@@ -610,6 +690,6 @@ async function report({ req, auth, params }) {
 module.exports = {
   listApps, getApp, publishApp, updateApp, deleteApp, report,
   appCover: appImage('cover'), appIcon: appImage('icon'), appShot, appDownload,
-  vote, rate, comments, addComment, deleteComment,
+  vote, rate, comments, addComment, deleteComment, wish, recommend, creators,
   getSource, setSource, syncLibrary, listItems, getItem, itemCover, itemShot, itemDownload,
 };

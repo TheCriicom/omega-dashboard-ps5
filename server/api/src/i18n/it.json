@@ -12,7 +12,11 @@
     "admin_report": "Segnalazione: {title}",
     "admin_social_report": "Segnalazione: {kind} {title}",
     "report_on_comment": " (commento)",
-    "report_hidden": " — oscurato"
+    "report_hidden": " — oscurato",
+    "feedback_bug": "Bug segnalato da {actor}",
+    "feedback_idea": "Richiesta di funzione da {actor}",
+    "store_recommend": "{actor} ti consiglia {app}",
+    "store_update": "{app} è stato aggiornato alla versione {version}"
   },
   "report_kind": {
     "user": "utente",

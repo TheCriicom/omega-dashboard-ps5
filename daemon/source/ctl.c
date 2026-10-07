@@ -19,6 +19,8 @@
 //   POST /v1/library/upload?b=<lotto>&p=<percorso>   corpo = un file di un gioco → OMEGA_DIR/uploads/<lotto>/
 //   POST /v1/library/upload/done {"b":"<lotto>","title":""}   chiude il lotto: voce in libreria o homebrew installato
 //   GET  /v1/library/space    spazio libero per i caricamenti
+//   POST /v1/library/install  {"id":"..."} chiede alla console di installare subito quel gioco
+//   GET  /v1/console/jobs     solo dalla console: caricamento in corso e giochi da installare (la coda si svuota)
 //   GET  /v1/library/upload/status?b=&p=   byte già arrivati di un file (per riprendere da lì: &o=<byte>)
 //   POST /v1/quit             solo dalla console: chiude il servizio (la UI avvia subito quello aggiornato)
 //   GET  /v1/library/file?b=&p=   immagine dentro un lotto (icona del gioco)
@@ -362,7 +364,9 @@ static ctl_notify_fn notify_fn;
 void ctl_on_notify(ctl_notify_fn fn) { notify_fn = fn; }
 static pthread_mutex_t upmx = PTHREAD_MUTEX_INITIALIZER;
 static struct { char batch[40]; int quarter; } UPN;
+static void upa_note(const char *batch, const char *name, long long done, long long total);
 static void up_progress(const char *batch, long long done, long long total) {
+  upa_note(batch, NULL, done, total);
   if (!notify_fn || total <= 0) return;
   int q = (int)(done * 4 / total); if (q > 3) q = 3;   // 0, 25, 50, 75 %
   char msg[200] = "";
@@ -376,6 +380,74 @@ static void up_progress(const char *batch, long long done, long long total) {
   if (msg[0]) notify_fn(msg);
 }
 
+// Caricamento in corso, per la tessera che avanza nella home della console
+static struct { char batch[40], name[160]; long long done, total; time_t at; } UPA;
+static void upa_note(const char *batch, const char *name, long long done, long long total) {
+  pthread_mutex_lock(&upmx);
+  if (strcmp(UPA.batch, batch)) { snprintf(UPA.batch, sizeof UPA.batch, "%s", batch); UPA.name[0] = 0; }
+  if (name && name[0] && !UPA.name[0]) snprintf(UPA.name, sizeof UPA.name, "%s", name);
+  if (done >= 0) UPA.done = done;
+  if (total > 0) UPA.total = total;
+  UPA.at = time(NULL);
+  pthread_mutex_unlock(&upmx);
+}
+static void upa_end(const char *batch) { pthread_mutex_lock(&upmx); if (!strcmp(UPA.batch, batch)) UPA.at = 0; pthread_mutex_unlock(&upmx); }
+
+// Giochi da installare subito, chiesti dal telefono o dal PC: la UI li prende
+// con /v1/console/jobs e li mette nella sua coda di installazione.
+#define IQ_MAX 16
+static char *IQ[IQ_MAX]; static int IQn;
+static int iq_push(const char *id) {
+  static char item[16384];
+  size_t n = lib_item_json(id, item, sizeof item);
+  if (!n) return -1;
+  pthread_mutex_lock(&upmx);
+  int ok = IQn < IQ_MAX && (IQ[IQn] = strdup(item)) != NULL;
+  if (ok) IQn++;
+  pthread_mutex_unlock(&upmx);
+  return ok ? 0 : -1;
+}
+NOINLINE static void console_jobs(int s) {
+  static char out[IQ_MAX * 16384 + 1024];
+  char nm[340]; size_t o = 0;
+  pthread_mutex_lock(&upmx);
+  int active = UPA.at && time(NULL) - UPA.at < 10;
+  json_escape(nm, sizeof nm, UPA.name);
+  o += (size_t)snprintf(out + o, sizeof out - o, "{\"upload\":{\"active\":%s,\"name\":\"%s\",\"done\":%lld,\"total\":%lld},\"install\":[",
+                        active ? "true" : "false", nm, UPA.done, UPA.total);
+  for (int i = 0; i < IQn; i++) { if (o + strlen(IQ[i]) + 4 < sizeof out) o += (size_t)snprintf(out + o, sizeof out - o, "%s%s", i ? "," : "", IQ[i]); free(IQ[i]); }
+  IQn = 0;
+  pthread_mutex_unlock(&upmx);
+  o += (size_t)snprintf(out + o, sizeof out - o, "]}");
+  reply(s, 200, "application/json", out, o);
+}
+
+// File orfani: lotti caricati che non sono finiti in La mia libreria (invio
+// interrotto e mai ripreso) si tolgono dopo un giorno.
+static void *orphan_thread(void *arg) {
+  (void)arg;
+  sleep(60);
+  char up[300]; up_root(up, sizeof up);
+  size_t cap = 4 * 1024 * 1024; char *lib = malloc(cap);
+  if (!lib) return NULL;
+  lib_list_json(lib, cap);
+  DIR *d = opendir(up); struct dirent *e; int n = 0;
+  while (d && (e = readdir(d))) {
+    if (e->d_name[0] == '.' || !batch_ok(e->d_name)) continue;
+    char p[600]; struct stat st; snprintf(p, sizeof p, "%s/%s", up, e->d_name);
+    if (stat(p, &st) != 0 || !S_ISDIR(st.st_mode) || time(NULL) - st.st_mtime < 24 * 3600) continue;
+    if (strstr(lib, e->d_name)) continue;            // ancora in libreria
+    pthread_mutex_lock(&upmx); int busy = !strcmp(UPA.batch, e->d_name) && UPA.at && time(NULL) - UPA.at < 600; pthread_mutex_unlock(&upmx);
+    if (busy) continue;
+    rm_rf(p); n++;
+    player_log("pulizia: tolto il caricamento abbandonato %s", e->d_name);
+  }
+  if (d) closedir(d);
+  free(lib);
+  if (n) player_log("pulizia: %d caricamenti abbandonati tolti", n);
+  return NULL;
+}
+
 typedef struct { int s; char dst[1200]; char batch[40]; long long clen, off, base, total; char *pre; size_t have; } UpJob;
 static void *up_thread(void *arg) {
   UpJob *u = arg;
@@ -387,7 +459,7 @@ static void *up_thread(void *arg) {
   int ok = fd >= 0;
   long long got = 0;
   up_progress(u->batch, u->base + u->off, u->total);
-  if (ok && u->have) { ok = write(fd, u->pre, u->have) == (ssize_t)u->have; got = (long long)u->have; }
+  if (ok && u->have) { ok = write(fd, u->pre, u->have) == (ssize_t)u->have; got = (long long)u->have; up_progress(u->batch, u->base + u->off + got, u->total); }
   char *buf = ok ? malloc(512 * 1024) : NULL; if (!buf) ok = 0;
   while (ok && got < u->clen) {
     long long want = u->clen - got; if (want > 512 * 1024) want = 512 * 1024;
@@ -428,6 +500,9 @@ NOINLINE static int start_upload(int s, const char *qs, const char *pre, size_t 
     long long have = stat(tmp, &st) == 0 ? (long long)st.st_size : 0;
     if (have != off) { char o[80]; snprintf(o, sizeof o, "{\"error\":\"offset\",\"have\":%lld}", have); reply_json(s, 409, o); return 0; }
   }
+  { char first[160]; snprintf(first, sizeof first, "%.*s", (int)strcspn(relc, "/"), relc);
+    char *dot = strrchr(first, '.'); if (dot && !strchr(relc, '/')) *dot = 0;   // file singolo: senza estensione
+    upa_note(b, first, base + off, total); }
   UpJob *u = calloc(1, sizeof *u); if (!u) { reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; }
   u->s = s; u->clen = clen; u->off = off; u->base = base; u->total = total; snprintf(u->dst, sizeof u->dst, "%s", dst); snprintf(u->batch, sizeof u->batch, "%s", b);
   if (have > (size_t)clen) have = (size_t)clen;
@@ -484,6 +559,8 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
   }
   if (d) closedir(d); else { reply_json(s, 404, "{\"error\":\"no_batch\"}"); return; }
   if (part) { reply_json(s, 409, "{\"error\":\"incomplete\"}"); return; }
+  upa_end(b);
+  int want_install = jbool(j, "install");
 
   if (files == 1 && dirs == 0) {
     size_t L = strlen(only); const char *ext = L > 4 ? only + L - 4 : "";
@@ -500,7 +577,8 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
     }
     snprintf(url, sizeof url, "file://%s/%s", batch, only);
     if (lib_add_upload(title, url, kind, "", "", "", "", id, sizeof id)) { reply_json(s, 500, "{\"error\":\"library\"}"); return; }
-    char o[160]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"%s\"}", id, kind); reply_json(s, 200, o);
+    int q = want_install && iq_push(id) == 0;
+    char o[200]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"%s\",\"installing\":%s}", id, kind, q ? "true" : "false"); reply_json(s, 200, o);
     player_log("libreria: caricato %s (%s)", title, kind);
   if (notify_fn) { char m[300]; snprintf(m, sizeof m, _("Omega: %s \xC3\xA8 in La mia libreria, pronto da installare"), title); notify_fn(m); }
     return;
@@ -558,7 +636,8 @@ NOINLINE static void do_upload_done(int s, JVal *j) {
   }
   snprintf(url, sizeof url, "file://%s", root);
   if (lib_add_upload(title, url, "folder", cover, tid, ver, plat, id, sizeof id)) { reply_json(s, 500, "{\"error\":\"library\"}"); return; }
-  char o[200]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"folder\",\"title_id\":\"%s\"}", id, tid); reply_json(s, 200, o);
+  int q = want_install && iq_push(id) == 0;
+  char o[240]; snprintf(o, sizeof o, "{\"added\":\"%s\",\"kind\":\"folder\",\"title_id\":\"%s\",\"installing\":%s}", id, tid, q ? "true" : "false"); reply_json(s, 200, o);
   player_log("libreria: gioco in cartella %s (%s)", title, tid);
   if (notify_fn) { char m[300]; snprintf(m, sizeof m, _("Omega: %s \xC3\xA8 in La mia libreria, pronto da installare"), title); notify_fn(m); }
 }
@@ -645,6 +724,9 @@ NOINLINE static void do_library(int s, const char *what, JVal *j) {
     else { lib_set_source("", err, sizeof err); reply_json(s, 200, "{\"ok\":true}"); }
   } else if (!strcmp(what, "upload/done")) {
     do_upload_done(s, j);
+  } else if (!strcmp(what, "install")) {
+    if (iq_push(jstr(j, "id", "")) == 0) reply_json(s, 200, "{\"queued\":true}");
+    else reply_json(s, 404, "{\"error\":\"not_found\"}");
   } else if (!strcmp(what, "sync")) {
     start_sync(NULL); reply_json(s, 202, "{\"syncing\":true}");
   } else reply_json(s, 404, "{\"error\":\"not_found\"}");
@@ -743,6 +825,7 @@ static int handle(int s, int local) {
       if (n) reply(s, 200, "application/json", b, n); else reply_json(s, 404, "{\"error\":\"not_found\"}");
       free(b); return 0;
     }
+    if (!strcmp(path, "/v1/console/jobs")) { if (!local) { reply_json(s, 403, "{\"error\":\"local_only\"}"); return 0; } console_jobs(s); return 0; }
     if (!strcmp(path, "/v1/library/space")) { char up[300], o[96]; up_root(up, sizeof up); snprintf(o, sizeof o, "{\"free\":%lld}", free_bytes(up)); reply_json(s, 200, o); return 0; }
     if (!strcmp(path, "/v1/library/file")) { upload_file(s, qcopy); return 0; }
     if (!strcmp(path, "/v1/library/upload/status")) { upload_status(s, qcopy); return 0; }
@@ -803,13 +886,29 @@ static int handle(int s, int local) {
   return 0;
 }
 
+static int ctl_port = OMEGA_CTL_PORT;
 static void *ctl_thread(void *arg) {
   (void)arg;
   { char probe; player_log("thread delle richieste: stack intorno a %p", (void *)&probe); }
+  int fails = 0;
   for (;;) {
     struct sockaddr_in ca; socklen_t cl = sizeof ca;
     int c = accept(lsock, (struct sockaddr *)&ca, &cl);
-    if (c < 0) { usleep(100000); continue; }
+    if (c < 0) {
+      // dopo il riposo della console il socket in ascolto può restare morto:
+      // dopo 5 s di errori di fila lo si chiude e si torna in ascolto
+      if (++fails >= 50) {
+        player_log("controllo: accept fallisce (errno %d), riapro la porta %d", errno, ctl_port);
+        close(lsock); lsock = socket(AF_INET, SOCK_STREAM, 0);
+        int one = 1; if (lsock >= 0) setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
+        struct sockaddr_in a; memset(&a, 0, sizeof a);
+        a.sin_family = AF_INET; a.sin_port = htons((unsigned short)ctl_port); a.sin_addr.s_addr = htonl(INADDR_ANY);
+        if (lsock < 0 || bind(lsock, (struct sockaddr *)&a, sizeof a) != 0 || listen(lsock, 8) != 0) { if (lsock >= 0) close(lsock); lsock = -1; sleep(2); }
+        fails = 0;
+      }
+      usleep(100000); continue;
+    }
+    fails = 0;
     struct timeval tv = { 5, 0 };
     setsockopt(c, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
     setsockopt(c, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
@@ -820,7 +919,7 @@ static void *ctl_thread(void *arg) {
 }
 
 int ctl_start(int port, const char *dir) {
-  started_at = time(NULL);
+  started_at = time(NULL); ctl_port = port;
   snprintf(data_dir, sizeof data_dir, "%s", dir ? dir : ".");
   remote_load();
   lsock = socket(AF_INET, SOCK_STREAM, 0);
@@ -830,6 +929,7 @@ int ctl_start(int port, const char *dir) {
   a.sin_family = AF_INET; a.sin_port = htons((unsigned short)port); a.sin_addr.s_addr = htonl(INADDR_ANY);   // anche dalla rete di casa: vedi il controllo del token
   if (bind(lsock, (struct sockaddr *)&a, sizeof a) != 0 || listen(lsock, 8) != 0) { close(lsock); lsock = -1; return -2; }
   if (spawn(ctl_thread, NULL) != 0) { close(lsock); lsock = -1; return -3; }
+  spawn(orphan_thread, NULL);
   player_log("controllo in ascolto sulla porta %d (telecomando con PIN)", port);
   return 0;
 }

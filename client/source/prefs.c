@@ -34,6 +34,8 @@ static const PrefDef PREFS[] = {
   { PC_LOOK, "focus", N_("Selezione"), N_("Come si vede l'elemento scelto col controller."), &g_prefs.focus, 0,
     V(N_("Anello bianco"), N_("Anello colorato"), N_("Bagliore"), N_("Anello e bagliore")), NULL },
   // ---------------------------------------------------------------- home --
+  { PC_HOME, "home_style", N_("Modalità del menu"), N_("Come è fatta la home: Omega, in stile PS4, XMB come sulla PS3, oppure Griglia, Carosello e Cinema."), &g_prefs.home_style, 0,
+    V(N_("Omega"), N_("Classica PS4"), N_("XMB (PS3)"), N_("Griglia"), N_("Carosello"), N_("Cinema")), NULL },
   { PC_HOME, "tiles", N_("Dimensione delle icone"), N_("Le icone dei giochi nella fila della home."), &g_prefs.tiles, 1,
     V(N_("Piccole"), N_("Medie"), N_("Grandi")), NULL },
   { PC_HOME, "labels", N_("Nomi sotto le icone"), N_("Il nome di ogni gioco sotto la sua icona, non solo di quello scelto."), &g_prefs.labels, 0,
@@ -43,6 +45,8 @@ static const PrefDef PREFS[] = {
   { PC_HOME, "show_hb", N_("Homebrew e payload in home"), N_("Mostra anche gli homebrew e i payload accanto ai giochi."), &g_prefs.show_hb, 1,
     V(N_("No"), N_("Sì")), NULL },
   { PC_HOME, "ext_games", N_("Giochi sui dischi esterni"), N_("I giochi trovati su HDD, SSD e chiavette collegati compaiono in home con l'icona del disco."), &g_prefs.ext_games, 1,
+    V(N_("No"), N_("Sì")), NULL },
+  { PC_HOME, "automount", N_("Montaggio automatico"), N_("Come ShadowMount, ma dentro Omega: appena colleghi un disco i suoi giochi si registrano da soli e compaiono anche nella Home della console. Serve kstuff."), &g_prefs.automount, 1,
     V(N_("No"), N_("Sì")), NULL },
   { PC_HOME, "cards", N_("Sotto il gioco scelto"), N_("Le schede con amici che giocano, notizie e attività."), &g_prefs.cards, 1,
     V(N_("Niente"), N_("Amici e notizie")), NULL },

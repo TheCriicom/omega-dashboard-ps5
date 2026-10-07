@@ -12,7 +12,11 @@
     "admin_report": "Laporan: {title}",
     "admin_social_report": "Laporan: {kind} {title}",
     "report_on_comment": " (komentar)",
-    "report_hidden": " — disembunyikan"
+    "report_hidden": " — disembunyikan",
+    "feedback_bug": "Bug dilaporkan oleh {actor}",
+    "feedback_idea": "Permintaan fitur dari {actor}",
+    "store_recommend": "{actor} merekomendasikan {app} untuk Anda",
+    "store_update": "{app} diperbarui ke versi {version}"
   },
   "report_kind": {
     "user": "pengguna",

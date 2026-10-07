@@ -12,7 +12,11 @@
     "admin_report": "Αναφορά: {title}",
     "admin_social_report": "Αναφορά: {kind} {title}",
     "report_on_comment": " (σχόλιο)",
-    "report_hidden": " — σε απόκρυψη"
+    "report_hidden": " — σε απόκρυψη",
+    "feedback_bug": "Σφάλμα αναφέρθηκε από {actor}",
+    "feedback_idea": "Αίτημα λειτουργίας από {actor}",
+    "store_recommend": "{actor} σας προτείνει το {app}",
+    "store_update": "Το {app} ενημερώθηκε στην έκδοση {version}"
   },
   "report_kind": {
     "user": "χρήστης",

@@ -28,12 +28,29 @@
 
 #ifdef PS5
 #include <ps5/kernel.h>
-// layout come nel riferimento dell'SDK
-typedef struct { const char *uri, *ex_uri, *playgo_scenario_id, *content_id, *content_name, *icon_url; } pkg_metadata_t;
-typedef struct { char content_id[48]; int type; int platform; } pkg_info_t;
-typedef struct { char lang[8][30]; char scenario_ids[3][64]; char content_ids[64]; long unknown[810]; } playgo_info_t;
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+// Layout corretti (websrv PR #51, etaHEN common_utils.h, firma di ShellUI):
+// i metadati hanno anche slot e is_playgo_enabled (0x38 byte) e PlayGoInfo è
+// di 0x2700 byte. Con le strutture vecchie, più piccole, i giochi base
+// fallivano con 0x80B2116F (SCE_PLAYGO_ERROR_CORE_INVALID_SLOT).
+typedef struct { const char *uri, *ex_uri, *playgo_scenario_id, *content_id, *content_name, *icon_url; uint32_t slot, is_playgo_enabled; } pkg_metadata_t;
+typedef struct { char content_id[0x30]; int type; int platform; } pkg_info_t;
+typedef struct { char lang[30][8]; char scenario_ids[64][3]; char content_ids[64][0x30]; long unknown[810]; } playgo_info_t;
+_Static_assert(sizeof(pkg_metadata_t) == 0x38, "MetaInfo");
+_Static_assert(sizeof(playgo_info_t) == 0x2700, "PlayGoInfo");
+typedef struct { int32_t error_code; int32_t version; char description[512]; char type[9]; } inst_error_t;
+typedef struct {
+  char status[16]; char src_type[8]; uint32_t remain_time;
+  uint64_t downloaded_size, initial_chunk_size, total_size;
+  uint32_t promote_progress; inst_error_t error_info;
+  int32_t local_copy_percent; char is_copy_only;
+  char pad[256];                       // margine: firmware diversi possono scrivere di più
+} inst_status_t;
 int sceAppInstUtilInitialize(void);
 int sceAppInstUtilInstallByPackage(const pkg_metadata_t *, pkg_info_t *, playgo_info_t *);
+int sceAppInstUtilGetInstallStatus(const char *content_id, inst_status_t *st);
 int sceAppInstUtilAppInstallAll(void *);
 int sceAppInstUtilAppUnInstall(const char *);
 #endif
@@ -51,6 +68,11 @@ static char g_label[96], g_phase[128], g_result[512];
 static volatile int g_dl;           // fase di scaricamento: avanzamento in MB
 static int g_result_err, g_installed_title;
 static Uint32 g_started;
+static char g_icon[320];              // icona della tessera in home (file locale o URL)
+static char g_libid[40];              // voce di La mia libreria da togliere a fine lavoro (file caricati)
+static Uint32 g_ended; static char g_end_name[96], g_end_icon[320];
+#define QMAX 16
+static InstallReq g_queue[QMAX]; static int g_nq;   // installazioni in attesa (solo thread principale)
 
 int install_busy(void) { return SDL_AtomicGet(&g_state) == 1; }
 
@@ -238,6 +260,18 @@ static int copy_tree(const char *src, const char *dst) {
   return rc;
 }
 
+#ifdef PS5
+static void copy_tree_rm(const char *p) {
+  struct stat st; if (lstat(p, &st) != 0) return;
+  if (S_ISDIR(st.st_mode)) {
+    DIR *d = opendir(p); struct dirent *e;
+    while (d && (e = readdir(d))) { if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) continue; char c[1024]; snprintf(c, sizeof c, "%s/%s", p, e->d_name); copy_tree_rm(c); }
+    if (d) closedir(d);
+    rmdir(p);
+  } else unlink(p);
+}
+#endif
+
 static int download(const InstallReq *j, const char *dest) {
   mkparents(dest);
   if (local_path(j->url)) {   // già sulla console: basta copiarlo
@@ -292,52 +326,206 @@ static void url_clean(const char *in, char *out, size_t n) {
 }
 #endif
 
-static int do_pkg(const InstallReq *j) {
+// ------------------------------------------------------------ dentro il pkg --
+static uint32_t rbe32(const unsigned char *p) { return (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3]; }
+static void sfo_field(const unsigned char *b, uint32_t len, const char *key, char *out, size_t n) {
+  if (len < 20 || memcmp(b, "\0PSF", 4)) return;
+  uint32_t kt = b[8] | b[9] << 8 | b[10] << 16 | (uint32_t)b[11] << 24, dt = b[12] | b[13] << 8 | b[14] << 16 | (uint32_t)b[15] << 24, cnt = b[16] | b[17] << 8 | b[18] << 16 | (uint32_t)b[19] << 24;
+  for (uint32_t i = 0; i < cnt && 20 + i * 16 + 16 <= len; i++) {
+    const unsigned char *e = b + 20 + i * 16;
+    uint32_t ko = e[0] | e[1] << 8, dl = e[4] | e[5] << 8 | e[6] << 16 | (uint32_t)e[7] << 24, doff = e[12] | e[13] << 8 | e[14] << 16 | (uint32_t)e[15] << 24;
+    if (kt + ko >= len || dt + doff + dl > len) continue;
+    if (!strcmp((const char *)b + kt + ko, key)) { snprintf(out, n, "%.*s", (int)dl, (const char *)b + dt + doff); return; }
+  }
+}
+// Titolo, Content ID e icona di un pkg PS4 (intestazione "\x7fCNT": tabella
+// delle voci con param.sfo = 0x1000 e icon0.png = 0x1200). icon_dest può essere
+// NULL. 1 = riconosciuto.
+int pkg_info(const char *path, char *title, size_t tn, char *cid, size_t cn, const char *icon_dest) {
+  if (title && tn) title[0] = 0;
+  if (cid && cn) cid[0] = 0;
+  int fd = open(path, O_RDONLY); if (fd < 0) return 0;
+  unsigned char h[0x80]; int ok = 0;
+  if (read(fd, h, sizeof h) == (ssize_t)sizeof h && !memcmp(h, "\x7f" "CNT", 4)) {
+    ok = 1;
+    if (cid && cn) { snprintf(cid, cn, "%.36s", (const char *)h + 0x40); }
+    uint32_t count = rbe32(h + 0x10), table = rbe32(h + 0x18);
+    if (count && count < 4096) {
+      unsigned char *t = malloc((size_t)count * 32);
+      if (t && lseek(fd, table, SEEK_SET) == (off_t)table && read(fd, t, (size_t)count * 32) == (ssize_t)(count * 32)) {
+        for (uint32_t i = 0; i < count; i++) {
+          const unsigned char *e = t + i * 32;
+          uint32_t id = rbe32(e), off = rbe32(e + 16), size = rbe32(e + 20);
+          if (!size || size > 4 * 1024 * 1024) continue;
+          if ((id == 0x1000 && title && tn) || (id == 0x1200 && icon_dest)) {
+            unsigned char *b = malloc(size);
+            if (b && lseek(fd, off, SEEK_SET) == (off_t)off && read(fd, b, size) == (ssize_t)size) {
+              if (id == 0x1000) { sfo_field(b, size, "TITLE", title, tn); }
+              else { mkparents(icon_dest); FILE *f = fopen(icon_dest, "wb"); if (f) { fwrite(b, 1, size, f); fclose(f); } }
+            }
+            free(b);
+          }
+        }
+      }
+      free(t);
+    }
+  } else if (!memcmp(h, "\x7f" "FIH", 4)) ok = 2;   // pkg PS5: niente da leggere qui
+  close(fd);
+  return ok;
+}
+
 #ifdef PS5
-  if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "%s", _("AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.")); return -1; }
+// AppInstUtil vuole il privilegio di ShellCore: Omega gira con quello
+// dell'app di lancio, quindi per la durata della chiamata si prende in
+// prestito l'authid di ShellCore (come fanno etaHEN e i caricatori di pkg).
+#define AUTHID_SHELLCORE 0x3800000000000010ul
+static uint64_t authid_push(void) { uint64_t old = kernel_get_ucred_authid(getpid()); kernel_set_ucred_authid(getpid(), AUTHID_SHELLCORE); return old; }
+static void authid_pop(uint64_t old) { if (old) kernel_set_ucred_authid(getpid(), old); }
+
+static int install_by_pkg(pkg_metadata_t *m, pkg_info_t *info) {
+  static playgo_info_t pg;   // 10 KB: meglio fuori dallo stack del thread
+  memset(info, 0, sizeof *info); memset(&pg, 0, sizeof pg);
+  uint64_t a = authid_push();
+  int rc = sceAppInstUtilInstallByPackage(m, info, &pg);
+  authid_pop(a);
+  return rc;
+}
+
+// /data è un collegamento: l'installatore vuole il percorso vero /user/data
+static void real_uri(const char *in, char *out, size_t n) {
+  if (!strncmp(in, "/data/", 6)) snprintf(out, n, "/user%s", in); else snprintf(out, n, "%s", in);
+}
+
+// etaHEN Direct Package Installer v2 (porta 12800), se c'è: ripiego quando
+// AppInstUtil rifiuta la chiamata. "SUCCESS..." = accodato.
+static int dpi_install(const char *uri) {
+  int s = socket(AF_INET, SOCK_STREAM, 0); if (s < 0) return -1;
+  struct sockaddr_in a; memset(&a, 0, sizeof a); a.sin_family = AF_INET; a.sin_port = htons(12800); a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  struct timeval tv = { 20, 0 }; setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
+  if (connect(s, (struct sockaddr *)&a, sizeof a) != 0) { close(s); return -1; }
+  char body[1300], enc[1200]; url_encode(enc, sizeof enc, uri, "/:._-");
+  snprintf(body, sizeof body, "url=%s", enc);
+  char req[1700]; int L = snprintf(req, sizeof req, "POST / HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", (int)strlen(body), body);
+  int ok = write(s, req, (size_t)L) == L;
+  char resp[1024] = ""; int got = 0, k;
+  while (ok && got < (int)sizeof resp - 1 && (k = (int)read(s, resp + got, sizeof resp - 1 - got)) > 0) got += k;
+  resp[got] = 0; close(s);
+  omega_log("install: etaHEN DPI -> %.120s", resp);
+  return strstr(resp, "SUCCESS") ? 0 : -2;
+}
+
+// Avanzamento vero dell'installazione di sistema, come sulla PS4: si legge
+// lo stato del Content ID finché non è "playable" (o un errore).
+static int pkg_watch(const char *cid) {
+  if (!cid[0]) return 0;
+  snprintf(g_phase, sizeof g_phase, "%s", _("Installazione")); g_dl = 1; g_done = 0; g_total = 0;
+  inst_status_t st; int misses = 0, seen = 0; long last_done = -1; Uint32 still = SDL_GetTicks();
+  for (;;) {
+    SDL_Delay(500);
+    memset(&st, 0, sizeof st);
+    uint64_t a = authid_push();
+    int rc = sceAppInstUtilGetInstallStatus(cid, &st);
+    authid_pop(a);
+    if (rc != 0) {
+      // finito e tolto dalla coda di sistema, oppure non ancora entrato
+      if (seen && ++misses > 6) return 0;
+      if (!seen && ++misses > 40) { omega_log("install: stato di %s non disponibile (0x%08X)", cid, (unsigned)rc); return 0; }
+      continue;
+    }
+    seen = 1; misses = 0;
+    st.status[sizeof st.status - 1] = 0;
+    if (st.error_info.error_code) {
+      const char *why = pkg_error(st.error_info.error_code);
+      if (why) snprintf(g_result, sizeof g_result, _("Installazione non riuscita: %s (0x%08X)"), why, (unsigned)st.error_info.error_code);
+      else snprintf(g_result, sizeof g_result, _("Installazione non riuscita (0x%08X)"), (unsigned)st.error_info.error_code);
+      return -1;
+    }
+    if (st.total_size) { g_total = (long)(st.total_size / 1024); g_done = (long)(st.downloaded_size / 1024); }
+    if (!strcmp(st.status, "promoting")) snprintf(g_phase, sizeof g_phase, "%s", _("Finalizzazione"));
+    if (!strcmp(st.status, "playable") || !strcmp(st.status, "finished") || !strcmp(st.status, "completed") ||
+        (st.total_size && st.downloaded_size >= st.total_size && st.promote_progress >= 100)) { g_done = g_total; return 0; }
+    if (g_done != last_done) { last_done = g_done; still = SDL_GetTicks(); }
+    // fermo da 10 minuti: si smette di guardare, il sistema continua da solo
+    if (SDL_GetTicks() - still > 600000) { snprintf(g_result, sizeof g_result, "%s", _("L'installazione continua in background: la trovi nella Home della console")); return 1; }
+  }
+}
+#endif
+
+static int do_pkg(const InstallReq *j) {
+  const char *lp = local_path(j->url);
+  // icona e titolo dal pkg stesso, per la tessera in home
+  if (lp) {
+    char t[96], cid[48], ic[300];
+    snprintf(ic, sizeof ic, OMEGA_DIR "/dl/icons/%08x.png", fnv1a(lp));
+    if (pkg_info(lp, t, sizeof t, cid, sizeof cid, ic)) {
+      if (access(ic, 0) == 0 && !g_icon[0]) snprintf(g_icon, sizeof g_icon, "%s", ic);
+      if (t[0] && !j->name[0]) snprintf(g_label, sizeof g_label, "%s", t);
+    }
+  }
+#ifdef PS5
+  if (sceAppInstUtilInitialize()) { snprintf(g_result, sizeof g_result, "%s", _("Installatore di sistema non disponibile: riavvia Omega. Ripiego: installa il pkg con ItemzFlow.")); return -1; }
   char remote[1100]; url_clean(j->url, remote, sizeof remote);
-  const char *uri = local_path(j->url) ? local_path(j->url) : remote;   // un pkg caricato si installa dal disco
-  // l'installatore di sistema rifiuta i percorsi con spazi e simboli: accanto al
-  // file si crea un collegamento con un nome pulito e si installa da lì
-  char clean[700];
-  if (local_path(j->url) && strpbrk(uri, " []()'&#%")) {
-    snprintf(clean, sizeof clean, "%s", uri);
-    char *base = strrchr(clean, '/'); base = base ? base + 1 : clean;
-    for (char *c = base; *c; c++) if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '.' || *c == '-' || *c == '_')) *c = '_';
-    // mai cancellare: se il nome pulito c'è già (tentativo precedente) si usa quello
-    struct stat cst;
-    if (stat(clean, &cst) == 0 || link(uri, clean) == 0 || rename(uri, clean) == 0) uri = clean;
+  char uri_buf[760]; const char *uri = remote;
+  if (lp) {
+    // l'installatore di sistema rifiuta i percorsi con spazi e simboli: accanto al
+    // file si crea un collegamento con un nome pulito e si installa da lì
+    char clean[700]; snprintf(clean, sizeof clean, "%s", lp);
+    if (strpbrk(lp, " []()'&#%")) {
+      char *base = strrchr(clean, '/'); base = base ? base + 1 : clean;
+      for (char *c = base; *c; c++) if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '.' || *c == '-' || *c == '_')) *c = '_';
+      struct stat cst;   // mai cancellare: se il nome pulito c'è già (tentativo precedente) si usa quello
+      if (!(stat(clean, &cst) == 0 || link(lp, clean) == 0 || rename(lp, clean) == 0)) snprintf(clean, sizeof clean, "%s", lp);
+    }
+    real_uri(clean, uri_buf, sizeof uri_buf); uri = uri_buf;
     omega_log("install: pkg dal percorso %s", uri);
   }
-  pkg_metadata_t meta = { .uri = uri, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = j->name[0] ? j->name : "", .icon_url = "" };
-  pkg_info_t info; memset(&info, 0, sizeof info);
-  playgo_info_t pg; memset(&pg, 0, sizeof pg);
-  int rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
-  if (rc && local_path(j->url)) {   // alcune versioni vogliono l'URI file://
-    char furi[720]; snprintf(furi, sizeof furi, "file://%s", uri);
+  char cid[48] = ""; if (lp) pkg_info(lp, NULL, 0, cid, sizeof cid, NULL);
+  snprintf(g_phase, sizeof g_phase, "%s", _("Avvio dell'installazione"));
+  pkg_metadata_t meta = { .uri = uri, .ex_uri = "", .playgo_scenario_id = "", .content_id = "", .content_name = g_label, .icon_url = "", .slot = 0, .is_playgo_enabled = 0 };
+  pkg_info_t info;
+  int rc = install_by_pkg(&meta, &info);
+  if (rc && lp) {   // alcune versioni vogliono l'URI file://
+    char furi[780]; snprintf(furi, sizeof furi, "file://%s", uri);
     omega_log("install: pkg rifiutato (0x%08X), riprovo come %s", (unsigned)rc, furi);
-    meta.uri = furi; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg);
-    rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
+    meta.uri = furi; rc = install_by_pkg(&meta, &info);
+    meta.uri = uri;
   }
-  if (rc && !local_path(j->url) && rc != (int)0x80A30002 && rc != (int)0x80A3000D) {
+  char dest[300] = "";
+  if (rc && !lp && rc != (int)0x80A30002 && rc != (int)0x80A3000D) {
     // il sistema non ha accettato il link (redirect, https, server lento...):
     // si scarica il pkg sulla console e si installa dal file
     omega_log("install: link rifiutato (0x%08X), scarico il pkg sulla console", (unsigned)rc);
-    char dest[300]; snprintf(dest, sizeof dest, OMEGA_DIR "/dl/omega-install.pkg");
+    snprintf(dest, sizeof dest, OMEGA_DIR "/dl/omega-install-%u.pkg", (unsigned)SDL_GetTicks());
     int d = download(j, dest);
     if (d) return d;
-    snprintf(g_phase, sizeof g_phase, "%s", _("Installazione"));
-    meta.uri = dest; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg);
-    rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg);
-    if (rc) { char furi[340]; snprintf(furi, sizeof furi, "file://%s", dest); meta.uri = furi; memset(&info, 0, sizeof info); memset(&pg, 0, sizeof pg); rc = sceAppInstUtilInstallByPackage(&meta, &info, &pg); }
-    // il file serve all'installatore finché non ha finito: lo si toglie al prossimo pkg
+    char ic[300]; snprintf(ic, sizeof ic, OMEGA_DIR "/dl/icons/%08x.png", fnv1a(dest));
+    pkg_info(dest, NULL, 0, cid, sizeof cid, ic);
+    if (!g_icon[0] && access(ic, 0) == 0) snprintf(g_icon, sizeof g_icon, "%s", ic);
+    snprintf(g_phase, sizeof g_phase, "%s", _("Avvio dell'installazione"));
+    real_uri(dest, uri_buf, sizeof uri_buf);
+    meta.uri = uri_buf; rc = install_by_pkg(&meta, &info);
   }
-  if (rc) { pkg_fail(rc); return -1; }
-  snprintf(g_result, sizeof g_result, "%s", _("Installazione avviata: comparirà nella Home della console"));
+  // ultimo ripiego: il Direct Package Installer di etaHEN, se è attivo
+  if (rc && rc != (int)0x80A30002 && rc != (int)0x80A3000D && rc != (int)0x80A3000C && dpi_install(meta.uri) == 0) {
+    omega_log("install: AppInstUtil 0x%08X, accodato da etaHEN DPI", (unsigned)rc);
+    rc = 0;
+  }
+  if (rc) { pkg_fail(rc); if (dest[0]) unlink(dest); return -1; }
+  if (!cid[0]) snprintf(cid, sizeof cid, "%.36s", info.content_id);
+  omega_log("install: pkg accodato, content id %s", cid);
+  int w = pkg_watch(cid);
+  if (w < 0) { if (dest[0]) unlink(dest); return -1; }
+  if (w == 0) {
+    // finito: il pkg scaricato non serve più
+    if (dest[0]) unlink(dest);
+    snprintf(g_result, sizeof g_result, "%s", _("Installato: lo trovi nella Home"));
+    g_installed_title = 1;
+  }
   return 0;
 #else
-  for (int i = 0; i <= 100 && !g_cancel; i += 5) { g_total = 100; g_done = i; SDL_Delay(30); }
+  for (int i = 0; i <= 100 && !g_cancel; i += 2) { g_total = 100; g_done = i; g_dl = 1; snprintf(g_phase, sizeof g_phase, "%s", i < 70 ? _("Installazione") : _("Finalizzazione")); SDL_Delay(40); }
   snprintf(g_result, sizeof g_result, "(desktop) pkg: sulla console va ad AppInstUtil — %s", j->name);
+  g_installed_title = 1;
   return 0;
 #endif
 }
@@ -516,6 +704,7 @@ static int do_folder(const InstallReq *j) {
 static int install_thread(void *arg) {
   InstallReq *j = arg;
   g_done = g_total = 0; g_cancel = 0; g_dl = 0; g_result[0] = 0; g_result_err = 0; g_installed_title = 0;
+  mkdir(OMEGA_DIR "/dl", 0777);
   snprintf(g_phase, sizeof g_phase, "%s", _("Preparazione"));
   mkdir(OMEGA_DIR, 0777);
   int kind = detect_kind(j->kind, j->url);
@@ -543,7 +732,6 @@ static void dest_pick(int idx, void *ud) {
 }
 
 void install_begin(const InstallReq *r) {
-  if (SDL_AtomicGet(&g_state) == 1) { set_msg(_("C'è già un'installazione in corso"), 1); return; }
   if (!r || !r->url[0]) { set_msg(_("Link di download mancante"), 1); return; }
   int game = r->title_id[0] && r->kind != KIND_PKG && r->kind != KIND_ELF;
   if (game && !r->dest_mount[0] && (pend_nd = drives_list(pend_dr, 12)) > 0) {
@@ -557,33 +745,130 @@ void install_begin(const InstallReq *r) {
   install_start(r);
 }
 
-static void install_start(const InstallReq *r) {
+static void install_run(const InstallReq *r) {
   InstallReq *j = malloc(sizeof *j);
   if (!j) { set_msg(_("Memoria insufficiente"), 1); return; }
   *j = *r;
   snprintf(g_label, sizeof g_label, "%s", r->name[0] ? r->name : _("Installazione"));
+  snprintf(g_icon, sizeof g_icon, "%s", r->icon);
+  snprintf(g_libid, sizeof g_libid, "%s", r->lib_id);
+  g_phase[0] = 0; g_done = g_total = 0; g_dl = 0; g_ended = 0;
   g_started = SDL_GetTicks();
   SDL_AtomicSet(&g_state, 1);
-  SDL_Thread *t = SDL_CreateThread(install_thread, "install", j);
+  SDL_Thread *t = SDL_CreateThreadWithStackSize(install_thread, "install", 512 * 1024, j);
   if (t) SDL_DetachThread(t);
   else { free(j); SDL_AtomicSet(&g_state, 0); set_msg(_("Impossibile avviare l'installazione"), 1); }
 }
+
+// una alla volta, come sulla console: le altre aspettano in coda
+static void install_start(const InstallReq *r) {
+  if (SDL_AtomicGet(&g_state) == 1) {
+    for (int i = 0; i < g_nq; i++) if (!strcmp(g_queue[i].url, r->url)) { set_msg(_("È già in coda"), 0); return; }
+    if (g_nq >= QMAX) { set_msg(_("Troppe installazioni in coda: aspetta che finiscano"), 1); return; }
+    g_queue[g_nq++] = *r;
+    char m[200]; snprintf(m, sizeof m, _("In coda: %s (%d in attesa)"), r->name[0] ? r->name : _("Installazione"), g_nq);
+    set_msg(m, 0);
+    return;
+  }
+  install_run(r);
+}
+
+static void lib_removed(int st, JVal *j, const char *raw, void *ud) { (void)j; (void)raw; (void)ud; if (st != 200) omega_log("install: file caricati non tolti (%d)", st); }
 
 // dal ciclo principale: chiude l'installazione quando il thread ha finito
 void install_tick(void) {
   if (SDL_AtomicGet(&g_state) != 2) return;
   SDL_AtomicSet(&g_state, 0);
+  g_ended = SDL_GetTicks(); snprintf(g_end_name, sizeof g_end_name, "%s", g_label); snprintf(g_end_icon, sizeof g_end_icon, "%s", g_icon);
   set_msg(g_result, g_result_err);
+  if (!g_result_err && g_libid[0]) {
+    // file caricati dal telefono o dal PC: installati, non servono più (niente orfani)
+    char esc[100], body[140]; json_escape(esc, sizeof esc, g_libid); snprintf(body, sizeof body, "{\"id\":\"%s\"}", esc);
+    net_req(HTTP_POST, "http://127.0.0.1:9095/v1/library/remove", body, lib_removed, NULL);
+    omega_log("install: tolgo i file caricati della voce %s", g_libid);
+  }
   if (g_installed_title) {
     toast(IC_DOWNLOAD, NULL, 0, g_label, _("Installato: ora è nella tua Home"));
     scan_apps();
   } else if (!g_result_err) {
     toast(IC_DOWNLOAD, NULL, 0, g_label, g_result);
+  } else toast(IC_CLOSE, NULL, 0, g_label, g_result);
+  if (g_nq > 0) { InstallReq next = g_queue[0]; memmove(&g_queue[0], &g_queue[1], sizeof(InstallReq) * (size_t)(g_nq - 1)); g_nq--; install_run(&next); }
+}
+
+int install_view(InstallView *v) {
+  memset(v, 0, sizeof *v);
+  v->queued = g_nq;
+  if (SDL_AtomicGet(&g_state) == 1) {
+    v->active = 1;
+    snprintf(v->name, sizeof v->name, "%s", g_label); snprintf(v->icon, sizeof v->icon, "%s", g_icon);
+    long done = g_done, total = g_total;
+    v->prog = total > 0 && g_dl ? clampf((float)done / (float)total, 0, 1) : -1;
+    if (total > 0 && g_dl) {
+      int pc = (int)(v->prog * 100);
+      if (total > 1048576 * 4 && strcmp(g_phase, _("Scaricamento")) && strcmp(g_phase, _("Copia sulla console"))) snprintf(v->phase, sizeof v->phase, "%s  \xC2\xB7  %d%%", g_phase, pc);   // stato di sistema in KB
+      else snprintf(v->phase, sizeof v->phase, _("%s  ·  %d%%  ·  %.0f / %.0f MB"), g_phase, pc, done / 1048576.0, total / 1048576.0);
+    } else snprintf(v->phase, sizeof v->phase, "%s...", g_phase[0] ? g_phase : _("In corso"));
+    return 1;
   }
+  // finito da poco: resta visibile (gli errori di più, finché non si chiudono)
+  if (g_ended && SDL_GetTicks() - g_ended < (g_result_err ? 60000u : 12000u)) {
+    v->ended = g_ended; v->err = g_result_err; v->prog = 1;
+    snprintf(v->name, sizeof v->name, "%s", g_end_name); snprintf(v->icon, sizeof v->icon, "%s", g_end_icon);
+    snprintf(v->result, sizeof v->result, "%s", g_result);
+    return 1;
+  }
+  return 0;
+}
+void install_dismiss(void) { g_ended = 0; }
+void install_cancel(void) { if (SDL_AtomicGet(&g_state) == 1) g_cancel = 1; g_nq = 0; }
+
+// File orfani: scaricamenti a metà o di installazioni finite, icone vecchie e
+// cartelle di giochi esterni la cui registrazione non è andata a buon fine.
+// Si toglie solo ciò che Omega stessa ha creato.
+static void rm_old(const char *dir, time_t older, int depth) {
+  DIR *d = opendir(dir); if (!d) return;
+  struct dirent *e; time_t now = time(NULL);
+  while ((e = readdir(d))) {
+    if (e->d_name[0] == '.') continue;
+    char p[700]; snprintf(p, sizeof p, "%s/%s", dir, e->d_name);
+    struct stat st; if (lstat(p, &st) != 0) continue;
+    if (S_ISDIR(st.st_mode)) { if (depth > 0) { rm_old(p, older, depth - 1); rmdir(p); } continue; }
+    if (now - st.st_mtime > older) { unlink(p); omega_log("pulizia: tolto %s", p); }
+  }
+  closedir(d);
+}
+static int cleanup_thread(void *ud) {
+  (void)ud;
+  SDL_Delay(15000);                        // dopo l'avvio, senza rubare tempo alla home
+  if (install_busy()) return 0;
+  rm_old(OMEGA_DIR "/dl", 2 * 3600, 1);    // pkg/zip scaricati, .part, icone dei pkg
+#ifdef PS5
+  // /user/app/<TID> con il nostro mount.lnk ma senza appmeta: registrazione fallita
+  DIR *d = opendir("/user/app");
+  struct dirent *e;
+  while (d && (e = readdir(d))) {
+    if (e->d_name[0] == '.' || strlen(e->d_name) != 9) continue;
+    char ln[128], meta[96]; snprintf(ln, sizeof ln, "/user/app/%s/mount.lnk", e->d_name); snprintf(meta, sizeof meta, "/user/appmeta/%s", e->d_name);
+    struct stat st;
+    if (stat(ln, &st) == 0 && access(meta, 0) != 0 && time(NULL) - st.st_mtime > 3600) {
+      char dir[96]; snprintf(dir, sizeof dir, "/user/app/%s", e->d_name);
+      omega_log("pulizia: registrazione fallita di %s, tolgo %s", e->d_name, dir);
+      copy_tree_rm(dir);
+    }
+  }
+  if (d) closedir(d);
+#endif
+  return 0;
+}
+void install_cleanup(void) {
+  SDL_Thread *t = SDL_CreateThread(cleanup_thread, "cleanup", NULL);
+  if (t) SDL_DetachThread(t);
 }
 
 void install_overlay(void) {
   if (SDL_AtomicGet(&g_state) != 1) return;
+  if (g_scene == SC_HOME && ov_depth() == 0) return;   // in home c'è la tessera nella fila
   int w = 600, h = 132, x = SCREEN_W - w - 40, y = SCREEN_H - h - 110;
   shadow_rrect(x, y, w, h, 24, 22, 150);
   fill_rrect(x, y, w, h, 24, RGB(28, 32, 46), 245);

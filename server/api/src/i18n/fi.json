@@ -12,7 +12,11 @@
     "admin_report": "Ilmoitus: {title}",
     "admin_social_report": "Ilmoitus: {kind} {title}",
     "report_on_comment": " (kommentti)",
-    "report_hidden": " — piilotettu"
+    "report_hidden": " — piilotettu",
+    "feedback_bug": "Bugiraportti käyttäjältä {actor}",
+    "feedback_idea": "Toiveominaisuus käyttäjältä {actor}",
+    "store_recommend": "{actor} suosittelee sinulle: {app}",
+    "store_update": "{app} päivitettiin versioon {version}"
   },
   "report_kind": {
     "user": "käyttäjä",

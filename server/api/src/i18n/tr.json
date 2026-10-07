@@ -12,7 +12,11 @@
     "admin_report": "Şikâyet: {title}",
     "admin_social_report": "Şikâyet: {kind} {title}",
     "report_on_comment": " (yorum)",
-    "report_hidden": " — gizlendi"
+    "report_hidden": " — gizlendi",
+    "feedback_bug": "{actor} bir hata bildirdi",
+    "feedback_idea": "{actor} bir özellik istedi",
+    "store_recommend": "{actor} sana {app} uygulamasını öneriyor",
+    "store_update": "{app}, {version} sürümüne güncellendi"
   },
   "report_kind": {
     "user": "kullanıcı",

@@ -12,7 +12,11 @@
     "admin_report": "Denuncia: {title}",
     "admin_social_report": "Denuncia: {kind} {title}",
     "report_on_comment": " (comentario)",
-    "report_hidden": " — oculto"
+    "report_hidden": " — oculto",
+    "feedback_bug": "Error notificado por {actor}",
+    "feedback_idea": "Petición de función de {actor}",
+    "store_recommend": "{actor} te recomienda {app}",
+    "store_update": "{app} se ha actualizado a la versión {version}"
   },
   "report_kind": {
     "user": "usuario",

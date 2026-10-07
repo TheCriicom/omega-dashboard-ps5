@@ -652,7 +652,24 @@ table.data td.nowrap { white-space: nowrap; }
     "{likes} mi piace, {dislikes} non mi piace":"{likes} likes, {dislikes} dislikes",
     "{n} commenti":"{n} comments",
     "«{text}» di {user}":"«{text}» by {user}",
-    "‹ Precedente":"‹ Previous"
+    "‹ Precedente":"‹ Previous",
+    "Bug e richieste":"Bugs & requests",
+    "Messaggi mandati dagli utenti dall'app: bug con il registro allegato e funzioni richieste.":"Messages sent by users from the app: bugs with the attached log and feature requests.",
+    "Da leggere":"To read",
+    "Fatti":"Done",
+    "Archiviati":"Archived",
+    "Tutti":"All",
+    "Impossibile caricare i messaggi.":"Couldn't load the messages.",
+    "Nessun messaggio qui.":"No messages here.",
+    "Tipo":"Type",
+    "Bug":"Bug",
+    "Funzione":"Feature",
+    "Utente":"User",
+    "Messaggio":"Message",
+    "Registro allegato":"Attached log",
+    "Fatto":"Done",
+    "Archivia":"Archive",
+    "Riapri":"Reopen"
   };
   function initialLang() {
     try { const v = localStorage.getItem(LANG_KEY); if (v === "it" || v === "en") return v; } catch (_) {}
@@ -876,7 +893,8 @@ table.data td.nowrap { white-space: nowrap; }
     apps: { q: '', status: 'all', offset: 0 },
     comments: { q: '', status: 'all', app_id: '', app_title: '', offset: 0 },
     users: { q: '', status: 'all', offset: 0 },
-    log: { offset: 0 }
+    log: { offset: 0 },
+    feedback: { status: 'open', offset: 0 }
   };
 
   const ROUTES = [
@@ -886,6 +904,7 @@ table.data td.nowrap { white-space: nowrap; }
     { id: 'commenti', label: 'Commenti', render: renderComments },
     { id: 'bacheca', label: 'Bacheca', render: renderPosts },
     { id: 'utenti', label: 'Utenti', render: renderUsers },
+    { id: 'messaggi', label: 'Bug e richieste', render: renderFeedback },
     { id: 'registro', label: 'Registro', render: renderLog }
   ];
 
@@ -1602,6 +1621,34 @@ table.data td.nowrap { white-space: nowrap; }
           td(T('Destinazione'), el('span', { text: target })),
           td(T('Dettaglio'), el('div', { class: 'cell-body muted', text: detail ? String(detail) : '—' })));
       })), pg]);
+  }
+
+  // Bug segnalati e funzioni chieste dall'app (Impostazioni › Aiuto)
+  async function renderFeedback(seq) {
+    const f = state.feedback;
+    const sel = el('select', { onchange: (e) => { f.status = e.target.value; f.offset = 0; rerender(); } },
+      ...[['open', T('Da leggere')], ['done', T('Fatti')], ['dismissed', T('Archiviati')], ['all', T('Tutti')]].map(([v, l]) => el('option', { value: v, text: l, selected: f.status === v })));
+    const head = pageHead(T('Bug e richieste'), T('Messaggi mandati dagli utenti dall\'app: bug con il registro allegato e funzioni richieste.'), sel);
+    setView([head, loading()]);
+    let data;
+    try { data = await api('GET', '/admin/api/feedback' + qs({ status: f.status, offset: f.offset, limit: PAGE })); }
+    catch (_) { if (!stale(seq)) setView([head, empty(T('Impossibile caricare i messaggi.'))]); return; }
+    if (stale(seq)) return;
+    const list = (data && data.feedback) || [];
+    const pg = pager(data.total || 0, f.offset, o => { f.offset = o; rerender(true); });
+    if (!list.length) { setView([head, empty(T('Nessun messaggio qui.'))]); return; }
+    const setStatus = async (id, st) => { try { await api('POST', '/admin/api/feedback/' + encodeURIComponent(id), { status: st }); rerender(); } catch (_) { } };
+    setView([head, table([{ label: T('Data') }, { label: T('Tipo') }, { label: T('Utente') }, { label: T('Messaggio') }, { label: '' }],
+      list.map(x => el('tr', null,
+        td(T('Data'), el('span', { text: fmtDate(x.created_at) }), 'cell-main nowrap'),
+        td(T('Tipo'), el('span', { class: 'badge', text: x.kind === 'bug' ? T('Bug') : T('Funzione') })),
+        td(T('Utente'), el('span', { text: (x.online_id || '—') + (x.app_version ? ' · v' + x.app_version : '') })),
+        td(T('Messaggio'), el('div', { class: 'cell-body' }, el('div', { text: x.body }),
+          x.has_log ? el('details', null, el('summary', { text: T('Registro allegato') }), el('pre', { style: 'white-space:pre-wrap;max-height:320px;overflow:auto;font-size:12px', text: x.log || '' })) : null)),
+        td('', el('div', { class: 'actions' },
+          x.status !== 'done' ? el('button', { class: 'btn sm', type: 'button', text: T('Fatto'), onclick: () => setStatus(x.feedback_id, 'done') }) : null,
+          x.status !== 'dismissed' ? el('button', { class: 'btn sm', type: 'button', text: T('Archivia'), onclick: () => setStatus(x.feedback_id, 'dismissed') }) : null,
+          x.status !== 'open' ? el('button', { class: 'btn sm', type: 'button', text: T('Riapri'), onclick: () => setStatus(x.feedback_id, 'open') }) : null))))), pg]);
   }
 
   /* --- Boot --- */

@@ -1,5 +1,46 @@
 # Changelog
 
+## 2026.10.07.1
+
+- **Homebrew launch fixed**: Omega no longer quits on its own after asking
+  websrv to start a homebrew (websrv must close the foreground app itself; when
+  both happened at once the launch failed with 503). Omega checks that websrv
+  answers, makes ELFs executable, uses the homebrew folder as working
+  directory, repairs a broken `FAKE00000` and tells the daemon not to relaunch
+  the UI for 30 s, so it no longer kills the homebrew that just started.
+- **Text that sometimes became huge everywhere** is fixed: the font cache had
+  48 slots for more than 60 sizes; past the limit a new font was opened every
+  frame until memory ran out and the fallback was the first (large) font.
+- **Install PKG**: a new tile lists the `.pkg` files on USB sticks and drives,
+  in `/data/pkg`, in uploads and in folders you choose, with title, icon and
+  Content ID read from the package. Installs show on the Home row like on PS4:
+  game icon, real progress from the system installer, phase and errors, with a
+  queue. Correct `sceAppInstUtilInstallByPackage` structures (base games used
+  to fail with 0x80B2116F), ShellCore authid during the call, etaHEN DPI as a
+  fallback. Downloaded and uploaded files are removed once installed; orphan
+  files are cleaned up.
+- **Built-in ShadowMount**: choose your game and PKG folders; with automatic
+  mounting, games on a drive are mounted and registered as soon as it's
+  plugged in, and show up on the console Home too. Games mounted by
+  ShadowMount, freshly installed pkgs and uploaded homebrew appear on the Home
+  without restarting Omega.
+- **Phone/PC remote**: upload games and install them right away ("install as
+  soon as it arrives", "Install on console" on every library game), a guide to
+  the games JSON with a downloadable example, and the same guide on the console
+  (Store › Library › How the JSON works).
+- **Six menu styles**: Omega, Classic PS4, XMB (PS3), Grid, Carousel, Cinema.
+- **Store**: popular with your friends, trending, wish list with update
+  notifications, recommend to a friend, featured creators, friends' avatars on
+  the tiles, a richer banner. Store, Browser and Install PKG are now apps on
+  the Home row after Community; the top bar is lighter.
+- **Browser**: opens the full PS5 web browser (system WebKit) for modern sites,
+  full-page or reader mode, quick sites on the start page.
+- **Settings in sections** (Account, Look, Home & games, System, Help), "Why
+  Omega", and **report a bug or request a feature** (with the log attached if
+  you want); admins read them in the panel under "Bugs & requests".
+- 15 new icons; the OnionHEN plugin reconnects by itself after rest mode or
+  when OnionHEN starts late; the daemon reopens its port after rest mode.
+
 ## 2026.10.05.8
 
 - **Folders on the Home**: game options › Move to a folder (existing folder or

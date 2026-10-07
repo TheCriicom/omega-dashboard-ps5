@@ -12,7 +12,11 @@
     "admin_report": "Жалоба: {title}",
     "admin_social_report": "Жалоба: {kind} {title}",
     "report_on_comment": " (комментарий)",
-    "report_hidden": " — скрыто"
+    "report_hidden": " — скрыто",
+    "feedback_bug": "{actor}: сообщение об ошибке",
+    "feedback_idea": "{actor}: предложение функции",
+    "store_recommend": "{actor} рекомендует вам {app}",
+    "store_update": "{app}: обновлено до версии {version}"
   },
   "report_kind": {
     "user": "пользователь",

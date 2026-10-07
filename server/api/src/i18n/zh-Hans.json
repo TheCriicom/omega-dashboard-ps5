@@ -12,7 +12,11 @@
     "admin_report": "举报：{title}",
     "admin_social_report": "举报：{kind} {title}",
     "report_on_comment": "（评论）",
-    "report_hidden": "——已隐藏"
+    "report_hidden": "——已隐藏",
+    "feedback_bug": "{actor} 报告了一个错误",
+    "feedback_idea": "{actor} 提出了功能请求",
+    "store_recommend": "{actor} 向你推荐 {app}",
+    "store_update": "{app} 已更新至 {version} 版本"
   },
   "report_kind": {
     "user": "用户",

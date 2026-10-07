@@ -565,11 +565,20 @@ int main(void) {
   for (;;) {
     int home = is_home();
     time_t now = time(NULL);
-    // si rilancia solo al ritorno alla Home, non finché ci si resta
-    if (home && !last_home && (now - last) > RELAUNCH_COOLDOWN_S && home_mode_on()) {
-      if (launch_omega() == 0) { lg("redirect: tornato alla Home -> Omega"); last = now; }
+    // La UI ha appena chiesto a websrv di avviare un homebrew: tra la chiusura
+    // di Omega e la partenza dell'homebrew il primo piano passa per un istante
+    // alla Home, e rilanciare Omega in quel momento chiuderebbe l'homebrew
+    // appena partito. Per 30 s non si rilancia; last_home resta com'era, così
+    // se l'avvio non è riuscito Omega torna appena scade l'attesa.
+    struct stat lst;
+    int hb_starting = stat(OMEGA_DIR "/hb-launching", &lst) == 0 && now - lst.st_mtime < 30;
+    if (!hb_starting) {
+      // si rilancia solo al ritorno alla Home, non finché ci si resta
+      if (home && !last_home && (now - last) > RELAUNCH_COOLDOWN_S && home_mode_on()) {
+        if (launch_omega() == 0) { lg("redirect: tornato alla Home -> Omega"); last = now; }
+      }
+      last_home = home;
     }
-    last_home = home;
     if (now - last_presence >= PRESENCE_EVERY_S) { last_presence = now; presence_tick(); }
     if (now - last_notify >= NOTIFY_EVERY_S) { last_notify = now; notify_from_loop(); }
     diag_flush();

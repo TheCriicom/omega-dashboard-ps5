@@ -12,7 +12,11 @@
     "admin_report": "Report: {title}",
     "admin_social_report": "Report: {kind} {title}",
     "report_on_comment": " (comment)",
-    "report_hidden": " — hidden"
+    "report_hidden": " — hidden",
+    "feedback_bug": "Bug reported by {actor}",
+    "feedback_idea": "Feature request from {actor}",
+    "store_recommend": "{actor} recommends {app} to you",
+    "store_update": "{app} was updated to version {version}"
   },
   "report_kind": {
     "user": "user",

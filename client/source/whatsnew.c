@@ -11,15 +11,16 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
-  N_("Nuovo: cartelle in home. Dalle opzioni di un gioco scegli \xC2\xABSposta in una cartella\xC2\xBB; la cartella mostra le prime quattro icone."),
-  N_("Puoi nascondere i giochi e le app che non usi: opzioni del gioco \xE2\x80\xBA Nascondi dalla home. Li rimetti in Impostazioni \xE2\x80\xBA App nascoste."),
-  N_("Avatar: 16 personaggi nuovi, dal drago al cyborg. Li trovi in Impostazioni \xE2\x80\xBA Cambia avatar."),
-  N_("La Community ora \xC3\xA8 in home, prima dei giochi: bacheca, gruppi, persone e tempo di gioco a un tasto di distanza."),
-  N_("Nuovo: Record. Il tempo di gioco di tutti gli iscritti: giocatori, giochi pi\xC3\xB9 giocati e maratone, della settimana o di sempre."),
-  N_("Nuovo: Trofei. Omega legge i trofei ottenuti nei giochi di questa console e li mette nel tuo profilo e nella classifica pubblica."),
-  N_("Nei profili ora si vedono i trofei: i tuoi dal tasto Trofei, quelli degli altri se scelgono di mostrarli."),
-  N_("Impostazioni \xE2\x80\xBA Privacy raccoglie tutte le scelte: chi ti scrive, cosa vedono gli altri, record, trofei, utenti bloccati e i tuoi dati."),
-  N_("Chi spegne la console ora risulta offline dopo pochi minuti, e i giochi mostrano il nome e l'icona veri anche a chi non li ha."),
+  N_("Gli homebrew partono molto pi\xC3\xB9 spesso: Omega non si chiude pi\xC3\xB9 da sola durante l'avvio, controlla websrv, sistema i permessi e ripara l'app di lancio rovinata."),
+  N_("Corretto il testo che ogni tanto diventava enorme ovunque."),
+  N_("Installa PKG: i .pkg di chiavette, dischi e cartelle a scelta, con l'icona del gioco e la barra che avanza nella home, come sulla PS4. Errori chiari e coda di installazione."),
+  N_("Montaggio automatico come ShadowMount, dentro Omega: colleghi un disco e i giochi compaiono da soli. Scegli tu le cartelle dei giochi e dei PKG."),
+  N_("I giochi montati da ShadowMount, i pkg installati e gli homebrew caricati compaiono in home senza riavviare Omega."),
+  N_("Dal telefono o dal PC carichi i giochi e li installi subito; c'\xC3\xA8 una guida al JSON dei giochi con un esempio da scaricare."),
+  N_("Sei modalit\xC3\xA0 del menu: Omega, Classica PS4, XMB come sulla PS3, Griglia, Carosello e Cinema (Impostazioni \xE2\x80\xBA Aspetto)."),
+  N_("Store rinnovato: popolari tra i tuoi amici, di tendenza, lista dei desideri con avviso degli aggiornamenti, consiglia a un amico e creatori in evidenza."),
+  N_("Store, Browser e Installa PKG ora sono app nella fila, dopo la Community. Il browser apre anche il browser completo della PS5."),
+  N_("Impostazioni divise in sezioni, e in Aiuto puoi segnalare un bug o chiedere una funzione allo sviluppatore."),
 };
 #define NITEMS (int)(sizeof ITEMS / sizeof *ITEMS)
 

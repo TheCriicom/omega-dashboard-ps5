@@ -34,9 +34,32 @@ static const char *FONT_FILES[4] = {
 };
 #endif
 static const char *FONT_FALLBACK = "/preinst/common/font/n023055ms.ttf";
-#define MAX_FONTS 48
+// Ogni font aperto resta in tabella fino alla chiusura: le cache del testo lo
+// usano come chiave. Prima la tabella aveva 48 posti e l'app usa più di 60
+// dimensioni (alcune animate, come l'iniziale degli avatar): oltre il limite
+// si apriva un font nuovo a ogni fotogramma senza tenerlo, la memoria finiva e
+// il ripiego era fonts[0], grande, quindi tutto il testo si ingrandiva.
+#define MAX_FONTS 256
 typedef struct { int w, size; TTF_Font *f; } FontSlot;
 static FontSlot fonts[MAX_FONTS]; static int nfonts;
+
+// dimensioni calcolate (animazioni, avatar): oltre i 40 px si arrotonda a 4,
+// così una zoomata non apre un font per ogni pixel
+static int font_quant(int size) {
+  if (size < 8) return 8;
+  if (size > 200) return 200;
+  return size > 40 ? (size + 2) / 4 * 4 : size;
+}
+
+// il font già aperto più vicino (stesso peso se c'è): mai uno a caso
+static TTF_Font *font_nearest(int weight, int size) {
+  TTF_Font *best = NULL; int bd = 1 << 30;
+  for (int i = 0; i < nfonts; i++) {
+    int d = abs(fonts[i].size - size) * 4 + (fonts[i].w != weight ? 3 : 0);
+    if (d < bd) { bd = d; best = fonts[i].f; }
+  }
+  return best;
+}
 
 static TTF_Font *open_primary(int weight, int size) {
 #ifdef OMEGA_DESKTOP
@@ -48,12 +71,19 @@ static TTF_Font *open_primary(int weight, int size) {
 }
 
 TTF_Font *font(int weight, int size) {
+  if (weight < W_LIGHT || weight > W_BOLD) weight = W_REG;
+  size = font_quant(size);
   for (int i = 0; i < nfonts; i++) if (fonts[i].w == weight && fonts[i].size == size) return fonts[i].f;
+  // tabella piena: il più vicino tra quelli aperti, senza aprirne altri
+  if (nfonts >= MAX_FONTS) return font_nearest(weight, size);
   TTF_Font *f = open_primary(weight, size);
   if (!f) { f = TTF_OpenFont(FONT_FALLBACK, size); if (f && weight >= W_MED) TTF_SetFontStyle(f, TTF_STYLE_BOLD); }
-  if (!f) { omega_log("font %d/%d: %s", weight, size, TTF_GetError()); return nfonts ? fonts[0].f : NULL; }
+  if (!f) {
+    static Uint32 logged; if (SDL_GetTicks() - logged > 5000) { logged = SDL_GetTicks(); omega_log("font %d/%d: %s", weight, size, TTF_GetError()); }
+    return font_nearest(weight, size);
+  }
   TTF_SetFontHinting(f, TTF_HINTING_LIGHT);
-  if (nfonts < MAX_FONTS) { fonts[nfonts].w = weight; fonts[nfonts].size = size; fonts[nfonts].f = f; nfonts++; }
+  fonts[nfonts].w = weight; fonts[nfonts].size = size; fonts[nfonts].f = f; nfonts++;
   return f;
 }
 
@@ -798,6 +828,35 @@ static const Prim ICONS[IC_COUNT][12] = {
   [IC_DRIVE]   = { P_BOX(0.1f, 0.3f, 0.8f, 0.4f, 0.08f), P_SUBD(0.74f, 0.5f, 0.06f), P_SUBB(0.2f, 0.47f, 0.36f, 0.06f, 0.02f), P_END },
   // pennello (Personalizza)
   [IC_BRUSH]   = { P_SEG(0.78f, 0.16f, 0.42f, 0.56f, 0.07f), P_DISC(0.32f, 0.68f, 0.14f), P_TRI(0.18f, 0.7f, 0.18f, 0.88f, 0.36f, 0.86f), P_END },
+  // cuore (lista dei desideri)
+  [IC_HEART]   = { P_DISC(0.34f, 0.38f, 0.19f), P_DISC(0.66f, 0.38f, 0.19f), P_TRI(0.16f, 0.46f, 0.84f, 0.46f, 0.5f, 0.86f), P_END },
+  // condividi / consiglia: tre nodi collegati
+  [IC_SHARE]   = { P_SEG(0.3f, 0.5f, 0.72f, 0.26f, 0.04f), P_SEG(0.3f, 0.5f, 0.72f, 0.74f, 0.04f), P_DISC(0.28f, 0.5f, 0.12f), P_DISC(0.72f, 0.24f, 0.12f), P_DISC(0.72f, 0.76f, 0.12f), P_END },
+  // coppa
+  [IC_TROPHY]  = { P_BOX(0.28f, 0.14f, 0.44f, 0.36f, 0.16f), P_RING(0.24f, 0.32f, 0.12f, 0.05f), P_RING(0.76f, 0.32f, 0.12f, 0.05f), P_BOX(0.45f, 0.48f, 0.1f, 0.2f, 0.02f), P_BOX(0.3f, 0.7f, 0.4f, 0.12f, 0.04f), P_END },
+  // fiamma (di tendenza)
+  [IC_FIRE]    = { P_DISC(0.5f, 0.64f, 0.24f), P_TRI(0.28f, 0.56f, 0.72f, 0.56f, 0.52f, 0.1f), P_TRI(0.6f, 0.5f, 0.78f, 0.5f, 0.74f, 0.26f), P_SUBD(0.5f, 0.72f, 0.1f), P_END },
+  // corona (creatori)
+  [IC_CROWN]   = { P_TRI(0.14f, 0.3f, 0.3f, 0.74f, 0.42f, 0.6f), P_TRI(0.5f, 0.2f, 0.34f, 0.7f, 0.66f, 0.7f), P_TRI(0.86f, 0.3f, 0.7f, 0.74f, 0.58f, 0.6f), P_BOX(0.2f, 0.66f, 0.6f, 0.14f, 0.03f), P_END },
+  // chiavetta USB
+  [IC_USB]     = { P_BOX(0.3f, 0.36f, 0.4f, 0.52f, 0.08f), P_BOX(0.36f, 0.12f, 0.28f, 0.26f, 0.03f), P_SUBB(0.42f, 0.18f, 0.05f, 0.08f, 0.0f), P_SUBB(0.53f, 0.18f, 0.05f, 0.08f, 0.0f), P_END },
+  // pacchetto (pkg)
+  [IC_BOX]     = { P_BOX(0.16f, 0.38f, 0.68f, 0.48f, 0.05f), P_BOX(0.1f, 0.2f, 0.8f, 0.16f, 0.04f), P_SUBB(0.44f, 0.2f, 0.12f, 0.36f, 0.0f), P_SUBB(0.36f, 0.5f, 0.28f, 0.07f, 0.03f), P_END },
+  // insetto (segnala un bug)
+  [IC_BUG]     = { P_BOX(0.3f, 0.3f, 0.4f, 0.52f, 0.2f), P_DISC(0.5f, 0.24f, 0.13f), P_SEG(0.12f, 0.46f, 0.3f, 0.5f, 0.035f), P_SEG(0.88f, 0.46f, 0.7f, 0.5f, 0.035f),
+                   P_SEG(0.12f, 0.72f, 0.3f, 0.66f, 0.035f), P_SEG(0.88f, 0.72f, 0.7f, 0.66f, 0.035f), P_SUBB(0.485f, 0.42f, 0.03f, 0.36f, 0.0f), P_END },
+  // lampadina (idea)
+  [IC_IDEA]    = { P_DISC(0.5f, 0.4f, 0.24f), P_BOX(0.38f, 0.56f, 0.24f, 0.16f, 0.04f), P_BOX(0.4f, 0.75f, 0.2f, 0.06f, 0.03f), P_BOX(0.43f, 0.84f, 0.14f, 0.05f, 0.025f), P_END },
+  [IC_GRID]    = { P_BOX(0.14f, 0.14f, 0.32f, 0.32f, 0.06f), P_BOX(0.54f, 0.14f, 0.32f, 0.32f, 0.06f), P_BOX(0.14f, 0.54f, 0.32f, 0.32f, 0.06f), P_BOX(0.54f, 0.54f, 0.32f, 0.32f, 0.06f), P_END },
+  [IC_LIST]    = { P_DISC(0.2f, 0.26f, 0.06f), P_DISC(0.2f, 0.5f, 0.06f), P_DISC(0.2f, 0.74f, 0.06f), P_SEG(0.36f, 0.26f, 0.84f, 0.26f, 0.045f), P_SEG(0.36f, 0.5f, 0.84f, 0.5f, 0.045f), P_SEG(0.36f, 0.74f, 0.84f, 0.74f, 0.045f), P_END },
+  // onde (XMB)
+  [IC_WAVE]    = { P_ARC(0.3f, 0.56f, 0.18f, 0.05f, 3.14f, 6.28f), P_ARC(0.66f, 0.44f, 0.18f, 0.05f, 0.0f, 3.14f), P_ARC(0.3f, 0.76f, 0.18f, 0.035f, 3.14f, 6.28f), P_ARC(0.66f, 0.64f, 0.18f, 0.035f, 0.0f, 3.14f), P_END },
+  [IC_HOME]    = { P_TRI(0.1f, 0.5f, 0.5f, 0.14f, 0.9f, 0.5f), P_BOX(0.22f, 0.46f, 0.56f, 0.4f, 0.03f), P_SUBB(0.42f, 0.6f, 0.16f, 0.26f, 0.02f), P_END },
+  // nuvola con freccia (caricamento dal PC)
+  [IC_CLOUD]   = { P_DISC(0.36f, 0.56f, 0.18f), P_DISC(0.58f, 0.44f, 0.22f), P_DISC(0.74f, 0.6f, 0.14f), P_BOX(0.2f, 0.56f, 0.6f, 0.18f, 0.09f),
+                   P_SUBB(0.465f, 0.46f, 0.07f, 0.26f, 0.0f), P_SUBD(0.5f, 0.42f, 0.09f), P_END },
+  // scudo (privacy)
+  [IC_SHIELD]  = { P_BOX(0.22f, 0.14f, 0.56f, 0.4f, 0.04f), P_TRI(0.22f, 0.5f, 0.78f, 0.5f, 0.5f, 0.88f), P_SUBB(0.3f, 0.22f, 0.4f, 0.3f, 0.02f), P_SUBD(0.5f, 0.56f, 0.02f), P_END },
 };
 
 float sd_seg(float px, float py, float ax, float ay, float bx, float by) {

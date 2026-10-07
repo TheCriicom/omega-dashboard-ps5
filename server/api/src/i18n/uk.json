@@ -12,7 +12,11 @@
     "admin_report": "Скарга: {title}",
     "admin_social_report": "Скарга: {kind} {title}",
     "report_on_comment": " (коментар)",
-    "report_hidden": " — приховано"
+    "report_hidden": " — приховано",
+    "feedback_bug": "{actor}: повідомлення про помилку",
+    "feedback_idea": "{actor}: запит на функцію",
+    "store_recommend": "{actor} радить вам {app}",
+    "store_update": "{app}: оновлено до версії {version}"
   },
   "report_kind": {
     "user": "користувач",

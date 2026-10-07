@@ -79,6 +79,8 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_COMMUNITY: community_draw(t); break;
     case OV_TROPHIES: trophies_draw(t); break;
     case OV_FOLDER: folder_draw(t); break;
+    case OV_PKGS: pkgs_draw(t); break;
+    case OV_WHY: why_draw(t); break;
     case OV_ABOUT: about_draw(t); break;
     case OV_MUSIC: music_draw(t); break;
     case OV_SYSTEM: system_draw(t); break;
@@ -302,6 +304,8 @@ static void dispatch(int b) {
       case OV_COMMUNITY: community_input(b); break;
       case OV_TROPHIES: trophies_input(b); break;
       case OV_FOLDER: folder_input(b); break;
+      case OV_PKGS: pkgs_input(b); break;
+      case OV_WHY: why_input(b); break;
       case OV_ABOUT: about_input(b); break;
       case OV_MUSIC: music_input(b); break;
       case OV_SYSTEM: system_input(b); break;

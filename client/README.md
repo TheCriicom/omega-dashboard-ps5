@@ -79,6 +79,60 @@ Omega si smonta. Sul disco non si scrive e non si cancella mai niente. Serve
 kstuff, come per ShadowMount e dump_runner. Installando un gioco a cartella o
 zip con un disco collegato, Omega chiede dove metterlo (`<disco>/homebrew/<TID>`).
 
+## Avvio degli homebrew
+
+Gli homebrew in formato websrv partono con `GET /hbldr` di websrv
+(`source/hblaunch.c`), che chiude l'app in primo piano e avvia l'ELF dentro
+`FAKE00000`. Omega quindi **non si chiude da sola**: se lo facesse mentre websrv
+la sta chiudendo, la chiamata fallirebbe (503) e non partirebbe niente. Prima
+dell'avvio si controlla che websrv risponda (`/version`), si rendono
+eseguibili gli ELF arrivati senza permessi, la cartella di lavoro è quella
+dell'homebrew se lo script non ne indica una, e si scrive `OMEGA_DIR/hb-launching`:
+per 30 s il demone non rilancia la UI, così non chiude l'homebrew appena partito.
+Se websrv risponde 503 e `FAKE00000/sce_sys/param.json` è rovinato, lo si toglie
+(websrv lo ricrea). Se websrv non risponde più (si blocca dopo un avvio fallito)
+lo si dice dopo 20 s.
+
+## Installare i PKG
+
+`source/install.c` installa i pkg con `sceAppInstUtilInstallByPackage`, con le
+strutture corrette (metadati di 0x38 byte con `slot` e `is_playgo_enabled`,
+PlayGoInfo di 0x2700: con quelle vecchie i giochi base fallivano con
+0x80B2116F), l'authid di ShellCore preso in prestito per la durata della
+chiamata, `/data` riscritto in `/user/data` e, come ultimo ripiego, il Direct
+Package Installer di etaHEN (porta 12800). L'avanzamento è quello vero del
+sistema (`sceAppInstUtilGetInstallStatus` sul Content ID) e si vede **nella
+fila della home**, come sulla PS4: icona del gioco (letta dal pkg), barra,
+fase, errori. Le installazioni vanno in coda, una alla volta. Finita
+l'installazione si cancellano il pkg scaricato e i file caricati dal telefono;
+all'avvio si tolgono i file orfani (`OMEGA_DIR/dl` più vecchi di 2 ore,
+registrazioni di giochi esterni non riuscite).
+
+**Installa PKG** (`source/pkgs.c`, tessera nella home dopo Store e Browser):
+i `.pkg` di chiavette e dischi, di `/data/pkg`, dei caricamenti dal telefono e
+delle cartelle scelte, fino a 3 livelli sotto, con titolo, icona e Content ID
+letti dal pkg. ✕ installa, △ installa tutti, □ elimina o aggiunge la cartella.
+Dal gestore dei file un `.pkg` si installa con ✕.
+
+## Cartelle dei giochi e montaggio automatico
+
+Le cartelle scelte dall'utente stanno in `OMEGA_DIR/paths.txt` (`game <percorso>`
+o `pkg <percorso>`); si scelgono da Installa PKG › Cartelle di giochi e PKG o da
+Impostazioni › Home e giochi. `source/drives.c` le guarda insieme ai dischi e a
+`/data/etaHEN/games`, `/data/games`. Con **Montaggio automatico** (Personalizza ›
+Home, attivo di base) i giochi trovati si montano e si registrano subito, come
+fa ShadowMount, e compaiono anche nella Home della console; se il disco
+sparisce il mount si toglie. Lo stesso thread guarda `/user/appmeta`,
+`/system_ex/app`, `/user/app` e le cartelle degli homebrew: un gioco montato da
+ShadowMount, un pkg installato o un homebrew caricato compaiono in home senza
+riavviare Omega.
+
+## Modalità del menu
+
+`source/homestyles.c`: oltre alla home di Omega, Classica PS4, XMB (PS3),
+Griglia, Carosello e Cinema (Impostazioni › Aspetto › Modalità del menu). Usano
+la stessa selezione della home (sfondo, scheda, avvio, opzioni con R1).
+
 ## Prestazioni
 
 Il renderer è software: ogni sfumatura e ogni velo a tutto schermo costano

@@ -12,7 +12,11 @@
     "admin_report": "รายงาน: {title}",
     "admin_social_report": "รายงาน: {kind} {title}",
     "report_on_comment": " (ความคิดเห็น)",
-    "report_hidden": " — ซ่อนแล้ว"
+    "report_hidden": " — ซ่อนแล้ว",
+    "feedback_bug": "{actor} รายงานบั๊ก",
+    "feedback_idea": "{actor} ขอฟีเจอร์ใหม่",
+    "store_recommend": "{actor} แนะนำ {app} ให้คุณ",
+    "store_update": "{app} อัปเดตเป็นเวอร์ชัน {version} แล้ว"
   },
   "report_kind": {
     "user": "ผู้ใช้",

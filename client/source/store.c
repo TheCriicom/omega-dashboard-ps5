@@ -23,9 +23,12 @@ typedef struct {
   int has_icon, has_cover, kind; long size, downloads;
   int likes, dislikes; float rating; int ratings, comments, mine;
   char tags[6][24]; int ntags;
+  int friends_count, nfr, wished; char fr_oid[3][32]; int fr_av[3];   // amici che l'hanno installato, lista dei desideri
   SDL_Texture *cover; int cover_state;     // 0 nulla, 1 in arrivo, 2 pronta, 3 assente
   Col avg; float appear, foc;
 } SApp;
+typedef struct { char oid[32]; int avatar, apps, likes; long downloads; } Creator;
+static Creator cre[12]; static int ncre;
 
 // voce di "La mia libreria": i dati arrivano tutti dal demone (lib.c), sulla console
 typedef struct {
@@ -46,8 +49,9 @@ static SApp sapp[MAX_SAPP]; static int nsapp;
 static LItem *litem; static int nlitem;     // allocato alla prima lettura
 
 static int tab;              // 0 homebrew, 1 libreria
-static int view;             // 0 elenco, 1 dettaglio, 2 pubblica, 3 visore immagini
-static int sort;             // 0 scopri (recenti), 1 più votati, 2 più scaricati
+static int view;             // 0 elenco, 1 dettaglio, 2 pubblica, 3 visore immagini, 4 guida al JSON
+static int sort;             // 0 scopri (recenti), 1 più votati, 2 più scaricati, 3 di tendenza
+static int wish_filter;       // solo la mia lista dei desideri
 static int sel;              // selezione nella griglia
 enum { LV_TABS, LV_BAR, LV_CONTENT };   // livello di fuoco nell'elenco
 static int lv = LV_CONTENT;
@@ -98,6 +102,7 @@ static char d_home[300], d_license[48];
 static int d_author_av, d_kind, d_has_cover, d_nscreens, d_mine;
 static long d_size, d_downloads; static int d_likes, d_dislikes; static float d_rating; static int d_ratings, d_comments;
 static int d_my_vote, d_my_rating, d_ntags; static char d_tags[6][24];
+static int d_wished, d_wishes, d_fr_n, d_fr_count; static char d_fr_oid[8][32]; static int d_fr_av[8];
 static char d_dl_url[1024], d_icon_url[1024], d_cover_url[1024], d_screens[MAX_SHOT][1024]; static int d_nscreen_urls;
 static SComment scom[MAX_SCOM]; static int nscom;
 static int det_zone;                // 0 azioni, 1 screenshot, 2 commenti
@@ -158,20 +163,34 @@ static void on_apps(int st, JVal *j, const char *raw, void *ud) {
     s->comments = (int)jnum(a, "comments", 0); s->mine = jbool(a, "mine");
     JVal *tags = jget(a, "hashtags");
     JFOR(t, tags) { if (s->ntags >= 6) break; snprintf(s->tags[s->ntags++], 24, "%s", jstr(t, NULL, "")); }
+    s->friends_count = (int)jnum(a, "friends_count", 0); s->wished = jbool(a, "wished");
+    JFOR(f, jget(a, "friends")) { if (s->nfr >= 3) break; jcpy(s->fr_oid[s->nfr], 32, f, "online_id"); s->fr_av[s->nfr] = (int)jnum(f, "avatar", 0); media_note_json(s->fr_oid[s->nfr], f); s->nfr++; }
     nsapp++;
   }
   if (sel >= nsapp) sel = nsapp ? nsapp - 1 : 0;
   build_shelves();
 }
 
+static void on_creators(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw; if ((int)(intptr_t)ud != gen || st != 200 || !j) return;
+  ncre = 0;
+  JFOR(c, jget(j, "creators")) {
+    if (ncre >= 12) break;
+    Creator *k = &cre[ncre++]; jcpy(k->oid, sizeof k->oid, c, "online_id"); k->avatar = (int)jnum(c, "avatar", 0);
+    k->apps = (int)jnum(c, "apps", 0); k->likes = (int)jnum(c, "likes", 0); k->downloads = (long)jnum(c, "downloads", 0);
+    media_note_json(k->oid, c);
+  }
+  build_shelves();
+}
 static void load_apps(void) {
   loading = 1; gen++;
   char path[160], enc[64];
   url_encode(enc, sizeof enc, q, "");
-  snprintf(path, sizeof path, OMEGA_API "/store/apps?sort=%s%s%s%s",
-           sort == 1 ? "top" : sort == 2 ? "downloads" : "recent", q[0] ? "&q=" : "", q[0] ? enc : "",
-           mine_filter ? "&mine=1" : "");
+  snprintf(path, sizeof path, OMEGA_API "/store/apps?sort=%s%s%s%s%s",
+           sort == 1 ? "top" : sort == 2 ? "downloads" : sort == 3 ? "trending" : "recent", q[0] ? "&q=" : "", q[0] ? enc : "",
+           mine_filter ? "&mine=1" : "", wish_filter ? "&wish=1" : "");
   net_req(HTTP_GET, path, NULL, on_apps, (void *)(intptr_t)gen);
+  if (!q[0] && !mine_filter && !wish_filter && sort == 0) net_req(HTTP_GET, OMEGA_API "/store/creators", NULL, on_creators, (void *)(intptr_t)gen);
 }
 
 static int contains_ci(const char *h, const char *n) {
@@ -280,6 +299,8 @@ static void on_detail(int st, JVal *j, const char *raw, void *ud) {
   d_my_vote = (int)jnum(j, "my_vote", 0); d_my_rating = (int)jnum(j, "my_rating", 0);
   JVal *au = jget(j, "author");
   if (au) { jcpy(d_author, sizeof d_author, au, "online_id"); d_author_av = (int)jnum(au, "avatar", 0); media_note_json(d_author, au); }
+  d_wished = jbool(j, "wished"); d_wishes = (int)jnum(j, "wishes", 0); d_fr_count = (int)jnum(j, "friends_count", 0); d_fr_n = 0;
+  JFOR(f, jget(j, "friends")) { if (d_fr_n >= 8) break; jcpy(d_fr_oid[d_fr_n], 32, f, "online_id"); d_fr_av[d_fr_n] = (int)jnum(f, "avatar", 0); media_note_json(d_fr_oid[d_fr_n], f); d_fr_n++; }
   d_ntags = 0; JVal *tags = jget(j, "hashtags");
   JFOR(t, tags) { if (d_ntags >= 6) break; snprintf(d_tags[d_ntags++], 24, "%s", jstr(t, NULL, "")); }
   // commenti
@@ -328,6 +349,7 @@ static void lib_detail(const LItem *it) {
   net_req(HTTP_GET, path, NULL, on_lib_item, (void *)(intptr_t)gen);
   d_tagline[0] = d_cat[0] = d_author[0] = d_home[0] = d_license[0] = 0; d_mine = 0; d_comments = 0; nscom = 0; d_ntags = 0;
   d_likes = d_dislikes = d_ratings = 0; d_rating = 0; d_my_vote = d_my_rating = 0;
+  d_wished = d_wishes = d_fr_n = d_fr_count = 0;
 }
 
 static void open_detail(const char *id, int is_lib) {
@@ -429,6 +451,41 @@ static void rate_pick(int idx, void *ud) {
   snprintf(body, sizeof body, "{\"stars\":%d}", idx + 1);
   d_my_rating = idx + 1;
   net_req(HTTP_POST, path, body, after_action, NULL);
+}
+
+static void wish_done(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw; (void)ud;
+  if (st == 200 && j) { d_wished = jbool(j, "wished"); d_wishes = (int)jnum(j, "wishes", d_wishes);
+    set_msg(d_wished ? _("Nella tua lista dei desideri: ti avviso quando esce una versione nuova") : _("Tolto dalla lista dei desideri"), 0);
+    for (int i = 0; i < nsapp; i++) if (!strcmp(sapp[i].id, det_id)) sapp[i].wished = d_wished;
+    build_shelves();
+  } else set_msg(_("Operazione non riuscita"), 1);
+}
+static void toggle_wish(void) {
+  char path[96], body[24]; snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/wish", det_id);
+  snprintf(body, sizeof body, "{\"on\":%s}", d_wished ? "false" : "true");
+  d_wished = !d_wished;
+  net_req(HTTP_POST, path, body, wish_done, NULL);
+}
+static char rec_oid[MAX_FRIENDS][32]; static const char *rec_items[32]; static int nrec;
+static void rec_done(int st, JVal *j, const char *raw, void *ud) {
+  (void)j; (void)raw; (void)ud;
+  set_msg(st == 200 ? _("Consigliato: il tuo amico riceve una notifica") : st == 403 ? _("Potete consigliarvi le app solo tra amici") : _("Invio non riuscito"), st != 200);
+}
+static void rec_pick(int idx, void *ud) {
+  (void)ud; if (idx < 0 || idx >= nrec) return;
+  char esc[80], body[120], path[96]; json_escape(esc, sizeof esc, rec_oid[idx]);
+  snprintf(body, sizeof body, "{\"online_id\":\"%s\"}", esc);
+  snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/recommend", det_id);
+  net_req(HTTP_POST, path, body, rec_done, NULL);
+}
+static void recommend_open(void) {
+  nrec = 0;
+  // prima chi è online, poi gli altri
+  for (int pass = 0; pass < 2; pass++)
+    for (int i = 0; i < S.nfriends && nrec < 32; i++) if (friend_online(&S.friends[i]) == !pass) { snprintf(rec_oid[nrec], 32, "%s", S.friends[i].oid); rec_items[nrec] = rec_oid[nrec]; nrec++; }
+  if (!nrec) { set_msg(_("Aggiungi qualche amico per consigliargli le app"), 0); return; }
+  menu_open(_("Consiglia a un amico"), rec_items, nrec, rec_pick, NULL);
 }
 
 static void comment_done(int st, JVal *j, const char *raw, void *ud) {
@@ -669,11 +726,11 @@ static int bar_sel;
 #define LIST_TOP (ST_TOP + 6)
 static float list_scroll, list_scroll_t;
 static int hero_i; static float hero_fade = 1; static Uint32 hero_at;
-typedef struct { char title[40]; int idx[MAX_SAPP]; int n; int sel; float sx; } Shelf;
-static Shelf shelf[8]; static int nshelf;
+typedef struct { char title[48]; int idx[MAX_SAPP]; int n; int sel; float sx; int kind, ic; } Shelf;   // kind 1 = creatori
+static Shelf shelf[12]; static int nshelf;
 static int row = -1;              // scaffale a fuoco; -1 = banner
 
-static int shelves_mode(void) { return tab == 0 && sort == 0 && !q[0] && !mine_filter && nsapp > 0; }
+static int shelves_mode(void) { return tab == 0 && sort == 0 && !q[0] && !mine_filter && !wish_filter && nsapp > 0; }
 static int hero_count(void) { return nsapp < HERO_N ? nsapp : HERO_N; }
 static int sy(int cy) { return LIST_TOP + cy - (int)list_scroll; }        // contenuto → schermo
 
@@ -687,9 +744,27 @@ static void build_shelves(void) {
     { N_("Giochi"), "gioco", 0 }, { N_("Emulatori"), "emulatore", 0 }, { N_("App e intrattenimento"), "app", 0 },
     { N_("Strumenti e payload"), "utility", 0 }, { N_("Trucchi e mod"), "trucchi", 0 }, { N_("Temi e altro"), "", 0 }, { N_("Per PS4"), "", 1 } };   // titoli tradotti quando si disegnano
   nshelf = 0;
+  // scaffali social: amici, tendenze, lista dei desideri, creatori
+  {
+    Shelf *s = &shelf[nshelf]; s->n = 0; s->kind = 0; s->ic = IC_FRIENDS; snprintf(s->title, sizeof s->title, "%s", N_("Popolari tra i tuoi amici"));
+    for (int i = 0; i < nsapp; i++) if (sapp[i].friends_count) s->idx[s->n++] = i;
+    for (int i = 0; i < s->n; i++) for (int k = i + 1; k < s->n; k++) if (sapp[s->idx[k]].friends_count > sapp[s->idx[i]].friends_count) { int t = s->idx[i]; s->idx[i] = s->idx[k]; s->idx[k] = t; }
+    if (s->n) { if (s->sel >= s->n) s->sel = s->n - 1; nshelf++; }
+    s = &shelf[nshelf]; s->n = 0; s->kind = 0; s->ic = IC_FIRE; snprintf(s->title, sizeof s->title, "%s", N_("Di tendenza"));
+    for (int i = 0; i < nsapp; i++) if (sapp[i].downloads > 0 || sapp[i].likes > 0) s->idx[s->n++] = i;
+    for (int i = 0; i < s->n; i++) for (int k = i + 1; k < s->n; k++) {
+      long a = sapp[s->idx[i]].downloads + 5L * sapp[s->idx[i]].likes, b = sapp[s->idx[k]].downloads + 5L * sapp[s->idx[k]].likes;
+      if (b > a) { int t = s->idx[i]; s->idx[i] = s->idx[k]; s->idx[k] = t; } }
+    if (s->n > 15) s->n = 15;
+    if (s->n >= 3) { if (s->sel >= s->n) s->sel = s->n - 1; nshelf++; }
+    s = &shelf[nshelf]; s->n = 0; s->kind = 0; s->ic = IC_HEART; snprintf(s->title, sizeof s->title, "%s", N_("La tua lista dei desideri"));
+    for (int i = 0; i < nsapp; i++) if (sapp[i].wished) s->idx[s->n++] = i;
+    if (s->n) { if (s->sel >= s->n) s->sel = s->n - 1; nshelf++; }
+    if (ncre) { s = &shelf[nshelf]; s->n = ncre; s->kind = 1; s->ic = IC_CROWN; snprintf(s->title, sizeof s->title, "%s", N_("Creatori in evidenza")); if (s->sel >= s->n) s->sel = s->n - 1; nshelf++; }
+  }
   for (unsigned d = 0; d < sizeof D / sizeof D[0]; d++) {
     Shelf *s = &shelf[nshelf];
-    s->n = 0; snprintf(s->title, sizeof s->title, "%s", D[d].t);
+    s->n = 0; s->kind = 0; s->ic = -1; snprintf(s->title, sizeof s->title, "%s", D[d].t);
     for (int i = 0; i < nsapp; i++) {
       int ps4 = !strcmp(sapp[i].platform, "PS4");
       const char *c = sapp[i].category;
@@ -704,22 +779,26 @@ static void build_shelves(void) {
 }
 
 // -------------------------------------------------------------------- barra --
-enum { A_SEARCH, A_CLEARQ, A_SORT0, A_SORT1, A_SORT2, A_MINE, A_PUBLISH, A_SYNC, A_SETURL, A_ADDGAME, A_PHONE, A_UNLINK };
+enum { A_SEARCH, A_CLEARQ, A_SORT0, A_SORT1, A_SORT2, A_SORT3, A_WISH, A_MINE, A_PUBLISH, A_SYNC, A_SETURL, A_ADDGAME, A_PHONE, A_UNLINK, A_JSONHELP, A_PKGS };
 typedef struct { const char *l; int ic; int act; int on; } BarItem;
 static int bar_items(BarItem *it) {
   static char qlabel[64];
-  int n = 0;
+  int n = 0;   // al massimo 12 voci
   it[n++] = (BarItem){ _("Cerca"), IC_SEARCH, A_SEARCH, 0 };
   if (q[0]) { snprintf(qlabel, sizeof qlabel, "\"%s\"", q); it[n++] = (BarItem){ qlabel, IC_CLOSE, A_CLEARQ, 1 }; }
   if (tab == 0) {
-    it[n++] = (BarItem){ _("Scopri"), -1, A_SORT0, sort == 0 && !mine_filter && !q[0] };
-    it[n++] = (BarItem){ _("Più votati"), -1, A_SORT1, sort == 1 && !mine_filter };
-    it[n++] = (BarItem){ _("Più scaricati"), -1, A_SORT2, sort == 2 && !mine_filter };
+    it[n++] = (BarItem){ _("Scopri"), -1, A_SORT0, sort == 0 && !mine_filter && !wish_filter && !q[0] };
+    it[n++] = (BarItem){ _("Di tendenza"), IC_FIRE, A_SORT3, sort == 3 && !mine_filter && !wish_filter };
+    it[n++] = (BarItem){ _("Più votati"), -1, A_SORT1, sort == 1 && !mine_filter && !wish_filter };
+    it[n++] = (BarItem){ _("Più scaricati"), -1, A_SORT2, sort == 2 && !mine_filter && !wish_filter };
+    it[n++] = (BarItem){ _("Desideri"), IC_HEART, A_WISH, wish_filter };
     it[n++] = (BarItem){ _("Le mie"), IC_USER, A_MINE, mine_filter };
     it[n++] = (BarItem){ _("Pubblica"), IC_PLUS, A_PUBLISH, 0 };
   } else {
     it[n++] = (BarItem){ _("Aggiungi un gioco"), IC_PLUS, A_ADDGAME, 0 };
-    it[n++] = (BarItem){ _("Dal telefono"), IC_GLOBE, A_PHONE, 0 };
+    it[n++] = (BarItem){ _("Dal telefono o dal PC"), IC_CLOUD, A_PHONE, 0 };
+    it[n++] = (BarItem){ _("Come funziona il JSON"), IC_IDEA, A_JSONHELP, 0 };
+    it[n++] = (BarItem){ _("PKG da USB"), IC_USB, A_PKGS, 0 };
     if (src_set) {
       it[n++] = (BarItem){ _("Aggiorna il JSON"), IC_RELOAD, A_SYNC, 0 };
       it[n++] = (BarItem){ _("Scollega il JSON"), IC_CLOSE, A_UNLINK, 0 };
@@ -731,13 +810,16 @@ static void bar_do(int act) {
   switch (act) {
     case A_SEARCH: search_store(); break;
     case A_CLEARQ: q[0] = 0; sel = 0; row = -1; if (tab == 0) load_apps(); else load_items(); break;
-    case A_SORT0: case A_SORT1: case A_SORT2: sort = act - A_SORT0; mine_filter = 0; q[0] = 0; sel = 0; row = -1; load_apps(); break;
-    case A_MINE: mine_filter = !mine_filter; sel = 0; load_apps(); break;
+    case A_SORT0: case A_SORT1: case A_SORT2: case A_SORT3: sort = act - A_SORT0; mine_filter = 0; wish_filter = 0; q[0] = 0; sel = 0; row = -1; load_apps(); break;
+    case A_WISH: wish_filter = !wish_filter; mine_filter = 0; sel = 0; load_apps(); break;
+    case A_MINE: mine_filter = !mine_filter; wish_filter = 0; sel = 0; load_apps(); break;
     case A_PUBLISH: publish_open_new(); break;
     case A_SYNC: sync_library(); break;
     case A_SETURL: set_library_url(); break;
     case A_ADDGAME: lib_edit(NULL); break;
     case A_PHONE: remote_open(); break;
+    case A_JSONHELP: view = 4; break;
+    case A_PKGS: pkgs_open(); break;
     case A_UNLINK: confirm_open(_("Scollegare il JSON? I giochi arrivati da lì spariscono, quelli aggiunti a mano restano."), _("Scollega"), unlink_yes, NULL); break;
   }
 }
@@ -785,7 +867,7 @@ static void draw_header(int a) {
 
 // riga dei filtri, in cima al contenuto (scorre con la pagina)
 static void draw_bar(int a) {
-  BarItem it[10]; int n = bar_items(it);
+  BarItem it[12]; int n = bar_items(it);
   if (bar_sel >= n) bar_sel = n - 1;
   int x = ST_X, y = sy(0);
   if (y + BAR_H < LIST_TOP - 20) return;
@@ -826,6 +908,7 @@ static void tile_info(int is_lib, int i, TileV *t) {
 
 static void draw_tile(int is_lib, int i, int x, int y, int S, int focused, int a) {
   TileV t; tile_info(is_lib, i, &t);
+  (void)0;
   *t.foc = approach(*t.foc, focused ? 1.0f : 0.0f, 14.0f);
   float f = *t.foc;
   int grow = (int)(S * 0.08f * f);
@@ -843,6 +926,17 @@ static void draw_tile(int is_lib, int i, int x, int y, int S, int focused, int a
   draw_text(font(W_BOLD, 16), kl, X + 12 + kw / 2, Y + SS - 29 - TTF_FontHeight(font(W_BOLD, 16)) / 2,
             t.kind == 1 ? C_OK : t.kind == 2 ? C_ACC2 : t.kind == 3 ? C_WARN : C_DIM, a, AL_C);
   if (t.inst) { fill_circle(X + SS - 26, Y + 26, 17, RGB(0, 150, 90), a); draw_icon(IC_CHECK, X + SS - 26, Y + 26, 20, C_WHITE, a); }
+  if (!is_lib) {
+    SApp *sa = &sapp[i];
+    // cuore: nella lista dei desideri
+    if (sa->wished) { int hx = X + 26, hy = Y + 26; fill_circle(hx, hy, 17, RGB(10, 12, 20), a * 70 / 100); draw_icon(IC_HEART, hx, hy, 20, RGB(255, 90, 120), a); }
+    // amici che l'hanno installato: avatar sovrapposti in basso a destra
+    if (sa->nfr) {
+      int r = 34, ax = X + SS - 14 - r / 2;
+      for (int k = sa->nfr - 1; k >= 0; k--) { fill_circle(ax - k * 22, Y + SS - 30, r / 2 + 3, RGB(10, 12, 20), a); draw_avatar(sa->fr_oid[k], sa->fr_av[k], ax - k * 22, Y + SS - 30, r, a); }
+      if (sa->friends_count > sa->nfr) { char c[8]; snprintf(c, sizeof c, "+%d", sa->friends_count - sa->nfr); draw_text(font(W_BOLD, 16), c, ax - sa->nfr * 22 - 4, Y + SS - 40, C_WHITE, a, AL_R); }
+    }
+  }
   if (focused) stroke_rrect(X - 6, Y - 6, SS + 12, SS + 12, 28, 4, C_WHITE, (int)(a * (0.75f + 0.25f * sinf((float)g_time * 3.2f))));
   draw_text_fit(font(focused ? W_BOLD : W_MED, 24), t.title, x, y + S + 16, S, focused ? C_WHITE : C_TXT, a, AL_L);
   draw_text_fit(font(W_REG, 20), t.sub, x, y + S + 50, S, C_DIM, a, AL_L);
@@ -861,7 +955,14 @@ static void draw_hero(int x, int y, int w, int h, int focused, int a) {
   if (focused) shadow_rrect(x, y, w, h, 32, 44, a * 75 / 100);
   fill_rrect(x, y, w, h, 32, dark, a);
   grad_h(x + 16, y, w - 32, h, mix(dark, base, 0.12f), fa, mix(dark, base, 0.7f), fa);
+  // la copertina, grande e velata, fa da fondale a destra
+  if (s->cover && s->cover_state == 2) {
+    int bw = h + 160, bx = x + w - bw - 16;
+    draw_tex(s->cover, bx, y + 8, bw, h - 16, fa * 22 / 100);
+    grad_h(bx, y + 8, bw / 2, h - 16, mix(dark, base, 0.55f), fa, mix(dark, base, 0.55f), 0);
+  }
   glow(x + w - 330, y + h / 2, 440, base, fa * 50 / 100);
+  glow(x + 200, y + 60, 260, C_WHITE, fa * 5 / 100);
   if (focused) stroke_rrect(x - 5, y - 5, w + 10, h + 10, 37, 4, C_WHITE, a);
   int S = h - 96, ix = x + w - S - 96, iy = y + 48 + (int)(5 * sinf((float)g_time * 1.3f));
   if (s->cover && s->cover_state == 2) { shadow_rrect(ix, iy, S, S, 26, 36, fa * 70 / 100); draw_tex(s->cover, ix, iy, S, S, fa); }
@@ -873,7 +974,13 @@ static void draw_hero(int x, int y, int w, int h, int focused, int a) {
   int cx = tx, cy = y + 268;
   cx += chip(cx, cy, s->platform[0] ? s->platform : "PS5", C_WHITE, fa) + 10;
   cx += chip(cx, cy, cat_label(s->category), C_WHITE, fa) + 10;
-  chip(cx, cy, kind_label(s->kind), C_WHITE, fa);
+  cx += chip(cx, cy, kind_label(s->kind), C_WHITE, fa) + 18;
+  if (s->ratings) { draw_stars(cx, cy + 7, 22, s->rating, fa); cx += 5 * 26 + 10; char rc[24]; snprintf(rc, sizeof rc, "%.1f", s->rating); cx += draw_text(font(W_MED, 22), rc, cx, cy + 6, C_WHITE, fa, AL_L) + 18; }
+  if (s->nfr) {
+    for (int k = 0; k < s->nfr; k++) draw_avatar(s->fr_oid[k], s->fr_av[k], cx + 16 + k * 24, cy + 18, 32, fa);
+    char fm[96]; snprintf(fm, sizeof fm, s->friends_count == 1 ? _("%d amico lo usa") : _("%d amici lo usano"), s->friends_count);
+    draw_text(font(W_REG, 21), fm, cx + 16 + s->nfr * 24 + 14, cy + 7, RGB(222, 228, 242), fa, AL_L);
+  }
   int inst = installed_index(s->title_id, s->title) >= 0;
   int bw = 220, bx = tx, by = y + h - 98;
   fill_rrect(bx, by, bw, 60, 30, C_WHITE, focused ? a : a * 22 / 100);
@@ -942,9 +1049,29 @@ static void draw_shelves(int a) {
     if (y > SCREEN_H || y + SHELF_H < LIST_TOP) continue;
     int on = lv == LV_CONTENT && row == k;
     char t[128]; snprintf(t, sizeof t, "%s", _(s->title));
-    int tw = draw_text(font(on ? W_BOLD : W_MED, 32), t, ST_X, y, on ? C_WHITE : C_TXT, a, AL_L);
+    int tx0 = ST_X;
+    if (s->ic >= 0) { draw_icon(s->ic, ST_X + 18, y + 20, 32, s->ic == IC_HEART ? RGB(255, 90, 120) : s->ic == IC_FIRE ? RGB(255, 150, 60) : s->ic == IC_CROWN ? C_WARN : C_ACC2, a); tx0 += 48; }
+    int tw = draw_text(font(on ? W_BOLD : W_MED, 32), t, tx0, y, on ? C_WHITE : C_TXT, a, AL_L);
     char c[16]; snprintf(c, sizeof c, "%d", s->n);
-    draw_text(font(W_REG, 24), c, ST_X + tw + 16, y + 6, C_FAINT, a, AL_L);
+    draw_text(font(W_REG, 24), c, tx0 + tw + 16, y + 6, C_FAINT, a, AL_L);
+    if (s->kind == 1) {
+      // creatori: avatar grandi con quanti homebrew e installazioni
+      int step = 250; float target = s->sel > 4 ? (float)((s->sel - 4) * step) : 0;
+      s->sx = approach(s->sx, target, 12.0f);
+      for (int i = 0; i < s->n; i++) {
+        int cx = ST_X + i * step - (int)s->sx + 110, cy = y + 66 + 100;
+        if (cx < -120 || cx > SCREEN_W + 120) continue;
+        int f = on && s->sel == i;
+        fill_rrect(cx - 110, cy - 100, 220, 290, 28, C_WHITE, a * (f ? 14 : 6) / 100);
+        if (f) stroke_rrect(cx - 114, cy - 104, 228, 298, 32, 4, C_WHITE, a);
+        draw_avatar(cre[i].oid, cre[i].avatar, cx, cy, 120, a);
+        if (i < 3) { fill_circle(cx + 46, cy - 46, 20, i == 0 ? C_WARN : i == 1 ? RGB(200, 206, 220) : RGB(205, 127, 50), a); draw_icon(IC_CROWN, cx + 46, cy - 46, 22, RGB(20, 20, 30), a); }
+        draw_text_fit(font(W_MED, 24), cre[i].oid, cx, cy + 74, 200, C_WHITE, a, AL_C);
+        char st[64]; snprintf(st, sizeof st, _("%d app \xC2\xB7 %ld installazioni"), cre[i].apps, cre[i].downloads);
+        draw_text_fit(font(W_REG, 18), st, cx, cy + 108, 200, C_DIM, a, AL_C);
+      }
+      continue;
+    }
     int step = SH_TILE + SH_GAP, visible = (SCREEN_W - 2 * ST_X + SH_GAP) / step;
     float target = s->sel > visible - 2 ? (float)((s->sel - (visible - 2)) * step) : 0;
     float maxs = (float)((s->n - visible) * step); if (maxs < 0) maxs = 0; if (target > maxs) target = maxs;
@@ -955,7 +1082,7 @@ static void draw_shelves(int a) {
       if (x > SCREEN_W || x + SH_TILE < 0) continue;
       draw_tile(0, s->idx[i], x, ty, SH_TILE, on && s->sel == i, a);
     }
-    if (on) amb_toward(sapp[s->idx[s->sel]].avg);
+    if (on && s->kind == 0) amb_toward(sapp[s->idx[s->sel]].avg);
   }
 }
 
@@ -1002,7 +1129,7 @@ static void list_input(int b) {
     return;
   }
   if (lv == LV_BAR) {
-    BarItem it[10]; int n = bar_items(it);
+    BarItem it[12]; int n = bar_items(it);
     if (bar_sel >= n) bar_sel = n - 1;
     if (b == B_LEFT && bar_sel > 0) bar_sel--;
     else if (b == B_RIGHT && bar_sel < n - 1) bar_sel++;
@@ -1031,7 +1158,7 @@ static void list_input(int b) {
     else if (b == B_DOWN && row < nshelf - 1) row++;
     else if (b == B_LEFT && s->sel > 0) s->sel--;
     else if (b == B_RIGHT && s->sel < s->n - 1) s->sel++;
-    else if (b == B_X) open_detail(sapp[s->idx[s->sel]].id, 0);
+    else if (b == B_X) { if (s->kind == 1) profile_open(cre[s->sel].oid); else open_detail(sapp[s->idx[s->sel]].id, 0); }
     return;
   }
   if (sel < 0) sel = 0;
@@ -1044,7 +1171,7 @@ static void list_input(int b) {
 }
 
 // dettaglio
-static int det_action_count(void) { return det_is_lib ? 1 : 4; }   // Installa, più voti e valutazione per gli homebrew
+static int det_action_count(void) { return det_is_lib ? 1 : 6; }   // Installa; per gli homebrew anche voti, stelle, desideri e consiglia
 
 static void info_row(int x, int y, int w, const char *k, const char *v, int a) {
   if (!v || !v[0]) return;
@@ -1090,10 +1217,10 @@ static void draw_detail(int a) {
   if (sz[0]) chip(cx, iy, sz, C_WHITE, a);
   iy += 58;
   int by = iy, bx = ix;
-  int aw[4] = { 240, 104, 104, 160 };
+  int aw[6] = { 240, 104, 104, 160, 84, 84 };
   for (int i = 0; i < det_action_count(); i++) {
     int foc = det_zone == 0 && act_sel == i, h = 64, w = aw[i];
-    int on = (i == 1 && d_my_vote == 1) || (i == 2 && d_my_vote == -1);
+    int on = (i == 1 && d_my_vote == 1) || (i == 2 && d_my_vote == -1) || (i == 4 && d_wished);
     Col bg = foc ? C_WHITE : i == 0 ? C_ACC : on ? RGB(52, 70, 100) : RGB(255, 255, 255);
     int ba = foc || i == 0 || on ? a : a * 14 / 100;
     fill_rrect(bx, by, w, h, 32, bg, ba);
@@ -1103,10 +1230,24 @@ static void draw_detail(int a) {
     if (i == 0) { int ins = installed_index(d_tid, d_title) >= 0; draw_icon(ins ? IC_PLAY : IC_DOWNLOAD, bx + 42, by + h / 2, 28, fg, a); draw_text(f, ins ? _("Avvia") : _("Installa"), bx + 70, fy, fg, a, AL_L); }
     else if (i == 1) { draw_icon(IC_LIKE, bx + 36, by + h / 2, 26, foc ? fg : on ? C_OK : C_WHITE, a); char c[8]; snprintf(c, sizeof c, "%d", d_likes); draw_text(f, c, bx + 60, fy, fg, a, AL_L); }
     else if (i == 2) { draw_icon(IC_DISLIKE, bx + 36, by + h / 2, 26, foc ? fg : on ? C_ERR : C_WHITE, a); char c[8]; snprintf(c, sizeof c, "%d", d_dislikes); draw_text(f, c, bx + 60, fy, fg, a, AL_L); }
-    else { draw_icon(IC_STAR, bx + 34, by + h / 2, 26, d_my_rating ? C_WARN : fg, a); char c[64]; if (d_my_rating) snprintf(c, sizeof c, "%d/5", d_my_rating); else snprintf(c, sizeof c, "%s", _("Valuta")); draw_text(f, c, bx + 58, fy, fg, a, AL_L); }
+    else if (i == 3) { draw_icon(IC_STAR, bx + 34, by + h / 2, 26, d_my_rating ? C_WARN : fg, a); char c[64]; if (d_my_rating) snprintf(c, sizeof c, "%d/5", d_my_rating); else snprintf(c, sizeof c, "%s", _("Valuta")); draw_text(f, c, bx + 58, fy, fg, a, AL_L); }
+    else if (i == 4) draw_icon(IC_HEART, bx + w / 2, by + h / 2, 30, d_wished ? RGB(255, 90, 120) : fg, a);
+    else draw_icon(IC_SHARE, bx + w / 2, by + h / 2, 28, fg, a);
     bx += w + 14;
   }
+  if (det_zone == 0 && act_sel >= 4 && !det_is_lib) {
+    const char *tip = act_sel == 4 ? (d_wished ? _("Nella lista dei desideri") : _("Aggiungi ai desideri: ti avviso degli aggiornamenti")) : _("Consiglia a un amico");
+    draw_text(font(W_REG, 20), tip, ix, by + 76, C_DIM, a, AL_L);
+  }
   iy = by + 64;
+  // amici che lo usano
+  if (!det_is_lib && d_fr_n) {
+    int fx = ix, fy2 = iy + 44;
+    for (int k = 0; k < d_fr_n; k++) draw_avatar(d_fr_oid[k], d_fr_av[k], fx + 18 + k * 30, fy2 + 18, 36, a);
+    char fm[120]; snprintf(fm, sizeof fm, d_fr_count == 1 ? _("%s lo usa") : _("%s e altri %d amici lo usano"), d_fr_oid[0], d_fr_count - 1);
+    draw_text_fit(font(W_REG, 22), fm, fx + 18 + d_fr_n * 30 + 12, fy2 + 6, iw - d_fr_n * 30 - 40, C_TXT, a, AL_L);
+    iy = fy2 + 40;
+  }
   y = (iy > top + S ? iy : top + S) + 56;
   // descrizione a sinistra, informazioni a destra
   int cardw = 520, cardx = SCREEN_W - ST_X - cardw, leftw = cardx - lx - 60;
@@ -1237,10 +1378,55 @@ static void draw_publish(int a) {
   SDL_RenderSetClipRect(R, NULL);
 }
 
+// ------------------------------------------------------- guida al JSON --
+// Cos'è il JSON dei giochi, i campi, un esempio, e i tre modi di riempire la
+// libreria (dal telefono o dal PC, con un link, con un file).
+static void draw_json_help(int a) {
+  int x = ST_X, w = SCREEN_W - 2 * ST_X, y = ST_TOP;
+  draw_text(font(W_LIGHT, 46), _("Come funziona il JSON dei giochi"), x, y - 4, C_WHITE, a, AL_L);
+  draw_text_wrap(font(W_REG, 25), _("È un file di testo con l'elenco dei tuoi giochi: per ognuno il titolo e il link diretto al file, più copertina e dettagli se vuoi. Omega lo legge e mette i giochi in Libreria, pronti da installare con un tasto."),
+                 x, y + 64, w - 40, 2, 34, C_DIM, a);
+  // tre modi
+  const struct { int ic; const char *t, *d; } W[3] = {
+    { IC_CLOUD, N_("Dal telefono o dal PC"), N_("Apri il Telecomando nel browser (Impostazioni › Sistema › Telecomando), sezione La mia libreria: importa il file, incollalo, o scarica l'esempio e modificalo.") },
+    { IC_GLOBE, N_("Con un link"), N_("Metti il JSON online (link diretto al file) e usa Collega un JSON qui sopra: resta sincronizzato e si aggiorna da solo.") },
+    { IC_BOX, N_("Anche senza JSON"), N_("Dal Telecomando carichi direttamente .pkg, .zip, .elf o cartelle di giochi: arrivano via Wi-Fi e si installano da soli.") } };
+  int cw = (w - 40) / 3, cy = y + 150;
+  for (int i = 0; i < 3; i++) {
+    int cx = x + i * (cw + 20);
+    fill_rrect(cx, cy, cw, 200, 22, C_WHITE, a * 6 / 100);
+    fill_circle(cx + 50, cy + 50, 30, C_ACC, a); draw_icon(W[i].ic, cx + 50, cy + 50, 30, C_WHITE, a);
+    draw_text_fit(font(W_MED, 27), _(W[i].t), cx + 96, cy + 32, cw - 116, C_WHITE, a, AL_L);
+    draw_text_wrap(font(W_REG, 21), _(W[i].d), cx + 24, cy + 96, cw - 48, 4, 26, C_DIM, a);
+  }
+  // campi ed esempio
+  int ty = cy + 230, tw = 820;
+  draw_text(font(W_BOLD, 26), _("Campi"), x, ty, C_WHITE, a, AL_L);
+  const char *K[] = { "title", "url", "cover", "images", "platform", "title_id", "version", "description", "type" };
+  const char *V[] = { N_("nome del gioco (obbligatorio)"), N_("link diretto al .pkg, .zip o .elf (obbligatorio)"), N_("immagine quadrata"), N_("elenco di screenshot"), N_("PS5 o PS4"),
+                      N_("es. CUSA12345"), N_("es. 1.00"), N_("qualche riga sul gioco"), N_("pkg, zip, elf (se manca si capisce dal link)") };
+  for (int i = 0; i < 9; i++) {
+    int ry = ty + 44 + i * 40;
+    fill_rrect(x, ry - 4, tw, 36, 10, C_WHITE, a * (i % 2 ? 3 : 6) / 100);
+    draw_text(font(W_MED, 21), K[i], x + 16, ry, C_ACC2, a, AL_L);
+    draw_text_fit(font(W_REG, 21), _(V[i]), x + 200, ry, tw - 220, C_TXT, a, AL_L);
+  }
+  int ex = x + tw + 40, ew = w - tw - 40;
+  draw_text(font(W_BOLD, 26), _("Esempio"), ex, ty, C_WHITE, a, AL_L);
+  fill_rrect(ex, ty + 40, ew, 360, 18, RGB(6, 8, 14), a * 85 / 100);
+  static const char *EX[] = { "{ \"name\": \"I miei giochi\", \"games\": [", "  { \"title\": \"Il mio gioco\",", "    \"url\": \"https://.../gioco.pkg\",",
+    "    \"cover\": \"https://.../copertina.jpg\",", "    \"platform\": \"PS4\", \"title_id\": \"CUSA12345\",", "    \"version\": \"1.00\" },", "  { \"title\": \"Emulatore\",",
+    "    \"url\": \"https://.../emu.zip\" }", "] }" };
+  for (int i = 0; i < 9; i++) draw_text_fit(font(W_REG, 20), EX[i], ex + 22, ty + 58 + i * 36, ew - 40, i == 0 || i == 8 ? C_DIM : RGB(170, 220, 255), a, AL_L);
+  char ip[48], m[200]; console_ip(ip, sizeof ip);
+  snprintf(m, sizeof m, _("Scarica questo esempio dal Telecomando: http://%s:9095 › La mia libreria"), ip[0] ? ip : "IP");
+  draw_text_fit(font(W_REG, 21), m, ex, ty + 414, ew, C_FAINT, a, AL_L);
+}
+
 // ----------------------------------------------------------------- pannello --
 void store_open(void) {
   free_covers(); free_detail_tex();
-  tab = 0; view = 0; lv = LV_CONTENT; sort = 0; sel = 0; row = -1; bar_sel = 0; q[0] = 0; mine_filter = 0;
+  tab = 0; view = 0; lv = LV_CONTENT; sort = 0; sel = 0; row = -1; bar_sel = 0; q[0] = 0; mine_filter = 0; wish_filter = 0;
   list_scroll = list_scroll_t = 0; hero_i = 0; hero_fade = 1; hero_at = SDL_GetTicks();
   load_apps();
   if (ov_top() != OV_STORE) ov_push(OV_STORE);
@@ -1255,6 +1441,7 @@ void store_draw(float t) {
   int a = (int)(255 * t);
   fill_rect(0, 0, SCREEN_W, SCREEN_H, ST_BG, t > 0.98f ? 255 : a);
   if (view == 3) { draw_shot_viewer(a); return; }
+  if (view == 4) { draw_header(a); draw_json_help(a); int ic[2] = { IC_BTN_O, IC_BTN_X }; const char *lb[2] = { _("Indietro"), _("Apri il Telecomando") }; hints(ic, lb, 2, a); return; }
   // alone d'ambiente col colore della copertina a fuoco
   grad_v(0, 0, SCREEN_W, 760, g_amb, a * 55 / 100, ST_BG, 0);
   glow(SCREEN_W - 300, 260, 620, g_amb, a * 20 / 100);
@@ -1367,7 +1554,9 @@ static void detail_input(int b) {
       if (act_sel == 0) { if (installed_index(d_tid, d_title) >= 0) launch_installed(); else do_install(); }
       else if (act_sel == 1) send_vote(d_my_vote == 1 ? 0 : 1);
       else if (act_sel == 2) send_vote(d_my_vote == -1 ? 0 : -1);
-      else { const char *st[] = { _("1 stella"), _("2 stelle"), _("3 stelle"), _("4 stelle"), _("5 stelle") }; menu_open(_("Valuta"), st, 5, rate_pick, NULL); }
+      else if (act_sel == 4) toggle_wish();
+      else if (act_sel == 5) recommend_open();
+      else if (act_sel == 3) { const char *st[] = { _("1 stella"), _("2 stelle"), _("3 stelle"), _("4 stelle"), _("5 stelle") }; menu_open(_("Valuta"), st, 5, rate_pick, NULL); }
     }
     return;
   }
@@ -1401,6 +1590,7 @@ static void publish_input(int b) {
 }
 
 void store_input(int b) {
+  if (view == 4) { if (b == B_O) view = 0; else if (b == B_X) remote_open(); return; }
   if (view == 3) {
     if (b == B_O || b == B_X) view = 1;
     else if (b == B_LEFT && view_shot > 0) view_shot--;

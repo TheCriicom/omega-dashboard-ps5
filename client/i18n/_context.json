@@ -1,14 +1,27 @@
 {
   "_readme": "Context for translators. Keys are the Italian msgids of it.json. \"where\" = file:line, \"kind\" = what the text is, \"maxlen\" = suggested maximum length in Latin characters (CJK: about half), \"hint\" = notes. Format specifiers (%s %d %ld %.*s %%) must be kept exactly, in the same order.",
+  "  ·  altri %d in coda": {
+    "where": [
+      "omega-ui-src/source/home.c:856"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
   " · %d brani": {
     "where": [
       "omega-ui-src/source/music.c:316"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
+  "%.0f GB liberi": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:260"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: f; unit or abbreviation: use the usual short form of your language"
+  },
   "%.0f MB": {
     "where": [
-      "omega-ui-src/source/store.c:649",
+      "omega-ui-src/source/pkgs.c:207",
+      "omega-ui-src/source/store.c:706",
       "omega-ui-src/source/system.c:218"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: f; unit or abbreviation: use the usual short form of your language"
@@ -21,7 +34,8 @@
   },
   "%.1f GB": {
     "where": [
-      "omega-ui-src/source/store.c:648",
+      "omega-ui-src/source/pkgs.c:207",
+      "omega-ui-src/source/store.c:705",
       "omega-ui-src/source/system.c:217"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: f; unit or abbreviation: use the usual short form of your language"
@@ -65,6 +79,12 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
+  "%d amici lo usano": {
+    "where": [
+      "omega-ui-src/source/store.c:981"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
   "%d amici online": {
     "where": [
       "omega-onion-plugin-src/source/main.c:111"
@@ -76,7 +96,8 @@
   },
   "%d amici stanno giocando": {
     "where": [
-      "omega-ui-src/source/home.c:705"
+      "omega-ui-src/source/home.c:880",
+      "omega-ui-src/source/homestyles.c:114"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -92,9 +113,16 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
+  "%d amico lo usa": {
+    "where": [
+      "omega-ui-src/source/store.c:981"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
   "%d amico sta giocando": {
     "where": [
-      "omega-ui-src/source/home.c:705"
+      "omega-ui-src/source/home.c:880",
+      "omega-ui-src/source/homestyles.c:114"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -103,6 +131,12 @@
       "omega-ui-src/source/homelayout.c:262"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
+  "%d app · %ld installazioni": {
+    "where": [
+      "omega-ui-src/source/store.c:1070"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d ld"
   },
   "%d brani": {
     "where": [
@@ -131,7 +165,7 @@
   },
   "%d giocatore su Omega in questo momento": {
     "where": [
-      "omega-ui-src/source/home.c:741"
+      "omega-ui-src/source/home.c:919"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -144,7 +178,7 @@
   },
   "%d giocatori su Omega in questo momento": {
     "where": [
-      "omega-ui-src/source/home.c:741"
+      "omega-ui-src/source/home.c:919"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -153,6 +187,12 @@
       "omega-ui-src/source/records.c:270"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
+  "%d giochi · %d pkg": {
+    "where": [
+      "omega-ui-src/source/panels.c:1068"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d d"
   },
   "%d giochi · più giocato: %s": {
     "where": [
@@ -238,6 +278,15 @@
     "maxlen": 11,
     "hint": "Control Center tile, 186 px wide: about 11 characters max; printf format: keep exactly these specifiers in this order: d"
   },
+  "%d nuovi titoli in home": {
+    "where": [
+      "omega-ui-src/source/home.c:1094"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen; printf format: keep exactly these specifiers in this order: d"
+  },
   "%d online": {
     "where": [
       "omega-ui-src/source/panels.c:177"
@@ -253,6 +302,27 @@
       "omega-ui-src/source/records.c:216"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d d"
+  },
+  "%d pacchetti": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:300"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
+  "%d pacchetti in installazione: segui l'avanzamento nella home": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:128"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen; printf format: keep exactly these specifiers in this order: d"
+  },
+  "%d pacchetto": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:300"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "%d punti": {
     "where": [
@@ -336,7 +406,7 @@
   },
   "%lld KB": {
     "where": [
-      "omega-ui-src/source/system.c:555"
+      "omega-ui-src/source/system.c:556"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: lld; unit or abbreviation: use the usual short form of your language"
   },
@@ -348,9 +418,15 @@
   },
   "%s  ·  %.1f / %.1f MB": {
     "where": [
-      "omega-ui-src/source/install.c:595"
+      "omega-ui-src/source/install.c:880"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s f f; unit or abbreviation: use the usual short form of your language"
+  },
+  "%s  ·  %d%%  ·  %.0f / %.0f MB": {
+    "where": [
+      "omega-ui-src/source/install.c:810"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s d %% f f; unit or abbreviation: use the usual short form of your language"
   },
   "%s  · online": {
     "where": [
@@ -360,46 +436,52 @@
   },
   "%s avviato in background": {
     "where": [
-      "omega-ui-src/source/home.c:324",
-      "omega-ui-src/source/home.c:423"
+      "omega-ui-src/source/home.c:349",
+      "omega-ui-src/source/home.c:472"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "%s e altri %d amici lo usano": {
+    "where": [
+      "omega-ui-src/source/store.c:1247"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s d"
+  },
   "%s eliminato dalla console": {
     "where": [
-      "omega-ui-src/source/home.c:1018"
+      "omega-ui-src/source/home.c:1244"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato": {
     "where": [
-      "omega-ui-src/source/install.c:461",
-      "omega-ui-src/source/install.c:512"
+      "omega-ui-src/source/install.c:649",
+      "omega-ui-src/source/install.c:700"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato in Payload Manager": {
     "where": [
-      "omega-ui-src/source/install.c:397"
+      "omega-ui-src/source/install.c:585"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato per %s: lo trovi in home e tra i payload del caricatore": {
     "where": [
-      "omega-ui-src/source/install.c:364"
+      "omega-ui-src/source/install.c:552"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
   "%s installato su %s: lo trovi in home": {
     "where": [
-      "omega-ui-src/source/install.c:442",
-      "omega-ui-src/source/install.c:486"
+      "omega-ui-src/source/install.c:630",
+      "omega-ui-src/source/install.c:674"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
   "%s installato: lo trovi nella Home di Omega": {
     "where": [
-      "omega-ui-src/source/install.c:429"
+      "omega-ui-src/source/install.c:617"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -409,9 +491,15 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
+  "%s lo usa": {
+    "where": [
+      "omega-ui-src/source/store.c:1247"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s"
+  },
   "%s nascosta: la rimetti in Impostazioni › App nascoste": {
     "where": [
-      "omega-ui-src/source/home.c:1041",
+      "omega-ui-src/source/home.c:1266",
       "omega-ui-src/source/homelayout.c:298"
     ],
     "kind": [
@@ -421,13 +509,13 @@
   },
   "%s non risponde: il disco è ancora collegato?": {
     "where": [
-      "omega-ui-src/source/drives.c:252"
+      "omega-ui-src/source/drives.c:352"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s · %.0f GB liberi": {
     "where": [
-      "omega-ui-src/source/install.c:553"
+      "omega-ui-src/source/install.c:741"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s f; unit or abbreviation: use the usual short form of your language"
   },
@@ -451,13 +539,23 @@
   },
   "%s è in Payload Manager: avvialo una volta per completare l'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:395"
+      "omega-ui-src/source/install.c:583"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "+ Aggiungi un server": {
     "where": [
       "omega-ui-src/source/account.c:371"
+    ]
+  },
+  "+ Aggiungi una cartella di PKG": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:178"
+    ]
+  },
+  "+ Aggiungi una cartella di giochi": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:177"
     ]
   },
   "1 amico online": {
@@ -471,7 +569,7 @@
   },
   "1 stella": {
     "where": [
-      "omega-ui-src/source/store.c:1370"
+      "omega-ui-src/source/store.c:1559"
     ],
     "kind": [
       "menu"
@@ -480,22 +578,22 @@
   },
   "10 minuti": {
     "where": [
-      "omega-ui-src/source/prefs.c:83"
+      "omega-ui-src/source/prefs.c:87"
     ]
   },
   "12 ore": {
     "where": [
-      "omega-ui-src/source/prefs.c:53"
+      "omega-ui-src/source/prefs.c:57"
     ]
   },
   "2 minuti": {
     "where": [
-      "omega-ui-src/source/prefs.c:83"
+      "omega-ui-src/source/prefs.c:87"
     ]
   },
   "2 stelle": {
     "where": [
-      "omega-ui-src/source/store.c:1370"
+      "omega-ui-src/source/store.c:1559"
     ],
     "kind": [
       "menu"
@@ -504,17 +602,17 @@
   },
   "24 ore": {
     "where": [
-      "omega-ui-src/source/prefs.c:53"
+      "omega-ui-src/source/prefs.c:57"
     ]
   },
   "3 secondi": {
     "where": [
-      "omega-ui-src/source/prefs.c:78"
+      "omega-ui-src/source/prefs.c:82"
     ]
   },
   "3 stelle": {
     "where": [
-      "omega-ui-src/source/store.c:1370"
+      "omega-ui-src/source/store.c:1559"
     ],
     "kind": [
       "menu"
@@ -523,12 +621,12 @@
   },
   "30 fotogrammi": {
     "where": [
-      "omega-ui-src/source/prefs.c:68"
+      "omega-ui-src/source/prefs.c:72"
     ]
   },
   "4 stelle": {
     "where": [
-      "omega-ui-src/source/store.c:1370"
+      "omega-ui-src/source/store.c:1559"
     ],
     "kind": [
       "menu"
@@ -537,17 +635,17 @@
   },
   "5 minuti": {
     "where": [
-      "omega-ui-src/source/prefs.c:83"
+      "omega-ui-src/source/prefs.c:87"
     ]
   },
   "5 secondi": {
     "where": [
-      "omega-ui-src/source/prefs.c:78"
+      "omega-ui-src/source/prefs.c:82"
     ]
   },
   "5 stelle": {
     "where": [
-      "omega-ui-src/source/store.c:1370"
+      "omega-ui-src/source/store.c:1559"
     ],
     "kind": [
       "menu"
@@ -561,12 +659,12 @@
   },
   "60 fotogrammi": {
     "where": [
-      "omega-ui-src/source/prefs.c:68"
+      "omega-ui-src/source/prefs.c:72"
     ]
   },
   "8 secondi": {
     "where": [
-      "omega-ui-src/source/prefs.c:78"
+      "omega-ui-src/source/prefs.c:82"
     ]
   },
   "Accedi": {
@@ -645,6 +743,11 @@
     "maxlen": 11,
     "hint": "command bar label next to a button glyph: keep it short; confirmation dialog: up to 3 lines; the button text is separate"
   },
+  "Account": {
+    "where": [
+      "omega-ui-src/source/panels.c:1039"
+    ]
+  },
   "Account Omega": {
     "where": [
       "omega-ui-src/source/login.c:62"
@@ -679,12 +782,13 @@
   },
   "Aggiorna il JSON": {
     "where": [
-      "omega-ui-src/source/store.c:724"
+      "omega-ui-src/source/store.c:803"
     ]
   },
   "Aggiorna informazioni": {
     "where": [
-      "omega-ui-src/source/home.c:1145"
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1372"
     ]
   },
   "Aggiungere la pagina Omega al Toolbox di OnionHEN (menu durante il gioco)": {
@@ -704,9 +808,14 @@
     "maxlen": 12,
     "hint": "pill button: one line, keep it short"
   },
+  "Aggiungi ai desideri: ti avviso degli aggiornamenti": {
+    "where": [
+      "omega-ui-src/source/store.c:1239"
+    ]
+  },
   "Aggiungi ai segnalibri": {
     "where": [
-      "omega-ui-src/source/browser.c:523"
+      "omega-ui-src/source/browser.c:580"
     ],
     "kind": [
       "menu"
@@ -728,7 +837,7 @@
   },
   "Aggiungi amici per vedere cosa giocano.": {
     "where": [
-      "omega-ui-src/source/home.c:809"
+      "omega-ui-src/source/home.c:987"
     ]
   },
   "Aggiungi amico": {
@@ -740,6 +849,15 @@
     ],
     "maxlen": 19,
     "hint": "pill button: one line, keep it short"
+  },
+  "Aggiungi qualche amico per consigliargli le app": {
+    "where": [
+      "omega-ui-src/source/store.c:487"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Aggiungi qualche amico per creare un gruppo": {
     "where": [
@@ -753,6 +871,11 @@
   "Aggiungi qualcuno con il suo ID online.": {
     "where": [
       "omega-ui-src/source/panels.c:241"
+    ]
+  },
+  "Aggiungi questa cartella alle posizioni": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:353"
     ]
   },
   "Aggiungi un amico per invitarlo": {
@@ -775,7 +898,7 @@
   },
   "Aggiungi un gioco": {
     "where": [
-      "omega-ui-src/source/store.c:721"
+      "omega-ui-src/source/store.c:798"
     ]
   },
   "Aggiungi un server musicale": {
@@ -799,12 +922,17 @@
   },
   "Aggiunto ai segnalibri": {
     "where": [
-      "omega-ui-src/source/browser.c:469"
+      "omega-ui-src/source/browser.c:523"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Aiuto": {
+    "where": [
+      "omega-ui-src/source/panels.c:1040"
+    ]
   },
   "Album": {
     "where": [
@@ -816,11 +944,25 @@
       "omega-ui-src/source/music.c:304"
     ]
   },
+  "Alimentazione": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:68"
+    ]
+  },
+  "Allegare il registro di Omega? Aiuta a trovare il problema": {
+    "where": [
+      "omega-ui-src/source/panels.c:1154"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
   "Altro": {
     "where": [
       "omega-ui-src/source/community.c:190",
       "omega-ui-src/source/panels.c:736",
-      "omega-ui-src/source/store.c:682"
+      "omega-ui-src/source/store.c:739"
     ],
     "kind": [
       "menu"
@@ -834,7 +976,7 @@
   },
   "Altro...": {
     "where": [
-      "omega-ui-src/source/store.c:1323"
+      "omega-ui-src/source/store.c:1510"
     ],
     "kind": [
       "menu"
@@ -843,12 +985,14 @@
   },
   "Ametista": {
     "where": [
-      "omega-ui-src/source/gfx.c:973",
+      "omega-ui-src/source/gfx.c:1032",
       "omega-ui-src/source/prefs.c:22"
     ]
   },
   "Amici": {
     "where": [
+      "omega-ui-src/source/homestyles.c:67",
+      "omega-ui-src/source/homestyles.c:221",
       "omega-ui-src/source/panels.c:348",
       "omega-onion-plugin-src/source/main.c:189"
     ],
@@ -861,7 +1005,7 @@
   },
   "Amici  ·  %d online": {
     "where": [
-      "omega-ui-src/source/home.c:879"
+      "omega-ui-src/source/home.c:1057"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -870,10 +1014,15 @@
       "omega-ui-src/source/community.c:342"
     ]
   },
+  "Amici e messaggi": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:195"
+    ]
+  },
   "Amici e notizie": {
     "where": [
-      "omega-ui-src/source/home.c:770",
-      "omega-ui-src/source/prefs.c:48"
+      "omega-ui-src/source/home.c:948",
+      "omega-ui-src/source/prefs.c:52"
     ]
   },
   "Amici · %d online su %d": {
@@ -882,9 +1031,14 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d d"
   },
+  "Amici, party e chat": {
+    "where": [
+      "omega-ui-src/source/panels.c:1227"
+    ]
+  },
   "Amici: %d · online: %d · giochi: %d": {
     "where": [
-      "omega-ui-src/source/panels.c:1040"
+      "omega-ui-src/source/panels.c:1082"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d d d"
   },
@@ -915,12 +1069,17 @@
   },
   "Analisi": {
     "where": [
-      "omega-ui-src/source/install.c:407"
+      "omega-ui-src/source/install.c:595"
     ]
   },
   "Anche le sottocartelle, in ordine": {
     "where": [
       "omega-ui-src/source/music.c:444"
+    ]
+  },
+  "Anche senza JSON": {
+    "where": [
+      "omega-ui-src/source/store.c:1393"
     ]
   },
   "Ancora nessun amico": {
@@ -935,12 +1094,12 @@
   },
   "Ancora nessun commento: premi Triangolo e scrivi il primo.": {
     "where": [
-      "omega-ui-src/source/store.c:1168"
+      "omega-ui-src/source/store.c:1309"
     ]
   },
   "Ancora nessun homebrew": {
     "where": [
-      "omega-ui-src/source/store.c:900"
+      "omega-ui-src/source/store.c:1007"
     ]
   },
   "Anello bianco": {
@@ -968,7 +1127,8 @@
       "omega-ui-src/source/community.c:706",
       "omega-ui-src/source/panels.c:124",
       "omega-ui-src/source/panels.c:956",
-      "omega-ui-src/source/store.c:1278"
+      "omega-ui-src/source/pkgs.c:233",
+      "omega-ui-src/source/store.c:1465"
     ]
   },
   "Annulla richiesta": {
@@ -985,17 +1145,22 @@
   },
   "App": {
     "where": [
-      "omega-ui-src/source/store.c:682"
+      "omega-ui-src/source/store.c:739"
+    ]
+  },
+  "App di Omega": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:43"
     ]
   },
   "App e intrattenimento": {
     "where": [
-      "omega-ui-src/source/store.c:687"
+      "omega-ui-src/source/store.c:744"
     ]
   },
   "App nascoste": {
     "where": [
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1047"
     ]
   },
   "App nascoste (X per rimetterle in home)": {
@@ -1006,11 +1171,6 @@
       "menu"
     ],
     "hint": "menu entry or title: one line"
-  },
-  "AppInst non disponibile (privilegio mancante). Ripiego: installa il pkg con ItemzFlow.": {
-    "where": [
-      "omega-ui-src/source/install.c:297"
-    ]
   },
   "Applica": {
     "where": [
@@ -1025,15 +1185,18 @@
   },
   "Apri": {
     "where": [
-      "omega-ui-src/source/browser.c:419",
+      "omega-ui-src/source/browser.c:472",
       "omega-ui-src/source/custom.c:124",
-      "omega-ui-src/source/home.c:718",
-      "omega-ui-src/source/home.c:975",
+      "omega-ui-src/source/home.c:896",
+      "omega-ui-src/source/home.c:1197",
+      "omega-ui-src/source/homestyles.c:52",
+      "omega-ui-src/source/homestyles.c:110",
       "omega-ui-src/source/music.c:844",
       "omega-ui-src/source/panels.c:189",
       "omega-ui-src/source/panels.c:584",
-      "omega-ui-src/source/store.c:1268",
-      "omega-ui-src/source/system.c:560"
+      "omega-ui-src/source/pkgs.c:304",
+      "omega-ui-src/source/store.c:1455",
+      "omega-ui-src/source/system.c:561"
     ],
     "kind": [
       "hint",
@@ -1042,9 +1205,34 @@
     "maxlen": 8,
     "hint": "command bar label next to a button glyph: keep it short; pill button: one line, keep it short"
   },
+  "Apri / scegli": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:233"
+    ]
+  },
+  "Apri il Telecomando": {
+    "where": [
+      "omega-ui-src/source/store.c:1444"
+    ],
+    "kind": [
+      "hint"
+    ],
+    "maxlen": 25,
+    "hint": "command bar label next to a button glyph: keep it short"
+  },
+  "Apri il Telecomando nel browser (Impostazioni › Sistema › Telecomando), sezione La mia libreria: importa il file, incollalo, o scarica l'esempio e modificalo.": {
+    "where": [
+      "omega-ui-src/source/store.c:1391"
+    ]
+  },
+  "Apri il browser completo della PS5 (siti moderni, video, accessi)": {
+    "where": [
+      "omega-ui-src/source/browser.c:342"
+    ]
+  },
   "Apri nel browser": {
     "where": [
-      "omega-ui-src/source/panels.c:1156"
+      "omega-ui-src/source/panels.c:1324"
     ],
     "kind": [
       "hint"
@@ -1052,10 +1240,30 @@
     "maxlen": 21,
     "hint": "command bar label next to a button glyph: keep it short"
   },
+  "Apri nel browser della PS5": {
+    "where": [
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
   "Aprire il Toolbox anche in gioco tenendo premuti L2+R3": {
     "where": [
       "omega-ui-src/source/hen.c:259"
     ]
+  },
+  "Apro il browser della PS5: per tornare in Omega premi il tasto PS": {
+    "where": [
+      "omega-ui-src/source/browser.c:57",
+      "omega-ui-src/source/browser.c:60"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Arancio": {
     "where": [
@@ -1080,7 +1288,7 @@
   },
   "Archivio esteso": {
     "where": [
-      "omega-ui-src/source/drives.c:43",
+      "omega-ui-src/source/drives.c:53",
       "omega-ui-src/source/music.c:455"
     ]
   },
@@ -1117,7 +1325,8 @@
   },
   "Aspetto": {
     "where": [
-      "omega-ui-src/source/custom.c:14"
+      "omega-ui-src/source/custom.c:14",
+      "omega-ui-src/source/panels.c:1039"
     ]
   },
   "Assente": {
@@ -1163,7 +1372,7 @@
   "Audio": {
     "where": [
       "omega-ui-src/source/panels.c:997",
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1046"
     ],
     "kind": [
       "menu"
@@ -1172,13 +1381,13 @@
   },
   "Aurora": {
     "where": [
-      "omega-ui-src/source/gfx.c:971",
+      "omega-ui-src/source/gfx.c:1030",
       "omega-ui-src/source/prefs.c:22"
     ]
   },
   "Automatica": {
     "where": [
-      "omega-ui-src/source/prefs.c:68"
+      "omega-ui-src/source/prefs.c:72"
     ]
   },
   "Automatica (console)": {
@@ -1214,16 +1423,17 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
-  "Avatar: 16 personaggi nuovi, dal drago al cyborg. Li trovi in Impostazioni › Cambia avatar.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:16"
-    ]
-  },
   "Avvia": {
     "where": [
-      "omega-ui-src/source/store.c:882",
-      "omega-ui-src/source/store.c:1103"
-    ]
+      "omega-ui-src/source/homestyles.c:110",
+      "omega-ui-src/source/store.c:989",
+      "omega-ui-src/source/store.c:1230"
+    ],
+    "kind": [
+      "pill"
+    ],
+    "maxlen": 9,
+    "hint": "pill button: one line, keep it short"
   },
   "Avvia Omega o riavvia la console": {
     "where": [
@@ -1260,9 +1470,24 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "Avvio dell'installazione": {
+    "where": [
+      "omega-ui-src/source/install.c:483",
+      "omega-ui-src/source/install.c:504"
+    ]
+  },
+  "Avvio già in corso...": {
+    "where": [
+      "omega-ui-src/source/home.c:462"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Avvio non riuscito (0x%x)": {
     "where": [
-      "omega-ui-src/source/home.c:353"
+      "omega-ui-src/source/home.c:398"
     ],
     "kind": [
       "message"
@@ -1300,7 +1525,7 @@
   },
   "Bacheca, gruppi, record e trofei di tutti gli iscritti": {
     "where": [
-      "omega-ui-src/source/home.c:707"
+      "omega-ui-src/source/home.c:885"
     ]
   },
   "Bagliore": {
@@ -1310,7 +1535,7 @@
   },
   "Barra dei comandi": {
     "where": [
-      "omega-ui-src/source/prefs.c:49"
+      "omega-ui-src/source/prefs.c:53"
     ]
   },
   "Bentornato!": {
@@ -1349,7 +1574,7 @@
   },
   "Bolle": {
     "where": [
-      "omega-ui-src/source/prefs.c:64"
+      "omega-ui-src/source/prefs.c:68"
     ]
   },
   "Brani": {
@@ -1377,7 +1602,8 @@
   },
   "Browser": {
     "where": [
-      "omega-ui-src/source/browser.c:525",
+      "omega-ui-src/source/browser.c:582",
+      "omega-ui-src/source/home.c:254",
       "omega-ui-src/source/panels.c:159"
     ],
     "kind": [
@@ -1389,8 +1615,18 @@
   },
   "Browser Omega": {
     "where": [
-      "omega-ui-src/source/browser.c:291"
+      "omega-ui-src/source/browser.c:332"
     ]
+  },
+  "Browser PS5": {
+    "where": [
+      "omega-ui-src/source/browser.c:472"
+    ],
+    "kind": [
+      "hint"
+    ],
+    "maxlen": 15,
+    "hint": "command bar label next to a button glyph: keep it short"
   },
   "C'è già un caricamento in corso": {
     "where": [
@@ -1403,8 +1639,7 @@
   },
   "C'è già un'installazione in corso": {
     "where": [
-      "omega-ui-src/source/install.c:546",
-      "omega-ui-src/source/store.c:469"
+      "omega-ui-src/source/store.c:526"
     ],
     "kind": [
       "message"
@@ -1413,7 +1648,7 @@
   },
   "C'è già una copia in corso": {
     "where": [
-      "omega-ui-src/source/system.c:489"
+      "omega-ui-src/source/system.c:490"
     ],
     "kind": [
       "message"
@@ -1422,12 +1657,12 @@
   },
   "CARTELLA": {
     "where": [
-      "omega-ui-src/source/store.c:645"
+      "omega-ui-src/source/store.c:702"
     ]
   },
   "Calda": {
     "where": [
-      "omega-ui-src/source/prefs.c:73"
+      "omega-ui-src/source/prefs.c:77"
     ]
   },
   "Cambia": {
@@ -1443,12 +1678,18 @@
   },
   "Cambia avatar": {
     "where": [
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/homestyles.c:172",
+      "omega-ui-src/source/panels.c:1045"
     ]
   },
   "Cambia foto o video personale": {
     "where": [
       "omega-ui-src/source/panels.c:803"
+    ]
+  },
+  "Campi": {
+    "where": [
+      "omega-ui-src/source/store.c:1404"
     ]
   },
   "Cancella": {
@@ -1462,8 +1703,8 @@
   },
   "Cancella cronologia": {
     "where": [
-      "omega-ui-src/source/browser.c:523",
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -1491,13 +1732,13 @@
   },
   "Carbone": {
     "where": [
-      "omega-ui-src/source/gfx.c:974",
+      "omega-ui-src/source/gfx.c:1033",
       "omega-ui-src/source/prefs.c:22"
     ]
   },
   "Caricamento dell'homebrew...": {
     "where": [
-      "omega-ui-src/source/home.c:389"
+      "omega-ui-src/source/home.c:434"
     ],
     "kind": [
       "message"
@@ -1522,7 +1763,7 @@
   },
   "Caricamento...": {
     "where": [
-      "omega-ui-src/source/browser.c:236",
+      "omega-ui-src/source/browser.c:264",
       "omega-ui-src/source/music.c:741",
       "omega-ui-src/source/music.c:782",
       "omega-ui-src/source/panels.c:649",
@@ -1533,20 +1774,58 @@
     ],
     "hint": "PS5 system notification"
   },
+  "Caricati dal telefono o dal PC": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:42"
+    ]
+  },
+  "Carosello": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:19",
+      "omega-ui-src/source/prefs.c:38"
+    ]
+  },
   "Cartella /data/music": {
     "where": [
       "omega-ui-src/source/music.c:456"
     ]
   },
+  "Cartella aggiunta alle posizioni dei PKG": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:140"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Cartella creata": {
     "where": [
-      "omega-ui-src/source/system.c:524"
+      "omega-ui-src/source/system.c:525"
     ],
     "kind": [
       "message",
       "keyboard-title"
     ],
     "hint": "one-line message at the bottom of the screen; title of the system keyboard"
+  },
+  "Cartella dei PKG aggiunta": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:322"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
+  "Cartella dei giochi aggiunta: i giochi compaiono in home tra pochi secondi": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:322"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Cartella eliminata: le app sono tornate in home": {
     "where": [
@@ -1564,24 +1843,46 @@
   },
   "Cartella non valida: manca il Title ID": {
     "where": [
-      "omega-ui-src/source/install.c:474"
+      "omega-ui-src/source/install.c:662"
     ]
+  },
+  "Cartella tolta": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:195"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Cartella vuota o non leggibile": {
     "where": [
-      "omega-ui-src/source/system.c:557"
+      "omega-ui-src/source/system.c:558"
     ]
   },
   "Cartella · %d app": {
     "where": [
-      "omega-ui-src/source/home.c:706"
+      "omega-ui-src/source/home.c:881",
+      "omega-ui-src/source/homestyles.c:42"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
+  "Cartelle di giochi e PKG": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:178",
+      "omega-ui-src/source/panels.c:1047",
+      "omega-ui-src/source/pkgs.c:46",
+      "omega-ui-src/source/pkgs.c:182"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
   "Categoria": {
     "where": [
-      "omega-ui-src/source/store.c:1134",
-      "omega-ui-src/source/store.c:1194"
+      "omega-ui-src/source/store.c:1275",
+      "omega-ui-src/source/store.c:1335"
     ]
   },
   "Categoria riportata ai valori iniziali": {
@@ -1595,14 +1896,16 @@
   },
   "Centro di controllo": {
     "where": [
-      "omega-ui-src/source/home.c:978"
+      "omega-ui-src/source/home.c:1200",
+      "omega-ui-src/source/homestyles.c:55"
     ]
   },
   "Cerca": {
     "where": [
+      "omega-ui-src/source/homestyles.c:68",
       "omega-ui-src/source/music.c:301",
-      "omega-ui-src/source/store.c:712",
-      "omega-ui-src/source/store.c:1270"
+      "omega-ui-src/source/store.c:787",
+      "omega-ui-src/source/store.c:1457"
     ]
   },
   "Cerca ID online": {
@@ -1617,7 +1920,7 @@
   "Cerca nella libreria": {
     "where": [
       "omega-ui-src/source/music.c:966",
-      "omega-ui-src/source/store.c:631"
+      "omega-ui-src/source/store.c:688"
     ],
     "kind": [
       "keyboard-title"
@@ -1626,8 +1929,8 @@
   },
   "Cerca o scrivi un indirizzo": {
     "where": [
-      "omega-ui-src/source/browser.c:404",
-      "omega-ui-src/source/browser.c:516"
+      "omega-ui-src/source/browser.c:457",
+      "omega-ui-src/source/browser.c:572"
     ],
     "kind": [
       "keyboard-title"
@@ -1642,7 +1945,7 @@
   },
   "Cerca sul web o scrivi un indirizzo": {
     "where": [
-      "omega-ui-src/source/browser.c:296"
+      "omega-ui-src/source/browser.c:337"
     ]
   },
   "Cerca un ID online": {
@@ -1652,7 +1955,7 @@
   },
   "Cerca un homebrew": {
     "where": [
-      "omega-ui-src/source/store.c:631"
+      "omega-ui-src/source/store.c:688"
     ],
     "kind": [
       "keyboard-title"
@@ -1669,6 +1972,11 @@
     ],
     "hint": "title of the system keyboard"
   },
+  "Cerco i pacchetti...": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:265"
+    ]
+  },
   "Chat del party": {
     "where": [
       "omega-ui-src/source/panels.c:257"
@@ -1682,7 +1990,7 @@
   },
   "Che forma hanno e come si muovono.": {
     "where": [
-      "omega-ui-src/source/prefs.c:63"
+      "omega-ui-src/source/prefs.c:67"
     ]
   },
   "Chi può scrivermi: solo amici": {
@@ -1693,11 +2001,6 @@
   "Chi può scrivermi: tutti": {
     "where": [
       "omega-ui-src/source/account.c:239"
-    ]
-  },
-  "Chi spegne la console ora risulta offline dopo pochi minuti, e i giochi mostrano il nome e l'icona veri anche a chi non li ha.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:22"
     ]
   },
   "Chi sta usando questo controller?": {
@@ -1752,9 +2055,14 @@
       "omega-ui-src/source/music.c:454"
     ]
   },
+  "Chiedi una funzione nuova": {
+    "where": [
+      "omega-ui-src/source/panels.c:1158"
+    ]
+  },
   "Chiudere Omega e tornare alla home di sistema?": {
     "where": [
-      "omega-ui-src/source/panels.c:1100"
+      "omega-ui-src/source/panels.c:1214"
     ],
     "kind": [
       "confirm"
@@ -1768,12 +2076,13 @@
       "omega-ui-src/source/homelayout.c:287",
       "omega-ui-src/source/music.c:850",
       "omega-ui-src/source/panels.c:189",
-      "omega-ui-src/source/panels.c:1100",
-      "omega-ui-src/source/panels.c:1156",
-      "omega-ui-src/source/panels.c:1157",
+      "omega-ui-src/source/panels.c:1214",
+      "omega-ui-src/source/panels.c:1262",
+      "omega-ui-src/source/panels.c:1324",
+      "omega-ui-src/source/panels.c:1325",
       "omega-ui-src/source/records.c:292",
       "omega-ui-src/source/records.c:472",
-      "omega-ui-src/source/store.c:404"
+      "omega-ui-src/source/store.c:426"
     ],
     "kind": [
       "hint",
@@ -1785,7 +2094,7 @@
   "Chiudi Omega": {
     "where": [
       "omega-ui-src/source/panels.c:210",
-      "omega-ui-src/source/panels.c:1044"
+      "omega-ui-src/source/panels.c:1049"
     ],
     "kind": [
       "menu",
@@ -1796,8 +2105,8 @@
   },
   "Chiudi browser": {
     "where": [
-      "omega-ui-src/source/browser.c:523",
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -1806,12 +2115,20 @@
   },
   "Cinema": {
     "where": [
-      "omega-ui-src/source/prefs.c:143"
+      "omega-ui-src/source/homestyles.c:19",
+      "omega-ui-src/source/prefs.c:38",
+      "omega-ui-src/source/prefs.c:147"
+    ]
+  },
+  "Classica PS4": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:19",
+      "omega-ui-src/source/prefs.c:38"
     ]
   },
   "Classici": {
     "where": [
-      "omega-ui-src/source/prefs.c:71"
+      "omega-ui-src/source/prefs.c:75"
     ]
   },
   "Classifica degli amici": {
@@ -1836,12 +2153,17 @@
   },
   "Collega un JSON": {
     "where": [
-      "omega-ui-src/source/store.c:726"
+      "omega-ui-src/source/store.c:805"
     ]
   },
   "Collega una chiavetta USB con la tua musica, oppure copiala in /data/Omega/Music via FTP": {
     "where": [
       "omega-ui-src/source/music.c:464"
+    ]
+  },
+  "Collega una chiavetta o un disco: i .pkg compaiono qui da soli. Installi con un tasto e segui la barra nella home.": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:246"
     ]
   },
   "Collegarsi a %s (%s)? Uscirai dall'account di questo server.": {
@@ -1865,6 +2187,11 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "Colleghi un disco e i suoi giochi compaiono da soli, anche nella Home della console: il montaggio automatico fa il lavoro di ShadowMount.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1225"
+    ]
+  },
   "Colore d'accento": {
     "where": [
       "omega-ui-src/source/prefs.c:24"
@@ -1877,12 +2204,27 @@
   },
   "Com'era all'inizio.": {
     "where": [
-      "omega-ui-src/source/prefs.c:134"
+      "omega-ui-src/source/prefs.c:138"
+    ]
+  },
+  "Come ShadowMount, ma dentro Omega: appena colleghi un disco i suoi giochi si registrano da soli e compaiono anche nella Home della console. Serve kstuff.": {
+    "where": [
+      "omega-ui-src/source/prefs.c:49"
+    ]
+  },
+  "Come funziona il JSON": {
+    "where": [
+      "omega-ui-src/source/store.c:800"
+    ]
+  },
+  "Come funziona il JSON dei giochi": {
+    "where": [
+      "omega-ui-src/source/store.c:1386"
     ]
   },
   "Come si mettono in fila giochi e app.": {
     "where": [
-      "omega-ui-src/source/prefs.c:41"
+      "omega-ui-src/source/prefs.c:43"
     ]
   },
   "Come si vede l'elemento scelto col controller.": {
@@ -1890,10 +2232,15 @@
       "omega-ui-src/source/prefs.c:34"
     ]
   },
+  "Come è fatta la home: Omega, in stile PS4, XMB come sulla PS3, oppure Griglia, Carosello e Cinema.": {
+    "where": [
+      "omega-ui-src/source/prefs.c:37"
+    ]
+  },
   "Commenta": {
     "where": [
       "omega-ui-src/source/community.c:704",
-      "omega-ui-src/source/store.c:1275"
+      "omega-ui-src/source/store.c:1462"
     ]
   },
   "Commenti": {
@@ -1904,7 +2251,7 @@
   },
   "Commenti (%d)": {
     "where": [
-      "omega-ui-src/source/store.c:1164"
+      "omega-ui-src/source/store.c:1305"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -1928,7 +2275,7 @@
   },
   "Commento non riuscito": {
     "where": [
-      "omega-ui-src/source/store.c:437"
+      "omega-ui-src/source/store.c:494"
     ],
     "kind": [
       "message"
@@ -1937,7 +2284,7 @@
   },
   "Commento pubblicato": {
     "where": [
-      "omega-ui-src/source/store.c:436"
+      "omega-ui-src/source/store.c:493"
     ],
     "kind": [
       "message"
@@ -1947,8 +2294,8 @@
   "Community": {
     "where": [
       "omega-ui-src/source/community.c:459",
-      "omega-ui-src/source/home.c:255",
-      "omega-ui-src/source/home.c:662",
+      "omega-ui-src/source/home.c:254",
+      "omega-ui-src/source/homestyles.c:41",
       "omega-ui-src/source/panels.c:159"
     ],
     "kind": [
@@ -1977,9 +2324,14 @@
       "omega-ui-src/source/system.c:276"
     ]
   },
+  "Con un link": {
+    "where": [
+      "omega-ui-src/source/store.c:1392"
+    ]
+  },
   "Con un pannello aperto la home sotto non si ridisegna: metà lavoro per la console.": {
     "where": [
-      "omega-ui-src/source/prefs.c:87"
+      "omega-ui-src/source/prefs.c:91"
     ]
   },
   "Conferma": {
@@ -2004,7 +2356,7 @@
   },
   "Confermi che è un homebrew tuo o redistribuibile, e non un gioco o software piratato?": {
     "where": [
-      "omega-ui-src/source/store.c:579"
+      "omega-ui-src/source/store.c:636"
     ],
     "kind": [
       "confirm"
@@ -2013,12 +2365,31 @@
   },
   "Confermo": {
     "where": [
-      "omega-ui-src/source/store.c:579"
+      "omega-ui-src/source/store.c:636"
     ],
     "kind": [
       "confirm"
     ],
     "hint": "confirmation dialog: up to 3 lines; the button text is separate"
+  },
+  "Consiglia a un amico": {
+    "where": [
+      "omega-ui-src/source/store.c:488",
+      "omega-ui-src/source/store.c:1239"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
+  "Consigliato: il tuo amico riceve una notifica": {
+    "where": [
+      "omega-ui-src/source/store.c:473"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Console": {
     "where": [
@@ -2029,7 +2400,7 @@
     "where": [
       "omega-ui-src/source/community.c:190",
       "omega-ui-src/source/panels.c:736",
-      "omega-ui-src/source/store.c:1323"
+      "omega-ui-src/source/store.c:1510"
     ],
     "kind": [
       "menu"
@@ -2076,17 +2447,17 @@
   },
   "Copertine che scorrono": {
     "where": [
-      "omega-ui-src/source/prefs.c:85"
+      "omega-ui-src/source/prefs.c:89"
     ]
   },
   "Copia": {
     "where": [
-      "omega-ui-src/source/system.c:591"
+      "omega-ui-src/source/system.c:605"
     ]
   },
   "Copia completata": {
     "where": [
-      "omega-ui-src/source/system.c:471"
+      "omega-ui-src/source/system.c:472"
     ],
     "kind": [
       "message"
@@ -2095,13 +2466,13 @@
   },
   "Copia non riuscita": {
     "where": [
-      "omega-ui-src/source/install.c:247",
-      "omega-ui-src/source/install.c:500"
+      "omega-ui-src/source/install.c:281",
+      "omega-ui-src/source/install.c:688"
     ]
   },
   "Copia non riuscita (spazio o permessi)": {
     "where": [
-      "omega-ui-src/source/system.c:471"
+      "omega-ui-src/source/system.c:472"
     ],
     "kind": [
       "message"
@@ -2110,24 +2481,25 @@
   },
   "Copia non riuscita: c'è spazio sul disco?": {
     "where": [
-      "omega-ui-src/source/install.c:485"
+      "omega-ui-src/source/install.c:673"
     ]
   },
   "Copia su %s": {
     "where": [
-      "omega-ui-src/source/install.c:484"
+      "omega-ui-src/source/install.c:672"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Copia sulla console": {
     "where": [
-      "omega-ui-src/source/install.c:244",
-      "omega-ui-src/source/install.c:496"
+      "omega-ui-src/source/install.c:278",
+      "omega-ui-src/source/install.c:684",
+      "omega-ui-src/source/install.c:809"
     ]
   },
   "Copiato: scegli la cartella e premi △": {
     "where": [
-      "omega-ui-src/source/system.c:512"
+      "omega-ui-src/source/system.c:513"
     ],
     "kind": [
       "message"
@@ -2136,9 +2508,14 @@
   },
   "Copio %s": {
     "where": [
-      "omega-ui-src/source/system.c:494"
+      "omega-ui-src/source/system.c:495"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
+  },
+  "Corretto il testo che ogni tanto diventava enorme ovunque.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:15"
+    ]
   },
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": {
     "where": [
@@ -2147,12 +2524,12 @@
   },
   "Cosa fanno i tuoi amici": {
     "where": [
-      "omega-ui-src/source/home.c:802"
+      "omega-ui-src/source/home.c:980"
     ]
   },
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": {
     "where": [
-      "omega-ui-src/source/prefs.c:84"
+      "omega-ui-src/source/prefs.c:88"
     ]
   },
   "Cosa vuoi condividere con i tuoi amici?": {
@@ -2197,12 +2574,17 @@
   },
   "Creare un nuovo PIN? I telefoni già abbinati smetteranno di funzionare.": {
     "where": [
-      "omega-ui-src/source/remote.c:135"
+      "omega-ui-src/source/remote.c:138"
     ],
     "kind": [
       "confirm"
     ],
     "hint": "confirmation dialog: up to 3 lines; the button text is separate"
+  },
+  "Creatori in evidenza": {
+    "where": [
+      "omega-ui-src/source/store.c:763"
+    ]
   },
   "Creazione in corso...": {
     "where": [
@@ -2216,14 +2598,14 @@
   },
   "Cristallo": {
     "where": [
-      "omega-ui-src/source/prefs.c:71"
+      "omega-ui-src/source/prefs.c:75"
     ]
   },
   "Cronologia": {
     "where": [
-      "omega-ui-src/source/browser.c:490",
-      "omega-ui-src/source/browser.c:523",
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:544",
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -2232,7 +2614,7 @@
   },
   "Cronologia cancellata": {
     "where": [
-      "omega-ui-src/source/browser.c:499"
+      "omega-ui-src/source/browser.c:553"
     ],
     "kind": [
       "message"
@@ -2241,12 +2623,17 @@
   },
   "Cronologia vuota": {
     "where": [
-      "omega-ui-src/source/browser.c:489"
+      "omega-ui-src/source/browser.c:543"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Da chiavette, dischi, cartelle a scelta o dal PC via Wi-Fi, con l'icona del gioco e la barra che avanza come sulla PS4, in coda uno alla volta.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1226"
+    ]
   },
   "Da ottenere": {
     "where": [
@@ -2261,7 +2648,7 @@
   },
   "Da spostare: scegli la cartella e premi △": {
     "where": [
-      "omega-ui-src/source/system.c:513"
+      "omega-ui-src/source/system.c:514"
     ],
     "kind": [
       "message"
@@ -2270,7 +2657,18 @@
   },
   "Da un JSON: Collega un JSON con l'elenco dei tuoi giochi, oppure importalo dal telefono.": {
     "where": [
-      "omega-ui-src/source/store.c:921"
+      "omega-ui-src/source/store.c:1028"
+    ]
+  },
+  "Dal PC  ·  %.0f / %.0f MB": {
+    "where": [
+      "omega-ui-src/source/home.c:863"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: f f; unit or abbreviation: use the usual short form of your language"
+  },
+  "Dal Telecomando carichi direttamente .pkg, .zip, .elf o cartelle di giochi: arrivano via Wi-Fi e si installano da soli.": {
+    "where": [
+      "omega-ui-src/source/store.c:1393"
     ]
   },
   "Dal microfono arriva solo silenzio: controlla il tasto mute del controller": {
@@ -2284,8 +2682,18 @@
   },
   "Dal telefono": {
     "where": [
-      "omega-ui-src/source/music.c:849",
-      "omega-ui-src/source/store.c:722"
+      "omega-ui-src/source/music.c:849"
+    ]
+  },
+  "Dal telefono o dal PC": {
+    "where": [
+      "omega-ui-src/source/store.c:799",
+      "omega-ui-src/source/store.c:1391"
+    ]
+  },
+  "Dal telefono o dal PC carichi i giochi e li installi subito; c'è una guida al JSON dei giochi con un esempio da scaricare.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:19"
     ]
   },
   "Dal telefono puoi": {
@@ -2301,17 +2709,17 @@
   },
   "Dal telefono: Dal telefono nella barra qui sopra, poi La mia libreria › Aggiungi un gioco. Scrivere link lunghi è più comodo.": {
     "where": [
-      "omega-ui-src/source/store.c:919"
+      "omega-ui-src/source/store.c:1026"
     ]
   },
   "Dalla console: Aggiungi un gioco nella barra, con titolo, link e copertina.": {
     "where": [
-      "omega-ui-src/source/store.c:920"
+      "omega-ui-src/source/store.c:1027"
     ]
   },
   "Data": {
     "where": [
-      "omega-ui-src/source/prefs.c:56"
+      "omega-ui-src/source/prefs.c:60"
     ]
   },
   "Dati salvati in %s": {
@@ -2327,7 +2735,25 @@
   },
   "Descrivi il problema": {
     "where": [
-      "omega-ui-src/source/store.c:1315"
+      "omega-ui-src/source/store.c:1502"
+    ],
+    "kind": [
+      "keyboard-title"
+    ],
+    "hint": "title of the system keyboard"
+  },
+  "Descrivi il problema: cosa facevi e cosa è successo": {
+    "where": [
+      "omega-ui-src/source/panels.c:1126"
+    ],
+    "kind": [
+      "keyboard-title"
+    ],
+    "hint": "title of the system keyboard"
+  },
+  "Descrivi la funzione che vorresti": {
+    "where": [
+      "omega-ui-src/source/panels.c:1126"
     ],
     "kind": [
       "keyboard-title"
@@ -2336,8 +2762,19 @@
   },
   "Descrizione": {
     "where": [
-      "omega-ui-src/source/store.c:1115",
-      "omega-ui-src/source/store.c:1193"
+      "omega-ui-src/source/store.c:1256",
+      "omega-ui-src/source/store.c:1334"
+    ]
+  },
+  "Desideri": {
+    "where": [
+      "omega-ui-src/source/store.c:794"
+    ]
+  },
+  "Di tendenza": {
+    "where": [
+      "omega-ui-src/source/store.c:753",
+      "omega-ui-src/source/store.c:791"
     ]
   },
   "Diagnostica inviata: grazie!": {
@@ -2349,14 +2786,19 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Dieci buoni motivi per usarla come Home": {
+    "where": [
+      "omega-ui-src/source/panels.c:1244"
+    ]
+  },
   "Dimensione": {
     "where": [
-      "omega-ui-src/source/store.c:1134"
+      "omega-ui-src/source/store.c:1275"
     ]
   },
   "Dimensione delle icone": {
     "where": [
-      "omega-ui-src/source/prefs.c:37"
+      "omega-ui-src/source/prefs.c:39"
     ]
   },
   "Disattiva microfono": {
@@ -2364,16 +2806,21 @@
       "omega-ui-src/source/panels.c:259"
     ]
   },
+  "Dischi e chiavette senza pensieri": {
+    "where": [
+      "omega-ui-src/source/panels.c:1225"
+    ]
+  },
   "Disco USB %d": {
     "where": [
-      "omega-ui-src/source/drives.c:41",
-      "omega-ui-src/source/drives.c:42"
+      "omega-ui-src/source/drives.c:51",
+      "omega-ui-src/source/drives.c:52"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Disco collegato: %d giochi in più in home": {
     "where": [
-      "omega-ui-src/source/home.c:917"
+      "omega-ui-src/source/home.c:1097"
     ],
     "kind": [
       "message"
@@ -2382,7 +2829,7 @@
   },
   "Disco collegato: 1 gioco in più in home": {
     "where": [
-      "omega-ui-src/source/home.c:917"
+      "omega-ui-src/source/home.c:1097"
     ],
     "kind": [
       "message"
@@ -2391,7 +2838,7 @@
   },
   "Disco scollegato: i suoi giochi sono spariti dalla home": {
     "where": [
-      "omega-ui-src/source/home.c:918"
+      "omega-ui-src/source/home.c:1098"
     ],
     "kind": [
       "message"
@@ -2400,8 +2847,8 @@
   },
   "Disinstalla": {
     "where": [
-      "omega-ui-src/source/store.c:1333",
-      "omega-ui-src/source/store.c:1344"
+      "omega-ui-src/source/store.c:1520",
+      "omega-ui-src/source/store.c:1531"
     ],
     "kind": [
       "confirm"
@@ -2410,7 +2857,7 @@
   },
   "Disinstallare questo titolo?": {
     "where": [
-      "omega-ui-src/source/store.c:1333"
+      "omega-ui-src/source/store.c:1520"
     ],
     "kind": [
       "confirm"
@@ -2419,7 +2866,7 @@
   },
   "Disinstallazione non riuscita (0x%x)": {
     "where": [
-      "omega-ui-src/source/store.c:1298"
+      "omega-ui-src/source/store.c:1485"
     ],
     "kind": [
       "message"
@@ -2433,17 +2880,17 @@
   },
   "Dopo quanto tempo senza toccare il controller.": {
     "where": [
-      "omega-ui-src/source/prefs.c:82"
+      "omega-ui-src/source/prefs.c:86"
     ]
   },
   "Dove compaiono messaggi, inviti e richieste.": {
     "where": [
-      "omega-ui-src/source/prefs.c:75"
+      "omega-ui-src/source/prefs.c:79"
     ]
   },
   "Dove lo installo?": {
     "where": [
-      "omega-ui-src/source/install.c:554"
+      "omega-ui-src/source/install.c:742"
     ],
     "kind": [
       "menu"
@@ -2452,18 +2899,18 @@
   },
   "Download interrotto a metà (connessione caduta): riprova": {
     "where": [
-      "omega-ui-src/source/install.c:256"
+      "omega-ui-src/source/install.c:290"
     ]
   },
   "Download non riuscito (%d)": {
     "where": [
-      "omega-ui-src/source/install.c:258"
+      "omega-ui-src/source/install.c:292"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Durata delle notifiche": {
     "where": [
-      "omega-ui-src/source/prefs.c:77"
+      "omega-ui-src/source/prefs.c:81"
     ]
   },
   "Ecco cosa è stato fatto:": {
@@ -2500,12 +2947,13 @@
       "omega-ui-src/source/account.c:223",
       "omega-ui-src/source/community.c:204",
       "omega-ui-src/source/community.c:211",
-      "omega-ui-src/source/home.c:1049",
+      "omega-ui-src/source/home.c:1274",
       "omega-ui-src/source/homelayout.c:203",
-      "omega-ui-src/source/store.c:1335",
-      "omega-ui-src/source/store.c:1345",
-      "omega-ui-src/source/system.c:529",
-      "omega-ui-src/source/system.c:591"
+      "omega-ui-src/source/pkgs.c:139",
+      "omega-ui-src/source/store.c:1522",
+      "omega-ui-src/source/store.c:1532",
+      "omega-ui-src/source/system.c:530",
+      "omega-ui-src/source/system.c:605"
     ],
     "kind": [
       "confirm"
@@ -2528,18 +2976,24 @@
   },
   "Elimina dalla console": {
     "where": [
-      "omega-ui-src/source/home.c:1145"
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1372"
+    ]
+  },
+  "Elimina il file": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:353"
     ]
   },
   "Eliminare %s dalla console? Il gioco verrà disinstallato.": {
     "where": [
-      "omega-ui-src/source/home.c:1048"
+      "omega-ui-src/source/home.c:1273"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Eliminare definitivamente questo elemento?": {
     "where": [
-      "omega-ui-src/source/system.c:529"
+      "omega-ui-src/source/system.c:530"
     ],
     "kind": [
       "confirm"
@@ -2557,7 +3011,7 @@
   },
   "Eliminare l'homebrew %s dalla console?": {
     "where": [
-      "omega-ui-src/source/home.c:1048"
+      "omega-ui-src/source/home.c:1273"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -2579,9 +3033,18 @@
     ],
     "hint": "confirmation dialog: up to 3 lines; the button text is separate"
   },
+  "Eliminare questo file .pkg dal disco?": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:139"
+    ],
+    "kind": [
+      "confirm"
+    ],
+    "hint": "confirmation dialog: up to 3 lines; the button text is separate"
+  },
   "Eliminare questo homebrew?": {
     "where": [
-      "omega-ui-src/source/store.c:1335"
+      "omega-ui-src/source/store.c:1522"
     ],
     "kind": [
       "confirm"
@@ -2591,7 +3054,7 @@
   "Eliminato": {
     "where": [
       "omega-ui-src/source/community.c:198",
-      "omega-ui-src/source/system.c:504"
+      "omega-ui-src/source/system.c:505"
     ],
     "kind": [
       "message"
@@ -2601,7 +3064,7 @@
   "Eliminazione non riuscita": {
     "where": [
       "omega-ui-src/source/account.c:140",
-      "omega-ui-src/source/system.c:504"
+      "omega-ui-src/source/system.c:505"
     ],
     "kind": [
       "message"
@@ -2610,7 +3073,7 @@
   },
   "Eliminazione non riuscita (0x%x)": {
     "where": [
-      "omega-ui-src/source/home.c:1012"
+      "omega-ui-src/source/home.c:1238"
     ],
     "kind": [
       "message"
@@ -2642,12 +3105,12 @@
   },
   "Emulatore": {
     "where": [
-      "omega-ui-src/source/store.c:681"
+      "omega-ui-src/source/store.c:738"
     ]
   },
   "Emulatori": {
     "where": [
-      "omega-ui-src/source/store.c:687"
+      "omega-ui-src/source/store.c:744"
     ]
   },
   "Entra con il tuo account Omega per ritrovare amici, party, messaggi e la tua libreria.": {
@@ -2657,7 +3120,7 @@
   },
   "Errore": {
     "where": [
-      "omega-ui-src/source/browser.c:174",
+      "omega-ui-src/source/browser.c:202",
       "omega-ui-src/source/music.c:741",
       "omega-onion-plugin-src/source/main.c:106"
     ],
@@ -2668,13 +3131,13 @@
   },
   "Errore nello script di avvio: %s": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:639"
+      "omega-ui-src/source/hblaunch.c:643"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Esci": {
     "where": [
-      "omega-ui-src/source/panels.c:1099"
+      "omega-ui-src/source/panels.c:1213"
     ],
     "kind": [
       "confirm"
@@ -2699,7 +3162,7 @@
   "Esci dall'account": {
     "where": [
       "omega-ui-src/source/panels.c:210",
-      "omega-ui-src/source/panels.c:1044"
+      "omega-ui-src/source/panels.c:1045"
     ],
     "kind": [
       "menu",
@@ -2710,12 +3173,17 @@
   },
   "Esci dallo Store": {
     "where": [
-      "omega-ui-src/source/store.c:1269"
+      "omega-ui-src/source/store.c:1456"
+    ]
+  },
+  "Esempio": {
+    "where": [
+      "omega-ui-src/source/store.c:1415"
     ]
   },
   "Esplora": {
     "where": [
-      "omega-ui-src/source/home.c:548"
+      "omega-ui-src/source/home.c:597"
     ],
     "kind": [
       "tab"
@@ -2734,15 +3202,20 @@
   },
   "Estrazione (%d file)": {
     "where": [
-      "omega-ui-src/source/install.c:158"
+      "omega-ui-src/source/install.c:180"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Estrazione dello zip non riuscita": {
     "where": [
-      "omega-ui-src/source/install.c:427",
-      "omega-ui-src/source/install.c:441",
-      "omega-ui-src/source/install.c:454"
+      "omega-ui-src/source/install.c:615",
+      "omega-ui-src/source/install.c:629",
+      "omega-ui-src/source/install.c:642"
+    ]
+  },
+  "Fatta a modo tuo": {
+    "where": [
+      "omega-ui-src/source/panels.c:1232"
     ]
   },
   "Fatto": {
@@ -2761,8 +3234,8 @@
     "where": [
       "omega-ui-src/source/music.c:451",
       "omega-ui-src/source/music.c:705",
-      "omega-ui-src/source/system.c:539",
-      "omega-ui-src/source/system.c:592"
+      "omega-ui-src/source/system.c:540",
+      "omega-ui-src/source/system.c:606"
     ],
     "kind": [
       "menu"
@@ -2775,6 +3248,15 @@
       "omega-ui-src/source/payload.c:120"
     ]
   },
+  "File eliminato": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:133"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "File troppo grande (massimo 96 MB)": {
     "where": [
       "omega-ui-src/source/gallery.c:137"
@@ -2784,6 +3266,12 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Finalizzazione": {
+    "where": [
+      "omega-ui-src/source/install.c:444",
+      "omega-ui-src/source/install.c:526"
+    ]
+  },
   "Firmware %s": {
     "where": [
       "omega-ui-src/source/system.c:262"
@@ -2792,12 +3280,12 @@
   },
   "Fluidità": {
     "where": [
-      "omega-ui-src/source/prefs.c:67"
+      "omega-ui-src/source/prefs.c:71"
     ]
   },
   "Formato dell'ora": {
     "where": [
-      "omega-ui-src/source/prefs.c:52"
+      "omega-ui-src/source/prefs.c:56"
     ]
   },
   "Forte": {
@@ -2817,7 +3305,7 @@
   },
   "Game Base": {
     "where": [
-      "omega-ui-src/source/home.c:976",
+      "omega-ui-src/source/home.c:1198",
       "omega-ui-src/source/panels.c:159",
       "omega-ui-src/source/panels.c:347"
     ],
@@ -2834,21 +3322,25 @@
   },
   "Gestore dei file": {
     "where": [
+      "omega-ui-src/source/homestyles.c:179",
+      "omega-ui-src/source/panels.c:1048",
       "omega-ui-src/source/system.c:276"
     ]
   },
   "Ghiaccio": {
     "where": [
-      "omega-ui-src/source/gfx.c:979",
+      "omega-ui-src/source/gfx.c:1038",
       "omega-ui-src/source/prefs.c:23"
     ]
   },
   "Gioca": {
     "where": [
-      "omega-ui-src/source/home.c:718",
-      "omega-ui-src/source/home.c:975",
-      "omega-ui-src/source/home.c:1145",
-      "omega-ui-src/source/homelayout.c:287"
+      "omega-ui-src/source/home.c:896",
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1197",
+      "omega-ui-src/source/home.c:1372",
+      "omega-ui-src/source/homelayout.c:287",
+      "omega-ui-src/source/homestyles.c:52"
     ],
     "kind": [
       "pill"
@@ -2883,14 +3375,20 @@
   },
   "Giochi": {
     "where": [
-      "omega-ui-src/source/home.c:548",
-      "omega-ui-src/source/store.c:687"
+      "omega-ui-src/source/home.c:597",
+      "omega-ui-src/source/homestyles.c:221",
+      "omega-ui-src/source/store.c:744"
     ],
     "kind": [
       "tab"
     ],
     "maxlen": 10,
     "hint": "tab label: keep it short"
+  },
+  "Giochi installati, homebrew, payload e giochi sui dischi esterni nella stessa fila, con cartelle, ordine e app nascoste.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1224"
+    ]
   },
   "Giochi più giocati": {
     "where": [
@@ -2899,35 +3397,60 @@
   },
   "Giochi sui dischi esterni": {
     "where": [
-      "omega-ui-src/source/prefs.c:45"
+      "omega-ui-src/source/prefs.c:47"
     ]
+  },
+  "Giochi: %s  (togli)": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:179"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Giochiamo a %s?": {
     "where": [
-      "omega-ui-src/source/home.c:1034"
+      "omega-ui-src/source/home.c:1259"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Gioco": {
     "where": [
-      "omega-ui-src/source/store.c:681",
-      "omega-ui-src/source/store.c:823"
+      "omega-ui-src/source/store.c:738",
+      "omega-ui-src/source/store.c:905"
     ]
   },
   "Gioco aggiornato": {
     "where": [
-      "omega-ui-src/source/store.c:619"
+      "omega-ui-src/source/store.c:676"
     ]
   },
   "Gioco aggiunto alla libreria": {
     "where": [
-      "omega-ui-src/source/store.c:619"
+      "omega-ui-src/source/store.c:676"
+    ]
+  },
+  "Gli homebrew partono molto più spesso: Omega non si chiude più da sola durante l'avvio, controlla websrv, sistema i permessi e ripara l'app di lancio rovinata.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:14"
     ]
   },
   "Grandi": {
     "where": [
-      "omega-ui-src/source/prefs.c:38"
+      "omega-ui-src/source/prefs.c:40"
     ]
+  },
+  "Gratis, aperta e nella tua lingua": {
+    "where": [
+      "omega-ui-src/source/panels.c:1233"
+    ]
+  },
+  "Grazie! Il messaggio è arrivato allo sviluppatore": {
+    "where": [
+      "omega-ui-src/source/panels.c:1122"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Grazie! Termini accettati": {
     "where": [
@@ -2942,7 +3465,7 @@
     "where": [
       "omega-ui-src/source/community.c:187",
       "omega-ui-src/source/social.c:656",
-      "omega-ui-src/source/store.c:1307"
+      "omega-ui-src/source/store.c:1494"
     ],
     "kind": [
       "message"
@@ -2951,12 +3474,18 @@
   },
   "Grazie: contenuto oscurato in attesa di verifica": {
     "where": [
-      "omega-ui-src/source/store.c:1307"
+      "omega-ui-src/source/store.c:1494"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Griglia": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:19",
+      "omega-ui-src/source/prefs.c:38"
+    ]
   },
   "Gruppi": {
     "where": [
@@ -3023,13 +3552,13 @@
   },
   "Hanno giocato di recente": {
     "where": [
-      "omega-ui-src/source/home.c:786",
-      "omega-ui-src/source/home.c:1157"
+      "omega-ui-src/source/home.c:964",
+      "omega-ui-src/source/home.c:1384"
     ]
   },
   "Hashtag (separati da spazio)": {
     "where": [
-      "omega-ui-src/source/store.c:1202"
+      "omega-ui-src/source/store.c:1343"
     ]
   },
   "Ho almeno 14 anni e accetto i Termini d'uso e l'Informativa sulla privacy": {
@@ -3043,7 +3572,7 @@
   },
   "Ho capito": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:65"
+      "omega-ui-src/source/whatsnew.c:66"
     ],
     "kind": [
       "hint"
@@ -3066,29 +3595,45 @@
       "omega-ui-src/source/custom.c:14"
     ]
   },
+  "Home e giochi": {
+    "where": [
+      "omega-ui-src/source/panels.c:1039"
+    ]
+  },
   "Homebrew": {
     "where": [
-      "omega-ui-src/source/home.c:708",
-      "omega-ui-src/source/store.c:773"
+      "omega-ui-src/source/home.c:886",
+      "omega-ui-src/source/homestyles.c:44",
+      "omega-ui-src/source/store.c:855"
     ]
   },
   "Homebrew aggiornato": {
     "where": [
-      "omega-ui-src/source/store.c:523"
+      "omega-ui-src/source/store.c:580"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Homebrew della community e La mia libreria, con voti, commenti e amici": {
+    "where": [
+      "omega-ui-src/source/home.c:882"
+    ]
+  },
   "Homebrew e payload in home": {
     "where": [
-      "omega-ui-src/source/prefs.c:43"
+      "omega-ui-src/source/prefs.c:45"
+    ]
+  },
+  "Homebrew pubblicati dagli utenti con voti, stelle, commenti, novità degli amici e liste dei desideri; e La mia libreria per i tuoi backup.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1228"
     ]
   },
   "Homebrew pubblicato": {
     "where": [
-      "omega-ui-src/source/store.c:523"
+      "omega-ui-src/source/store.c:580"
     ],
     "kind": [
       "message"
@@ -3097,7 +3642,7 @@
   },
   "Homebrew rimosso": {
     "where": [
-      "omega-ui-src/source/store.c:487"
+      "omega-ui-src/source/store.c:544"
     ],
     "kind": [
       "message"
@@ -3106,7 +3651,7 @@
   },
   "I backup dei giochi che possiedi, con copertina e link: li installi da qui con un tasto. Restano solo sulla tua console.": {
     "where": [
-      "omega-ui-src/source/store.c:917"
+      "omega-ui-src/source/store.c:1024"
     ],
     "kind": [
       "wrapped"
@@ -3120,18 +3665,23 @@
   },
   "I file del gioco non ci sono più: caricalo di nuovo dal telefono": {
     "where": [
-      "omega-ui-src/source/install.c:478",
-      "omega-ui-src/source/install.c:481"
+      "omega-ui-src/source/install.c:666",
+      "omega-ui-src/source/install.c:669"
     ]
   },
   "I giochi e le app installati compariranno qui.": {
     "where": [
-      "omega-ui-src/source/home.c:621"
+      "omega-ui-src/source/home.c:671"
+    ]
+  },
+  "I giochi montati da ShadowMount, i pkg installati e gli homebrew caricati compaiono in home senza riavviare Omega.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:18"
     ]
   },
   "I giochi trovati su HDD, SSD e chiavette collegati compaiono in home con l'icona del disco.": {
     "where": [
-      "omega-ui-src/source/prefs.c:45"
+      "omega-ui-src/source/prefs.c:47"
     ]
   },
   "I messaggi con i tuoi amici appariranno qui.": {
@@ -3146,7 +3696,12 @@
   },
   "I suggerimenti dei tasti in basso.": {
     "where": [
-      "omega-ui-src/source/prefs.c:49"
+      "omega-ui-src/source/prefs.c:53"
+    ]
+  },
+  "I trofei della console nel profilo e in classifica, il tempo di gioco della settimana e le maratone di tutti gli iscritti.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1229"
     ]
   },
   "I trofei ottenuti nei giochi si leggono da soli dalla console quando apri Omega. Con Quadrato li rileggi adesso.": {
@@ -3225,12 +3780,12 @@
   },
   "IN EVIDENZA": {
     "where": [
-      "omega-ui-src/source/store.c:870"
+      "omega-ui-src/source/store.c:971"
     ]
   },
   "Il JSON è troppo grande (massimo 8 MB)": {
     "where": [
-      "omega-ui-src/source/store.c:205"
+      "omega-ui-src/source/store.c:224"
     ],
     "kind": [
       "message"
@@ -3239,16 +3794,25 @@
   },
   "Il PIN abbina il telefono una volta sola. Con un nuovo PIN i telefoni già abbinati vanno abbinati di nuovo.": {
     "where": [
-      "omega-ui-src/source/remote.c:121"
+      "omega-ui-src/source/remote.c:124"
     ],
     "kind": [
       "wrapped"
     ],
     "hint": "wraps over several lines"
   },
+  "Il browser della PS5 non si è aperto (0x%08X)": {
+    "where": [
+      "omega-ui-src/source/browser.c:56"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen; printf format: keep exactly these specifiers in this order: X"
+  },
   "Il codice sorgente è su %s/source": {
     "where": [
-      "omega-ui-src/source/panels.c:1124"
+      "omega-ui-src/source/panels.c:1292"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -3259,7 +3823,7 @@
   },
   "Il file del link non è un JSON valido": {
     "where": [
-      "omega-ui-src/source/store.c:203"
+      "omega-ui-src/source/store.c:222"
     ],
     "kind": [
       "message"
@@ -3268,7 +3832,7 @@
   },
   "Il giorno accanto all'ora.": {
     "where": [
-      "omega-ui-src/source/prefs.c:56"
+      "omega-ui-src/source/prefs.c:60"
     ]
   },
   "Il lettore musicale non risponde": {
@@ -3282,13 +3846,13 @@
   },
   "Il link non funziona più (HTTP %d): aggiornalo nella libreria": {
     "where": [
-      "omega-ui-src/source/install.c:257"
+      "omega-ui-src/source/install.c:291"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Il link porta a una pagina web, non al file JSON: usa il link diretto al file": {
     "where": [
-      "omega-ui-src/source/store.c:202"
+      "omega-ui-src/source/store.c:221"
     ],
     "kind": [
       "message"
@@ -3297,17 +3861,17 @@
   },
   "Il link porta a una pagina web, non al file: serve il link diretto al pkg, zip o elf": {
     "where": [
-      "omega-ui-src/source/install.c:524"
+      "omega-ui-src/source/install.c:713"
     ]
   },
   "Il minimo lavoro per la console: utile se scalda o rallenta.": {
     "where": [
-      "omega-ui-src/source/prefs.c:145"
+      "omega-ui-src/source/prefs.c:149"
     ]
   },
   "Il mio profilo": {
     "where": [
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1045"
     ]
   },
   "Il mio stato: %s": {
@@ -3318,7 +3882,7 @@
   },
   "Il nome di ogni gioco sotto la sua icona, non solo di quello scelto.": {
     "where": [
-      "omega-ui-src/source/prefs.c:39"
+      "omega-ui-src/source/prefs.c:41"
     ]
   },
   "Il post non c'è più": {
@@ -3332,7 +3896,7 @@
   },
   "Il server che l'homebrew usa non risponde: controlla la rete (o l'indirizzo scritto nello script)": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:638"
+      "omega-ui-src/source/hblaunch.c:642"
     ]
   },
   "Il server musicale ha rifiutato la richiesta": {
@@ -3357,7 +3921,7 @@
   },
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": {
     "where": [
-      "omega-ui-src/source/store.c:589"
+      "omega-ui-src/source/store.c:646"
     ],
     "kind": [
       "message"
@@ -3386,12 +3950,17 @@
   },
   "Il sito non risponde (tempo scaduto).": {
     "where": [
-      "omega-ui-src/source/browser.c:170"
+      "omega-ui-src/source/browser.c:198"
     ]
   },
   "Il suono di spostamenti, scelte e notifiche.": {
     "where": [
-      "omega-ui-src/source/prefs.c:70"
+      "omega-ui-src/source/prefs.c:74"
+    ]
+  },
+  "Il telefono diventa un telecomando": {
+    "where": [
+      "omega-ui-src/source/panels.c:1230"
     ]
   },
   "Il tempo più lungo di un giocatore su un solo gioco": {
@@ -3424,7 +3993,7 @@
   },
   "Immagini": {
     "where": [
-      "omega-ui-src/source/store.c:1147"
+      "omega-ui-src/source/store.c:1288"
     ]
   },
   "Importa i trofei da questa console: no": {
@@ -3453,7 +4022,7 @@
   },
   "Impossibile aprire la pagina.": {
     "where": [
-      "omega-ui-src/source/browser.c:173"
+      "omega-ui-src/source/browser.c:201"
     ]
   },
   "Impossibile avviare il caricamento": {
@@ -3467,7 +4036,7 @@
   },
   "Impossibile avviare l'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:569"
+      "omega-ui-src/source/install.c:760"
     ],
     "kind": [
       "message"
@@ -3476,13 +4045,22 @@
   },
   "Impossibile creare la cartella": {
     "where": [
-      "omega-ui-src/source/system.c:524"
+      "omega-ui-src/source/system.c:525"
     ],
     "kind": [
       "message",
       "keyboard-title"
     ],
     "hint": "one-line message at the bottom of the screen; title of the system keyboard"
+  },
+  "Impossibile eliminare il file (disco in sola lettura?)": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:133"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Impossibile impostare la ventola su questa console": {
     "where": [
@@ -3491,7 +4069,7 @@
   },
   "Impossibile rinominare": {
     "where": [
-      "omega-ui-src/source/system.c:519"
+      "omega-ui-src/source/system.c:520"
     ],
     "kind": [
       "message"
@@ -3505,20 +4083,37 @@
   },
   "Impossibile salvare il payload": {
     "where": [
-      "omega-ui-src/source/install.c:360",
-      "omega-ui-src/source/install.c:372"
+      "omega-ui-src/source/install.c:548",
+      "omega-ui-src/source/install.c:560"
     ]
+  },
+  "Impossibile salvare la cartella": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:322"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Impostazioni": {
     "where": [
+      "omega-ui-src/source/homestyles.c:68",
+      "omega-ui-src/source/homestyles.c:175",
+      "omega-ui-src/source/homestyles.c:221",
       "omega-ui-src/source/panels.c:159",
-      "omega-ui-src/source/panels.c:1034"
+      "omega-ui-src/source/panels.c:1076"
     ],
     "kind": [
       "tile"
     ],
     "maxlen": 11,
     "hint": "Control Center tile, 186 px wide: about 11 characters max"
+  },
+  "Impostazioni divise in sezioni, e in Aiuto puoi segnalare un bug o chiedere una funzione allo sviluppatore.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:23"
+    ]
   },
   "Impostazioni non disponibili": {
     "where": [
@@ -3529,19 +4124,14 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
-  "Impostazioni › Privacy raccoglie tutte le scelte: chi ti scrive, cosa vedono gli altri, record, trofei, utenti bloccati e i tuoi dati.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:21"
-    ]
-  },
   "In alto a destra": {
     "where": [
-      "omega-ui-src/source/prefs.c:76"
+      "omega-ui-src/source/prefs.c:80"
     ]
   },
   "In alto a sinistra": {
     "where": [
-      "omega-ui-src/source/prefs.c:76"
+      "omega-ui-src/source/prefs.c:80"
     ]
   },
   "In ascolto": {
@@ -3557,7 +4147,7 @@
   },
   "In basso a destra": {
     "where": [
-      "omega-ui-src/source/prefs.c:76"
+      "omega-ui-src/source/prefs.c:80"
     ]
   },
   "In coda": {
@@ -3565,9 +4155,16 @@
       "omega-ui-src/source/music.c:805"
     ]
   },
+  "In coda: %s (%d in attesa)": {
+    "where": [
+      "omega-ui-src/source/install.c:769"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s d"
+  },
   "In corso": {
     "where": [
-      "omega-ui-src/source/install.c:598"
+      "omega-ui-src/source/install.c:811",
+      "omega-ui-src/source/install.c:883"
     ]
   },
   "In diretta": {
@@ -3620,12 +4217,12 @@
   },
   "Incolla qui": {
     "where": [
-      "omega-ui-src/source/system.c:562"
+      "omega-ui-src/source/system.c:563"
     ]
   },
   "Indietro": {
     "where": [
-      "omega-ui-src/source/browser.c:419",
+      "omega-ui-src/source/browser.c:472",
       "omega-ui-src/source/community.c:704",
       "omega-ui-src/source/community.c:705",
       "omega-ui-src/source/custom.c:124",
@@ -3637,13 +4234,15 @@
       "omega-ui-src/source/panels.c:584",
       "omega-ui-src/source/panels.c:897",
       "omega-ui-src/source/panels.c:963",
-      "omega-ui-src/source/panels.c:1071",
-      "omega-ui-src/source/panels.c:1129",
+      "omega-ui-src/source/panels.c:1114",
+      "omega-ui-src/source/panels.c:1297",
+      "omega-ui-src/source/pkgs.c:306",
       "omega-ui-src/source/records.c:292",
       "omega-ui-src/source/records.c:472",
-      "omega-ui-src/source/remote.c:123",
-      "omega-ui-src/source/store.c:1269",
-      "omega-ui-src/source/store.c:1274",
+      "omega-ui-src/source/remote.c:126",
+      "omega-ui-src/source/store.c:1444",
+      "omega-ui-src/source/store.c:1456",
+      "omega-ui-src/source/store.c:1461",
       "omega-ui-src/source/system.c:295"
     ],
     "kind": [
@@ -3654,7 +4253,7 @@
   },
   "Indirizzo": {
     "where": [
-      "omega-ui-src/source/browser.c:419"
+      "omega-ui-src/source/browser.c:472"
     ],
     "kind": [
       "hint"
@@ -3687,7 +4286,7 @@
   },
   "Indirizzo non trovato. Controlla di averlo scritto bene.": {
     "where": [
-      "omega-ui-src/source/browser.c:168"
+      "omega-ui-src/source/browser.c:196"
     ]
   },
   "Indirizzo non valido": {
@@ -3702,7 +4301,7 @@
   },
   "Indirizzo non valido.": {
     "where": [
-      "omega-ui-src/source/browser.c:172"
+      "omega-ui-src/source/browser.c:200"
     ]
   },
   "Informativa sulla privacy": {
@@ -3719,12 +4318,12 @@
   "Informazioni": {
     "where": [
       "omega-ui-src/source/panels.c:674",
-      "omega-ui-src/source/store.c:1139"
+      "omega-ui-src/source/store.c:1280"
     ]
   },
   "Informazioni aggiornate": {
     "where": [
-      "omega-ui-src/source/home.c:1038"
+      "omega-ui-src/source/home.c:1263"
     ],
     "kind": [
       "message"
@@ -3733,7 +4332,7 @@
   },
   "Informazioni su Omega": {
     "where": [
-      "omega-ui-src/source/panels.c:1044"
+      "omega-ui-src/source/panels.c:1049"
     ]
   },
   "Inquadra il codice con la fotocamera, oppure apri l'indirizzo qui a sinistra nel browser.": {
@@ -3752,7 +4351,27 @@
   },
   "Installa": {
     "where": [
-      "omega-ui-src/source/store.c:1103"
+      "omega-ui-src/source/pkgs.c:304",
+      "omega-ui-src/source/pkgs.c:353",
+      "omega-ui-src/source/store.c:1230"
+    ]
+  },
+  "Installa PKG": {
+    "where": [
+      "omega-ui-src/source/home.c:254",
+      "omega-ui-src/source/homestyles.c:188",
+      "omega-ui-src/source/panels.c:1047",
+      "omega-ui-src/source/pkgs.c:245"
+    ]
+  },
+  "Installa PKG e cartelle dei giochi": {
+    "where": [
+      "omega-ui-src/source/system.c:276"
+    ]
+  },
+  "Installa PKG: i .pkg di chiavette, dischi e cartelle a scelta, con l'icona del gioco e la barra che avanza nella home, come sulla PS4. Errori chiari e coda di installazione.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:16"
     ]
   },
   "Installa e attiva": {
@@ -3760,65 +4379,109 @@
       "omega-ui-src/source/hen.c:385"
     ]
   },
+  "Installa i .pkg da chiavette, dischi USB e cartelle a scelta": {
+    "where": [
+      "omega-ui-src/source/home.c:884"
+    ]
+  },
+  "Installa tutti": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:305",
+      "omega-ui-src/source/pkgs.c:351"
+    ],
+    "kind": [
+      "confirm"
+    ],
+    "hint": "confirmation dialog: up to 3 lines; the button text is separate"
+  },
   "Installare il servizio di Omega (musica, notifiche, telecomando) in %s": {
     "where": [
       "omega-ui-src/source/hen.c:242"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "Installare tutti i pacchetti di questa posizione non ancora installati? Vanno in coda, uno alla volta.": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:351"
+    ],
+    "kind": [
+      "confirm"
+    ],
+    "hint": "confirmation dialog: up to 3 lines; the button text is separate"
+  },
   "Installato": {
     "where": [
-      "omega-ui-src/source/home.c:710"
+      "omega-ui-src/source/home.c:888",
+      "omega-ui-src/source/pkgs.c:297"
+    ]
+  },
+  "Installato: lo trovi nella Home": {
+    "where": [
+      "omega-ui-src/source/install.c:521"
     ]
   },
   "Installato: ora è nella tua Home": {
     "where": [
-      "omega-ui-src/source/install.c:578"
+      "omega-ui-src/source/install.c:791"
     ],
     "kind": [
       "toast"
     ],
     "hint": "notification popup: one line, truncated with …"
   },
+  "Installatore di sistema non disponibile: riavvia Omega. Ripiego: installa il pkg con ItemzFlow.": {
+    "where": [
+      "omega-ui-src/source/install.c:466"
+    ]
+  },
   "Installazione": {
     "where": [
-      "omega-ui-src/source/install.c:329",
-      "omega-ui-src/source/install.c:564"
+      "omega-ui-src/source/install.c:421",
+      "omega-ui-src/source/install.c:526",
+      "omega-ui-src/source/install.c:752",
+      "omega-ui-src/source/install.c:769"
     ]
   },
   "Installazione annullata": {
     "where": [
-      "omega-ui-src/source/install.c:247",
-      "omega-ui-src/source/install.c:255",
-      "omega-ui-src/source/install.c:485",
-      "omega-ui-src/source/install.c:500"
+      "omega-ui-src/source/install.c:281",
+      "omega-ui-src/source/install.c:289",
+      "omega-ui-src/source/install.c:673",
+      "omega-ui-src/source/install.c:688"
     ]
   },
-  "Installazione avviata: comparirà nella Home della console": {
+  "Installazione non riuscita (0x%08X)": {
     "where": [
-      "omega-ui-src/source/install.c:336"
-    ]
+      "omega-ui-src/source/install.c:440"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: X"
   },
   "Installazione non riuscita: %s (0x%08X)": {
     "where": [
-      "omega-ui-src/source/install.c:280"
+      "omega-ui-src/source/install.c:314",
+      "omega-ui-src/source/install.c:439"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s X"
   },
   "Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow.": {
     "where": [
-      "omega-ui-src/source/install.c:281"
+      "omega-ui-src/source/install.c:315"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
   "Installazioni": {
     "where": [
-      "omega-ui-src/source/store.c:1134"
+      "omega-ui-src/source/store.c:1275"
+    ]
+  },
+  "Installi i PKG con un tasto": {
+    "where": [
+      "omega-ui-src/source/panels.c:1226"
     ]
   },
   "Invia": {
     "where": [
-      "omega-ui-src/source/system.c:353"
+      "omega-ui-src/source/system.c:354"
     ],
     "kind": [
       "confirm"
@@ -3864,6 +4527,33 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Invio non riuscito": {
+    "where": [
+      "omega-ui-src/source/store.c:473"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
+  "Invio non riuscito: controlla la rete": {
+    "where": [
+      "omega-ui-src/source/panels.c:1122"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
+  "Invio...": {
+    "where": [
+      "omega-ui-src/source/panels.c:1148"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Invisibile (appari offline)": {
     "where": [
       "omega-ui-src/source/social.c:633"
@@ -3895,7 +4585,8 @@
   },
   "Invita un amico a giocare": {
     "where": [
-      "omega-ui-src/source/home.c:1145"
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1372"
     ]
   },
   "Invitato · in attesa": {
@@ -3911,7 +4602,7 @@
   },
   "Invito a giocare inviato al party": {
     "where": [
-      "omega-ui-src/source/home.c:1035"
+      "omega-ui-src/source/home.c:1260"
     ],
     "kind": [
       "message"
@@ -3971,17 +4662,17 @@
   },
   "Istantanee": {
     "where": [
-      "omega-ui-src/source/prefs.c:66"
+      "omega-ui-src/source/prefs.c:70"
     ]
   },
   "JSON collegato: sincronizzo, i giochi compaiono tra poco": {
     "where": [
-      "omega-ui-src/source/store.c:598"
+      "omega-ui-src/source/store.c:655"
     ]
   },
   "JSON scollegato: restano i giochi aggiunti a mano": {
     "where": [
-      "omega-ui-src/source/store.c:602"
+      "omega-ui-src/source/store.c:659"
     ]
   },
   "Jailbreak rilevato: %s": {
@@ -3996,6 +4687,15 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "L'homebrew non è partito: websrv ha risposto ma non ha chiuso Omega. Prova ad aprirlo dalla Home di sistema o rimanda websrv.": {
+    "where": [
+      "omega-ui-src/source/home.c:357"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "L'importazione dei trofei è spenta: accendila in Impostazioni › Privacy": {
     "where": [
       "omega-ui-src/source/records.c:249",
@@ -4005,6 +4705,11 @@
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "L'installazione continua in background: la trovi nella Home della console": {
+    "where": [
+      "omega-ui-src/source/install.c:449"
+    ]
   },
   "L'invito non è più valido": {
     "where": [
@@ -4017,7 +4722,7 @@
   },
   "L'orologio in alto a destra.": {
     "where": [
-      "omega-ui-src/source/prefs.c:52"
+      "omega-ui-src/source/prefs.c:56"
     ]
   },
   "L'utente ha scelto di non mostrarli.": {
@@ -4025,19 +4730,19 @@
       "omega-ui-src/source/records.c:409"
     ]
   },
+  "L1  Esplora": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:54"
+    ]
+  },
   "L1/R1  Schede": {
     "where": [
-      "omega-ui-src/source/store.c:1271"
+      "omega-ui-src/source/store.c:1458"
     ]
   },
   "L2/R2  Volume": {
     "where": [
       "omega-ui-src/source/music.c:851"
-    ]
-  },
-  "La Community ora è in home, prima dei giochi: bacheca, gruppi, persone e tempo di gioco a un tasto di distanza.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:17"
     ]
   },
   "La bacheca è vuota": {
@@ -4057,13 +4762,13 @@
   },
   "La console non ha accettato il gioco (0x%08X): serve kstuff attivo per i giochi su disco": {
     "where": [
-      "omega-ui-src/source/drives.c:270"
+      "omega-ui-src/source/drives.c:370"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
   "La custodisce il servizio di Omega, che non risponde: aggiorna Omega o riavvia la console.": {
     "where": [
-      "omega-ui-src/source/store.c:913"
+      "omega-ui-src/source/store.c:1020"
     ],
     "kind": [
       "wrapped"
@@ -4077,17 +4782,17 @@
   },
   "La libreria è sulla console": {
     "where": [
-      "omega-ui-src/source/store.c:912"
+      "omega-ui-src/source/store.c:1019"
     ]
   },
   "La mia libreria": {
     "where": [
-      "omega-ui-src/source/store.c:916"
+      "omega-ui-src/source/store.c:1023"
     ]
   },
   "La musica generata della home, quando non ascolti altro.": {
     "where": [
-      "omega-ui-src/source/prefs.c:72"
+      "omega-ui-src/source/prefs.c:76"
     ]
   },
   "La pagina si aggiorna quando la riapri": {
@@ -4110,22 +4815,32 @@
   },
   "La temperatura del processore accanto all'ora.": {
     "where": [
-      "omega-ui-src/source/prefs.c:58"
+      "omega-ui-src/source/prefs.c:62"
     ]
   },
   "La tua bio": {
     "where": [
       "omega-ui-src/source/panels.c:754",
-      "omega-ui-src/source/panels.c:1084"
+      "omega-ui-src/source/panels.c:1190"
     ],
     "kind": [
       "keyboard-title"
     ],
     "hint": "title of the system keyboard"
   },
+  "La tua libreria": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:369"
+    ]
+  },
   "La tua libreria è vuota": {
     "where": [
-      "omega-ui-src/source/store.c:900"
+      "omega-ui-src/source/store.c:1007"
+    ]
+  },
+  "La tua lista dei desideri": {
+    "where": [
+      "omega-ui-src/source/store.c:760"
     ]
   },
   "La tua posizione: %d su %d": {
@@ -4151,17 +4866,17 @@
   },
   "Le icone dei giochi nella fila della home.": {
     "where": [
-      "omega-ui-src/source/prefs.c:37"
+      "omega-ui-src/source/prefs.c:39"
     ]
   },
   "Le luci che salgono piano dietro la home.": {
     "where": [
-      "omega-ui-src/source/prefs.c:61"
+      "omega-ui-src/source/prefs.c:65"
     ]
   },
   "Le mie": {
     "where": [
-      "omega-ui-src/source/store.c:718"
+      "omega-ui-src/source/store.c:795"
     ]
   },
   "Le password non coincidono": {
@@ -4185,7 +4900,7 @@
   },
   "Le schede con amici che giocano, notizie e attività.": {
     "where": [
-      "omega-ui-src/source/prefs.c:47"
+      "omega-ui-src/source/prefs.c:51"
     ]
   },
   "Leader": {
@@ -4200,7 +4915,7 @@
   },
   "Leggi l'articolo completo su:": {
     "where": [
-      "omega-ui-src/source/panels.c:1153"
+      "omega-ui-src/source/panels.c:1321"
     ]
   },
   "Leggi prima di accettare": {
@@ -4224,6 +4939,7 @@
   },
   "Lettore musicale": {
     "where": [
+      "omega-ui-src/source/homestyles.c:183",
       "omega-ui-src/source/system.c:132"
     ]
   },
@@ -4240,12 +4956,12 @@
     "where": [
       "omega-ui-src/source/music.c:289",
       "omega-ui-src/source/music.c:705",
-      "omega-ui-src/source/store.c:773"
+      "omega-ui-src/source/store.c:855"
     ]
   },
   "Licenza": {
     "where": [
-      "omega-ui-src/source/store.c:1134"
+      "omega-ui-src/source/store.c:1275"
     ]
   },
   "Licenze open source": {
@@ -4257,7 +4973,7 @@
   "Lingua": {
     "where": [
       "omega-ui-src/source/panels.c:1024",
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1046"
     ],
     "kind": [
       "menu"
@@ -4266,12 +4982,12 @@
   },
   "Link al file (pkg o zip)": {
     "where": [
-      "omega-ui-src/source/store.c:1196"
+      "omega-ui-src/source/store.c:1337"
     ]
   },
   "Link al tuo JSON di giochi (solo backup di giochi che possiedi)": {
     "where": [
-      "omega-ui-src/source/store.c:595"
+      "omega-ui-src/source/store.c:652"
     ],
     "kind": [
       "keyboard-title"
@@ -4280,7 +4996,7 @@
   },
   "Link della copertina (facoltativo)": {
     "where": [
-      "omega-ui-src/source/store.c:612"
+      "omega-ui-src/source/store.c:669"
     ],
     "kind": [
       "keyboard-title"
@@ -4289,7 +5005,7 @@
   },
   "Link di download mancante": {
     "where": [
-      "omega-ui-src/source/install.c:547"
+      "omega-ui-src/source/install.c:735"
     ],
     "kind": [
       "message"
@@ -4298,7 +5014,7 @@
   },
   "Link non funzionante": {
     "where": [
-      "omega-ui-src/source/store.c:1323"
+      "omega-ui-src/source/store.c:1510"
     ],
     "kind": [
       "menu"
@@ -4307,7 +5023,7 @@
   },
   "Link non risolvibile": {
     "where": [
-      "omega-ui-src/source/store.c:451"
+      "omega-ui-src/source/store.c:508"
     ],
     "kind": [
       "message"
@@ -4316,7 +5032,7 @@
   },
   "Link per scaricarlo (pkg, zip o elf)": {
     "where": [
-      "omega-ui-src/source/store.c:611"
+      "omega-ui-src/source/store.c:668"
     ],
     "kind": [
       "keyboard-title"
@@ -4325,56 +5041,61 @@
   },
   "Link sincronizzato: %d giochi": {
     "where": [
-      "omega-ui-src/source/store.c:200"
+      "omega-ui-src/source/store.c:219"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Link sincronizzato: %d giochi (%d voci senza titolo o link saltate)": {
     "where": [
-      "omega-ui-src/source/store.c:199"
+      "omega-ui-src/source/store.c:218"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d d"
   },
   "Lo script di avvio di questo homebrew non funziona: %.150s": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:596"
+      "omega-ui-src/source/hblaunch.c:600"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "Lo script di avvio non ha risposto": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:622"
+      "omega-ui-src/source/hblaunch.c:626"
     ]
   },
   "Lo script di avvio non ha risposto in tempo": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:645"
+      "omega-ui-src/source/hblaunch.c:649"
     ]
   },
   "Lo zip è vuoto o danneggiato": {
     "where": [
-      "omega-ui-src/source/install.c:409"
+      "omega-ui-src/source/install.c:597"
     ]
   },
   "Lucciole": {
     "where": [
-      "omega-ui-src/source/prefs.c:64"
+      "omega-ui-src/source/prefs.c:68"
     ]
   },
   "Luci": {
     "where": [
-      "omega-ui-src/source/prefs.c:64"
+      "omega-ui-src/source/prefs.c:68"
+    ]
+  },
+  "MODALITÀ LETTURA": {
+    "where": [
+      "omega-ui-src/source/browser.c:474"
     ]
   },
   "Mai": {
     "where": [
-      "omega-ui-src/source/prefs.c:50",
-      "omega-ui-src/source/prefs.c:83"
+      "omega-ui-src/source/prefs.c:54",
+      "omega-ui-src/source/prefs.c:87"
     ]
   },
   "Malware o file pericoloso": {
     "where": [
-      "omega-ui-src/source/store.c:1323"
+      "omega-ui-src/source/store.c:1510"
     ],
     "kind": [
       "menu"
@@ -4383,7 +5104,7 @@
   },
   "Mandare allo sviluppatore i registri di Omega? Contengono i nomi di giochi, brani e radio usati, non le password.": {
     "where": [
-      "omega-ui-src/source/system.c:353"
+      "omega-ui-src/source/system.c:354"
     ],
     "kind": [
       "confirm"
@@ -4397,7 +5118,7 @@
   },
   "Medie": {
     "where": [
-      "omega-ui-src/source/prefs.c:38"
+      "omega-ui-src/source/prefs.c:40"
     ]
   },
   "Medio": {
@@ -4423,12 +5144,12 @@
   },
   "Memoria della console": {
     "where": [
-      "omega-ui-src/source/install.c:552"
+      "omega-ui-src/source/install.c:740"
     ]
   },
   "Memoria insufficiente": {
     "where": [
-      "omega-ui-src/source/install.c:562"
+      "omega-ui-src/source/install.c:750"
     ],
     "kind": [
       "message"
@@ -4437,13 +5158,24 @@
   },
   "Memoria insufficiente per lo script": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:432",
-      "omega-ui-src/source/hblaunch.c:439"
+      "omega-ui-src/source/hblaunch.c:434",
+      "omega-ui-src/source/hblaunch.c:441"
+    ]
+  },
+  "Memoria interna": {
+    "where": [
+      "omega-ui-src/source/drives.c:219",
+      "omega-ui-src/source/drives.c:225"
+    ]
+  },
+  "Memoria interna (/data/pkg)": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:41"
     ]
   },
   "Menu": {
     "where": [
-      "omega-ui-src/source/browser.c:419"
+      "omega-ui-src/source/browser.c:472"
     ],
     "kind": [
       "hint"
@@ -4502,9 +5234,19 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "Metti i file .pkg nella radice del disco o in una cartella qualsiasi (fino a 3 livelli sotto), oppure mandali dal telefono o dal PC con il Telecomando.": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:274"
+    ]
+  },
+  "Metti il JSON online (link diretto al file) e usa Collega un JSON qui sopra: resta sincronizzato e si aggiorna da solo.": {
+    "where": [
+      "omega-ui-src/source/store.c:1392"
+    ]
+  },
   "Mezzanotte": {
     "where": [
-      "omega-ui-src/source/gfx.c:980",
+      "omega-ui-src/source/gfx.c:1039",
       "omega-ui-src/source/prefs.c:23"
     ]
   },
@@ -4552,7 +5294,7 @@
   },
   "Minimal": {
     "where": [
-      "omega-ui-src/source/prefs.c:135"
+      "omega-ui-src/source/prefs.c:139"
     ]
   },
   "Mix casuale": {
@@ -4560,16 +5302,36 @@
       "omega-ui-src/source/music.c:307"
     ]
   },
+  "Modalità del menu": {
+    "where": [
+      "omega-ui-src/source/panels.c:1046",
+      "omega-ui-src/source/panels.c:1197",
+      "omega-ui-src/source/prefs.c:37"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
+  "Modalità lettura: solo il testo e le immagini dell'articolo": {
+    "where": [
+      "omega-ui-src/source/browser.c:565"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Modifica": {
     "where": [
-      "omega-ui-src/source/store.c:1345",
-      "omega-ui-src/source/store.c:1347"
+      "omega-ui-src/source/store.c:1532",
+      "omega-ui-src/source/store.c:1534"
     ]
   },
   "Modifica bio": {
     "where": [
       "omega-ui-src/source/panels.c:620",
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1045"
     ],
     "kind": [
       "pill"
@@ -4579,12 +5341,12 @@
   },
   "Modifica campo": {
     "where": [
-      "omega-ui-src/source/store.c:1278"
+      "omega-ui-src/source/store.c:1465"
     ]
   },
   "Modifica homebrew": {
     "where": [
-      "omega-ui-src/source/store.c:1211"
+      "omega-ui-src/source/store.c:1352"
     ]
   },
   "Molestie": {
@@ -4602,9 +5364,38 @@
       "omega-ui-src/source/prefs.c:33"
     ]
   },
+  "Montaggio automatico": {
+    "where": [
+      "omega-ui-src/source/panels.c:1047",
+      "omega-ui-src/source/prefs.c:49"
+    ]
+  },
+  "Montaggio automatico attivo: i giochi dei dischi si registrano da soli": {
+    "where": [
+      "omega-ui-src/source/panels.c:1170"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
+  "Montaggio automatico come ShadowMount, dentro Omega: colleghi un disco e i giochi compaiono da soli. Scegli tu le cartelle dei giochi e dei PKG.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:17"
+    ]
+  },
+  "Montaggio automatico spento": {
+    "where": [
+      "omega-ui-src/source/panels.c:1170"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Morbidi": {
     "where": [
-      "omega-ui-src/source/prefs.c:71"
+      "omega-ui-src/source/prefs.c:75"
     ]
   },
   "Mostra agli amici cosa gioco e il mio tempo: no": {
@@ -4619,12 +5410,17 @@
   },
   "Mostra anche gli homebrew e i payload accanto ai giochi.": {
     "where": [
-      "omega-ui-src/source/prefs.c:43"
+      "omega-ui-src/source/prefs.c:45"
     ]
   },
   "Mostra anche i secondi.": {
     "where": [
-      "omega-ui-src/source/prefs.c:54"
+      "omega-ui-src/source/prefs.c:58"
+    ]
+  },
+  "Mostra la pagina completa": {
+    "where": [
+      "omega-ui-src/source/browser.c:579"
     ]
   },
   "Movimento": {
@@ -4634,6 +5430,8 @@
   },
   "Musica": {
     "where": [
+      "omega-ui-src/source/homestyles.c:68",
+      "omega-ui-src/source/homestyles.c:221",
       "omega-ui-src/source/music.c:704",
       "omega-ui-src/source/panels.c:159",
       "omega-onion-plugin-src/source/main.c:161"
@@ -4653,7 +5451,7 @@
   },
   "Musica di sottofondo": {
     "where": [
-      "omega-ui-src/source/prefs.c:72"
+      "omega-ui-src/source/prefs.c:76"
     ]
   },
   "Musica di sottofondo: attiva": {
@@ -4664,6 +5462,11 @@
   "Musica di sottofondo: spenta": {
     "where": [
       "omega-ui-src/source/panels.c:994"
+    ]
+  },
+  "Musica e radio": {
+    "where": [
+      "omega-ui-src/source/panels.c:1231"
     ]
   },
   "Musica e telecomando usano già la nuova versione": {
@@ -4689,9 +5492,15 @@
     ],
     "hint": "PS5 system notification"
   },
+  "Musica, caricamento dei giochi dal PC, libreria e JSON, temperatura della console: tutto dal browser del telefono, con un PIN.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1230"
+    ]
+  },
   "Nascondi dalla home": {
     "where": [
-      "omega-ui-src/source/home.c:1145",
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1372",
       "omega-ui-src/source/homelayout.c:313"
     ],
     "kind": [
@@ -4701,7 +5510,7 @@
   },
   "Nascoste": {
     "where": [
-      "omega-ui-src/source/prefs.c:80"
+      "omega-ui-src/source/prefs.c:84"
     ]
   },
   "Navidrome, Gonic, Airsonic o altri compatibili Subsonic": {
@@ -4709,14 +5518,28 @@
       "omega-ui-src/source/music.c:295"
     ]
   },
-  "Nei profili ora si vedono i trofei: i tuoi dal tasto Trofei, quelli degli altri se scelgono di mostrarli.": {
+  "Naviga il web dalla console: segnalibri, cronologia e lettura comoda": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:20"
+      "omega-ui-src/source/home.c:883"
     ]
   },
   "Nel JSON non ci sono giochi: servono almeno titolo e link": {
     "where": [
-      "omega-ui-src/source/store.c:204"
+      "omega-ui-src/source/store.c:223"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
+  "Nella lista dei desideri": {
+    "where": [
+      "omega-ui-src/source/store.c:1239"
+    ]
+  },
+  "Nella tua lista dei desideri: ti avviso quando esce una versione nuova": {
+    "where": [
+      "omega-ui-src/source/store.c:459"
     ],
     "kind": [
       "message"
@@ -4725,9 +5548,9 @@
   },
   "Neon": {
     "where": [
-      "omega-ui-src/source/gfx.c:975",
+      "omega-ui-src/source/gfx.c:1034",
       "omega-ui-src/source/prefs.c:23",
-      "omega-ui-src/source/prefs.c:137"
+      "omega-ui-src/source/prefs.c:141"
     ]
   },
   "Nero puro": {
@@ -4737,17 +5560,22 @@
   },
   "Nero puro, niente distrazioni, salvaschermo con le copertine.": {
     "where": [
-      "omega-ui-src/source/prefs.c:143"
+      "omega-ui-src/source/prefs.c:147"
+    ]
+  },
+  "Nessun .pkg qui": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:273"
     ]
   },
   "Nessun amico ancora: apri la Game Base per aggiungerne.": {
     "where": [
-      "omega-ui-src/source/home.c:896"
+      "omega-ui-src/source/home.c:1074"
     ]
   },
   "Nessun amico ci ha ancora giocato": {
     "where": [
-      "omega-ui-src/source/home.c:738"
+      "omega-ui-src/source/home.c:916"
     ]
   },
   "Nessun amico da invitare": {
@@ -4761,7 +5589,7 @@
   },
   "Nessun amico da mostrare": {
     "where": [
-      "omega-ui-src/source/home.c:1084"
+      "omega-ui-src/source/home.c:1310"
     ],
     "kind": [
       "message"
@@ -4770,7 +5598,7 @@
   },
   "Nessun amico sta giocando ora": {
     "where": [
-      "omega-ui-src/source/home.c:738"
+      "omega-ui-src/source/home.c:916"
     ]
   },
   "Nessun archivio leggibile": {
@@ -4794,7 +5622,7 @@
   },
   "Nessun contenuto da avviare (mancano i file, es. ROM o dati del gioco?)": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:640"
+      "omega-ui-src/source/hblaunch.c:644"
     ]
   },
   "Nessun dato ancora": {
@@ -4814,7 +5642,7 @@
   },
   "Nessun file scelto: l'homebrew non ha indicato cosa avviare": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:644"
+      "omega-ui-src/source/hblaunch.c:648"
     ]
   },
   "Nessun gioco ancora": {
@@ -4824,7 +5652,8 @@
   },
   "Nessun gioco installato": {
     "where": [
-      "omega-ui-src/source/home.c:620"
+      "omega-ui-src/source/home.c:670",
+      "omega-ui-src/source/homestyles.c:61"
     ]
   },
   "Nessun invito": {
@@ -4854,17 +5683,22 @@
   },
   "Nessun risultato": {
     "where": [
-      "omega-ui-src/source/store.c:900"
+      "omega-ui-src/source/store.c:1007"
     ]
   },
   "Nessun segnalibro": {
     "where": [
-      "omega-ui-src/source/browser.c:496"
+      "omega-ui-src/source/browser.c:550"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Nessun segnalibro: aprendo una pagina, □ › Aggiungi ai segnalibri.": {
+    "where": [
+      "omega-ui-src/source/browser.c:363"
+    ]
   },
   "Nessun suggerimento": {
     "where": [
@@ -4878,7 +5712,7 @@
   },
   "Nessun suono": {
     "where": [
-      "omega-ui-src/source/prefs.c:71"
+      "omega-ui-src/source/prefs.c:75"
     ]
   },
   "Nessun trofeo ancora": {
@@ -4898,7 +5732,7 @@
   },
   "Nessuna": {
     "where": [
-      "omega-ui-src/source/prefs.c:62"
+      "omega-ui-src/source/prefs.c:66"
     ]
   },
   "Nessuna app nascosta: le nascondi dalle opzioni di un gioco in home": {
@@ -4917,7 +5751,7 @@
   },
   "Nessuna attività recente": {
     "where": [
-      "omega-ui-src/source/home.c:808"
+      "omega-ui-src/source/home.c:986"
     ]
   },
   "Nessuna bio.": {
@@ -4946,7 +5780,7 @@
   },
   "Nessuna opzione disponibile": {
     "where": [
-      "omega-ui-src/source/store.c:1348"
+      "omega-ui-src/source/store.c:1535"
     ],
     "kind": [
       "message"
@@ -4968,6 +5802,11 @@
       "omega-ui-src/source/panels.c:247"
     ]
   },
+  "Nessuna sottocartella": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:231"
+    ]
+  },
   "Nessuna stazione trovata": {
     "where": [
       "omega-ui-src/source/music.c:244"
@@ -4986,12 +5825,12 @@
   },
   "Neve": {
     "where": [
-      "omega-ui-src/source/prefs.c:64"
+      "omega-ui-src/source/prefs.c:68"
     ]
   },
   "Niente": {
     "where": [
-      "omega-ui-src/source/prefs.c:48"
+      "omega-ui-src/source/prefs.c:52"
     ]
   },
   "Niente da mostrare qui": {
@@ -5011,19 +5850,20 @@
   },
   "Niente particelle, pannelli pieni, angoli squadrati, nomi sotto le icone.": {
     "where": [
-      "omega-ui-src/source/prefs.c:135"
+      "omega-ui-src/source/prefs.c:139"
     ]
   },
   "No": {
     "where": [
-      "omega-ui-src/source/prefs.c:40",
-      "omega-ui-src/source/prefs.c:44",
+      "omega-ui-src/source/prefs.c:42",
       "omega-ui-src/source/prefs.c:46",
-      "omega-ui-src/source/prefs.c:55",
-      "omega-ui-src/source/prefs.c:57",
+      "omega-ui-src/source/prefs.c:48",
+      "omega-ui-src/source/prefs.c:50",
       "omega-ui-src/source/prefs.c:59",
-      "omega-ui-src/source/prefs.c:80",
-      "omega-ui-src/source/prefs.c:88"
+      "omega-ui-src/source/prefs.c:61",
+      "omega-ui-src/source/prefs.c:63",
+      "omega-ui-src/source/prefs.c:84",
+      "omega-ui-src/source/prefs.c:92"
     ]
   },
   "No, solo come app": {
@@ -5031,9 +5871,18 @@
       "omega-ui-src/source/hen.c:341"
     ]
   },
+  "No, solo il testo": {
+    "where": [
+      "omega-ui-src/source/panels.c:1154"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
   "Nome (A-Z)": {
     "where": [
-      "omega-ui-src/source/prefs.c:42"
+      "omega-ui-src/source/prefs.c:44"
     ]
   },
   "Nome del gruppo": {
@@ -5066,7 +5915,7 @@
   "Nome della cartella": {
     "where": [
       "omega-ui-src/source/homelayout.c:199",
-      "omega-ui-src/source/system.c:524"
+      "omega-ui-src/source/system.c:525"
     ],
     "kind": [
       "message",
@@ -5095,7 +5944,7 @@
   },
   "Nomi sotto le icone": {
     "where": [
-      "omega-ui-src/source/prefs.c:39"
+      "omega-ui-src/source/prefs.c:41"
     ]
   },
   "Non chiedere più": {
@@ -5111,7 +5960,7 @@
   "Non disturbare": {
     "where": [
       "omega-ui-src/source/panels.c:40",
-      "omega-ui-src/source/prefs.c:79"
+      "omega-ui-src/source/prefs.c:83"
     ]
   },
   "Non disturbare (niente avvisi)": {
@@ -5121,7 +5970,7 @@
   },
   "Non hai ancora pubblicato nulla": {
     "where": [
-      "omega-ui-src/source/store.c:900"
+      "omega-ui-src/source/store.c:1007"
     ]
   },
   "Non hai bloccato nessuno": {
@@ -5135,7 +5984,7 @@
   },
   "Non installato": {
     "where": [
-      "omega-ui-src/source/store.c:1286"
+      "omega-ui-src/source/store.c:1473"
     ],
     "kind": [
       "message"
@@ -5181,7 +6030,7 @@
   },
   "Non puoi segnalare un tuo contenuto": {
     "where": [
-      "omega-ui-src/source/store.c:1308"
+      "omega-ui-src/source/store.c:1495"
     ],
     "kind": [
       "message"
@@ -5190,13 +6039,13 @@
   },
   "Non riesco a collegare il gioco dal disco (errore %d)": {
     "where": [
-      "omega-ui-src/source/drives.c:258"
+      "omega-ui-src/source/drives.c:358"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Non riesco a scaricare il link: controlla l'indirizzo e la rete": {
     "where": [
-      "omega-ui-src/source/store.c:206"
+      "omega-ui-src/source/store.c:225"
     ],
     "kind": [
       "message"
@@ -5205,7 +6054,7 @@
   },
   "Non sei in un party: creane uno dalla Game Base": {
     "where": [
-      "omega-ui-src/source/home.c:1033"
+      "omega-ui-src/source/home.c:1258"
     ],
     "kind": [
       "message"
@@ -5220,14 +6069,16 @@
   "Normali": {
     "where": [
       "omega-ui-src/source/prefs.c:31",
-      "omega-ui-src/source/prefs.c:62",
-      "omega-ui-src/source/prefs.c:66"
+      "omega-ui-src/source/prefs.c:66",
+      "omega-ui-src/source/prefs.c:70"
     ]
   },
   "Notifiche": {
     "where": [
       "omega-ui-src/source/custom.c:15",
-      "omega-ui-src/source/home.c:977",
+      "omega-ui-src/source/home.c:1199",
+      "omega-ui-src/source/homestyles.c:67",
+      "omega-ui-src/source/homestyles.c:192",
       "omega-ui-src/source/panels.c:159",
       "omega-ui-src/source/panels.c:548"
     ],
@@ -5239,28 +6090,28 @@
   },
   "Notizie dal mondo dei videogiochi": {
     "where": [
-      "omega-ui-src/source/home.c:847"
+      "omega-ui-src/source/home.c:1025"
     ]
   },
   "Notte": {
     "where": [
-      "omega-ui-src/source/gfx.c:970",
+      "omega-ui-src/source/gfx.c:1029",
       "omega-ui-src/source/prefs.c:22"
     ]
   },
   "Notturna": {
     "where": [
-      "omega-ui-src/source/prefs.c:73"
+      "omega-ui-src/source/prefs.c:77"
     ]
   },
   "Novità": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:55"
+      "omega-ui-src/source/whatsnew.c:56"
     ]
   },
   "Nuova cartella": {
     "where": [
-      "omega-ui-src/source/system.c:591"
+      "omega-ui-src/source/system.c:605"
     ]
   },
   "Nuova cartella...": {
@@ -5275,8 +6126,8 @@
   },
   "Nuovo PIN": {
     "where": [
-      "omega-ui-src/source/remote.c:123",
-      "omega-ui-src/source/remote.c:135"
+      "omega-ui-src/source/remote.c:126",
+      "omega-ui-src/source/remote.c:138"
     ],
     "kind": [
       "confirm"
@@ -5300,27 +6151,21 @@
   },
   "Nuovo nome": {
     "where": [
-      "omega-ui-src/source/system.c:517"
+      "omega-ui-src/source/system.c:518"
     ],
     "kind": [
       "keyboard-title"
     ],
     "hint": "title of the system keyboard"
   },
-  "Nuovo: Record. Il tempo di gioco di tutti gli iscritti: giocatori, giochi più giocati e maratone, della settimana o di sempre.": {
+  "Nuovo titolo in home": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:18"
-    ]
-  },
-  "Nuovo: Trofei. Omega legge i trofei ottenuti nei giochi di questa console e li mette nel tuo profilo e nella classifica pubblica.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:19"
-    ]
-  },
-  "Nuovo: cartelle in home. Dalle opzioni di un gioco scegli «Sposta in una cartella»; la cartella mostra le prime quattro icone.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:14"
-    ]
+      "omega-ui-src/source/home.c:1094"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "OK": {
     "where": [
@@ -5329,7 +6174,7 @@
   },
   "Offline": {
     "where": [
-      "omega-ui-src/source/home.c:891",
+      "omega-ui-src/source/home.c:1069",
       "omega-ui-src/source/panels.c:43",
       "omega-ui-src/source/panels.c:651",
       "omega-ui-src/source/panels.c:846"
@@ -5348,7 +6193,9 @@
   },
   "Omega": {
     "where": [
-      "omega-ui-src/source/prefs.c:134",
+      "omega-ui-src/source/homestyles.c:19",
+      "omega-ui-src/source/prefs.c:38",
+      "omega-ui-src/source/prefs.c:138",
       "omega-ui-src/source/servers.c:124"
     ]
   },
@@ -5369,13 +6216,13 @@
   },
   "Omega blu": {
     "where": [
-      "omega-ui-src/source/gfx.c:969",
+      "omega-ui-src/source/gfx.c:1028",
       "omega-ui-src/source/prefs.c:22"
     ]
   },
   "Omega come Home": {
     "where": [
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1047"
     ]
   },
   "Omega come Home?": {
@@ -5475,13 +6322,13 @@
   },
   "Omega è un progetto indipendente: non è affiliato a Sony Interactive Entertainment e non usa i suoi account né i suoi server.": {
     "where": [
-      "omega-ui-src/source/panels.c:1126"
+      "omega-ui-src/source/panels.c:1294"
     ]
   },
   "Omega: %s è in La mia libreria, pronto da installare": {
     "where": [
-      "omega-redirect-src/source/ctl.c:505",
-      "omega-redirect-src/source/ctl.c:563"
+      "omega-redirect-src/source/ctl.c:583",
+      "omega-redirect-src/source/ctl.c:642"
     ],
     "kind": [
       "notification"
@@ -5490,7 +6337,7 @@
   },
   "Omega: %s è tra gli homebrew": {
     "where": [
-      "omega-redirect-src/source/ctl.c:524"
+      "omega-redirect-src/source/ctl.c:602"
     ],
     "kind": [
       "notification"
@@ -5544,7 +6391,7 @@
   },
   "Omega: ricevo i giochi dal telefono o dal PC (%d%%)": {
     "where": [
-      "omega-redirect-src/source/ctl.c:373"
+      "omega-redirect-src/source/ctl.c:377"
     ],
     "kind": [
       "notification"
@@ -5562,7 +6409,7 @@
   },
   "Online": {
     "where": [
-      "omega-ui-src/source/home.c:891",
+      "omega-ui-src/source/home.c:1069",
       "omega-ui-src/source/panels.c:40",
       "omega-ui-src/source/panels.c:651",
       "omega-ui-src/source/social.c:633"
@@ -5575,8 +6422,9 @@
       "omega-ui-src/source/gallery.c:214",
       "omega-ui-src/source/social.c:374",
       "omega-ui-src/source/social.c:647",
-      "omega-ui-src/source/store.c:416",
-      "omega-ui-src/source/store.c:590"
+      "omega-ui-src/source/store.c:438",
+      "omega-ui-src/source/store.c:462",
+      "omega-ui-src/source/store.c:647"
     ],
     "kind": [
       "message"
@@ -5598,8 +6446,9 @@
       "omega-ui-src/source/community.c:705",
       "omega-ui-src/source/community.c:708",
       "omega-ui-src/source/panels.c:407",
-      "omega-ui-src/source/store.c:1277",
-      "omega-ui-src/source/system.c:561"
+      "omega-ui-src/source/pkgs.c:305",
+      "omega-ui-src/source/store.c:1464",
+      "omega-ui-src/source/system.c:562"
     ]
   },
   "Opzioni dell'app": {
@@ -5625,12 +6474,12 @@
   },
   "Ordine dei giochi": {
     "where": [
-      "omega-ui-src/source/prefs.c:41"
+      "omega-ui-src/source/prefs.c:43"
     ]
   },
   "Oro": {
     "where": [
-      "omega-ui-src/source/gfx.c:978",
+      "omega-ui-src/source/gfx.c:1037",
       "omega-ui-src/source/prefs.c:23",
       "omega-ui-src/source/prefs.c:25"
     ]
@@ -5642,7 +6491,7 @@
   },
   "Orologio grande": {
     "where": [
-      "omega-ui-src/source/prefs.c:85"
+      "omega-ui-src/source/prefs.c:89"
     ]
   },
   "Oscuramento dello sfondo": {
@@ -5655,10 +6504,40 @@
       "omega-ui-src/source/records.c:433"
     ]
   },
+  "PAGINA COMPLETA": {
+    "where": [
+      "omega-ui-src/source/browser.c:474"
+    ]
+  },
+  "PKG da USB": {
+    "where": [
+      "omega-ui-src/source/store.c:801"
+    ]
+  },
+  "PKG: %s  (togli)": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:180"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s"
+  },
+  "PS5 o PS4": {
+    "where": [
+      "omega-ui-src/source/store.c:1406"
+    ]
+  },
+  "Pagina completa: come la impagina il sito": {
+    "where": [
+      "omega-ui-src/source/browser.c:565"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Pagina iniziale": {
     "where": [
-      "omega-ui-src/source/browser.c:523",
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -5667,7 +6546,7 @@
   },
   "Pagina non disponibile": {
     "where": [
-      "omega-ui-src/source/browser.c:374"
+      "omega-ui-src/source/browser.c:427"
     ]
   },
   "Pannelli": {
@@ -5677,11 +6556,13 @@
   },
   "Particelle sullo sfondo": {
     "where": [
-      "omega-ui-src/source/prefs.c:61"
+      "omega-ui-src/source/prefs.c:65"
     ]
   },
   "Party": {
     "where": [
+      "omega-ui-src/source/homestyles.c:67",
+      "omega-ui-src/source/homestyles.c:196",
       "omega-ui-src/source/panels.c:159",
       "omega-ui-src/source/panels.c:348"
     ],
@@ -5714,6 +6595,11 @@
       "notification"
     ],
     "hint": "PS5 system notification"
+  },
+  "Passa alla modalità lettura": {
+    "where": [
+      "omega-ui-src/source/browser.c:579"
+    ]
   },
   "Password": {
     "where": [
@@ -5764,6 +6650,11 @@
       "omega-ui-src/source/panels.c:189"
     ]
   },
+  "Payload": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:45"
+    ]
+  },
   "Payload · in background": {
     "where": [
       "omega-ui-src/source/payload.c:54",
@@ -5772,12 +6663,12 @@
   },
   "Per 10 secondi": {
     "where": [
-      "omega-ui-src/source/prefs.c:50"
+      "omega-ui-src/source/prefs.c:54"
     ]
   },
   "Per PS4": {
     "where": [
-      "omega-ui-src/source/store.c:688"
+      "omega-ui-src/source/store.c:745"
     ]
   },
   "Per creare l'account accetta i termini d'uso": {
@@ -5808,6 +6699,12 @@
       "omega-ui-src/source/music.c:261"
     ]
   },
+  "Perché Omega": {
+    "where": [
+      "omega-ui-src/source/panels.c:1049",
+      "omega-ui-src/source/panels.c:1243"
+    ]
+  },
   "Periodo": {
     "where": [
       "omega-ui-src/source/community.c:709",
@@ -5822,7 +6719,8 @@
   "Personalizza": {
     "where": [
       "omega-ui-src/source/custom.c:50",
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/homestyles.c:176",
+      "omega-ui-src/source/panels.c:1046"
     ]
   },
   "Persone": {
@@ -5837,12 +6735,12 @@
   },
   "Piattaforma": {
     "where": [
-      "omega-ui-src/source/store.c:1134"
+      "omega-ui-src/source/store.c:1275"
     ]
   },
   "Piccole": {
     "where": [
-      "omega-ui-src/source/prefs.c:38"
+      "omega-ui-src/source/prefs.c:40"
     ]
   },
   "Pieni": {
@@ -5852,7 +6750,7 @@
   },
   "Pirateria o contenuto non autorizzato": {
     "where": [
-      "omega-ui-src/source/store.c:1323"
+      "omega-ui-src/source/store.c:1510"
     ],
     "kind": [
       "menu"
@@ -5866,7 +6764,7 @@
   },
   "Più scaricati": {
     "where": [
-      "omega-ui-src/source/store.c:717"
+      "omega-ui-src/source/store.c:793"
     ]
   },
   "Più scuro, più leggibili i testi sopra le copertine.": {
@@ -5876,7 +6774,7 @@
   },
   "Più votati": {
     "where": [
-      "omega-ui-src/source/store.c:716"
+      "omega-ui-src/source/store.c:792"
     ]
   },
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": {
@@ -5891,12 +6789,22 @@
   },
   "Poche": {
     "where": [
-      "omega-ui-src/source/prefs.c:62"
+      "omega-ui-src/source/prefs.c:66"
+    ]
+  },
+  "Popolari tra i tuoi amici": {
+    "where": [
+      "omega-ui-src/source/store.c:749"
     ]
   },
   "Posizione delle notifiche": {
     "where": [
-      "omega-ui-src/source/prefs.c:75"
+      "omega-ui-src/source/prefs.c:79"
+    ]
+  },
+  "Posizioni": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:306"
     ]
   },
   "Post": {
@@ -5917,6 +6825,15 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Potete consigliarvi le app solo tra amici": {
+    "where": [
+      "omega-ui-src/source/store.c:473"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Preferite": {
     "where": [
       "omega-ui-src/source/music.c:262"
@@ -5927,9 +6844,14 @@
       "omega-ui-src/source/login.c:98"
     ]
   },
+  "Premi ✕ per continuare": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:270"
+    ]
+  },
   "Preparazione": {
     "where": [
-      "omega-ui-src/source/install.c:519"
+      "omega-ui-src/source/install.c:708"
     ]
   },
   "Preparazione dei tuoi dati...": {
@@ -5958,18 +6880,18 @@
   "Prestazioni": {
     "where": [
       "omega-ui-src/source/custom.c:15",
-      "omega-ui-src/source/prefs.c:145"
+      "omega-ui-src/source/prefs.c:149"
     ]
   },
   "Prima i giochi, poi gli homebrew": {
     "where": [
-      "omega-ui-src/source/prefs.c:42"
+      "omega-ui-src/source/prefs.c:44"
     ]
   },
   "Privacy": {
     "where": [
       "omega-ui-src/source/account.c:248",
-      "omega-ui-src/source/panels.c:1044"
+      "omega-ui-src/source/panels.c:1045"
     ],
     "kind": [
       "menu"
@@ -5995,6 +6917,8 @@
   },
   "Profilo": {
     "where": [
+      "omega-ui-src/source/homestyles.c:67",
+      "omega-ui-src/source/homestyles.c:169",
       "omega-ui-src/source/panels.c:159",
       "omega-ui-src/source/panels.c:963",
       "omega-ui-src/source/records.c:289"
@@ -6017,28 +6941,29 @@
   },
   "Progetto": {
     "where": [
-      "omega-ui-src/source/store.c:1134"
+      "omega-ui-src/source/store.c:1275"
     ]
   },
   "Proponi al party": {
     "where": [
-      "omega-ui-src/source/home.c:1145"
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1372"
     ]
   },
   "Prova un'altra parola, o cancella la ricerca dalla barra in alto": {
     "where": [
-      "omega-ui-src/source/store.c:902"
+      "omega-ui-src/source/store.c:1009"
     ]
   },
   "Pubblica": {
     "where": [
-      "omega-ui-src/source/store.c:719",
-      "omega-ui-src/source/store.c:1225"
+      "omega-ui-src/source/store.c:796",
+      "omega-ui-src/source/store.c:1366"
     ]
   },
   "Pubblica un homebrew": {
     "where": [
-      "omega-ui-src/source/store.c:1211"
+      "omega-ui-src/source/store.c:1352"
     ]
   },
   "Pubblicato sulla bacheca": {
@@ -6053,7 +6978,7 @@
   "Pubblicazione non riuscita": {
     "where": [
       "omega-ui-src/source/community.c:112",
-      "omega-ui-src/source/store.c:530"
+      "omega-ui-src/source/store.c:587"
     ],
     "kind": [
       "message"
@@ -6087,11 +7012,6 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
-  "Puoi nascondere i giochi e le app che non usi: opzioni del gioco › Nascondi dalla home. Li rimetti in Impostazioni › App nascoste.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:15"
-    ]
-  },
   "Puoi scrivere solo ai tuoi amici": {
     "where": [
       "omega-ui-src/source/social.c:529"
@@ -6108,13 +7028,22 @@
   },
   "Quanto restano a schermo.": {
     "where": [
-      "omega-ui-src/source/prefs.c:77"
+      "omega-ui-src/source/prefs.c:81"
     ]
   },
   "Quanto si vede lo sfondo attraverso schede e notifiche.": {
     "where": [
       "omega-ui-src/source/prefs.c:30"
     ]
+  },
+  "Questa cartella c'è già": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:322"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Questa settimana": {
     "where": [
@@ -6144,7 +7073,7 @@
   },
   "Questo homebrew chiede di scegliere tra più voci": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:633"
+      "omega-ui-src/source/hblaunch.c:637"
     ]
   },
   "Questo indirizzo non sembra un server Subsonic": {
@@ -6158,7 +7087,7 @@
   },
   "Questo indirizzo non è raggiungibile dal browser Omega.": {
     "where": [
-      "omega-ui-src/source/browser.c:169"
+      "omega-ui-src/source/browser.c:197"
     ]
   },
   "Questo server non accetta l'accesso con token": {
@@ -6168,7 +7097,7 @@
   },
   "Questo titolo non è registrato nel sistema e non può partire": {
     "where": [
-      "omega-ui-src/source/home.c:348"
+      "omega-ui-src/source/home.c:393"
     ],
     "kind": [
       "message"
@@ -6177,7 +7106,7 @@
   },
   "Qui non si possono creare cartelle": {
     "where": [
-      "omega-ui-src/source/system.c:523"
+      "omega-ui-src/source/system.c:524"
     ],
     "kind": [
       "message"
@@ -6186,7 +7115,7 @@
   },
   "Qui non si possono eliminare file": {
     "where": [
-      "omega-ui-src/source/system.c:527"
+      "omega-ui-src/source/system.c:528"
     ],
     "kind": [
       "message"
@@ -6195,7 +7124,7 @@
   },
   "Qui non si possono incollare file": {
     "where": [
-      "omega-ui-src/source/system.c:488"
+      "omega-ui-src/source/system.c:489"
     ],
     "kind": [
       "message"
@@ -6204,7 +7133,7 @@
   },
   "Qui non si possono rinominare file": {
     "where": [
-      "omega-ui-src/source/system.c:515"
+      "omega-ui-src/source/system.c:516"
     ],
     "kind": [
       "message"
@@ -6213,12 +7142,17 @@
   },
   "Qui non si possono spostare file": {
     "where": [
-      "omega-ui-src/source/system.c:513"
+      "omega-ui-src/source/system.c:514"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "R1  Opzioni": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:53"
+    ]
   },
   "Radio": {
     "where": [
@@ -6247,9 +7181,14 @@
       "omega-ui-src/source/music.c:277"
     ]
   },
+  "Radio, file e server personali, con il lettore che continua anche fuori dalla home e i comandi nel menu in gioco.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1231"
+    ]
+  },
   "Rapide": {
     "where": [
-      "omega-ui-src/source/prefs.c:66"
+      "omega-ui-src/source/prefs.c:70"
     ]
   },
   "Record": {
@@ -6265,8 +7204,8 @@
   },
   "Registrazione": {
     "where": [
-      "omega-ui-src/source/install.c:456",
-      "omega-ui-src/source/install.c:506"
+      "omega-ui-src/source/install.c:644",
+      "omega-ui-src/source/install.c:694"
     ]
   },
   "Registrazione chiusa su questo server": {
@@ -6289,24 +7228,29 @@
   },
   "Registrazione non riuscita (0x%08X). Privilegio ShellCore mancante?": {
     "where": [
-      "omega-ui-src/source/install.c:458",
-      "omega-ui-src/source/install.c:508"
+      "omega-ui-src/source/install.c:646",
+      "omega-ui-src/source/install.c:696"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
   "Reinstalla / aggiorna": {
     "where": [
-      "omega-ui-src/source/store.c:1344"
+      "omega-ui-src/source/store.c:1531"
+    ]
+  },
+  "Rete": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:221"
     ]
   },
   "Retrò": {
     "where": [
-      "omega-ui-src/source/prefs.c:141"
+      "omega-ui-src/source/prefs.c:145"
     ]
   },
   "Retrò 8 bit": {
     "where": [
-      "omega-ui-src/source/prefs.c:71"
+      "omega-ui-src/source/prefs.c:75"
     ]
   },
   "Riavvia": {
@@ -6339,8 +7283,8 @@
   },
   "Ricarica": {
     "where": [
-      "omega-ui-src/source/browser.c:523",
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -6352,6 +7296,11 @@
       "omega-ui-src/source/panels.c:244"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
+  },
+  "Ricezione": {
+    "where": [
+      "omega-ui-src/source/home.c:864"
+    ]
   },
   "Richiesta annullata": {
     "where": [
@@ -6434,7 +7383,7 @@
   },
   "Rilassate": {
     "where": [
-      "omega-ui-src/source/prefs.c:66"
+      "omega-ui-src/source/prefs.c:70"
     ]
   },
   "Rileggi dalla console": {
@@ -6455,7 +7404,7 @@
   },
   "Rimozione non riuscita": {
     "where": [
-      "omega-ui-src/source/store.c:488"
+      "omega-ui-src/source/store.c:545"
     ],
     "kind": [
       "message"
@@ -6497,7 +7446,7 @@
   },
   "Rimuovi dai segnalibri": {
     "where": [
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -6512,7 +7461,7 @@
   "Rinomina": {
     "where": [
       "omega-ui-src/source/community.c:323",
-      "omega-ui-src/source/system.c:591"
+      "omega-ui-src/source/system.c:605"
     ]
   },
   "Rinomina cartella": {
@@ -6526,7 +7475,7 @@
   },
   "Rinominato": {
     "where": [
-      "omega-ui-src/source/system.c:519"
+      "omega-ui-src/source/system.c:520"
     ],
     "kind": [
       "message"
@@ -6550,6 +7499,7 @@
   },
   "Riproduci / pausa": {
     "where": [
+      "omega-ui-src/source/homestyles.c:184",
       "omega-onion-plugin-src/source/main.c:166"
     ],
     "kind": [
@@ -6564,7 +7514,7 @@
   },
   "Risoluzione del link...": {
     "where": [
-      "omega-ui-src/source/store.c:481"
+      "omega-ui-src/source/store.c:538"
     ],
     "kind": [
       "message"
@@ -6588,18 +7538,18 @@
   },
   "Rubino": {
     "where": [
-      "omega-ui-src/source/gfx.c:977",
+      "omega-ui-src/source/gfx.c:1036",
       "omega-ui-src/source/prefs.c:23"
     ]
   },
   "SSD M.2": {
     "where": [
-      "omega-ui-src/source/drives.c:43"
+      "omega-ui-src/source/drives.c:53"
     ]
   },
   "Salva modifiche": {
     "where": [
-      "omega-ui-src/source/store.c:1225"
+      "omega-ui-src/source/store.c:1366"
     ]
   },
   "Salva tra le preferite": {
@@ -6610,7 +7560,7 @@
   "Salvaschermo": {
     "where": [
       "omega-ui-src/source/custom.c:15",
-      "omega-ui-src/source/prefs.c:82"
+      "omega-ui-src/source/prefs.c:86"
     ]
   },
   "Salvata tra le preferite": {
@@ -6646,9 +7596,16 @@
       "omega-ui-src/source/account.c:233"
     ]
   },
+  "Scarica questo esempio dal Telecomando: http://%s:9095 › La mia libreria": {
+    "where": [
+      "omega-ui-src/source/store.c:1422"
+    ],
+    "hint": "printf format: keep exactly these specifiers in this order: s"
+  },
   "Scaricamento": {
     "where": [
-      "omega-ui-src/source/install.c:250"
+      "omega-ui-src/source/install.c:284",
+      "omega-ui-src/source/install.c:809"
     ]
   },
   "Scegli": {
@@ -6656,7 +7613,7 @@
       "omega-ui-src/source/hen.c:349",
       "omega-ui-src/source/hen.c:395",
       "omega-ui-src/source/music.c:840",
-      "omega-ui-src/source/store.c:1273",
+      "omega-ui-src/source/store.c:1460",
       "omega-ui-src/source/system.c:295"
     ],
     "kind": [
@@ -6674,6 +7631,11 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Scegli dove stanno i tuoi giochi (cartelle con eboot.bin) e i tuoi PKG: Omega li guarda da sola, come ShadowMount, e appena colleghi un disco i giochi compaiono in home.": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:268"
+    ]
+  },
   "Scegli il tuo ID online: è il nome con cui i tuoi amici ti troveranno su Omega.": {
     "where": [
       "omega-ui-src/source/login.c:239"
@@ -6683,6 +7645,16 @@
     "where": [
       "omega-ui-src/source/gallery.c:176",
       "omega-ui-src/source/panels.c:780"
+    ]
+  },
+  "Scegli la cartella dei PKG": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:214"
+    ]
+  },
+  "Scegli la cartella dei giochi": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:214"
     ]
   },
   "Scegli la copertina": {
@@ -6701,17 +7673,22 @@
   },
   "Scegli prima una voce dal menu dell'homebrew": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:668"
+      "omega-ui-src/source/hblaunch.c:709"
     ]
   },
   "Scegli un'altra cartella": {
     "where": [
-      "omega-ui-src/source/system.c:493"
+      "omega-ui-src/source/system.c:494"
     ],
     "kind": [
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Scegli una cartella qualsiasi (anche su un disco) e la aggiungi alle posizioni dei PKG.": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:267"
+    ]
   },
   "Scegli una radio, un album dal tuo server o un file dalla chiavetta: la musica continua anche quando avvii un gioco.": {
     "where": [
@@ -6729,13 +7706,13 @@
   },
   "Scena ferma dietro i pannelli": {
     "where": [
-      "omega-ui-src/source/prefs.c:87"
+      "omega-ui-src/source/prefs.c:91"
     ]
   },
   "Scheda non disponibile": {
     "where": [
-      "omega-ui-src/source/store.c:261",
-      "omega-ui-src/source/store.c:339"
+      "omega-ui-src/source/store.c:280",
+      "omega-ui-src/source/store.c:361"
     ],
     "kind": [
       "message"
@@ -6744,12 +7721,12 @@
   },
   "Schermo nero": {
     "where": [
-      "omega-ui-src/source/prefs.c:85"
+      "omega-ui-src/source/prefs.c:89"
     ]
   },
   "Scollega": {
     "where": [
-      "omega-ui-src/source/store.c:741"
+      "omega-ui-src/source/store.c:823"
     ],
     "kind": [
       "confirm"
@@ -6758,12 +7735,12 @@
   },
   "Scollega il JSON": {
     "where": [
-      "omega-ui-src/source/store.c:725"
+      "omega-ui-src/source/store.c:804"
     ]
   },
   "Scollegare il JSON? I giochi arrivati da lì spariscono, quelli aggiunti a mano restano.": {
     "where": [
-      "omega-ui-src/source/store.c:741"
+      "omega-ui-src/source/store.c:823"
     ],
     "kind": [
       "confirm"
@@ -6772,8 +7749,8 @@
   },
   "Scopri": {
     "where": [
-      "omega-ui-src/source/store.c:715",
-      "omega-ui-src/source/store.c:882"
+      "omega-ui-src/source/store.c:790",
+      "omega-ui-src/source/store.c:989"
     ]
   },
   "Scrivi": {
@@ -6806,6 +7783,15 @@
       "omega-ui-src/source/panels.c:257"
     ]
   },
+  "Scrivi allo sviluppatore": {
+    "where": [
+      "omega-ui-src/source/panels.c:1159"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
+  },
   "Scrivi il PIN quando te lo chiede:": {
     "where": [
       "omega-ui-src/source/remote.c:105"
@@ -6824,7 +7810,7 @@
   "Scrivi un commento": {
     "where": [
       "omega-ui-src/source/community.c:165",
-      "omega-ui-src/source/store.c:441"
+      "omega-ui-src/source/store.c:498"
     ],
     "kind": [
       "keyboard-title"
@@ -6861,7 +7847,7 @@
   },
   "Secondi": {
     "where": [
-      "omega-ui-src/source/prefs.c:54"
+      "omega-ui-src/source/prefs.c:58"
     ]
   },
   "Segnala": {
@@ -6869,7 +7855,7 @@
       "omega-ui-src/source/community.c:191",
       "omega-ui-src/source/community.c:212",
       "omega-ui-src/source/panels.c:760",
-      "omega-ui-src/source/store.c:1346"
+      "omega-ui-src/source/store.c:1533"
     ],
     "kind": [
       "menu"
@@ -6878,12 +7864,12 @@
   },
   "Segnala commento": {
     "where": [
-      "omega-ui-src/source/store.c:1276"
+      "omega-ui-src/source/store.c:1463"
     ]
   },
   "Segnala il commento": {
     "where": [
-      "omega-ui-src/source/store.c:1325"
+      "omega-ui-src/source/store.c:1512"
     ],
     "kind": [
       "menu"
@@ -6892,12 +7878,22 @@
   },
   "Segnala questo homebrew": {
     "where": [
-      "omega-ui-src/source/store.c:1325"
+      "omega-ui-src/source/store.c:1512"
     ],
     "kind": [
       "menu"
     ],
     "hint": "menu entry or title: one line"
+  },
+  "Segnala un bug": {
+    "where": [
+      "omega-ui-src/source/panels.c:1158"
+    ]
+  },
+  "Segnala un bug o chiedi una funzione": {
+    "where": [
+      "omega-ui-src/source/panels.c:1049"
+    ]
   },
   "Segnala utente": {
     "where": [
@@ -6911,7 +7907,7 @@
   "Segnalazione non riuscita": {
     "where": [
       "omega-ui-src/source/social.c:656",
-      "omega-ui-src/source/store.c:1310"
+      "omega-ui-src/source/store.c:1497"
     ],
     "kind": [
       "message"
@@ -6920,10 +7916,10 @@
   },
   "Segnalibri": {
     "where": [
-      "omega-ui-src/source/browser.c:297",
-      "omega-ui-src/source/browser.c:497",
-      "omega-ui-src/source/browser.c:523",
-      "omega-ui-src/source/browser.c:524"
+      "omega-ui-src/source/browser.c:355",
+      "omega-ui-src/source/browser.c:551",
+      "omega-ui-src/source/browser.c:580",
+      "omega-ui-src/source/browser.c:581"
     ],
     "kind": [
       "menu"
@@ -6932,7 +7928,7 @@
   },
   "Segnalibro rimosso": {
     "where": [
-      "omega-ui-src/source/browser.c:464"
+      "omega-ui-src/source/browser.c:518"
     ],
     "kind": [
       "message"
@@ -6942,6 +7938,16 @@
   "Sei entrato nel party": {
     "where": [
       "omega-ui-src/source/social.c:440"
+    ]
+  },
+  "Sei modalità del menu (Omega, PS4, XMB, Griglia, Carosello, Cinema), temi, sfondi, suoni e più di trenta opzioni.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1232"
+    ]
+  },
+  "Sei modalità del menu: Omega, Classica PS4, XMB come sulla PS3, Griglia, Carosello e Cinema (Impostazioni › Aspetto).": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:20"
     ]
   },
   "Sei tu": {
@@ -6958,14 +7964,14 @@
     "where": [
       "omega-ui-src/source/community.c:706",
       "omega-ui-src/source/community.c:710",
-      "omega-ui-src/source/home.c:975",
+      "omega-ui-src/source/home.c:1197",
       "omega-ui-src/source/login.c:182",
       "omega-ui-src/source/login.c:268",
       "omega-ui-src/source/panels.c:416",
       "omega-ui-src/source/panels.c:963",
-      "omega-ui-src/source/panels.c:1071",
-      "omega-ui-src/source/store.c:1268",
-      "omega-ui-src/source/system.c:560"
+      "omega-ui-src/source/panels.c:1114",
+      "omega-ui-src/source/store.c:1455",
+      "omega-ui-src/source/system.c:561"
     ],
     "kind": [
       "hint"
@@ -6980,7 +7986,7 @@
   },
   "Sempre": {
     "where": [
-      "omega-ui-src/source/prefs.c:50"
+      "omega-ui-src/source/prefs.c:54"
     ]
   },
   "Senza un caricatore il servizio di Omega non parte da solo all'accensione: musica, notifiche durante i giochi e telecomando funzionano solo dopo averlo avviato a mano. Installa OnionHEN, etaHEN o Payload Manager e riapri questa schermata da Impostazioni › Sistema e strumenti.": {
@@ -6994,12 +8000,12 @@
   },
   "Serena": {
     "where": [
-      "omega-ui-src/source/prefs.c:73"
+      "omega-ui-src/source/prefs.c:77"
     ]
   },
   "Serve il link al file (pkg o zip)": {
     "where": [
-      "omega-ui-src/source/store.c:577"
+      "omega-ui-src/source/store.c:634"
     ],
     "kind": [
       "message"
@@ -7008,18 +8014,18 @@
   },
   "Serve la conferma sui diritti": {
     "where": [
-      "omega-ui-src/source/store.c:529"
+      "omega-ui-src/source/store.c:586"
     ]
   },
   "Serve un link http(s) al file": {
     "where": [
-      "omega-ui-src/source/store.c:528"
+      "omega-ui-src/source/store.c:585"
     ]
   },
   "Serve un titolo": {
     "where": [
-      "omega-ui-src/source/store.c:527",
-      "omega-ui-src/source/store.c:576"
+      "omega-ui-src/source/store.c:584",
+      "omega-ui-src/source/store.c:633"
     ],
     "kind": [
       "message"
@@ -7029,7 +8035,7 @@
   "Server": {
     "where": [
       "omega-ui-src/source/account.c:373",
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/panels.c:1048"
     ],
     "kind": [
       "menu"
@@ -7048,7 +8054,7 @@
   "Server Omega non raggiungibile": {
     "where": [
       "omega-ui-src/source/login.c:218",
-      "omega-ui-src/source/main.c:251"
+      "omega-ui-src/source/main.c:253"
     ],
     "kind": [
       "message"
@@ -7057,7 +8063,7 @@
   },
   "Server Omega non raggiungibile.": {
     "where": [
-      "omega-ui-src/source/browser.c:173"
+      "omega-ui-src/source/browser.c:201"
     ]
   },
   "Server aggiunto": {
@@ -7130,12 +8136,12 @@
   },
   "Servono il titolo e un link http(s)": {
     "where": [
-      "omega-ui-src/source/store.c:590"
+      "omega-ui-src/source/store.c:647"
     ]
   },
   "Sessione di avvio scaduta: riprova": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:608"
+      "omega-ui-src/source/hblaunch.c:612"
     ]
   },
   "Sessione scaduta: accedi di nuovo": {
@@ -7146,6 +8152,11 @@
       "message"
     ],
     "hint": "one-line message at the bottom of the screen"
+  },
+  "Sfoglia una cartella...": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:45"
+    ]
   },
   "Sfondo": {
     "where": [
@@ -7187,27 +8198,34 @@
   },
   "Silenziose": {
     "where": [
-      "omega-ui-src/source/prefs.c:80"
+      "omega-ui-src/source/prefs.c:84"
     ]
   },
   "Sincronizzazione in corso...": {
     "where": [
-      "omega-ui-src/source/store.c:604"
+      "omega-ui-src/source/store.c:661"
     ]
   },
   "Sistema": {
     "where": [
+      "omega-ui-src/source/panels.c:1040",
       "omega-ui-src/source/system.c:227"
     ]
   },
   "Sistema e strumenti": {
     "where": [
-      "omega-ui-src/source/panels.c:1043"
+      "omega-ui-src/source/homestyles.c:177",
+      "omega-ui-src/source/panels.c:1048"
+    ]
+  },
+  "Siti rapidi": {
+    "where": [
+      "omega-ui-src/source/browser.c:345"
     ]
   },
   "Smeraldo": {
     "where": [
-      "omega-ui-src/source/gfx.c:976",
+      "omega-ui-src/source/gfx.c:1035",
       "omega-ui-src/source/prefs.c:23"
     ]
   },
@@ -7218,7 +8236,7 @@
   },
   "Software libero — GPL-3.0-or-later": {
     "where": [
-      "omega-ui-src/source/panels.c:1123"
+      "omega-ui-src/source/panels.c:1291"
     ]
   },
   "Soglia della ventola": {
@@ -7242,7 +8260,7 @@
   },
   "Sola lettura": {
     "where": [
-      "omega-ui-src/source/system.c:542"
+      "omega-ui-src/source/system.c:543"
     ]
   },
   "Solo amici": {
@@ -7262,24 +8280,29 @@
   },
   "Solo backup di giochi che possiedi, a uso personale: Omega non ospita né condivide questi file.": {
     "where": [
-      "omega-ui-src/source/store.c:929"
+      "omega-ui-src/source/store.c:1036"
+    ]
+  },
+  "Sorgente GPL scaricabile, 27 lingue, nessun account Sony, aggiornamenti automatici e un tasto per segnalare bug o chiedere funzioni.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1233"
     ]
   },
   "Sotto il gioco scelto": {
     "where": [
-      "omega-ui-src/source/prefs.c:47"
+      "omega-ui-src/source/prefs.c:51"
     ]
   },
   "Sottotitolo": {
     "where": [
-      "omega-ui-src/source/store.c:1192"
+      "omega-ui-src/source/store.c:1333"
     ]
   },
   "Spam": {
     "where": [
       "omega-ui-src/source/community.c:190",
       "omega-ui-src/source/panels.c:736",
-      "omega-ui-src/source/store.c:1323"
+      "omega-ui-src/source/store.c:1510"
     ],
     "kind": [
       "menu"
@@ -7288,7 +8311,7 @@
   },
   "Spaziale": {
     "where": [
-      "omega-ui-src/source/prefs.c:73"
+      "omega-ui-src/source/prefs.c:77"
     ]
   },
   "Spegnere l'importazione dei trofei? Quelli già importati vengono cancellati dal server.": {
@@ -7323,12 +8346,12 @@
   },
   "Spenta": {
     "where": [
-      "omega-ui-src/source/prefs.c:73"
+      "omega-ui-src/source/prefs.c:77"
     ]
   },
   "Sposta": {
     "where": [
-      "omega-ui-src/source/system.c:591"
+      "omega-ui-src/source/system.c:605"
     ]
   },
   "Sposta in un'altra cartella": {
@@ -7342,7 +8365,8 @@
   },
   "Sposta in una cartella": {
     "where": [
-      "omega-ui-src/source/home.c:1145",
+      "omega-ui-src/source/home.c:1147",
+      "omega-ui-src/source/home.c:1372",
       "omega-ui-src/source/homelayout.c:177"
     ],
     "kind": [
@@ -7352,7 +8376,7 @@
   },
   "Sposta qui": {
     "where": [
-      "omega-ui-src/source/system.c:562"
+      "omega-ui-src/source/system.c:563"
     ]
   },
   "Spostato in %s": {
@@ -7363,7 +8387,7 @@
   },
   "Sposto %s": {
     "where": [
-      "omega-ui-src/source/system.c:494"
+      "omega-ui-src/source/system.c:495"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -7398,12 +8422,13 @@
   },
   "Stanno giocando ora": {
     "where": [
-      "omega-ui-src/source/home.c:785",
-      "omega-ui-src/source/home.c:1156"
+      "omega-ui-src/source/home.c:963",
+      "omega-ui-src/source/home.c:1383"
     ]
   },
   "Stato": {
     "where": [
+      "omega-ui-src/source/homestyles.c:171",
       "omega-ui-src/source/panels.c:620"
     ],
     "kind": [
@@ -7432,12 +8457,12 @@
   },
   "Stelle": {
     "where": [
-      "omega-ui-src/source/prefs.c:64"
+      "omega-ui-src/source/prefs.c:68"
     ]
   },
   "Stile del salvaschermo": {
     "where": [
-      "omega-ui-src/source/prefs.c:84"
+      "omega-ui-src/source/prefs.c:88"
     ]
   },
   "Stile «%s» applicato": {
@@ -7461,22 +8486,34 @@
   },
   "Store": {
     "where": [
-      "omega-ui-src/source/store.c:769"
+      "omega-ui-src/source/home.c:254",
+      "omega-ui-src/source/store.c:851"
+    ]
+  },
+  "Store rinnovato: popolari tra i tuoi amici, di tendenza, lista dei desideri con avviso degli aggiornamenti, consiglia a un amico e creatori in evidenza.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:21"
+    ]
+  },
+  "Store, Browser e Installa PKG ora sono app nella fila, dopo la Community. Il browser apre anche il browser completo della PS5.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:22"
     ]
   },
   "Strumenti e payload": {
     "where": [
-      "omega-ui-src/source/store.c:688"
+      "omega-ui-src/source/store.c:745"
     ]
   },
   "Strumento": {
     "where": [
-      "omega-ui-src/source/store.c:681"
+      "omega-ui-src/source/store.c:738"
     ]
   },
   "Su %s": {
     "where": [
-      "omega-ui-src/source/home.c:709"
+      "omega-ui-src/source/home.c:887",
+      "omega-ui-src/source/homestyles.c:46"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -7488,7 +8525,8 @@
   },
   "Su di un livello": {
     "where": [
-      "omega-ui-src/source/system.c:563"
+      "omega-ui-src/source/pkgs.c:233",
+      "omega-ui-src/source/system.c:564"
     ]
   },
   "Suggeriti": {
@@ -7508,29 +8546,39 @@
   },
   "Suoni 8 bit, angoli squadrati, colori caldi.": {
     "where": [
-      "omega-ui-src/source/prefs.c:141"
+      "omega-ui-src/source/prefs.c:145"
     ]
   },
   "Suoni dell'interfaccia": {
     "where": [
-      "omega-ui-src/source/prefs.c:70"
+      "omega-ui-src/source/prefs.c:74"
     ]
   },
   "Sviluppato da TheCriicom": {
     "where": [
-      "omega-ui-src/source/panels.c:1121"
+      "omega-ui-src/source/panels.c:1289"
     ]
   },
   "Sì": {
     "where": [
-      "omega-ui-src/source/prefs.c:40",
-      "omega-ui-src/source/prefs.c:44",
+      "omega-ui-src/source/prefs.c:42",
       "omega-ui-src/source/prefs.c:46",
-      "omega-ui-src/source/prefs.c:55",
-      "omega-ui-src/source/prefs.c:57",
+      "omega-ui-src/source/prefs.c:48",
+      "omega-ui-src/source/prefs.c:50",
       "omega-ui-src/source/prefs.c:59",
-      "omega-ui-src/source/prefs.c:88"
+      "omega-ui-src/source/prefs.c:61",
+      "omega-ui-src/source/prefs.c:63",
+      "omega-ui-src/source/prefs.c:92"
     ]
+  },
+  "Sì, allega il registro (consigliato)": {
+    "where": [
+      "omega-ui-src/source/panels.c:1154"
+    ],
+    "kind": [
+      "menu"
+    ],
+    "hint": "menu entry or title: one line"
   },
   "Sì, usa Omega come Home": {
     "where": [
@@ -7539,21 +8587,27 @@
   },
   "Tante": {
     "where": [
-      "omega-ui-src/source/prefs.c:62"
+      "omega-ui-src/source/prefs.c:66"
     ]
   },
   "Telecomando dal telefono": {
     "where": [
-      "omega-ui-src/source/remote.c:89",
+      "omega-ui-src/source/homestyles.c:180",
+      "omega-ui-src/source/panels.c:1048",
       "omega-ui-src/source/system.c:276"
+    ]
+  },
+  "Telecomando dal telefono o dal PC": {
+    "where": [
+      "omega-ui-src/source/remote.c:89"
     ]
   },
   "Tema": {
     "where": [
-      "omega-ui-src/source/panels.c:1043",
-      "omega-ui-src/source/panels.c:1088",
+      "omega-ui-src/source/panels.c:1046",
+      "omega-ui-src/source/panels.c:1194",
       "omega-ui-src/source/prefs.c:21",
-      "omega-ui-src/source/store.c:682"
+      "omega-ui-src/source/store.c:739"
     ],
     "kind": [
       "menu"
@@ -7562,7 +8616,7 @@
   },
   "Tema Neon, tante luci, bagliore sulla selezione, suoni cristallo.": {
     "where": [
-      "omega-ui-src/source/prefs.c:137"
+      "omega-ui-src/source/prefs.c:141"
     ]
   },
   "Tema: %s": {
@@ -7576,12 +8630,12 @@
   },
   "Temi e altro": {
     "where": [
-      "omega-ui-src/source/store.c:688"
+      "omega-ui-src/source/store.c:745"
     ]
   },
   "Temperatura della console": {
     "where": [
-      "omega-ui-src/source/prefs.c:58"
+      "omega-ui-src/source/prefs.c:62"
     ]
   },
   "Tempo di gioco": {
@@ -7621,33 +8675,33 @@
   },
   "Tipo di file": {
     "where": [
-      "omega-ui-src/source/store.c:1134",
-      "omega-ui-src/source/store.c:1197"
+      "omega-ui-src/source/store.c:1275",
+      "omega-ui-src/source/store.c:1338"
     ]
   },
   "Tipo di particelle": {
     "where": [
-      "omega-ui-src/source/prefs.c:63"
+      "omega-ui-src/source/prefs.c:67"
     ]
   },
   "Title ID": {
     "where": [
-      "omega-ui-src/source/store.c:1134"
+      "omega-ui-src/source/store.c:1275"
     ]
   },
   "Title ID (per gli zip)": {
     "where": [
-      "omega-ui-src/source/store.c:1198"
+      "omega-ui-src/source/store.c:1339"
     ]
   },
   "Titolo": {
     "where": [
-      "omega-ui-src/source/store.c:1191"
+      "omega-ui-src/source/store.c:1332"
     ]
   },
   "Titolo del gioco": {
     "where": [
-      "omega-ui-src/source/store.c:610"
+      "omega-ui-src/source/store.c:667"
     ],
     "kind": [
       "keyboard-title"
@@ -7656,7 +8710,7 @@
   },
   "Titolo disinstallato": {
     "where": [
-      "omega-ui-src/source/store.c:1297"
+      "omega-ui-src/source/store.c:1484"
     ],
     "kind": [
       "message"
@@ -7666,7 +8720,7 @@
   "Togli": {
     "where": [
       "omega-ui-src/source/account.c:333",
-      "omega-ui-src/source/store.c:1338"
+      "omega-ui-src/source/store.c:1525"
     ],
     "kind": [
       "confirm"
@@ -7689,7 +8743,7 @@
   },
   "Togli dalla libreria": {
     "where": [
-      "omega-ui-src/source/store.c:1347"
+      "omega-ui-src/source/store.c:1534"
     ]
   },
   "Togli dalle preferite": {
@@ -7734,7 +8788,7 @@
   },
   "Togliere questo gioco dalla libreria? Il gioco installato resta.": {
     "where": [
-      "omega-ui-src/source/store.c:1338"
+      "omega-ui-src/source/store.c:1525"
     ],
     "kind": [
       "confirm"
@@ -7752,33 +8806,44 @@
   },
   "Tolto dalla libreria": {
     "where": [
-      "omega-ui-src/source/store.c:624"
+      "omega-ui-src/source/store.c:681"
     ]
+  },
+  "Tolto dalla lista dei desideri": {
+    "where": [
+      "omega-ui-src/source/store.c:459"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "Toni notturni, neve lenta, animazioni rilassate, musica spaziale.": {
     "where": [
-      "omega-ui-src/source/prefs.c:139"
+      "omega-ui-src/source/prefs.c:143"
     ]
   },
   "Torna indietro oppure scrivi un altro indirizzo": {
     "where": [
-      "omega-ui-src/source/browser.c:376"
+      "omega-ui-src/source/browser.c:429"
     ]
   },
   "Tramonto": {
     "where": [
-      "omega-ui-src/source/gfx.c:972",
+      "omega-ui-src/source/gfx.c:1031",
       "omega-ui-src/source/prefs.c:22"
     ]
   },
   "Triangolo: scrivi un commento": {
     "where": [
-      "omega-ui-src/source/store.c:1166"
+      "omega-ui-src/source/store.c:1307"
     ]
   },
   "Trofei": {
     "where": [
       "omega-ui-src/source/community.c:457",
+      "omega-ui-src/source/homestyles.c:68",
+      "omega-ui-src/source/homestyles.c:170",
       "omega-ui-src/source/panels.c:620",
       "omega-ui-src/source/panels.c:626"
     ],
@@ -7794,6 +8859,11 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "Trofei e record": {
+    "where": [
+      "omega-ui-src/source/panels.c:1229"
+    ]
+  },
   "Trofei non disponibili": {
     "where": [
       "omega-ui-src/source/records.c:409"
@@ -7804,9 +8874,18 @@
       "omega-ui-src/source/records.c:426"
     ]
   },
+  "Troppe installazioni in coda: aspetta che finiscano": {
+    "where": [
+      "omega-ui-src/source/install.c:767"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Troppe pagine in poco tempo: attendi qualche secondo.": {
     "where": [
-      "omega-ui-src/source/browser.c:171"
+      "omega-ui-src/source/browser.c:199"
     ]
   },
   "Troppe registrazioni: riprova più tardi": {
@@ -7825,7 +8904,7 @@
   },
   "Troppe segnalazioni: riprova più tardi": {
     "where": [
-      "omega-ui-src/source/store.c:1309"
+      "omega-ui-src/source/store.c:1496"
     ],
     "kind": [
       "message"
@@ -7846,9 +8925,18 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Troppi messaggi: riprova più tardi": {
+    "where": [
+      "omega-ui-src/source/panels.c:1122"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
   "Troppi segnalibri": {
     "where": [
-      "omega-ui-src/source/browser.c:466"
+      "omega-ui-src/source/browser.c:520"
     ],
     "kind": [
       "message"
@@ -7875,12 +8963,12 @@
   },
   "Trucchi": {
     "where": [
-      "omega-ui-src/source/store.c:682"
+      "omega-ui-src/source/store.c:739"
     ]
   },
   "Trucchi e mod": {
     "where": [
-      "omega-ui-src/source/store.c:688"
+      "omega-ui-src/source/store.c:745"
     ]
   },
   "Tu e %s ora siete amici": {
@@ -7895,6 +8983,11 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "Tutti i tuoi giochi in un posto": {
+    "where": [
+      "omega-ui-src/source/panels.c:1224"
+    ]
+  },
   "Tutto a posto: i componenti di Omega sono già installati e attivi": {
     "where": [
       "omega-ui-src/source/hen.c:319"
@@ -7906,22 +8999,22 @@
   },
   "URL copertina": {
     "where": [
-      "omega-ui-src/source/store.c:1200"
+      "omega-ui-src/source/store.c:1341"
     ]
   },
   "URL icona": {
     "where": [
-      "omega-ui-src/source/store.c:1199"
+      "omega-ui-src/source/store.c:1340"
     ]
   },
   "URL screenshot (separati da spazio)": {
     "where": [
-      "omega-ui-src/source/store.c:1201"
+      "omega-ui-src/source/store.c:1342"
     ]
   },
   "Ultimi giocati": {
     "where": [
-      "omega-ui-src/source/prefs.c:42"
+      "omega-ui-src/source/prefs.c:44"
     ]
   },
   "Una chat che resta, con gli amici che scegli tu": {
@@ -7937,6 +9030,11 @@
       "menu"
     ],
     "hint": "menu entry or title: one line"
+  },
+  "Uno Store della community": {
+    "where": [
+      "omega-ui-src/source/panels.c:1228"
+    ]
   },
   "Uno degli utenti non è disponibile": {
     "where": [
@@ -7959,12 +9057,12 @@
   },
   "Usa Aggiorna nella barra in alto": {
     "where": [
-      "omega-ui-src/source/store.c:902"
+      "omega-ui-src/source/store.c:1009"
     ]
   },
   "Usa Pubblica nella barra in alto": {
     "where": [
-      "omega-ui-src/source/store.c:902"
+      "omega-ui-src/source/store.c:1009"
     ]
   },
   "Usa la copertina predefinita": {
@@ -7975,6 +9073,11 @@
   "Usa quella di sistema": {
     "where": [
       "omega-ui-src/source/system.c:180"
+    ]
+  },
+  "Usa questa cartella": {
+    "where": [
+      "omega-ui-src/source/pkgs.c:228"
     ]
   },
   "Usa un avatar Omega (illustrato o colore)": {
@@ -8029,6 +9132,11 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Utenti": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:221"
+    ]
+  },
   "Utenti bloccati": {
     "where": [
       "omega-ui-src/source/account.c:246"
@@ -8054,13 +9162,18 @@
   },
   "Valuta": {
     "where": [
-      "omega-ui-src/source/store.c:1106",
-      "omega-ui-src/source/store.c:1370"
+      "omega-ui-src/source/store.c:1233",
+      "omega-ui-src/source/store.c:1559"
     ],
     "kind": [
       "menu"
     ],
     "hint": "menu entry or title: one line"
+  },
+  "Vedi chi gioca e a cosa, parli in party con la voce, scrivi messaggi e inviti gli amici: un social pensato per la console con jailbreak.": {
+    "where": [
+      "omega-ui-src/source/panels.c:1227"
+    ]
   },
   "Vedi i trofei": {
     "where": [
@@ -8070,7 +9183,7 @@
   },
   "Velocità delle animazioni": {
     "where": [
-      "omega-ui-src/source/prefs.c:65"
+      "omega-ui-src/source/prefs.c:69"
     ]
   },
   "Ventola": {
@@ -8091,7 +9204,7 @@
   },
   "Verifica": {
     "where": [
-      "omega-ui-src/source/install.c:374"
+      "omega-ui-src/source/install.c:562"
     ]
   },
   "Verifico il server...": {
@@ -8105,14 +9218,14 @@
   },
   "Versione": {
     "where": [
-      "omega-ui-src/source/store.c:1134",
-      "omega-ui-src/source/store.c:1195"
+      "omega-ui-src/source/store.c:1275",
+      "omega-ui-src/source/store.c:1336"
     ]
   },
   "Versione %s": {
     "where": [
-      "omega-ui-src/source/panels.c:1118",
-      "omega-ui-src/source/whatsnew.c:56"
+      "omega-ui-src/source/panels.c:1286",
+      "omega-ui-src/source/whatsnew.c:57"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -8216,7 +9329,7 @@
   },
   "Vuoi uscire dal tuo account Omega?": {
     "where": [
-      "omega-ui-src/source/panels.c:1099"
+      "omega-ui-src/source/panels.c:1213"
     ],
     "kind": [
       "confirm"
@@ -8229,14 +9342,20 @@
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
+  "XMB (PS3)": {
+    "where": [
+      "omega-ui-src/source/homestyles.c:19",
+      "omega-ui-src/source/prefs.c:38"
+    ]
+  },
   "Zen": {
     "where": [
-      "omega-ui-src/source/prefs.c:139"
+      "omega-ui-src/source/prefs.c:143"
     ]
   },
   "Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID": {
     "where": [
-      "omega-ui-src/source/install.c:433"
+      "omega-ui-src/source/install.c:621"
     ]
   },
   "adesso": {
@@ -8244,14 +9363,9 @@
       "omega-ui-src/source/social.c:39"
     ]
   },
-  "aggiungere giochi a La mia libreria o importare un JSON": {
-    "where": [
-      "omega-ui-src/source/remote.c:115"
-    ]
-  },
   "ago": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:51"
     ]
   },
@@ -8262,17 +9376,17 @@
   },
   "altro": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
   "app": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
   "apr": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:50"
     ]
   },
@@ -8299,12 +9413,17 @@
   },
   "c'è già un'installazione in corso nel sistema": {
     "where": [
-      "omega-ui-src/source/install.c:273"
+      "omega-ui-src/source/install.c:307"
     ]
   },
-  "comandare la musica, anche mentre giochi, e scegliere le radio preferite": {
+  "caricare giochi dal PC alla console: .pkg, .zip, .elf o cartelle intere, anche trascinandoli": {
     "where": [
-      "omega-ui-src/source/remote.c:113"
+      "omega-ui-src/source/remote.c:115"
+    ]
+  },
+  "comandare la musica, anche mentre giochi, e mandare file audio": {
+    "where": [
+      "omega-ui-src/source/remote.c:118"
     ]
   },
   "da %ld h %ld min": {
@@ -8321,13 +9440,13 @@
   },
   "di %s": {
     "where": [
-      "omega-ui-src/source/store.c:1074"
+      "omega-ui-src/source/store.c:1201"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "dic": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:51"
     ]
   },
@@ -8338,7 +9457,7 @@
   },
   "dom": {
     "where": [
-      "omega-ui-src/source/home.c:536"
+      "omega-ui-src/source/home.c:585"
     ]
   },
   "domenica": {
@@ -8346,9 +9465,14 @@
       "omega-ui-src/source/util.c:52"
     ]
   },
+  "elenco di screenshot": {
+    "where": [
+      "omega-ui-src/source/store.c:1406"
+    ]
+  },
   "emulatore": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
   "errore sconosciuto": {
@@ -8356,9 +9480,19 @@
       "omega-ui-src/source/hblaunch.c:67"
     ]
   },
+  "es. 1.00": {
+    "where": [
+      "omega-ui-src/source/store.c:1407"
+    ]
+  },
+  "es. CUSA12345": {
+    "where": [
+      "omega-ui-src/source/store.c:1407"
+    ]
+  },
   "feb": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:50"
     ]
   },
@@ -8369,7 +9503,7 @@
   },
   "gen": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:50"
     ]
   },
@@ -8380,17 +9514,17 @@
   },
   "gio": {
     "where": [
-      "omega-ui-src/source/home.c:536"
+      "omega-ui-src/source/home.c:585"
     ]
   },
   "gioco": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
   "giorno\u0004mar": {
     "where": [
-      "omega-ui-src/source/home.c:540"
+      "omega-ui-src/source/home.c:589"
     ]
   },
   "giovedì": {
@@ -8400,7 +9534,7 @@
   },
   "giu": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:50"
     ]
   },
@@ -8425,28 +9559,43 @@
   },
   "ha iniziato a giocare a %s": {
     "where": [
-      "omega-ui-src/source/home.c:795"
+      "omega-ui-src/source/home.c:973"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "homebrew.js non leggibile": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:430"
+      "omega-ui-src/source/hblaunch.c:432"
     ]
   },
   "il gioco è aperto: chiudilo e riprova": {
     "where": [
-      "omega-ui-src/source/install.c:270"
+      "omega-ui-src/source/install.c:304"
     ]
   },
   "il pkg non corrisponde al gioco già installato": {
     "where": [
-      "omega-ui-src/source/install.c:272"
+      "omega-ui-src/source/install.c:306"
+    ]
+  },
+  "immagine quadrata": {
+    "where": [
+      "omega-ui-src/source/store.c:1406"
+    ]
+  },
+  "importare un JSON di giochi, collegarlo da un link o scaricare l'esempio da modificare": {
+    "where": [
+      "omega-ui-src/source/remote.c:117"
+    ]
+  },
+  "installarli subito: compaiono in home con l'icona e la barra che avanza": {
+    "where": [
+      "omega-ui-src/source/remote.c:116"
     ]
   },
   "installatore di sistema non pronto: riavvia Omega": {
     "where": [
-      "omega-ui-src/source/install.c:274"
+      "omega-ui-src/source/install.c:308"
     ]
   },
   "invisibile": {
@@ -8454,9 +9603,14 @@
       "omega-ui-src/source/account.c:238"
     ]
   },
+  "link diretto al .pkg, .zip o .elf (obbligatorio)": {
+    "where": [
+      "omega-ui-src/source/store.c:1406"
+    ]
+  },
   "lug": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:51"
     ]
   },
@@ -8467,7 +9621,7 @@
   },
   "lun": {
     "where": [
-      "omega-ui-src/source/home.c:536"
+      "omega-ui-src/source/home.c:585"
     ]
   },
   "lunedì": {
@@ -8477,7 +9631,7 @@
   },
   "mag": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:50"
     ]
   },
@@ -8488,27 +9642,22 @@
   },
   "main() non ha restituito nulla": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:516"
+      "omega-ui-src/source/hblaunch.c:518"
     ]
   },
   "main() non ha risposto": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:510"
+      "omega-ui-src/source/hblaunch.c:512"
     ]
   },
   "main() non ha risposto in tempo": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:515"
-    ]
-  },
-  "mandare file audio alla console o ascoltare un link": {
-    "where": [
-      "omega-ui-src/source/remote.c:114"
+      "omega-ui-src/source/hblaunch.c:517"
     ]
   },
   "mar": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:50"
     ]
   },
@@ -8524,7 +9673,7 @@
   },
   "mer": {
     "where": [
-      "omega-ui-src/source/home.c:536"
+      "omega-ui-src/source/home.c:585"
     ]
   },
   "mercoledì": {
@@ -8540,7 +9689,13 @@
   "no": {
     "where": [
       "omega-ui-src/source/panels.c:1060",
-      "omega-ui-src/source/panels.c:1066"
+      "omega-ui-src/source/panels.c:1064",
+      "omega-ui-src/source/panels.c:1067"
+    ]
+  },
+  "nome del gioco (obbligatorio)": {
+    "where": [
+      "omega-ui-src/source/store.c:1406"
     ]
   },
   "non disturbare": {
@@ -8555,7 +9710,7 @@
   },
   "nov": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:51"
     ]
   },
@@ -8571,7 +9726,7 @@
   },
   "ott": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:51"
     ]
   },
@@ -8587,17 +9742,22 @@
   },
   "pkg danneggiato o scaricato a metà": {
     "where": [
-      "omega-ui-src/source/install.c:269"
+      "omega-ui-src/source/install.c:303"
     ]
   },
   "pkg non installabile su questa console (tipo o licenza)": {
     "where": [
-      "omega-ui-src/source/install.c:268"
+      "omega-ui-src/source/install.c:302"
     ]
   },
   "pkg non valido o link sbagliato": {
     "where": [
-      "omega-ui-src/source/install.c:267"
+      "omega-ui-src/source/install.c:301"
+    ]
+  },
+  "pkg, zip, elf (se manca si capisce dal link)": {
+    "where": [
+      "omega-ui-src/source/store.c:1407"
     ]
   },
   "profilo\u0004Altro": {
@@ -8611,9 +9771,14 @@
     "maxlen": 17,
     "hint": "pill button: one line, keep it short"
   },
+  "qualche riga sul gioco": {
+    "where": [
+      "omega-ui-src/source/store.c:1407"
+    ]
+  },
   "sab": {
     "where": [
-      "omega-ui-src/source/home.c:536"
+      "omega-ui-src/source/home.c:585"
     ]
   },
   "sabato": {
@@ -8633,12 +9798,12 @@
   },
   "serve un firmware più recente": {
     "where": [
-      "omega-ui-src/source/install.c:271"
+      "omega-ui-src/source/install.c:305"
     ]
   },
   "set": {
     "where": [
-      "omega-ui-src/source/home.c:537",
+      "omega-ui-src/source/home.c:586",
       "omega-ui-src/source/util.c:51"
     ]
   },
@@ -8649,38 +9814,39 @@
   },
   "spazio esaurito sulla console": {
     "where": [
-      "omega-ui-src/source/install.c:266"
+      "omega-ui-src/source/install.c:300"
     ]
   },
   "sì": {
     "where": [
       "omega-ui-src/source/panels.c:1060",
-      "omega-ui-src/source/panels.c:1066"
+      "omega-ui-src/source/panels.c:1064",
+      "omega-ui-src/source/panels.c:1067"
     ]
   },
   "tema": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
   "trucchi": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
   "utility": {
     "where": [
-      "omega-ui-src/source/store.c:115"
+      "omega-ui-src/source/store.c:120"
     ]
   },
-  "vedere il gioco in corso e la temperatura": {
+  "vedere il gioco in corso, la temperatura e il party vocale": {
     "where": [
-      "omega-ui-src/source/remote.c:116"
+      "omega-ui-src/source/remote.c:119"
     ]
   },
   "ven": {
     "where": [
-      "omega-ui-src/source/home.c:536"
+      "omega-ui-src/source/home.c:585"
     ]
   },
   "venerdì": {
@@ -8697,9 +9863,28 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
-  "websrv non risponde o non è riuscito ad avviarlo (porta 8080): è avviato?": {
+  "websrv non risponde (porta 8080): è spento o bloccato. Rimandalo dal caricatore di payload e riprova.": {
     "where": [
-      "omega-ui-src/source/hblaunch.c:678"
+      "omega-ui-src/source/hblaunch.c:722"
+    ]
+  },
+  "websrv non risponde più: rimandalo dal caricatore di payload e riprova": {
+    "where": [
+      "omega-ui-src/source/home.c:343"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
+  },
+  "websrv non è riuscito ad avviarlo (errore 503). Riprova; se succede sempre, rimanda websrv.": {
+    "where": [
+      "omega-ui-src/source/hblaunch.c:734"
+    ]
+  },
+  "websrv non è riuscito ad avviarlo: ho riparato la sua app di lancio (FAKE00000), riprova": {
+    "where": [
+      "omega-ui-src/source/hblaunch.c:733"
     ]
   },
   "{day} {mon} {year}": {
@@ -8714,32 +9899,50 @@
   },
   "«Automatica» passa a 30 fotogrammi quando la home è ferma: la console scalda meno.": {
     "where": [
-      "omega-ui-src/source/prefs.c:67"
+      "omega-ui-src/source/prefs.c:71"
     ]
   },
   "«Istantanee» toglie quasi del tutto i movimenti.": {
     "where": [
-      "omega-ui-src/source/prefs.c:65"
+      "omega-ui-src/source/prefs.c:69"
     ]
   },
   "«Silenziose»: senza suono. «Nascoste»: non compaiono (restano nel centro notifiche).": {
     "where": [
-      "omega-ui-src/source/prefs.c:79"
+      "omega-ui-src/source/prefs.c:83"
     ]
+  },
+  "È già in coda": {
+    "where": [
+      "omega-ui-src/source/install.c:766"
+    ],
+    "kind": [
+      "message"
+    ],
+    "hint": "one-line message at the bottom of the screen"
   },
   "È stato online": {
     "where": [
       "omega-ui-src/source/panels.c:719"
     ]
   },
+  "È un file di testo con l'elenco dei tuoi giochi: per ognuno il titolo e il link diretto al file, più copertina e dettagli se vuoi. Omega lo legge e mette i giochi in Libreria, pronti da installare con un tasto.": {
+    "where": [
+      "omega-ui-src/source/store.c:1387"
+    ],
+    "kind": [
+      "wrapped"
+    ],
+    "hint": "wraps over several lines"
+  },
   "è online": {
     "where": [
-      "omega-ui-src/source/home.c:796"
+      "omega-ui-src/source/home.c:974"
     ]
   },
   "✕ ingrandisci": {
     "where": [
-      "omega-ui-src/source/store.c:1148"
+      "omega-ui-src/source/store.c:1289"
     ]
   }
 }

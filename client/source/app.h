@@ -59,8 +59,8 @@ void bg_refresh(void);                   // rifà gli sfondi dopo un cambio di S
 
 // ------------------------------------------------ personalizzazione (prefs.c) --
 typedef struct {
-  int theme, accent, bg_style, bg_dim, glass, corners, focus;
-  int tiles, labels, sort, show_hb, ext_games, cards, hints;
+  int theme, accent, bg_style, bg_dim, glass, corners, focus, home_style;
+  int tiles, labels, sort, show_hb, ext_games, automount, cards, hints;
   int clock12, clock_sec, clock_date, bar_temp;
   int particles, particle_style, anim, fps;
   int sfx_pack, music_mood;
@@ -116,7 +116,8 @@ enum {
   IC_BTN_X, IC_BTN_O, IC_BTN_TRI, IC_BTN_SQ, IC_BTN_OPT, IC_ARROW_R, IC_SEND, IC_EXIT,
   IC_CLOCK, IC_STAR, IC_GLOBE, IC_BACK, IC_FWD, IC_RELOAD,
   IC_STORE, IC_DOWNLOAD, IC_LIKE, IC_DISLIKE,
-  IC_MUSIC, IC_PAUSE, IC_NEXT, IC_PREV, IC_SHUFFLE, IC_REPEAT, IC_RADIO, IC_FOLDER, IC_VOLUME, IC_ALBUM, IC_DRIVE, IC_BRUSH, IC_COUNT
+  IC_MUSIC, IC_PAUSE, IC_NEXT, IC_PREV, IC_SHUFFLE, IC_REPEAT, IC_RADIO, IC_FOLDER, IC_VOLUME, IC_ALBUM, IC_DRIVE, IC_BRUSH,
+  IC_HEART, IC_SHARE, IC_TROPHY, IC_FIRE, IC_CROWN, IC_USB, IC_BOX, IC_BUG, IC_IDEA, IC_GRID, IC_LIST, IC_WAVE, IC_HOME, IC_CLOUD, IC_SHIELD, IC_COUNT
 };
 void draw_icon(int id, int cx, int cy, int size, Col c, int alpha);
 void draw_logo(int cx, int cy, int size, int alpha);   // marchio di Omega (PNG incorporato)
@@ -181,6 +182,12 @@ void mic_probe(void);                         // comando di debug "micprobe"
 #define MAX_USERS   24
 #define MAX_APPS    256
 #define TID_COMMUNITY "OMEGACOMM"
+#define TID_STORE     "OMEGASTOR"
+#define TID_BROWSER   "OMEGAWEB0"
+#define TID_PKGS      "OMEGAPKG0"
+// tessere fisse di Omega in testa alla fila (Community, Store, Browser, PKG), non le cartelle
+#define SYS_TILE(a) ((a)->builtin && (a)->builtin != 2)
+static inline int sys_tile_order(int b) { return b == 1 ? 0 : b == 3 ? 1 : b == 4 ? 2 : b == 5 ? 3 : 9; }
 
 typedef struct {
   char oid[32]; int avatar; char about[168];
@@ -206,7 +213,7 @@ typedef struct {
   char tid[16]; char name[96]; char icon[256]; char art[256];
   int hb; char dir[256]; char sub[96];        // homebrew websrv nella cartella dir (tid = "HB" + hash)
   int pld;                                    // payload ELF: dir è il percorso dell'elf (tid = "PL" + hash)
-  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima), 2 = cartella (tid = fid)
+  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima), 2 = cartella (tid = fid), 3 = Store, 4 = Browser, 5 = Installa PKG
   int ext; char src[300]; char drive[40];     // gioco su un disco esterno (drives.c): cartella e nome del disco
   long last_played;                           // per l'ordine "Ultimi giocati"
   SDL_Texture *tex; int tex_state; Col avg;   // tex_state: 0 nulla, 1 in caricamento, 2 pronta
@@ -257,7 +264,8 @@ void layout_folder_menu(const char *fid);
 int  layout_hidden_count(void);
 void hidden_menu(void);                                  // Impostazioni › App nascoste
 void folder_open(const char *fid); void folder_draw(float t); void folder_input(int b);
-void home_relayout(const char *keep_tid);                // home.c: rifà la fila dopo un cambio (keep_tid NULL = la tessera a fuoco)
+void home_relayout(const char *keep_tid);
+void sys_tile_draw(const AppEntry *ap, int tx, int ty, int s, int a);   // home.c: tessere delle app di Omega                // home.c: rifà la fila dopo un cambio (keep_tid NULL = la tessera a fuoco)
 // dischi esterni (drives.c)
 typedef struct { char mount[128], label[48]; double free_gb, total_gb; } Drive;
 int drives_list(Drive *out, int max);                      // dischi collegati adesso
@@ -266,6 +274,12 @@ void drives_tick(void);                                    // avvia il controllo
 int drives_changed(void);                                  // 1 se i giochi esterni sono cambiati (disco collegato o tolto)
 int drives_prepare_launch(const AppEntry *a, char *err, size_t en);   // monta e registra prima di avviare
 void drives_after_game(void);                              // smonta i giochi esterni non più in esecuzione
+// cartelle scelte dall'utente (drives.c): kind 0 giochi, 1 pkg
+int paths_list(int kind, char (*out)[300], int max);
+int paths_set(int kind, const char *path, int add);      // add 1 aggiunge, 0 toglie
+// installatore di pkg dai dischi e dalle cartelle (pkgs.c)
+void pkgs_open(void); void pkgs_draw(float t); void pkgs_input(int b);
+void paths_menu(void);                                   // Impostazioni › Giochi e PKG
 
 long iso_epoch(const char *iso);
 void rel_time(const char *iso, char *out, size_t n);       // "5 min fa"
@@ -345,7 +359,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);
@@ -368,6 +382,10 @@ void users_draw(void); void users_input(int b);
 void login_draw(void); void login_input(int b);
 void register_draw(void); void register_input(int b);
 void home_enter(void);
+// altre modalità del menu (homestyles.c) e gli agganci di home.c che usano
+void hs_draw(void); int hs_input(int b); const char *hs_name(int i);
+int  home_selected(void); void home_set_sel(int i); int home_launching(void); void home_more(int i);
+void home_tile(int i, int x, int y, int s, int a); void home_top(int which); int home_jobs(int x, int y, int s, int a);
 void home_update(void); void home_draw(void); void home_input(int b);
 
 // Pannelli (t = avanzamento dell'animazione di apertura, 0..1)
@@ -382,6 +400,8 @@ void confirm_draw(float t); void confirm_input(int b);
 void avatar_draw(float t); void avatar_input(int b);
 void settings_draw(float t); void settings_input(int b);
 void about_draw(float t); void about_input(int b);   // Informazioni su Omega
+void why_draw(float t); void why_input(int b);       // Perché Omega
+void feedback_open(void);                            // segnala un bug o chiedi una funzione
 void news_open(const News *n); void news_draw(float t); void news_input(int b);
 void news_art(const News *n, int x, int y, int w, int h, int radius, int alpha);
 void gallery_open(int kind); void gallery_draw(float t); void gallery_input(int b);
@@ -462,11 +482,20 @@ typedef struct {
   int kind; char url[2048]; char filename[160]; char name[96]; char title_id[16];
   char version[24]; char category[24]; char desc[200]; char source[300]; long size;
   char dest_mount[128], dest_label[48];   // gioco su disco esterno (scelto all'installazione); vuoto = memoria interna
+  char icon[320];                         // icona per la tessera in home: file locale o URL (facoltativa)
+  char lib_id[40];                        // voce di La mia libreria con file caricati: si toglie dopo l'installazione
 } InstallReq;
-void install_begin(const InstallReq *r);
+void install_begin(const InstallReq *r);  // se ce n'è già una in corso va in coda
 void install_tick(void);
 void install_overlay(void);
 int  install_busy(void);
+// Tessera in stile PS4 nella fila della home: cosa si installa e a che punto è.
+typedef struct { int active, err, queued; char name[96], icon[320], phase[128], result[512]; float prog; Uint32 ended; } InstallView;
+int  install_view(InstallView *v);        // 1 se c'è qualcosa da mostrare (in corso o finito da poco)
+void install_dismiss(void);
+void install_cancel(void);
+void install_cleanup(void);               // file orfani (scaricamenti a metà, icone, registrazioni fallite)
+int  pkg_info(const char *path, char *title, size_t tn, char *cid, size_t cn, const char *icon_dest);
 int  store_uninstall(const char *title_id);   // 0 = ok
 
 // Aggiornamenti automatici (update.c, solo nella build ufficiale)

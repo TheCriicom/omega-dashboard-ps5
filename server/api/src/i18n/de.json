@@ -12,7 +12,11 @@
     "admin_report": "Meldung: {title}",
     "admin_social_report": "Meldung: {kind} {title}",
     "report_on_comment": " (Kommentar)",
-    "report_hidden": " — ausgeblendet"
+    "report_hidden": " — ausgeblendet",
+    "feedback_bug": "Fehler gemeldet von {actor}",
+    "feedback_idea": "Funktionswunsch von {actor}",
+    "store_recommend": "{actor} empfiehlt dir {app}",
+    "store_update": "{app} wurde auf Version {version} aktualisiert"
   },
   "report_kind": {
     "user": "Nutzer",

@@ -12,7 +12,11 @@
     "admin_report": "Báo cáo: {title}",
     "admin_social_report": "Báo cáo: {kind} {title}",
     "report_on_comment": " (bình luận)",
-    "report_hidden": " — đã ẩn"
+    "report_hidden": " — đã ẩn",
+    "feedback_bug": "Lỗi do {actor} báo cáo",
+    "feedback_idea": "Yêu cầu tính năng từ {actor}",
+    "store_recommend": "{actor} giới thiệu {app} cho bạn",
+    "store_update": "{app} đã được cập nhật lên phiên bản {version}"
   },
   "report_kind": {
     "user": "người dùng",

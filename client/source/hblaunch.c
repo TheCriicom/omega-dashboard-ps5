@@ -282,6 +282,8 @@ static const char HB_PRELUDE[] =
   "  if (typeof args === 'string') params.append('args', args.replace(/ /g, '\\\\ '));\n"
   "  else if (Array.isArray(args)) params.append('args', args.map(arg => arg.replace(/ /g, '\\\\ ')).join(' '));\n"
   "  if (env != null) params.append('env', Object.entries(env).map(([key, val]) => `${key}=${val}`.replace(/ /g, '\\\\ ')).join(' '));\n"
+  "  // websrv usa \"/\" se manca cwd; molti homebrew aprono i propri file per percorso relativo: la loro cartella\n"
+  "  if (cwd == null) { const d = String(path).replace(/\\/[^\\/]*$/, ''); if (d) cwd = d; }\n"
   "  if (cwd != null) params.append('cwd', cwd);\n"
   "  return params;\n"
   "}\n"
@@ -519,6 +521,8 @@ static int hb_js_main(HbSess *h, const char *dir, char **meta, char *err, size_t
 }
 #endif
 
+int hb_remove(const char *dir, const char *root);
+
 // imgPath restituito dall'ultimo hb_meta, per hb_icon
 static char g_meta_dir[400], g_meta_img[600];
 
@@ -583,9 +587,9 @@ static int hb_resolve(const char *dir, int choice, char *err, size_t en, char (*
     char js_path[600]; snprintf(js_path, sizeof js_path, "%s/homebrew.js", dir);
     if (access(js_path, 0) != 0) {
       // solo eboot.elf: websrv lo avvia come onclick → { path: <dir>/eboot.elf }
-      char p[600], ep[1800], q[2000]; snprintf(p, sizeof p, "%s/eboot.elf", dir);
-      formenc(ep, sizeof ep, p);
-      snprintf(q, sizeof q, "pipe=0&daemon=0&path=%s", ep);
+      char p[600], ep[1800], ed[1200], q[3200]; snprintf(p, sizeof p, "%s/eboot.elf", dir);
+      formenc(ep, sizeof ep, p); formenc(ed, sizeof ed, dir);
+      snprintf(q, sizeof q, "pipe=0&daemon=0&path=%s&cwd=%s", ep, ed);
       g_hb.query = strdup(q);
       return g_hb.query ? 0 : -1;
     }
@@ -651,6 +655,43 @@ static int hb_resolve(const char *dir, int choice, char *err, size_t en, char (*
 #endif
 }
 
+// Prima dell'avvio: l'eseguibile deve essere eseguibile (dagli zip e dalle
+// copie da PC arriva spesso senza permessi; websrv issue #48) e i file
+// dell'homebrew leggibili da tutti.
+static void hb_prepare_elf(const char *url) {
+  const char *p = strstr(url, "path=");
+  if (!p) return;
+  char raw[1200]; snprintf(raw, sizeof raw, "%.*s", (int)strcspn(p + 5, "&"), p + 5);
+  char dec[1200]; size_t o = 0;
+  for (const char *c = raw; *c && o + 1 < sizeof dec; c++) {
+    if (*c == '+') dec[o++] = ' ';
+    else if (*c == '%' && c[1] && c[2]) { char h[3] = { c[1], c[2], 0 }; dec[o++] = (char)strtol(h, NULL, 16); c += 2; }
+    else dec[o++] = *c;
+  }
+  dec[o] = 0;
+  struct stat st;
+  if (stat(dec, &st) == 0 && S_ISREG(st.st_mode) && (st.st_mode & 0755) != 0755) {
+    int rc = chmod(dec, st.st_mode | 0755);
+    omega_log("avvio homebrew: permessi di %s sistemati -> %d", dec, rc);
+  }
+}
+
+// websrv lancia gli homebrew dentro /system_ex/app/FAKE00000: se il suo
+// param.json è rovinato non parte più niente (websrv issue #12). Lo si toglie
+// e websrv lo ricrea al prossimo avvio. 1 = riparato.
+int hb_repair_fake(void) {
+  const char *pj = OMEGA_SYSROOT "/system_ex/app/FAKE00000/sce_sys/param.json";
+  struct stat st; if (stat(pj, &st) != 0) return 0;
+  char *b = file_read(pj, 256 * 1024, NULL);
+  JVal *j = b ? json_parse(b) : NULL;
+  int bad = !j || !jget(j, "titleId");
+  json_free(j); free(b);
+  if (!bad) return 0;
+  int rc = hb_remove(OMEGA_SYSROOT "/system_ex/app/FAKE00000", OMEGA_SYSROOT "/system_ex/app");
+  omega_log("avvio homebrew: FAKE00000 rovinato, tolto -> %d", rc);
+  return rc == 0;
+}
+
 // Avvia l'homebrew della cartella.
 //   choice: -1 nuovo avvio (main() e click), >= 0 voce scelta nell'ultimo menu
 //   dry:    valuta soltanto, un passo alla volta, senza chiedere a websrv di avviare;
@@ -671,11 +712,28 @@ int hb_launch(const char *dir, int choice, int dry, char *err, size_t en, char (
   snprintf(url, sizeof url, WEBSRV_URL "/hbldr?%s", g_hb.query);
   int daemon = g_hb.daemon;
   hb_end();
+  hb_prepare_elf(url);
   omega_log("avvio homebrew%s: %s", daemon ? " (daemon)" : "", url);
 #ifdef PS5
   unsigned char b[16];
-  long r = omega_url_peek(url, b, sizeof b);   // websrv chiude Omega e avvia l'homebrew
-  if (r < 0) { snprintf(err, en, "%s", _("websrv non risponde o non è riuscito ad avviarlo (porta 8080): è avviato?")); return -1; }
+  // websrv deve rispondere subito: se /version non torna è spento o bloccato
+  // (websrv issue #52: un avvio fallito lo lascia appeso per sempre)
+  if (omega_url_peek(WEBSRV_URL "/version", b, sizeof b) < 0) {
+    snprintf(err, en, "%s", _("websrv non risponde (porta 8080): è spento o bloccato. Rimandalo dal caricatore di payload e riprova."));
+    return -1;
+  }
+  // Con daemon=0 websrv chiude l'app in primo piano (Omega) e avvia l'homebrew:
+  // Omega NON deve chiudersi da sola, altrimenti la chiusura di websrv fallisce
+  // (503) e non parte niente. Il servizio di Omega non la rilancia per 30 s.
+  if (!daemon) { FILE *f = fopen(OMEGA_DIR "/hb-launching", "w"); if (f) { fputs(g_hb.dir, f); fclose(f); } }
+  long r = omega_url_peek(url, b, sizeof b);
+  if (r < 0) {
+    unlink(OMEGA_DIR "/hb-launching");
+    int fixed = hb_repair_fake();
+    snprintf(err, en, "%s", fixed ? _("websrv non è riuscito ad avviarlo: ho riparato la sua app di lancio (FAKE00000), riprova")
+                                  : _("websrv non è riuscito ad avviarlo (errore 503). Riprova; se succede sempre, rimanda websrv."));
+    return -1;
+  }
 #endif
   return daemon ? 2 : 0;
 }

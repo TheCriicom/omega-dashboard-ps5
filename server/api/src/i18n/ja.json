@@ -12,7 +12,11 @@
     "admin_report": "通報: {title}",
     "admin_social_report": "通報: {kind} {title}",
     "report_on_comment": "（コメント）",
-    "report_hidden": " — 非表示"
+    "report_hidden": " — 非表示",
+    "feedback_bug": "{actor}さんからバグ報告",
+    "feedback_idea": "{actor}さんから機能リクエスト",
+    "store_recommend": "{actor}さんが{app}をおすすめしています",
+    "store_update": "{app}がバージョン{version}に更新されました"
   },
   "report_kind": {
     "user": "ユーザー",

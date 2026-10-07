@@ -221,49 +221,62 @@ int main(void) {
   i18n_init(lang);
   lg("==== Omega per OnionHEN avvio ====");
 
-  onion_transport transport = { 0 };
-  onion_socket_transport sock = { 0 };
-  onion_client client = ONION_CLIENT_INITIALIZER;
-  onion_host_services_v1 host;
-  onion_ui_handle handle = 0;
-  onion_ui_document *doc = NULL;
-  View view, last;
-  read_view(&view); last = view;
-
-  onion_status s = onion_socket_transport_connect(&transport, &sock, ONION_PLUGIN_IPC_SOCKET_PATH);
-  if (s == ONION_OK) s = onion_client_init(&client, &transport);
-  if (s == ONION_OK) s = onion_client_open_session(&client, &onion_plugin_descriptor);
-  if (s == ONION_OK) s = onion_client_make_services(&client, &host);
-  if (s == ONION_OK) s = build(&view, &doc);
-  if (s == ONION_OK) s = onion_ui_register(&host, doc, &handle);
-  if (s != ONION_OK) { lg("avvio non riuscito: %s", onion_status_string(s)); goto out; }
-  lg("pagina registrata");
-
-  time_t refreshed = time(NULL);
+  // Ciclo di collegamento: OnionHEN può non essere ancora pronto all'avvio (aspetta
+  // kstuff, fino a un minuto) e dopo il riposo chiude tutte le connessioni dei
+  // plugin e la ShellUI riparte: le pagine spariscono. Quindi non si esce mai:
+  // a ogni errore si chiude tutto, si aspetta e si rifà HELLO + registrazione.
+  int fails = 0;
   while (running) {
-    onion_ui_event_v1 ev;
-    s = onion_client_poll_ui_event(&client, &ev);
-    if (s == ONION_OK) { on_event(&ev); refreshed = 0; continue; }
-    if (s != ONION_E_NOT_FOUND) { lg("eventi interrotti: %s", onion_status_string(s)); break; }
-    usleep(100 * 1000);
-    // ogni 2 s (o subito dopo un comando) si rilegge lo stato; se è cambiato
-    // si registra di nuovo la pagina con lo stesso id, che la sostituisce
-    if (time(NULL) - refreshed < 2) continue;
-    refreshed = time(NULL);
-    read_view(&view);
-    if (!memcmp(&view, &last, sizeof view)) continue;
-    onion_ui_document *nd = NULL;
-    if (build(&view, &nd) == ONION_OK) {
-      onion_ui_handle h2 = handle;
-      if (onion_ui_register(&host, nd, &h2) == ONION_OK) { onion_ui_document_destroy(doc); doc = nd; handle = h2; last = view; }
-      else onion_ui_document_destroy(nd);
+    onion_transport transport = { 0 };
+    onion_socket_transport sock = { 0 };
+    onion_client client = ONION_CLIENT_INITIALIZER;
+    onion_host_services_v1 host;
+    onion_ui_handle handle = 0;
+    onion_ui_document *doc = NULL;
+    View view, last;
+    read_view(&view); last = view;
+
+    onion_status s = onion_socket_transport_connect(&transport, &sock, ONION_PLUGIN_IPC_SOCKET_PATH);
+    if (s == ONION_OK) s = onion_client_init(&client, &transport);
+    if (s == ONION_OK) s = onion_client_open_session(&client, &onion_plugin_descriptor);
+    if (s == ONION_OK) s = onion_client_make_services(&client, &host);
+    if (s == ONION_OK) s = build(&view, &doc);
+    if (s == ONION_OK) s = onion_ui_register(&host, doc, &handle);
+    if (s != ONION_OK) {
+      if (fails < 5 || fails % 30 == 0) lg("collegamento a OnionHEN non riuscito (%d): %s", fails + 1, onion_status_string(s));
+      fails++;
+    } else {
+      lg("pagina registrata%s", fails ? " (dopo un nuovo collegamento)" : "");
+      fails = 0;
+      time_t refreshed = time(NULL);
+      while (running) {
+        onion_ui_event_v1 ev;
+        s = onion_client_poll_ui_event(&client, &ev);
+        if (s == ONION_OK) { on_event(&ev); refreshed = 0; continue; }
+        if (s != ONION_E_NOT_FOUND) { lg("collegamento interrotto (riposo o ShellUI riavviata?): %s", onion_status_string(s)); break; }
+        usleep(100 * 1000);
+        // ogni 2 s (o subito dopo un comando) si rilegge lo stato; se è cambiato
+        // si registra di nuovo la pagina con lo stesso id, che la sostituisce
+        if (time(NULL) - refreshed < 2) continue;
+        refreshed = time(NULL);
+        read_view(&view);
+        if (!memcmp(&view, &last, sizeof view)) continue;
+        onion_ui_document *nd = NULL;
+        if (build(&view, &nd) == ONION_OK) {
+          onion_ui_handle h2 = handle;
+          s = onion_ui_register(&host, nd, &h2);
+          if (s == ONION_OK) { onion_ui_document_destroy(doc); doc = nd; handle = h2; last = view; }
+          else { onion_ui_document_destroy(nd); lg("aggiornamento della pagina non riuscito: %s", onion_status_string(s)); break; }
+        }
+      }
+      if (handle) (void)onion_ui_unregister(&host, handle);
     }
+    onion_ui_document_destroy(doc);
+    onion_client_deinit(&client);
+    onion_socket_transport_deinit(&transport);
+    // attesa crescente: 2 s, poi fino a 10 s (OnionHEN che riparte dopo il riposo)
+    for (int i = 0; running && i < (fails > 5 ? 100 : 20); i++) usleep(100 * 1000);
   }
-out:
-  if (handle) (void)onion_ui_unregister(&host, handle);
-  onion_ui_document_destroy(doc);
-  onion_client_deinit(&client);
-  onion_socket_transport_deinit(&transport);
   lg("fermato");
   return 0;
 }

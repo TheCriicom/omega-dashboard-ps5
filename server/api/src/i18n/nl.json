@@ -12,7 +12,11 @@
     "admin_report": "Melding: {title}",
     "admin_social_report": "Melding: {kind} {title}",
     "report_on_comment": " (reactie)",
-    "report_hidden": " — verborgen"
+    "report_hidden": " — verborgen",
+    "feedback_bug": "Bug gemeld door {actor}",
+    "feedback_idea": "Functieverzoek van {actor}",
+    "store_recommend": "{actor} raadt je {app} aan",
+    "store_update": "{app} is bijgewerkt naar versie {version}"
   },
   "report_kind": {
     "user": "gebruiker",

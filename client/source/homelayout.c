@@ -105,7 +105,7 @@ void layout_apply(void) {
   static AppEntry tmp[MAX_APPS];
   int n = 0;
   // 1) Community e cartelle con almeno un'app installata
-  for (int i = 0; i < napps; i++) if (apps[i].builtin == 1) tmp[n++] = apps[i];
+  for (int i = 0; i < napps; i++) if (SYS_TILE(&apps[i])) tmp[n++] = apps[i];
   for (int f = 0; f < nfolders && n < MAX_APPS; f++) {
     int has = 0;
     for (int i = 0; i < napps && !has; i++) { const char *fi = apps[i].builtin ? NULL : layout_folder_of(apps[i].tid); has = fi && !strcmp(fi, folders[f].fid); }

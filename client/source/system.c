@@ -183,7 +183,7 @@ static void fan_menu(void) {
 }
 
 // ---------------------------------------------------------------- pannello --
-enum { SY_FILES, SY_REMOTE, SY_HEN, SY_FAN, SY_RESTART_DAEMON, SY_DIAG, SY_N };
+enum { SY_FILES, SY_PKGS, SY_REMOTE, SY_HEN, SY_FAN, SY_RESTART_DAEMON, SY_DIAG, SY_N };
 static char remote_pin[8];
 static void remote_done(int st, JVal *j, const char *raw, void *ud) { (void)raw; (void)ud; if (st == 200) jcpy(remote_pin, sizeof remote_pin, j, "pin"); else remote_pin[0] = 0; }
 void files_open(const char *start);
@@ -273,23 +273,23 @@ void system_draw(float t) {
     draw_text(font(W_REG, 23), s, cx + 28, cy, si.svc[i].up ? C_TXT : C_FAINT, a, AL_L);
   }
   ry += 3 * 42 + 14;
-  static const char *acts[SY_N] = { N_("Gestore dei file"), N_("Telecomando dal telefono"), N_("Componenti per il jailbreak"), N_("Soglia della ventola"), N_("Riavvia il lettore musicale"), N_("Invia diagnostica allo sviluppatore") };
-  static const int aic[SY_N] = { IC_FOLDER, IC_GLOBE, IC_DOWNLOAD, IC_RELOAD, IC_MUSIC, IC_CHAT };
+  static const char *acts[SY_N] = { N_("Gestore dei file"), N_("Installa PKG e cartelle dei giochi"), N_("Telecomando dal telefono"), N_("Componenti per il jailbreak"), N_("Soglia della ventola"), N_("Riavvia il lettore musicale"), N_("Invia diagnostica allo sviluppatore") };
+  static const int aic[SY_N] = { IC_FOLDER, IC_BOX, IC_CLOUD, IC_DOWNLOAD, IC_RELOAD, IC_MUSIC, IC_CHAT };
   sys_anim = approach(sys_anim, (float)sys_sel, 20.0f);
   for (int i = 0; i < SY_N; i++) {
-    int yy = ry + i * 56;   // 6 voci: con 64 l'ultima finiva sotto la barra dei comandi
+    int yy = ry + i * 50;   // 7 voci sopra la barra dei comandi
     float fa = clampf(1 - fabsf(sys_anim - i), 0, 1);
-    fill_rrect(rx, yy, 760, 50, 16, mix(RGB(34, 40, 56), C_WHITE, fa), a);
+    fill_rrect(rx, yy, 760, 44, 16, mix(RGB(34, 40, 56), C_WHITE, fa), a);
     Col fg = mix(C_TXT, RGB(12, 14, 22), fa);
-    draw_icon(aic[i], rx + 40, yy + 25, 28, fg, a);
+    draw_icon(aic[i], rx + 40, yy + 22, 26, fg, a);
     char lab[128]; snprintf(lab, sizeof lab, "%s", _(acts[i]));
     if (i == SY_REMOTE && remote_pin[0]) { size_t l = strlen(lab); snprintf(lab + l, sizeof lab - l, " \xC2\xB7 PIN %s", remote_pin); }
     if (i == SY_FAN && si.fan_threshold) { size_t l = strlen(lab); snprintf(lab + l, sizeof lab - l, " \xC2\xB7 %d \xC2\xB0""C", si.fan_threshold); }
-    draw_text_fit(font(W_MED, 25), lab, rx + 80, yy + 10, 660, fg, a, AL_L);
+    draw_text_fit(font(W_MED, 24), lab, rx + 80, yy + 8, 660, fg, a, AL_L);
   }
   if (remote_pin[0] && strcmp(si.ip, "\xE2\x80\x94")) {
     char m[200]; snprintf(m, sizeof m, _("Dal telefono, sulla stessa rete: http://%s:9095"), si.ip);
-    draw_text_fit(font(W_REG, 22), m, rx, ry + SY_N * 56 + 2, 760, C_DIM, a, AL_L);
+    draw_text_fit(font(W_REG, 22), m, rx, ry + SY_N * 50 + 2, 760, C_DIM, a, AL_L);
   }
   const int ic[] = { IC_BTN_X, IC_BTN_O };
   const char *lb[] = { _("Scegli"), _("Indietro") };
@@ -347,6 +347,7 @@ void system_input(int b) {
   else if (b == B_DOWN && sys_sel < SY_N - 1) { sys_sel++; sfx_play(SFX_MOVE); }
   else if (b == B_X) {
     if (sys_sel == SY_FILES) files_open(NULL);
+    else if (sys_sel == SY_PKGS) pkgs_open();
     else if (sys_sel == SY_FAN) fan_menu();
     else if (sys_sel == SY_REMOTE) remote_open();
     else if (sys_sel == SY_HEN) hen_check(2);
@@ -584,7 +585,20 @@ void files_input(int b) {
       size_t l = strlen(fm_path);
       snprintf(fm_path + l, sizeof fm_path - l, "%s%s", fm_path[l - 1] == '/' ? "" : "/", fe[fm_sel].name);
       fm_sel = 0; fm_scroll = 0; fm_load(); sfx_play(SFX_OPEN);
-    } else fm_opts(0, NULL);
+    } else {
+      size_t L = strlen(fe[fm_sel].name);
+      if (L > 4 && !strcasecmp(fe[fm_sel].name + L - 4, ".pkg")) {
+        // un .pkg: si installa da qui, con la tessera che avanza nella home
+        InstallReq r; memset(&r, 0, sizeof r); r.kind = 1;
+        snprintf(r.url, sizeof r.url, "file://%s/%s", fm_path, fe[fm_sel].name);
+        char t[96] = ""; char path[900]; snprintf(path, sizeof path, "%s/%s", fm_path, fe[fm_sel].name);
+        char ic[320]; snprintf(ic, sizeof ic, OMEGA_DIR "/dl/icons/%08x.png", fnv1a(path));
+        pkg_info(path, t, sizeof t, NULL, 0, ic);
+        snprintf(r.name, sizeof r.name, "%.*s", (int)(t[0] ? strlen(t) : L - 4), t[0] ? t : fe[fm_sel].name);
+        if (access(ic, 0) == 0) snprintf(r.icon, sizeof r.icon, "%s", ic);
+        install_begin(&r);
+      } else fm_opts(0, NULL);
+    }
   }
   else if (b == B_TRI) fm_paste();
   else if (b == B_SQ) {

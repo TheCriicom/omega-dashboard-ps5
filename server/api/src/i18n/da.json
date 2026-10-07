@@ -12,7 +12,11 @@
     "admin_report": "Anmeldelse: {title}",
     "admin_social_report": "Anmeldelse: {kind} {title}",
     "report_on_comment": " (kommentar)",
-    "report_hidden": " — skjult"
+    "report_hidden": " — skjult",
+    "feedback_bug": "Fejl rapporteret af {actor}",
+    "feedback_idea": "Funktionsønske fra {actor}",
+    "store_recommend": "{actor} anbefaler dig {app}",
+    "store_update": "{app} er opdateret til version {version}"
   },
   "report_kind": {
     "user": "bruger",

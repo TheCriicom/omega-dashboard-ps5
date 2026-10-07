@@ -12,7 +12,11 @@
     "admin_report": "Anmälan: {title}",
     "admin_social_report": "Anmälan: {kind} {title}",
     "report_on_comment": " (kommentar)",
-    "report_hidden": " — dold"
+    "report_hidden": " — dold",
+    "feedback_bug": "Bugg rapporterad av {actor}",
+    "feedback_idea": "Funktionsönskemål från {actor}",
+    "store_recommend": "{actor} rekommenderar {app} till dig",
+    "store_update": "{app} har uppdaterats till version {version}"
   },
   "report_kind": {
     "user": "användare",

@@ -12,7 +12,11 @@
     "admin_report": "Raportare: {title}",
     "admin_social_report": "Raportare: {kind} {title}",
     "report_on_comment": " (comentariu)",
-    "report_hidden": " — ascuns"
+    "report_hidden": " — ascuns",
+    "feedback_bug": "Eroare raportată de {actor}",
+    "feedback_idea": "Cerere de funcție de la {actor}",
+    "store_recommend": "{actor} îți recomandă {app}",
+    "store_update": "{app} a fost actualizat la versiunea {version}"
   },
   "report_kind": {
     "user": "utilizator",

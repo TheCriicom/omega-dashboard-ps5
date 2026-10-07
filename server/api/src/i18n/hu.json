@@ -12,7 +12,11 @@
     "admin_report": "Bejelentés: {title}",
     "admin_social_report": "Bejelentés: {kind} {title}",
     "report_on_comment": " (hozzászólás)",
-    "report_hidden": " — elrejtve"
+    "report_hidden": " — elrejtve",
+    "feedback_bug": "Hibát jelentett: {actor}",
+    "feedback_idea": "Funkciókérés tőle: {actor}",
+    "store_recommend": "{actor} ajánlja neked: {app}",
+    "store_update": "{app} frissült a(z) {version} verzióra"
   },
   "report_kind": {
     "user": "felhasználó",

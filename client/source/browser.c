@@ -38,6 +38,34 @@ static HistEntry hist[MAX_HIST]; static int nhist, hidx = -1;
 static char bm_title[MAX_BM][120], bm_url[MAX_BM][600]; static int nbm, bm_loaded;
 static char err_msg[200];
 static float load_anim;
+static int full_page;          // 1: pagina completa invece della modalità lettura
+
+// Il browser vero della PS5 (WebKit di sistema): le pagine moderne con
+// JavaScript, i video, gli accessi. Lo apre sceSystemServiceLaunchWebBrowser,
+// come fa il comando "browse" di shsrv.
+#ifdef PS5
+int sceSystemServiceLaunchWebBrowser(const char *uri, void *param);
+int sceUserServiceInitialize(void *params);
+#endif
+static void system_browser(const char *url) {
+  const char *u = url && *url && strncmp(url, "omega://", 8) ? url : "https://www.google.com";
+#ifdef PS5
+  static int inited; if (!inited) { sceUserServiceInitialize(NULL); inited = 1; }
+  int rc = sceSystemServiceLaunchWebBrowser(u, NULL);
+  omega_log("browser di sistema %s -> 0x%x", u, rc);
+  if (rc < 0) { char m[160]; snprintf(m, sizeof m, _("Il browser della PS5 non si è aperto (0x%08X)"), (unsigned)rc); set_msg(m, 1); }
+  else set_msg(_("Apro il browser della PS5: per tornare in Omega premi il tasto PS"), 0);
+#else
+  omega_log("(desktop) browser di sistema: %s", u);
+  set_msg(_("Apro il browser della PS5: per tornare in Omega premi il tasto PS"), 0);
+#endif
+}
+// siti rapidi della pagina iniziale
+static const struct { const char *name, *url; int ic; } QUICK[] = {
+  { "Wikipedia", "https://it.m.wikipedia.org", IC_NEWS }, { "Wololo", "https://wololo.net", IC_GAMEPAD }, { "PSX-Place", "https://www.psx-place.com", IC_GAMEPAD },
+  { "GitHub", "https://github.com/ps5-payload-dev", IC_BOX }, { "Reddit", "https://old.reddit.com/r/ps5homebrew", IC_CHAT }, { "Meteo", "https://wttr.in/?format=4", IC_CLOUD },
+};
+#define NQUICK (int)(sizeof QUICK / sizeof *QUICK)
 
 // --------------------------------------------------------------- segnalibri --
 static void bm_save(void) {
@@ -219,7 +247,7 @@ static void fetch_current(void) {
   int is_search = !strncmp(u, SEARCH_PREFIX, sizeof SEARCH_PREFIX - 1);
   if (is_search) snprintf(enc, sizeof enc, "%s", u + sizeof SEARCH_PREFIX - 1);   // già codificata
   else url_encode(enc, sizeof enc, u, "-_.~");
-  snprintf(path, sizeof path, is_search ? OMEGA_API "/browse?q=%s" : OMEGA_API "/browse?url=%s", enc);
+  snprintf(path, sizeof path, is_search ? OMEGA_API "/browse?q=%s" : full_page ? OMEGA_API "/browse?full=1&url=%s" : OMEGA_API "/browse?url=%s", enc);
   snprintf(pg_url, sizeof pg_url, "%s", u);
   loading = 1; load_gen++; err_msg[0] = 0;
   net_req(HTTP_GET, path, NULL, on_page, (void *)(intptr_t)load_gen);
@@ -283,31 +311,56 @@ static void on_img(const char *key, SDL_Texture *t, SDL_Color avg, void *ud) {
 }
 
 // ------------------------------------------------------------------ disegno --
-static int home_sel;    // 0 barra di ricerca, 1.. segnalibri
+static int home_sel;    // 0 barra di ricerca, 1 browser della PS5, 2..: siti rapidi, poi segnalibri
+#define HOME_FIRST 2
+static int home_items(void) { return HOME_FIRST + NQUICK + nbm; }
+
+static void home_card(int x, int y, int w, int h, int f, Col c, int ic, const char *ini, const char *name, const char *sub, int a) {
+  if (f) shadow_rrect(x, y, w, h, 22, 18, a / 2);
+  fill_rrect(x, y, w, h, 22, f ? RGB(56, 64, 90) : RGB(28, 33, 48), a);
+  if (f) stroke_rrect(x - 5, y - 5, w + 10, h + 10, 27, 3, C_WHITE, a);
+  fill_circle(x + 46, y + 48, 28, c, a);
+  if (ic >= 0) draw_icon(ic, x + 46, y + 48, 30, C_WHITE, a); else draw_text(font(W_BOLD, 26), ini, x + 46, y + 32, C_WHITE, a, AL_C);
+  draw_text_fit(font(W_MED, 24), name, x + 24, y + 88, w - 48, C_TXT, a, AL_L);
+  if (sub) draw_text_fit(font(W_REG, 18), sub, x + 24, y + 120, w - 48, C_FAINT, a, AL_L);
+}
 
 static void draw_home(int a) {
   int cx = SCREEN_W / 2;
-  draw_icon(IC_GLOBE, cx, 250, 110, C_ACC2, a);
-  draw_text(font(W_LIGHT, 56), _("Browser Omega"), cx, 320, C_WHITE, a, AL_C);
-  int fw = 1000, fx = cx - fw / 2, fy = 430, foc = home_sel == 0;
-  fill_rrect(fx, fy, fw, 90, 45, foc ? RGB(52, 60, 84) : RGB(36, 42, 60), a);
-  if (foc) stroke_rrect(fx - 4, fy - 4, fw + 8, 98, 49, 3, C_WHITE, a);
-  draw_icon(IC_SEARCH, fx + 52, fy + 45, 36, C_TXT, a);
-  draw_text(font(W_LIGHT, 30), _("Cerca sul web o scrivi un indirizzo"), fx + 92, fy + 26, C_DIM, a, AL_L);
-  draw_text(font(W_MED, 28), _("Segnalibri"), cx - 600, 580, C_DIM, a, AL_L);
-  for (int i = 0; i < nbm; i++) {
-    int col = i % 4, row = i / 4;
-    int w = 280, h = 150, x = cx - 600 + col * (w + 26), y = 630 + row * (h + 24);
-    if (y > SCREEN_H - 120) break;
-    int f = home_sel == i + 1;
-    if (f) shadow_rrect(x, y, w, h, 22, 18, a / 2);
-    fill_rrect(x, y, w, h, 22, f ? RGB(56, 64, 90) : RGB(28, 33, 48), a);
-    if (f) stroke_rrect(x - 5, y - 5, w + 10, h + 10, 27, 3, C_WHITE, a);
-    Col c = avatar_col(i * 3 + 1);
-    fill_circle(x + 50, y + 52, 30, c, a);
-    char ini[4] = { bm_title[i][0], 0 }; draw_text(font(W_BOLD, 28), ini, x + 50, y + 34, C_WHITE, a, AL_C);
-    draw_text_fit(font(W_MED, 26), bm_title[i], x + 24, y + 96, w - 48, C_TXT, a, AL_L);
+  glow(cx, 230, 340, C_ACC, a * 14 / 100);
+  draw_icon(IC_GLOBE, cx - 250, 222, 70, C_ACC2, a);
+  draw_text(font(W_LIGHT, 56), _("Browser Omega"), cx - 200, 186, C_WHITE, a, AL_L);
+  int fw = 1100, fx = cx - fw / 2, fy = 300, foc = home_sel == 0;
+  fill_rrect(fx, fy, fw, 86, 43, foc ? RGB(52, 60, 84) : RGB(36, 42, 60), a);
+  if (foc) stroke_rrect(fx - 4, fy - 4, fw + 8, 94, 47, 3, C_WHITE, a);
+  draw_icon(IC_SEARCH, fx + 50, fy + 43, 34, C_TXT, a);
+  draw_text(font(W_LIGHT, 30), _("Cerca sul web o scrivi un indirizzo"), fx + 90, fy + 24, C_DIM, a, AL_L);
+  // il browser vero della PS5, per i siti con JavaScript, video e accessi
+  int by = fy + 108, bf = home_sel == 1;
+  fill_rrect(fx, by, fw, 70, 35, bf ? C_WHITE : RGB(255, 255, 255), bf ? a : a * 7 / 100);
+  draw_icon(IC_GLOBE, fx + 46, by + 35, 28, bf ? RGB(12, 14, 22) : C_ACC2, a);
+  draw_text_fit(font(W_MED, 25), _("Apri il browser completo della PS5 (siti moderni, video, accessi)"), fx + 84, by + 20, fw - 120, bf ? RGB(12, 14, 22) : C_TXT, a, AL_L);
+  // siti rapidi e segnalibri, in una griglia
+  int w = 250, h = 150, gap = 22, cols = 6, gx = cx - (cols * w + (cols - 1) * gap) / 2, gy = by + 120;
+  draw_text(font(W_MED, 26), _("Siti rapidi"), gx, gy, C_DIM, a, AL_L);
+  gy += 44;
+  for (int i = 0; i < NQUICK; i++) {
+    int x = gx + (i % cols) * (w + gap), y = gy + (i / cols) * (h + gap);
+    const char *host = strstr(QUICK[i].url, "://"); host = host ? host + 3 : QUICK[i].url;
+    home_card(x, y, w, h, home_sel == HOME_FIRST + i, avatar_col(i * 5 + 2), QUICK[i].ic, NULL, QUICK[i].name, host, a);
   }
+  int qrows = (NQUICK + cols - 1) / cols;
+  gy += qrows * (h + gap) + 14;
+  if (nbm) {
+    draw_text(font(W_MED, 26), _("Segnalibri"), gx, gy, C_DIM, a, AL_L);
+    gy += 44;
+    for (int i = 0; i < nbm; i++) {
+      int x = gx + (i % cols) * (w + gap), y = gy + (i / cols) * (h + gap);
+      if (y > SCREEN_H - 150) break;
+      char ini[4] = { bm_title[i][0], 0 };
+      home_card(x, y, w, h, home_sel == HOME_FIRST + NQUICK + i, avatar_col(i * 3 + 1), -1, ini, bm_title[i], NULL, a);
+    }
+  } else draw_text(font(W_REG, 22), _("Nessun segnalibro: aprendo una pagina, □ › Aggiungi ai segnalibri."), gx, gy, C_FAINT, a, AL_L);
 }
 
 static void draw_block(Blk *b, int y, int a, int focused) {
@@ -415,9 +468,10 @@ void browser_draw(float t) {
 
   grad_v(0, SCREEN_H - 140, SCREEN_W, 60, RGB(14, 16, 24), 0, RGB(14, 16, 24), a);
   fill_rect(0, SCREEN_H - 80, SCREEN_W, 80, RGB(14, 16, 24), a);
-  const int ic[] = { IC_BTN_X, IC_BTN_O, IC_BTN_TRI, IC_BTN_SQ };
-  const char *lb[] = { _("Apri"), _("Indietro"), _("Indirizzo"), _("Menu") };
-  hints(ic, lb, 4, a);
+  const int ic[] = { IC_BTN_X, IC_BTN_O, IC_BTN_TRI, IC_BTN_SQ, IC_BTN_OPT };
+  const char *lb[] = { _("Apri"), _("Indietro"), _("Indirizzo"), _("Menu"), _("Browser PS5") };
+  hints(ic, lb, hidx >= 0 ? 5 : 4, a);
+  if (hidx >= 0 && !loading) draw_text(font(W_MED, 18), full_page ? _("PAGINA COMPLETA") : !strcmp(pg_mode, "reader") ? _("MODALITÀ LETTURA") : "", BR_X, 112, C_ACC2, a, AL_L);
 }
 
 // -------------------------------------------------------------------- input --
@@ -507,7 +561,9 @@ static void menu_pick(int idx, void *ud) {
     case 3: go_home(); break;
     case 4: if (hidx >= 0) { free_page(); fetch_current(); } break;
     case 5: clear_history(); break;
-    case 6: ov_pop(); break;
+    case 6: system_browser(hidx >= 0 ? pg_url : NULL); break;
+    case 7: full_page = !full_page; set_msg(full_page ? _("Pagina completa: come la impagina il sito") : _("Modalità lettura: solo il testo e le immagini dell'articolo"), 0); if (hidx >= 0) { free_page(); fetch_current(); } break;
+    case 8: ov_pop(); break;
   }
 }
 
@@ -520,9 +576,10 @@ void browser_input(int b) {
   if (b == B_TRI) { address_bar(); return; }
   if (b == B_SQ) {
     int starred = 0; for (int i = 0; i < nbm; i++) if (hidx >= 0 && !strcmp(bm_url[i], pg_url)) starred = 1;
-    const char *it1[] = { _("Aggiungi ai segnalibri"), _("Segnalibri"), _("Cronologia"), _("Pagina iniziale"), _("Ricarica"), _("Cancella cronologia"), _("Chiudi browser") };
-    const char *it2[] = { _("Rimuovi dai segnalibri"), _("Segnalibri"), _("Cronologia"), _("Pagina iniziale"), _("Ricarica"), _("Cancella cronologia"), _("Chiudi browser") };
-    menu_open(_("Browser"), starred ? it2 : it1, 7, menu_pick, NULL);
+    const char *mode = full_page ? _("Passa alla modalità lettura") : _("Mostra la pagina completa");
+    const char *it1[] = { _("Aggiungi ai segnalibri"), _("Segnalibri"), _("Cronologia"), _("Pagina iniziale"), _("Ricarica"), _("Cancella cronologia"), _("Apri nel browser della PS5"), mode, _("Chiudi browser") };
+    const char *it2[] = { _("Rimuovi dai segnalibri"), _("Segnalibri"), _("Cronologia"), _("Pagina iniziale"), _("Ricarica"), _("Cancella cronologia"), _("Apri nel browser della PS5"), mode, _("Chiudi browser") };
+    menu_open(_("Browser"), starred ? it2 : it1, 9, menu_pick, NULL);
     return;
   }
   if (b == B_L1 || (b == B_O && hidx >= 0)) {
@@ -534,15 +591,22 @@ void browser_input(int b) {
   if (b == B_O) { ov_pop(); return; }
   if (b == B_R1) { if (hidx >= 0 && hidx < nhist - 1) { hist[hidx].scroll = scroll_t; hist[hidx].focus = focus; hidx++; free_page(); fetch_current(); } return; }
 
-  if (hidx < 0) {           // pagina iniziale
-    if (b == B_X) { if (home_sel == 0) address_bar(); else if (home_sel - 1 < nbm) navigate(bm_url[home_sel - 1]); }
-    else if (b == B_DOWN) { if (home_sel == 0) home_sel = 1; else if (home_sel + 4 <= nbm) home_sel += 4; }
-    else if (b == B_UP) { if (home_sel > 4) home_sel -= 4; else home_sel = 0; }
-    else if (b == B_RIGHT && home_sel > 0 && home_sel < nbm) home_sel++;
-    else if (b == B_LEFT && home_sel > 1) home_sel--;
-    if (home_sel > nbm) home_sel = nbm;
+  if (hidx < 0) {           // pagina iniziale: ricerca, browser della PS5, griglia di 6 colonne
+    int n = home_items(), g = home_sel - HOME_FIRST;
+    if (b == B_X) {
+      if (home_sel == 0) address_bar();
+      else if (home_sel == 1) system_browser(NULL);
+      else if (g < NQUICK) navigate(QUICK[g].url);
+      else if (g - NQUICK < nbm) navigate(bm_url[g - NQUICK]);
+    }
+    else if (b == B_DOWN) { if (home_sel < HOME_FIRST) home_sel++; else if (home_sel + 6 < n) home_sel += 6; else if (g < NQUICK && nbm) home_sel = HOME_FIRST + NQUICK; }
+    else if (b == B_UP) { if (home_sel <= 1) home_sel = 0; else if (g >= 6 && !(g >= NQUICK && g - NQUICK < 6)) home_sel -= 6; else if (g >= NQUICK) home_sel = HOME_FIRST; else home_sel = 1; }
+    else if (b == B_RIGHT && home_sel >= HOME_FIRST && home_sel < n - 1) home_sel++;
+    else if (b == B_LEFT && home_sel > HOME_FIRST) home_sel--;
+    if (home_sel >= n) home_sel = n - 1;
     return;
   }
+  if (b == B_OPT) { system_browser(pg_url); return; }
   if (loading || err_msg[0]) return;
   if (b == B_DOWN) move_focus(1);
   else if (b == B_UP) move_focus(-1);

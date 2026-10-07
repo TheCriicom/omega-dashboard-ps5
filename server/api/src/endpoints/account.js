@@ -9,6 +9,7 @@ const limiter = require('../ratelimit');
 const legal = require('../legal');
 const { HttpError, readJson } = require('../http');
 const { removeMedia } = require('./media');
+const { removeAccountSaves } = require('./saves');
 
 async function rows(sql, args) { return (await db.query(sql, args)).rows; }
 
@@ -90,6 +91,7 @@ async function deleteAccount({ req, auth }) {
   const a = (await rows('SELECT password_hash, avatar_media, cover_media FROM lab_account WHERE account_id=$1', [auth.accountId]))[0];
   const pw = typeof body.password === 'string' ? body.password : '';
   if (!a || !a.password_hash || !(await passwords.verify(pw, a.password_hash))) throw new HttpError(401, 'invalid_credentials', 'password non valida');
+  await removeAccountSaves(auth.accountId);
   await db.query('DELETE FROM lab_account WHERE account_id=$1', [auth.accountId]);
   await removeMedia(a.avatar_media);
   await removeMedia(a.cover_media);

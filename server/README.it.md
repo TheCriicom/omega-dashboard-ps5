@@ -292,6 +292,24 @@ console legge la coda con `GET console/queue`. Le preferenze delle notifiche
 alla creazione: tipo spento, «solo preferiti» o amico silenziato = la notifica
 non nasce; orari di silenzio o gioco in corso = resta nell'elenco con `silent`.
 
+### Salvataggi online
+
+La console cifra il salvataggio (XChaCha20-Poly1305, pezzi da 1 MB legati
+all'intestazione e alla posizione) con una chiave di 32 byte che il server non
+riceve mai; `GET/POST saves/key` conserva solo la stessa chiave cifrata con la
+parola d'ordine dell'utente (Argon2id sulla console). Il server non apre, non
+decomprime e non interpreta niente: `POST saves/begin {title_id, size, sha256,
+key_id}` prenota lo spazio (quota per account, spazio libero e tetto del
+server), `POST saves/:id/chunk/:n?sha=` riceve pezzi da 8 MB di lunghezza
+esatta (il primo deve iniziare con `OMSAVE1\0`), `POST saves/:id/commit`
+unisce e verifica lo SHA-256 e tiene le ultime 3 versioni per gioco. `GET
+saves/:id/chunk/:n` restituisce i pezzi come `application/octet-stream` con
+`nosniff` e CSP `sandbox`; `POST saves/:id/delete` cancella. I nomi dei file
+sono esadecimali casuali scelti dal server; i caricamenti lasciati a metà si
+cancellano dopo 2 ore. Limiti: `SAVES_ACCOUNT_QUOTA` (2 GB), `SAVES_MAX`
+(1 GB), `SAVES_TOTAL_MAX` (60 GB), `SAVES_MIN_FREE` (15 GB liberi sul disco);
+volume `saves-data`.
+
 ### Voce nel party
 
 Relay in memoria (ultimi 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

@@ -23,6 +23,12 @@ module.exports = {
   updateDir: process.env.UPDATE_DIR || '/app/updates',
   siteDir: process.env.SITE_DIR || path.join(__dirname, '..', '..', 'site'),
   sourceDir: process.env.PUBLIC_SOURCE_DIR || '/app/src-pub',
+  // salvataggi online: blocchi cifrati dalla console (volume saves-data)
+  savesDir: process.env.SAVES_DIR || '/app/saves',
+  savesQuota: num(process.env.SAVES_ACCOUNT_QUOTA, 2 * 1024 ** 3),     // per account
+  savesMax: num(process.env.SAVES_MAX, 1024 ** 3),                     // un salvataggio
+  savesTotalMax: num(process.env.SAVES_TOTAL_MAX, 60 * 1024 ** 3),     // tutto il server
+  savesMinFree: num(process.env.SAVES_MIN_FREE, 15 * 1024 ** 3),       // spazio da lasciare libero sul disco
   storeAssetDir: process.env.STORE_ASSET_DIR || path.join(__dirname, '..', 'store-assets'),
 
   logRetentionDays: num(process.env.LOG_RETENTION_DAYS, 30),

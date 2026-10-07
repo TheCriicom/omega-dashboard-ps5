@@ -48,6 +48,8 @@ static const PrefDef PREFS[] = {
     V(N_("No"), N_("Sì")), NULL },
   { PC_HOME, "automount", N_("Montaggio automatico"), N_("Come ShadowMount, ma dentro Omega: appena colleghi un disco i suoi giochi si registrano da soli e compaiono anche nella Home della console. Serve kstuff."), &g_prefs.automount, 1,
     V(N_("No"), N_("Sì")), NULL },
+  { PC_HOME, "save_auto", N_("Salvataggi online automatici"), N_("Dopo ogni partita i salvataggi cambiati vanno online, cifrati sulla console. Si attiva in Impostazioni › Home e giochi › Salvataggi online."), &g_prefs.save_auto, 1,
+    V(N_("No"), N_("Sì")), NULL },
   { PC_HOME, "cards", N_("Sotto il gioco scelto"), N_("Le schede con amici che giocano, notizie e attività."), &g_prefs.cards, 1,
     V(N_("Niente"), N_("Amici e notizie")), NULL },
   { PC_HOME, "hints", N_("Barra dei comandi"), N_("I suggerimenti dei tasti in basso."), &g_prefs.hints, 1,

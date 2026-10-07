@@ -83,6 +83,7 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_WHY: why_draw(t); break;
     case OV_STORAGE: storage_draw(t); break;
     case OV_NOTIFPREFS: notifprefs_draw(t); break;
+    case OV_SAVES: saves_draw(t); break;
     case OV_ABOUT: about_draw(t); break;
     case OV_MUSIC: music_draw(t); break;
     case OV_SYSTEM: system_draw(t); break;
@@ -310,6 +311,7 @@ static void dispatch(int b) {
       case OV_WHY: why_input(b); break;
       case OV_STORAGE: storage_input(b); break;
       case OV_NOTIFPREFS: notifprefs_input(b); break;
+      case OV_SAVES: saves_input(b); break;
       case OV_ABOUT: about_input(b); break;
       case OV_MUSIC: music_input(b); break;
       case OV_SYSTEM: system_input(b); break;
@@ -502,6 +504,7 @@ static void cmd_poll(void) {
   else if (!strcmp(c, "store")) store_open();
   else if (!strcmp(c, "avatar")) ov_push(OV_AVATAR);
   else if (!strcmp(c, "settings")) ov_push(OV_SETTINGS);
+  else if (!strcmp(c, "saves")) saves_open(NULL);
 }
 
 static void save_shot(void) {
@@ -674,6 +677,7 @@ int main(int argc, char **argv) {
     gallery_tick();
     install_tick();
     storage_tick();
+    saves_tick();
     music_tick();
     files_tick();
     setup_tick();

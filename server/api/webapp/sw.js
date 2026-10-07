@@ -1,6 +1,6 @@
 // Service worker di Omega: guscio dell'app in cache, API sempre dalla rete.
 // Le risposte dell'API (con il token) non vengono mai messe in cache.
-const VERSION = 'omega-web-1';
+const VERSION = 'omega-web-2';
 const SHELL = [
   '/app/', '/app/app.css', '/app/app.js', '/app/manifest.webmanifest',
   '/app/js/api.js', '/app/js/auth.js', '/app/js/common.js', '/app/js/i18n.js', '/app/js/icons.js', '/app/js/install.js',

@@ -855,7 +855,7 @@ static void job_tile(int tx, int ty, int s, int a, const char *name, const char 
 // quante tessere di lavoro ci sono adesso e quanto spazio prendono
 static int job_tiles(InstallView *iv) {
   int n = install_view(iv);
-  InstallView mv; n += storage_view(&mv);
+  InstallView mv; n += storage_view(&mv); n += saves_view(&mv);
   return n + (upj.active ? 1 : 0);
 }
 static void draw_jobs(int *px, int ty, int s, int gap, int a) {
@@ -871,6 +871,10 @@ static void draw_jobs(int *px, int ty, int s, int gap, int a) {
   InstallView mv;
   if (storage_view(&mv)) {
     job_tile(*px, ty, s, a, mv.name, NULL, IC_DRIVE, mv.active ? mv.prog : 1, mv.active ? mv.phase : mv.result, mv.err, !mv.active && !mv.err);
+    *px += s + gap + 60;
+  }
+  if (saves_view(&mv)) {
+    job_tile(*px, ty, s, a, mv.name, NULL, IC_CLOUD, mv.active ? mv.prog : 1, mv.active ? mv.phase : mv.result, mv.err, !mv.active && !mv.err);
     *px += s + gap + 60;
   }
   if (upj.active) {
@@ -1147,7 +1151,7 @@ void home_update(void) {
   tab_anim = approach(tab_anim, 1, 8.0f);
 }
 
-enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_MOVE, GM_DELETE, GM_N };
+enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_MOVE, GM_SAVES, GM_DELETE, GM_N };
 static void game_more_menu(int idx, void *ud);
 
 // ------------------------------------------- per le altre modalità del menu --
@@ -1161,7 +1165,7 @@ void home_more(int i) {
   app_sel = i;
   if (SYS_TILE(&apps[i])) { launch_app(i); return; }
   if (apps[i].builtin == 2) { layout_folder_menu(apps[i].tid); return; }
-  const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Elimina dalla console") };
+  const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Salvataggi online"), _("Elimina dalla console") };
   menu_open(apps[i].name, it, GM_N, game_more_menu, NULL);
 }
 void home_tile(int i, int x, int y, int s, int a) {   // una tessera come nella fila (icona, cartella, app di Omega)
@@ -1286,6 +1290,7 @@ static void game_more_menu(int idx, void *ud) {
     }
     case GM_INVITE: invite_to_game_menu(ap->tid, ap->name); break;
     case GM_MOVE: if (ap->hb || ap->pld) set_msg(_("Si spostano solo i giochi: homebrew e payload stanno nelle cartelle del caricatore"), 1); else storage_move_app(app_sel); break;
+    case GM_SAVES: if (ap->hb || ap->pld) set_msg(_("Gli homebrew non hanno salvataggi di sistema"), 1); else saves_open(ap->tid); break;
     case GM_DELETE: {
       static char q[512];
       snprintf(q, sizeof q, ap->hb ? _("Eliminare l'homebrew %s dalla console?") : _("Eliminare %s dalla console? Il gioco verrà disinstallato."), ap->name);
@@ -1387,7 +1392,7 @@ void home_input(int b) {
         if (act_sel == 0) launch_app(app_sel);
         else if (apps[app_sel].builtin == 2) layout_folder_menu(apps[app_sel].tid);
         else {
-          const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Elimina dalla console") };
+          const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Salvataggi online"), _("Elimina dalla console") };
           menu_open(apps[app_sel].name, it, GM_N, game_more_menu, NULL);
         }
       }

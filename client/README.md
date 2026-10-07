@@ -139,6 +139,27 @@ registra dal disco; verso la memoria interna si smonta e si registra da
 leggono da un disco: per quelli si indica lo spostamento della console. Anche i
 `.pkg` si spostano o si copiano su un disco (Installa PKG › □).
 
+## Salvataggi online
+
+`source/savesync.c`, come su PS Plus. Il salvataggio di un gioco si legge da una
+**copia** dell'immagine (`OMEGA_DIR/saves/work`): la chiave sigillata (a 0x800
+nell'immagine per i giochi PS5, in `<dir>.bin` per quelli PS4) si apre con
+`/dev/pfsmgr` (ioctl `0xc0845302`) e la copia si monta con `sceFsMountSaveData`
+(authid `0x4800000000000010`), come garlic-savemgr e PS5 Save Mounter.
+L'originale non si tocca. I file diventano un archivio, cifrato qui con
+XChaCha20-Poly1305 a pezzi da 1 MB (Monocypher) e spedito a pezzi da 8 MB.
+La chiave (32 byte casuali) resta in `OMEGA_DIR/saves/key-<utente>`; al server
+va solo cifrata con la parola d'ordine (Argon2id 32 MB × 4).
+
+Ripristino: solo su un salvataggio che sulla console c'è già (lo crea il
+gioco). Si verifica il MAC di ogni pezzo, si controllano tutti i percorsi
+dell'archivio, si monta una copia, si sostituiscono i file tranne `sce_sys`
+(dove `param.sfo` lega il salvataggio all'utente) e la copia prende il posto
+dell'originale, che resta in `OMEGA_DIR/saves/undo` per «Annulla l'ultimo
+ripristino». Con il caricamento automatico, all'avvio di Omega (cioè dopo una
+partita) e ogni 10 minuti si caricano i giochi con salvataggi più nuovi
+dell'ultimo caricamento. Sul Mac il «contenitore» è una cartella.
+
 ## App mobile e notifiche
 
 La tessera **App mobile** mostra il QR della web app (`<server>/app/`);
@@ -240,6 +261,7 @@ In `OMEGA_DIR` (sulla console `/data/Omega`):
 - `ui-active` — aggiornato ogni 2 s mentre la UI è in primo piano
 - `servers.json`, `theme.txt`, `audio.txt`, `lang.txt`, `browser-*.txt` — preferenze
 - `update/`, `update.json` — stato degli aggiornamenti (solo build ufficiale)
+- `saves/` — chiave dei salvataggi online (`key-<utente>`, 0600), ultimo caricamento per gioco, copie per annullare un ripristino (`undo/`)
 
 ## Struttura del sorgente
 
@@ -255,6 +277,7 @@ In `OMEGA_DIR` (sulla console `/data/Omega`):
 | `i18n_data.c` | tabelle delle traduzioni, generate da `tools/i18n-gen.mjs` |
 | `util.c` | lettura file, codifica URL, FNV-1a, SHA-256 |
 | `session.c` | sessione salvata |
+| `savesync.c` | salvataggi online: lettura da una copia montata, cifratura, caricamento, ripristino e annullamento |
 | `servers.c`, `servers.h` | elenco dei server |
 | `ime.c` | tastiera di sistema (sceImeDialog) |
 | `gfx.c` | renderer: testo (con i font di ripiego), forme, icone SDF, marchio, temi, sfondi, particelle |

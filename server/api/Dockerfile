@@ -22,8 +22,8 @@ COPY store-assets ./store-assets
 COPY admin-ui ./admin-ui
 # web app per telefono e PC (/app)
 COPY webapp ./webapp
-# foto e video caricati dagli utenti (volume media-data)
-RUN mkdir -p /app/media && chown node:node /app/media
+# foto e video caricati dagli utenti (volume media-data) e salvataggi cifrati (saves-data)
+RUN mkdir -p /app/media /app/saves && chown node:node /app/media /app/saves
 USER node
 EXPOSE 8080
 CMD ["node", "src/server.js"]

@@ -297,6 +297,23 @@ a notification is created: a type switched off, "favourites only" or a muted
 friend means it isn't created; quiet hours or a game in progress keep it in the
 list with `silent`.
 
+### Cloud saves
+
+The console encrypts the save (XChaCha20-Poly1305, 1 MB chunks bound to the
+header and their position) with a 32-byte key the server never receives; `GET/POST
+saves/key` only stores that key encrypted with the user's passphrase (Argon2id
+on the console). The server never opens, decompresses or parses anything:
+`POST saves/begin {title_id, size, sha256, key_id}` reserves space (per-account
+quota, free disk and a server-wide cap), `POST saves/:id/chunk/:n?sha=`
+receives 8 MB chunks of exact length (the first must start with `OMSAVE1\0`),
+`POST saves/:id/commit` joins them, checks the SHA-256 and keeps the last 3
+versions per game. `GET saves/:id/chunk/:n` returns chunks as
+`application/octet-stream` with `nosniff` and a `sandbox` CSP; `POST
+saves/:id/delete` removes one. File names are random hex chosen by the server;
+unfinished uploads are deleted after 2 hours. Limits: `SAVES_ACCOUNT_QUOTA`
+(2 GB), `SAVES_MAX` (1 GB), `SAVES_TOTAL_MAX` (60 GB), `SAVES_MIN_FREE` (15 GB
+left free on disk); `saves-data` volume.
+
 ### Party voice
 
 In-memory relay (last 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

@@ -71,7 +71,6 @@ uint32_t fnv1a(const char *s) {
 }
 
 // ------------------------------------------------------------------ SHA-256 --
-typedef struct { uint32_t s[8]; uint64_t len; unsigned char buf[64]; size_t n; } Sha256;
 
 static const uint32_t K256[64] = {
   0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,
@@ -98,12 +97,12 @@ static void sha_block(Sha256 *c, const unsigned char *p) {
   c->s[0] += a; c->s[1] += b; c->s[2] += cc; c->s[3] += d; c->s[4] += e; c->s[5] += f; c->s[6] += g; c->s[7] += h;
 }
 
-static void sha_init(Sha256 *c) {
+void sha_init(Sha256 *c) {
   static const uint32_t iv[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
   memcpy(c->s, iv, sizeof iv); c->len = 0; c->n = 0;
 }
 
-static void sha_update(Sha256 *c, const unsigned char *p, size_t n) {
+void sha_update(Sha256 *c, const unsigned char *p, size_t n) {
   c->len += n;
   while (n) {
     size_t k = 64 - c->n; if (k > n) k = n;
@@ -112,7 +111,7 @@ static void sha_update(Sha256 *c, const unsigned char *p, size_t n) {
   }
 }
 
-static void sha_hex(Sha256 *c, char out[65]) {
+void sha_hex(Sha256 *c, char out[65]) {
   uint64_t bits = c->len * 8; unsigned char pad = 0x80, z = 0;
   sha_update(c, &pad, 1);
   while (c->n != 56) sha_update(c, &z, 1);

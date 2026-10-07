@@ -13,6 +13,8 @@ char *file_read(const char *path, size_t max, size_t *len);     // malloc, termi
 // Codifica percentuale: lascia intatti lettere, cifre e i caratteri in keep.
 void  url_encode(char *dst, size_t n, const char *src, const char *keep);
 int   file_sha256(const char *path, char out[65]);              // 0 = ok
+typedef struct { uint32_t s[8]; uint64_t len; unsigned char buf[64]; size_t n; } Sha256;
+void  sha_init(Sha256 *c); void sha_update(Sha256 *c, const unsigned char *p, size_t n); void sha_hex(Sha256 *c, char out[65]);   // sha_hex chiude il calcolo
 uint32_t fnv1a(const char *s);
 // Date tradotte (mesi 0..11, giorni della settimana 0 = domenica).
 void tmpl_fill(char *out, size_t n, const char *tmpl, const char *const *kv, int nkv);   // {chiave} → valore
@@ -60,7 +62,7 @@ void bg_refresh(void);                   // rifà gli sfondi dopo un cambio di S
 // ------------------------------------------------ personalizzazione (prefs.c) --
 typedef struct {
   int theme, accent, bg_style, bg_dim, glass, corners, focus, home_style;
-  int tiles, labels, sort, show_hb, ext_games, automount, cards, hints;
+  int tiles, labels, sort, show_hb, ext_games, automount, cards, hints, save_auto;
   int clock12, clock_sec, clock_date, bar_temp;
   int particles, particle_style, anim, fps;
   int sfx_pack, music_mood;
@@ -364,7 +366,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS, OV_SAVES
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);
@@ -408,6 +410,7 @@ void about_draw(float t); void about_input(int b);   // Informazioni su Omega
 void why_draw(float t); void why_input(int b);       // Perché Omega
 void feedback_open(void);                            // segnala un bug o chiedi una funzione
 void notifprefs_open(void); void notifprefs_draw(float t); void notifprefs_input(int b);   // Impostazioni › Notifiche (notifprefs.c)
+void saves_open(const char *tid); void saves_draw(float t); void saves_input(int b); void saves_tick(void);   // Salvataggi online (savesync.c); tid NULL = tutti
 void mobile_open(void);                              // App mobile: codice QR della web app (remote.c)
 void mobile_link_card(int x, int y, int w, int a);   // riquadro con QR e indirizzo della web app (alto 150)
 void store_install_remote(const char *app_id);       // "Installa sulla PS5" chiesto dal telefono (store.c)
@@ -506,6 +509,7 @@ void install_cancel(void);
 void install_cleanup(void);               // file orfani (scaricamenti a metà, icone, registrazioni fallite)
 int  pkg_info(const char *path, char *title, size_t tn, char *cid, size_t cn, const char *icon_dest);
 int  storage_view(InstallView *v);         // spostamento in corso (storage.c), per la stessa tessera
+int  saves_view(InstallView *v);           // caricamento o ripristino in corso, per la tessera nella home
 int  store_uninstall(const char *title_id);   // 0 = ok
 
 // Aggiornamenti automatici (update.c, solo nella build ufficiale)

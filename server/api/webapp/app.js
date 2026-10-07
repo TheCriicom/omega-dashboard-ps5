@@ -56,6 +56,7 @@ const ROUTES = [
   ['/settings/notifications', V.notifPrefs, { tab: 'me', title: 'nprefs.title' }],
   ['/console', V.consoleView, { tab: 'console', title: 'console.title' }],
   ['/me', V.me, { tab: 'me', root: true, title: 'nav.me' }],
+  ['/settings/saves', V.saves, { tab: 'me', title: 'saves.title' }],
   ['/settings/privacy', V.privacy, { tab: 'me', title: 'privacy.title' }],
   ['/settings/account', V.account, { tab: 'me', title: 'account.title' }],
   ['/settings/blocked', V.blocked, { tab: 'me', title: 'blocked.title' }],

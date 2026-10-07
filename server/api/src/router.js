@@ -31,6 +31,7 @@ const handlers = {
   feedback: require('./endpoints/feedback'),
   console: require('./endpoints/console'),
   notifyprefs: require('./endpoints/notifyprefs'),
+  saves: require('./endpoints/saves'),
   webapp: require('./endpoints/webapp'),
 };
 

@@ -3,7 +3,7 @@
 import { t, LANG } from './i18n.js';
 import { auth, api, get, post, del, E } from './api.js';
 import { add,
-  h, icon, iconBtn, avatar, apiImg, avatarColors, replace, skeletonList, empty, errorState, relTime, btn, busy, toast, errorText,
+  h, icon, iconBtn, avatar, bytes, apiImg, avatarColors, replace, skeletonList, empty, errorState, relTime, btn, busy, toast, errorText,
   section, listRow, segmented, toggle, sheet, formSheet, confirmDialog, gameIcon, num, badge, vibrate,
 } from './ui.js';
 import { state, emit, pref, setPref } from './state.js';
@@ -22,6 +22,7 @@ export async function me(ctx) {
         listRow({ icon: 'console', iconCls: 'c-play', title: t('console.title'), sub: t('me.consoleSub'), href: '#/console' }),
         listRow({ icon: 'party', iconCls: 'c-play', title: t('nav.party'), sub: state.party ? state.party.name : t('me.partySub'), href: '#/party', trail: badge(state.partyInvites.length) }),
         listRow({ icon: 'chat', iconCls: 'c-accent', title: t('nav.messages'), href: '#/messages', trail: badge(state.counts.unread_messages) }),
+        listRow({ icon: 'cloud', iconCls: 'c-accent', title: t('saves.title'), sub: t('saves.sub'), href: '#/settings/saves' }),
         listRow({ icon: 'trophy', iconCls: 'c-warn', title: t('trophies.mine'), href: `#/trophies/${E(auth.onlineId || '')}` }),
         listRow({ icon: 'clock', iconCls: 'c-ok', title: t('stats.title'), href: '#/stats' }))),
       section(t('me.settings'), h('div', { class: 'list' },
@@ -174,6 +175,38 @@ export async function blocked(ctx) {
         trail: btn(t('user.unblock'), { size: 'sm', kind: 'ghost', onclick: async () => { try { await del(`/users/${E(u.online_id)}/block`); toast(t('user.unblocked', { name: u.online_id }), { kind: 'ok' }); load(); } catch (e) { toast(errorText(e), { kind: 'error' }); } } }),
       }))));
     } catch (e) { replace(page, errorState(e, load)); }
+  }
+  ctx.onRefresh(load);
+  await load();
+}
+
+// ------------------------------------------------------- salvataggi online --
+// Solo elenco e cancellazione: il contenuto è cifrato dalla console e qui non
+// si può (né si deve poter) aprire.
+export async function saves(ctx) {
+  const { page } = ctx;
+  add(page, skeletonList(4));
+  async function load() {
+    let r;
+    try { r = await get('/saves'); } catch (e) { replace(page, errorState(e, load)); return; }
+    const q = r.quota || {};
+    const pct = q.limit ? Math.min(100, Math.round((q.used / q.limit) * 100)) : 0;
+    const head = h('div', { class: 'card' },
+      h('div', { class: 'row' }, icon('shield', 20, 'c-ok'), h('span', { class: 'small muted', text: t('saves.intro') })),
+      h('div', { class: 'mt12 small', text: `${t('saves.space')}: ${t('saves.of', { used: bytes(q.used) || '0 B', limit: bytes(q.limit) })}` }),
+      h('div', { class: 'progress mt8' }, h('span', { style: { width: `${pct}%` } })));
+    if (!r.key_id) { replace(page, head, empty('cloud', t('saves.noKey'), t('saves.noKeyText'))); return; }
+    if (!r.titles.length) { replace(page, head, empty('cloud', t('saves.empty'), t('saves.emptyText'))); return; }
+    replace(page, head, ...r.titles.map((g) => section(g.name || g.title_id, h('div', { class: 'list' },
+      g.versions.map((v, i) => listRow({
+        lead: gameIcon({ game_id: g.title_id, name: g.name, game_icon: g.icon_media }, 40),
+        title: `${relTime(v.at)}${i === 0 ? ` · ${t('saves.latest')}` : ''}`,
+        sub: [bytes(v.size), v.device].filter(Boolean).join(' · '),
+        trail: iconBtn('trash', t('common.delete'), async () => {
+          if (!(await confirmDialog({ title: t('saves.delQ'), text: t('saves.delText'), ok: t('common.delete'), danger: true }))) return;
+          try { await post(`/saves/${E(v.save_id)}/delete`); toast(t('saves.deleted'), { kind: 'ok' }); load(); } catch (e) { toast(errorText(e), { kind: 'error' }); }
+        }),
+      }))))));
   }
   ctx.onRefresh(load);
   await load();

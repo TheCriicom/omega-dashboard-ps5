@@ -27,7 +27,7 @@ set(HB "${SDK}/target/user/homebrew")
 target_include_directories(omega_ui PUBLIC "${HB}/include")
 
 # Dipendenze circolari (SDL2 ↔ Sce*, SDL2_ttf ↔ freetype): tutto in un gruppo.
-set(OURLIBS "-lSceHttp -lSceSsl -lSceNet -lSceNetCtl -lSceSysmodule -lSceSysCore -lSceAppInstUtil -lSceIpmi -lSceLibcInternal -lkernel_sys")
+set(OURLIBS "-lSceHttp -lSceSsl -lSceNet -lSceNetCtl -lSceSysmodule -lSceSysCore -lSceAppInstUtil -lSceFsInternalForVsh -lSceIpmi -lSceLibcInternal -lkernel_sys")
 set(TTFDEPS "-lharfbuzz -lpng16 -lz -lbz2")
 set(IMGDEPS "-lSDL2_image -ljpeg -lwebp -lwebpdemux")
 set(HBDEPS  "-lminizip -lquickjs -lopus")   # zip dello Store, homebrew.js, voce del party

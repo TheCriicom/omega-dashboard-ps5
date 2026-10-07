@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026.10.07.3
+
+- **Cloud saves**, like PS Plus: after every session the saves that changed go
+  online by themselves; restore them on the same or another console from
+  Settings › Home and games › Cloud saves or from a game's options. The last 3
+  versions per game are kept; 2 GB per account.
+- **End-to-end encrypted**: saves are read from a mounted *copy* of the save
+  image (the original is never touched), packed and encrypted on the console
+  with XChaCha20-Poly1305 under a random 32-byte key. The server only stores
+  that key wrapped with the user's passphrase (Argon2id on the console), so it
+  can't read saves; any tampering fails the per-chunk MAC and nothing is
+  written.
+- **Safe restores**: only into a save the game already created on this console,
+  keeping its `sce_sys/param.sfo` (bound to the local user); the previous save
+  is kept so "Undo last restore" puts it back. Archive paths are validated
+  before anything is written.
+- **Hardened server side**: the server never opens, decompresses or parses
+  uploads; exact-length 8 MB chunks with SHA-256, a fixed header check,
+  per-account quota and concurrency limits, a server-wide cap and minimum free
+  disk, random server-chosen file names, ownership checks on every request,
+  downloads served as `octet-stream` with `nosniff` and a `sandbox` CSP, and
+  unfinished uploads purged after 2 hours. 48 new end-to-end checks.
+- Web app: a **Cloud saves** page (list, storage used, delete a version).
+
 ## 2026.10.07.2
 
 - **Mobile app** (`/app` on the server): a real app-like web app for phones

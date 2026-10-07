@@ -334,7 +334,7 @@ static void draw_partycard(int x, int y, int w, int alpha) {
   // in gioco la voce la porta avanti il servizio: come si comanda da lì
   static int onion = -1; if (onion < 0) onion = strstr(hen_name(), "OnionHEN") != NULL;
   draw_text_fit(font(W_REG, 20), onion ? _("In gioco: microfono con L2+R3 › Plugin › Omega; gli altri si sentono con Omega aperta")
-                                       : _("In gioco: microfono dal Telecomando; gli altri si sentono con Omega aperta"),
+                                       : _("In gioco: microfono dal menu di OnionHEN (L2 + R3); gli altri si sentono con Omega aperta"),
                 x + 34, y + 200, w - 68, RGB(200, 212, 245), alpha, AL_L);
 }
 
@@ -1029,29 +1029,29 @@ static void open_lang_menu(void) {
 // Aiuto; a destra le voci della sezione con il valore attuale. Prima era un
 // unico elenco di 15 righe: ora ogni cosa sta dove la si cerca.
 enum {
-  SO_PROFILE, SO_AVATAR, SO_BIO, SO_PRIVACY, SO_LOGOUT,
+  SO_PROFILE, SO_AVATAR, SO_BIO, SO_NOTIFY, SO_PRIVACY, SO_LOGOUT,
   SO_CUSTOM, SO_STYLE, SO_THEME, SO_LANG, SO_AUDIO,
-  SO_HOME, SO_HIDDEN, SO_PATHS, SO_PKGS, SO_AUTOMOUNT,
+  SO_HOME, SO_HIDDEN, SO_PATHS, SO_STORAGE, SO_PKGS, SO_AUTOMOUNT,
   SO_SYSTEM, SO_REMOTE, SO_SERVER, SO_FILES,
   SO_WHY, SO_FEEDBACK, SO_ABOUT, SO_QUIT, N_OPT
 };
 static const struct { const char *name; int ic; int first, n; } ST_SECT[] = {
-  { N_("Account"), IC_USER, SO_PROFILE, 5 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 5 },
+  { N_("Account"), IC_USER, SO_PROFILE, 6 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 6 },
   { N_("Sistema"), IC_GEAR, SO_SYSTEM, 4 }, { N_("Aiuto"), IC_IDEA, SO_WHY, 4 },
 };
 #define ST_NSECT (int)(sizeof ST_SECT / sizeof *ST_SECT)
 static int st_sect, st_col; static float st_sect_anim;   // st_col: 0 sezioni, 1 voci
 static const char *st_label(int o) {
-  static const char *L[N_OPT] = { N_("Il mio profilo"), N_("Cambia avatar"), N_("Modifica bio"), N_("Privacy"), N_("Esci dall'account"),
+  static const char *L[N_OPT] = { N_("Il mio profilo"), N_("Cambia avatar"), N_("Modifica bio"), N_("Notifiche"), N_("Privacy"), N_("Esci dall'account"),
     N_("Personalizza"), N_("Modalità del menu"), N_("Tema"), N_("Lingua"), N_("Audio"),
-    N_("Omega come Home"), N_("App nascoste"), N_("Cartelle di giochi e PKG"), N_("Installa PKG"), N_("Montaggio automatico"),
-    N_("Sistema e strumenti"), N_("Telecomando dal telefono"), N_("Server"), N_("Gestore dei file"),
+    N_("Omega come Home"), N_("App nascoste"), N_("Cartelle di giochi e PKG"), N_("Archivio e spostamenti"), N_("Installa PKG"), N_("Montaggio automatico"),
+    N_("Sistema e strumenti"), N_("App mobile"), N_("Server"), N_("Gestore dei file"),
     N_("Perché Omega"), N_("Segnala un bug o chiedi una funzione"), N_("Informazioni su Omega"), N_("Chiudi Omega") };
   return _(L[o]);
 }
 static int st_icon(int o) {
-  static const int I[N_OPT] = { IC_USER, IC_STAR, IC_NEWS, IC_SHIELD, IC_EXIT, IC_BRUSH, IC_GRID, IC_GEAR, IC_CHAT, IC_VOLUME,
-    IC_HOME, IC_CLOSE, IC_DRIVE, IC_BOX, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
+  static const int I[N_OPT] = { IC_USER, IC_STAR, IC_NEWS, IC_BELL, IC_SHIELD, IC_EXIT, IC_BRUSH, IC_GRID, IC_GEAR, IC_CHAT, IC_VOLUME,
+    IC_HOME, IC_CLOSE, IC_FOLDER, IC_DRIVE, IC_BOX, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
   return I[o];
 }
 static void st_value(int o, char *v, size_t n) {
@@ -1202,11 +1202,13 @@ void settings_input(int b) {
       case SO_HIDDEN: hidden_menu(); break;
       case SO_PATHS: paths_menu(); break;
       case SO_PKGS: pkgs_open(); break;
+      case SO_STORAGE: storage_open(); break;
       case SO_AUTOMOUNT: automount_toggle(); break;
       case SO_SYSTEM: system_open(); break;
-      case SO_REMOTE: remote_open(); break;
+      case SO_REMOTE: mobile_open(); break;
       case SO_FILES: files_open(NULL); break;
       case SO_PRIVACY: privacy_menu(); break;
+      case SO_NOTIFY: notifprefs_open(); break;
       case SO_WHY: ov_push(OV_WHY); break;
       case SO_FEEDBACK: feedback_open(); break;
       case SO_ABOUT: ov_push(OV_ABOUT); break;
@@ -1227,7 +1229,7 @@ static const struct { int ic; const char *t, *d; } WHY[] = {
   { IC_FRIENDS, N_("Amici, party e chat"), N_("Vedi chi gioca e a cosa, parli in party con la voce, scrivi messaggi e inviti gli amici: un social pensato per la console con jailbreak.") },
   { IC_STORE, N_("Uno Store della community"), N_("Homebrew pubblicati dagli utenti con voti, stelle, commenti, novità degli amici e liste dei desideri; e La mia libreria per i tuoi backup.") },
   { IC_TROPHY, N_("Trofei e record"), N_("I trofei della console nel profilo e in classifica, il tempo di gioco della settimana e le maratone di tutti gli iscritti.") },
-  { IC_GLOBE, N_("Il telefono diventa un telecomando"), N_("Musica, caricamento dei giochi dal PC, libreria e JSON, temperatura della console: tutto dal browser del telefono, con un PIN.") },
+  { IC_CHAT, N_("Omega anche sul telefono"), N_("Con l'App mobile chatti, entri nei party, vedi amici, classifiche e Store anche a console spenta, e carichi i giochi dal PC.") },
   { IC_MUSIC, N_("Musica e radio"), N_("Radio, file e server personali, con il lettore che continua anche fuori dalla home e i comandi nel menu in gioco.") },
   { IC_GRID, N_("Fatta a modo tuo"), N_("Sei modalità del menu (Omega, PS4, XMB, Griglia, Carosello, Cinema), temi, sfondi, suoni e più di trenta opzioni.") },
   { IC_HEART, N_("Gratis, aperta e nella tua lingua"), N_("Sorgente GPL scaricabile, 27 lingue, nessun account Sony, aggiornamenti automatici e un tasto per segnalare bug o chiedere funzioni.") },

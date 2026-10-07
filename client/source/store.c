@@ -522,6 +522,23 @@ static void resolve_done(int st, JVal *j, const char *raw, void *ud) {
   r.size = (long)jnum(j, "size", 0);
   install_begin(&r);
 }
+// "Installa sulla PS5" dal telefono (web app): come il pulsante Installa, con il nome dal server
+static void remote_resolved(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw; (void)ud;
+  if (st != 200 || !j) { set_msg(_("Un'installazione chiesta dal telefono non è disponibile"), 1); return; }
+  InstallReq r; memset(&r, 0, sizeof r); char kind[8];
+  jcpy(r.url, sizeof r.url, j, "url"); jcpy(r.filename, sizeof r.filename, j, "filename"); jcpy(kind, sizeof kind, j, "kind");
+  jcpy(r.title_id, sizeof r.title_id, j, "title_id"); jcpy(r.name, sizeof r.name, j, "title"); jcpy(r.version, sizeof r.version, j, "version");
+  jcpy(r.category, sizeof r.category, j, "category"); jcpy(r.desc, sizeof r.desc, j, "summary"); jcpy(r.source, sizeof r.source, j, "homepage_url");
+  r.kind = kind_of(kind); r.size = (long)jnum(j, "size", 0);
+  toast(IC_CLOUD, NULL, 0, r.name, _("Installazione chiesta dal telefono"));
+  install_begin(&r);
+}
+void store_install_remote(const char *app_id) {
+  char path[96]; snprintf(path, sizeof path, OMEGA_API "/store/apps/%s/download", app_id);
+  net_req(HTTP_GET, path, NULL, remote_resolved, NULL);
+}
+
 static void do_install(void) {
   if (install_busy()) { set_msg(_("C'è già un'installazione in corso"), 1); return; }
   if (det_is_lib) {
@@ -796,7 +813,6 @@ static int bar_items(BarItem *it) {
     it[n++] = (BarItem){ _("Pubblica"), IC_PLUS, A_PUBLISH, 0 };
   } else {
     it[n++] = (BarItem){ _("Aggiungi un gioco"), IC_PLUS, A_ADDGAME, 0 };
-    it[n++] = (BarItem){ _("Dal telefono o dal PC"), IC_CLOUD, A_PHONE, 0 };
     it[n++] = (BarItem){ _("Come funziona il JSON"), IC_IDEA, A_JSONHELP, 0 };
     it[n++] = (BarItem){ _("PKG da USB"), IC_USB, A_PKGS, 0 };
     if (src_set) {
@@ -1023,9 +1039,9 @@ static void draw_link_library(int a) {
   draw_text(font(W_MED, 36), _("La mia libreria"), x + 220, y + 44, C_WHITE, a, AL_L);
   draw_text_wrap(font(W_REG, 25), _("I backup dei giochi che possiedi, con copertina e link: li installi da qui con un tasto. Restano solo sulla tua console."),
                  x + 220, y + 96, w - 270, 2, 34, C_DIM, a);
-  const char *how[3] = { _("Dal telefono: Dal telefono nella barra qui sopra, poi La mia libreria › Aggiungi un gioco. Scrivere link lunghi è più comodo."),
+  const char *how[3] = { _("Dal telefono o dal PC, con l'App mobile qui sotto: La mia console › La mia libreria. Scrivere link lunghi è più comodo."),
                          _("Dalla console: Aggiungi un gioco nella barra, con titolo, link e copertina."),
-                         _("Da un JSON: Collega un JSON con l'elenco dei tuoi giochi, oppure importalo dal telefono.") };
+                         _("Da un JSON: Collega un JSON con l'elenco dei tuoi giochi, oppure importalo dall'App mobile.") };
   for (int i = 0; i < 3; i++) {
     int yy = y + 190 + i * 70;
     fill_circle(x + 246, yy + 18, 18, C_ACC, a);
@@ -1034,6 +1050,7 @@ static void draw_link_library(int a) {
     draw_text_wrap(font(W_REG, 24), how[i], x + 284, yy + 2, w - 330, 2, 30, C_TXT, a);
   }
   draw_text_fit(font(W_REG, 21), _("Solo backup di giochi che possiedi, a uso personale: Omega non ospita né condivide questi file."), x + 220, y + h - 44, w - 270, C_FAINT, a, AL_L);
+  mobile_link_card(x, y + h + 30, w, a);
 }
 
 static void draw_shelves(int a) {
@@ -1388,9 +1405,9 @@ static void draw_json_help(int a) {
                  x, y + 64, w - 40, 2, 34, C_DIM, a);
   // tre modi
   const struct { int ic; const char *t, *d; } W[3] = {
-    { IC_CLOUD, N_("Dal telefono o dal PC"), N_("Apri il Telecomando nel browser (Impostazioni › Sistema › Telecomando), sezione La mia libreria: importa il file, incollalo, o scarica l'esempio e modificalo.") },
+    { IC_CLOUD, N_("Con l'App mobile"), N_("Dal telefono o dal PC: La mia console › La mia libreria. Importi il file, lo incolli, o scarichi l'esempio e lo modifichi.") },
     { IC_GLOBE, N_("Con un link"), N_("Metti il JSON online (link diretto al file) e usa Collega un JSON qui sopra: resta sincronizzato e si aggiorna da solo.") },
-    { IC_BOX, N_("Anche senza JSON"), N_("Dal Telecomando carichi direttamente .pkg, .zip, .elf o cartelle di giochi: arrivano via Wi-Fi e si installano da soli.") } };
+    { IC_BOX, N_("Anche senza JSON"), N_("Dall'App mobile carichi direttamente .pkg, .zip, .elf o cartelle di giochi: arrivano alla console in Wi-Fi e si installano da soli.") } };
   int cw = (w - 40) / 3, cy = y + 150;
   for (int i = 0; i < 3; i++) {
     int cx = x + i * (cw + 20);
@@ -1418,9 +1435,7 @@ static void draw_json_help(int a) {
     "    \"cover\": \"https://.../copertina.jpg\",", "    \"platform\": \"PS4\", \"title_id\": \"CUSA12345\",", "    \"version\": \"1.00\" },", "  { \"title\": \"Emulatore\",",
     "    \"url\": \"https://.../emu.zip\" }", "] }" };
   for (int i = 0; i < 9; i++) draw_text_fit(font(W_REG, 20), EX[i], ex + 22, ty + 58 + i * 36, ew - 40, i == 0 || i == 8 ? C_DIM : RGB(170, 220, 255), a, AL_L);
-  char ip[48], m[200]; console_ip(ip, sizeof ip);
-  snprintf(m, sizeof m, _("Scarica questo esempio dal Telecomando: http://%s:9095 › La mia libreria"), ip[0] ? ip : "IP");
-  draw_text_fit(font(W_REG, 21), m, ex, ty + 414, ew, C_FAINT, a, AL_L);
+  draw_text_fit(font(W_REG, 21), _("L'esempio pronto da scaricare e modificare è nell'App mobile."), ex, ty + 414, ew, C_FAINT, a, AL_L);
 }
 
 // ----------------------------------------------------------------- pannello --
@@ -1441,7 +1456,7 @@ void store_draw(float t) {
   int a = (int)(255 * t);
   fill_rect(0, 0, SCREEN_W, SCREEN_H, ST_BG, t > 0.98f ? 255 : a);
   if (view == 3) { draw_shot_viewer(a); return; }
-  if (view == 4) { draw_header(a); draw_json_help(a); int ic[2] = { IC_BTN_O, IC_BTN_X }; const char *lb[2] = { _("Indietro"), _("Apri il Telecomando") }; hints(ic, lb, 2, a); return; }
+  if (view == 4) { draw_header(a); draw_json_help(a); int ic[2] = { IC_BTN_O, IC_BTN_X }; const char *lb[2] = { _("Indietro"), _("App mobile") }; hints(ic, lb, 2, a); return; }
   // alone d'ambiente col colore della copertina a fuoco
   grad_v(0, 0, SCREEN_W, 760, g_amb, a * 55 / 100, ST_BG, 0);
   glow(SCREEN_W - 300, 260, 620, g_amb, a * 20 / 100);
@@ -1590,7 +1605,7 @@ static void publish_input(int b) {
 }
 
 void store_input(int b) {
-  if (view == 4) { if (b == B_O) view = 0; else if (b == B_X) remote_open(); return; }
+  if (view == 4) { if (b == B_O) view = 0; else if (b == B_X) mobile_open(); return; }
   if (view == 3) {
     if (b == B_O || b == B_X) view = 1;
     else if (b == B_LEFT && view_shot > 0) view_shot--;

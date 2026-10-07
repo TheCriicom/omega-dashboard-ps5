@@ -6,6 +6,7 @@ int ctl_start(int port, const char *data_dir);   // data_dir: remote.json (PIN) 
 // stato del sistema per /v1/system, scritto come oggetto JSON in out
 typedef void (*ctl_system_fn)(char *out, size_t n);
 void ctl_on_system(ctl_system_fn fn);
+const char *ctl_remote_token(void);              // token del telecomando (annunciato alla web app)
 const char *ctl_last_request(void);              // per il log dei crash (metodo e percorso, senza query)
 typedef void (*ctl_notify_fn)(const char *msg);   // notifica di sistema (avanzamento dei caricamenti)
 void ctl_on_notify(ctl_notify_fn fn);

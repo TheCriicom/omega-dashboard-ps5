@@ -426,6 +426,8 @@ static void automount_tick(ExtGame *list, int n) {
     for (int k = 0; k < am_n && !have; k++) have = !strcmp(am_tid[k], list[i].tid);
     for (int k = 0; k < am_nbad && !have; k++) have = !strcmp(am_bad[k], list[i].src);
     if (have) continue;
+    // c'è già una copia vera nella memoria interna (copiata da qui): niente mount sopra
+    { char eb[96]; snprintf(eb, sizeof eb, ROOT "/user/app/%s/eboot.bin", list[i].tid); if (access(eb, 0) == 0) continue; }
     AppEntry a; memset(&a, 0, sizeof a);
     snprintf(a.tid, sizeof a.tid, "%s", list[i].tid); snprintf(a.src, sizeof a.src, "%s", list[i].src); snprintf(a.drive, sizeof a.drive, "%s", list[i].drive);
     char err[300];

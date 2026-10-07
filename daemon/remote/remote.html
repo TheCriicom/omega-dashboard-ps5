@@ -496,6 +496,16 @@
   texts();
 
   var tok = ''; try { tok = localStorage.getItem('omega-remote') || ''; } catch (e) {}
+  // aperto dalla web app (play.omegasuite.it/app): #k=<token>&tab=lib abbina il
+  // telefono senza PIN (il token lo conosce solo il tuo account) e si toglie dall'indirizzo
+  var hashTab = '';
+  (function () {
+    var h = location.hash.replace(/^#/, ''); if (!h) return;
+    var kv = {}; h.split('&').forEach(function (p) { var i = p.indexOf('='); if (i > 0) kv[p.slice(0, i)] = decodeURIComponent(p.slice(i + 1)); });
+    if (/^[a-f0-9]{32}$/.test(kv.k || '')) { tok = kv.k; try { localStorage.setItem('omega-remote', tok); } catch (e) {} }
+    if (kv.tab === 'lib' || kv.tab === 'music') hashTab = kv.tab;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  })();
   var st = null, qseq = -1, games = [], editId = '';
 
   function api(method, path, body) {
@@ -929,6 +939,7 @@
     }).catch(function () {});
   }
   var saved = 'music'; try { saved = localStorage.getItem('omega-remote-tab') || 'music'; } catch (e) {}
+  if (hashTab) saved = hashTab;
   if (tok) { showApp(); tab(saved); loadFavs(); loadMusicFiles(); poll(); } else showPair();
   setInterval(poll, 2000);
   setInterval(function () { if (!$('app').hidden) loadFavs(); }, 30000);

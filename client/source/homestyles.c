@@ -147,7 +147,7 @@ static void xa_top(int t) { home_top(t); }
 static void xa_ov(int o) { ov_push((Overlay)o); }
 static void xa_custom(int x) { (void)x; custom_open(); }
 static void xa_system(int x) { (void)x; system_open(); }
-static void xa_remote(int x) { (void)x; remote_open(); }
+static void xa_remote(int x) { (void)x; mobile_open(); }
 static void xa_pkgs(int x) { (void)x; pkgs_open(); }
 static void xa_trophies(int x) { (void)x; trophies_open(S.me); }
 static void xa_status(int x) { (void)x; status_menu(); }
@@ -157,6 +157,7 @@ static void xa_party(int x) { (void)x; chat_open_party(); }
 static void xa_profile(int i) { if (i >= 0 && i < S.nfriends) profile_open(S.friends[i].oid); }
 static void xa_files(int x) { (void)x; files_open(NULL); }
 static void xa_paths(int x) { (void)x; pkgs_open(); paths_menu(); }
+static void xa_storage(int x) { (void)x; storage_open(); }
 
 static void xadd(int ic, const char *name, XAct act, int arg, int app) {
   if (nxit >= (int)(sizeof xit / sizeof *xit)) return;
@@ -176,8 +177,9 @@ static void xbuild(int c) {
       xadd(IC_BRUSH, _("Personalizza"), xa_custom, 0, -1);
       xadd(IC_FOLDER, _("Sistema e strumenti"), xa_system, 0, -1);
       xadd(IC_USB, _("Cartelle di giochi e PKG"), xa_paths, 0, -1);
+      xadd(IC_DRIVE, _("Archivio e spostamenti"), xa_storage, 0, -1);
       xadd(IC_FOLDER, _("Gestore dei file"), xa_files, 0, -1);
-      xadd(IC_GLOBE, _("Telecomando dal telefono"), xa_remote, 0, -1);
+      xadd(IC_CHAT, _("App mobile"), xa_remote, 0, -1);
       break;
     case XC_MUSIC:
       xadd(IC_MUSIC, _("Lettore musicale"), xa_music, 0, -1);

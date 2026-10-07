@@ -20,6 +20,8 @@ COPY migrations ./migrations
 COPY src ./src
 COPY store-assets ./store-assets
 COPY admin-ui ./admin-ui
+# web app per telefono e PC (/app)
+COPY webapp ./webapp
 # foto e video caricati dagli utenti (volume media-data)
 RUN mkdir -p /app/media && chown node:node /app/media
 USER node

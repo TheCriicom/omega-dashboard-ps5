@@ -63,7 +63,7 @@
 #define LOOP_S           2
 
 #ifndef OMEGA_DAEMON_VERSION
-#define OMEGA_DAEMON_VERSION "2026.10.05.4"
+#define OMEGA_DAEMON_VERSION "2026.10.07.2"
 #endif
 #define HTTP_GET  0
 #define HTTP_POST 1
@@ -371,6 +371,8 @@ static void notify_tick(const char *token, int ui_fresh) {
       memcpy(item, p, len); item[len] = 0;
       char title[300] = "", body[400] = "", type[32] = "", msg[800];
       json_get(item, "title", title, sizeof title); json_get(item, "body", body, sizeof body); json_get(item, "type", type, sizeof type);
+      // arrivata negli orari di silenzio o mentre si gioca (preferenze dell'utente): resta nell'elenco, niente avviso
+      if (strstr(item, "\"silent\":true")) { p = end; continue; }
       if (!strcmp(type, "message")) snprintf(msg, sizeof msg, _("Omega \xC2\xB7 %s: %s"), title, body);
       else snprintf(msg, sizeof msg, _("Omega \xC2\xB7 %s"), title);
       sys_notify(msg); shown++;
@@ -407,10 +409,28 @@ static void notify_from_loop(void) {
   if (session_token(token, sizeof token)) notify_tick(token, ui_in_foreground());
 }
 
+// La console si annuncia al server ogni 30 s: indirizzo nella rete di casa e
+// token del telecomando. La web app (play.omegasuite.it/app) così sa se la
+// console è accesa e apre direttamente la sua pagina in Wi-Fi: i file dal
+// telefono o dal PC arrivano qui senza passare dal server.
+int sceNetCtlInit(void);
+int sceNetCtlGetInfo(int code, void *info);
+static void console_announce(const char *token) {
+  static int inited; if (!inited) inited = sceNetCtlInit() >= 0 ? 1 : -1;
+  char info[256]; memset(info, 0, sizeof info); char ip[48] = "";
+  if (inited > 0 && sceNetCtlGetInfo(14 /* IP_ADDRESS */, info) == 0 && info[0]) snprintf(ip, sizeof ip, "%.15s", info);
+  char body[256];
+  snprintf(body, sizeof body, "{\"lan_ip\":\"%s\",\"port\":%d,\"token\":\"%s\",\"version\":\"%s\"}", ip, OMEGA_CTL_PORT, ctl_remote_token(), OMEGA_DAEMON_VERSION);
+  static int logged;
+  int rc = post_json(OMEGA_API "/console/announce", token, body);
+  if (logged < 2 || (rc != 204 && rc != 200 && logged < 6)) { lg("annuncio alla web app (%s) -> %d", ip, rc); logged++; }
+}
+
 static void presence_tick(void) {
   i18n_init(sys_lang());     // la lingua si può cambiare dalla UI in qualunque momento
   char token[700];
   if (!session_token(token, sizeof token)) return;
+  console_announce(token);
   int ui_fresh = ui_in_foreground();
   char tid[64] = {0};
   int appId = sceSystemServiceGetAppIdOfRunningBigApp();

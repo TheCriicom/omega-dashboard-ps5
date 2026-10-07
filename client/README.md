@@ -127,6 +127,27 @@ sparisce il mount si toglie. Lo stesso thread guarda `/user/appmeta`,
 ShadowMount, un pkg installato o un homebrew caricato compaiono in home senza
 riavviare Omega.
 
+## Archivio e spostamenti
+
+`source/storage.c`: dove sta ogni gioco e quanto occupa; i giochi in cartella
+(con `eboot.bin`) si spostano o si copiano tra memoria interna e dischi
+esterni, con controllo dello spazio, avanzamento nella fila della home e
+verifica della dimensione prima di togliere l'originale. Verso un disco il
+gioco si disinstalla dalla memoria interna e il montaggio automatico lo
+registra dal disco; verso la memoria interna si smonta e si registra da
+`/user/app`. I giochi installati dal sistema come pacchetto cifrato non si
+leggono da un disco: per quelli si indica lo spostamento della console. Anche i
+`.pkg` si spostano o si copiano su un disco (Installa PKG › □).
+
+## App mobile e notifiche
+
+La tessera **App mobile** mostra il QR della web app (`<server>/app/`);
+`mobile_link_card()` è il riquadro con QR e indirizzo usato ovunque si parla
+del telefono. «Installa sulla PS5» dal telefono arriva da `GET
+/api/v1/console/queue` (ogni 15 s) e passa da `store_install_remote()`.
+Impostazioni › Account › Notifiche (`source/notifprefs.c`) regola le
+notifiche per tipo e per amico; quelle `silent` non fanno comparire il toast.
+
 ## Modalità del menu
 
 `source/homestyles.c`: oltre alla home di Omega, Classica PS4, XMB (PS3),

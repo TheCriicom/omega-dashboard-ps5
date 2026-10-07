@@ -322,7 +322,7 @@ void update_tick(void) {
   int sr = SDL_AtomicGet(&svc_result);
   if (sr && SDL_AtomicGet(&done_daemon) && g_scene == SC_HOME) {
     SDL_AtomicSet(&done_daemon, 0); SDL_AtomicSet(&svc_result, 0);
-    if (sr == 1) toast(IC_DOWNLOAD, NULL, 0, _("Servizio Omega aggiornato"), _("Musica e telecomando usano gi\xC3\xA0 la nuova versione"));
+    if (sr == 1) toast(IC_DOWNLOAD, NULL, 0, _("Servizio Omega aggiornato"), _("Musica e App mobile usano gi\xC3\xA0 la nuova versione"));
     else toast(IC_DOWNLOAD, NULL, 0, _("Servizio Omega aggiornato"), _("Attivo dal prossimo riavvio della console"));
   }
   if (SDL_AtomicGet(&done_ui) && g_scene == SC_HOME && ov_depth() == 0 && !install_busy()) {

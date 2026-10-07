@@ -143,6 +143,8 @@ static int token_ok(const char *t) {
   return d == 0;
 }
 void ctl_on_system(ctl_system_fn fn) { system_fn = fn; }
+// token del telecomando: il servizio lo annuncia al server (solo per lo stesso account)
+const char *ctl_remote_token(void) { return secret; }
 
 static void send_all(int s, const void *p, size_t n) {
   const char *c = p;

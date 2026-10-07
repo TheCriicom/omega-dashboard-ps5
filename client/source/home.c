@@ -251,7 +251,7 @@ void scan_apps(void) {
   // (bacheca, gruppi, record e trofei), Store, Browser e Installa PKG.
   {
     static const struct { int b; const char *tid, *name; int need_login; } SYS[] = {
-      { 1, TID_COMMUNITY, N_("Community"), 1 }, { 3, TID_STORE, N_("Store"), 1 }, { 4, TID_BROWSER, N_("Browser"), 0 }, { 5, TID_PKGS, N_("Installa PKG"), 0 } };
+      { 1, TID_COMMUNITY, N_("Community"), 1 }, { 3, TID_STORE, N_("Store"), 1 }, { 4, TID_BROWSER, N_("Browser"), 0 }, { 5, TID_PKGS, N_("Installa PKG"), 0 }, { 6, TID_MOBILE, N_("App mobile"), 0 } };
     int k = 0;
     for (unsigned d = 0; d < sizeof SYS / sizeof *SYS; d++) {
       if ((SYS[d].need_login && !g_token[0]) || napps >= MAX_APPS) continue;
@@ -465,6 +465,7 @@ void launch_app(int idx) {
   if (apps[idx].builtin == 3) { sfx_play(SFX_OPEN); store_open(); return; }
   if (apps[idx].builtin == 4) { sfx_play(SFX_OPEN); browser_open(NULL); return; }
   if (apps[idx].builtin == 5) { sfx_play(SFX_OPEN); pkgs_open(); return; }
+  if (apps[idx].builtin == 6) { sfx_play(SFX_OPEN); mobile_open(); return; }
   if (apps[idx].hb) { hb_step(idx, -1); return; }
   if (apps[idx].pld) {
     char err[400];
@@ -680,7 +681,7 @@ static void game_row(int y0, int alpha) {
   }
   // tessere di lavoro (installazioni, ricezioni dal PC) dopo le app di Omega
   int nsys = 0; while (nsys < nrow && SYS_TILE(&apps[nsys])) nsys++;
-  InstallView iv; int njob = job_tiles(&iv); int jobw = njob * ((int)BASE[ts] + gap + 60);
+  InstallView iv; int njob = job_tiles(&iv); int jobw = njob * ((int)BASE[ts] + gap + 60);   // installazioni, spostamenti, ricezioni
   float before = 0; for (int i = 0; i < app_sel; i++) before += tile_size[i] + gap;
   if (app_sel >= nsys) before += jobw;
   row_scroll = approach(row_scroll, before, 12.0f);
@@ -751,6 +752,7 @@ void sys_tile_draw(const AppEntry *ap, int tx, int ty, int s, int a) {
     case 3: c1 = RGB(255, 120, 60); c2 = RGB(200, 40, 110); ic = IC_STORE; break;
     case 4: c1 = RGB(40, 200, 220); c2 = RGB(30, 90, 210); ic = IC_GLOBE; break;
     case 5: c1 = RGB(70, 210, 130); c2 = RGB(20, 120, 110); ic = IC_BOX; break;
+    case 6: c1 = RGB(196, 91, 255); c2 = RGB(70, 60, 200); ic = IC_CHAT; break;
     default: c1 = mix(C_ACC, C_WHITE, 0.15f); c2 = mix(C_ACC, RGB(12, 16, 30), 0.45f); ic = IC_FRIENDS; break;
   }
   // sfumatura dall'alto: strati arrotondati sempre più bassi, niente bordi squadrati
@@ -784,8 +786,16 @@ static void on_jobs(int st, JVal *j, const char *raw, void *ud) {
     if (r.url[0]) install_begin(&r);
   }
 }
+// "Installa sulla PS5" chiesto dalla web app: comandi in coda sul server
+static Uint32 queue_at;
+static void on_queue(int st, JVal *j, const char *raw, void *ud) {
+  (void)raw; (void)ud;
+  if (st != 200 || !j) return;
+  JFOR(it, jget(j, "items")) { const char *id = jstr(it, "app_id", ""); if (*id) store_install_remote(id); }
+}
 static void jobs_poll(void) {
   Uint32 now = SDL_GetTicks();
+  if (g_token[0] && now - queue_at > 15000) { queue_at = now; net_req(HTTP_GET, OMEGA_API "/console/queue", NULL, on_queue, NULL); }
   if (now - jobs_at < (upj.active ? 1000u : 2500u)) return;
   jobs_at = now;
   net_req(HTTP_GET, "http://127.0.0.1:9095/v1/console/jobs", NULL, on_jobs, NULL);
@@ -845,6 +855,7 @@ static void job_tile(int tx, int ty, int s, int a, const char *name, const char 
 // quante tessere di lavoro ci sono adesso e quanto spazio prendono
 static int job_tiles(InstallView *iv) {
   int n = install_view(iv);
+  InstallView mv; n += storage_view(&mv);
   return n + (upj.active ? 1 : 0);
 }
 static void draw_jobs(int *px, int ty, int s, int gap, int a) {
@@ -855,6 +866,11 @@ static void draw_jobs(int *px, int ty, int s, int gap, int a) {
     else snprintf(line, sizeof line, "%s", iv.result);
     if (iv.active && iv.queued) { size_t l = strlen(line); snprintf(line + l, sizeof line - l, _("  ·  altri %d in coda"), iv.queued); }
     job_tile(*px, ty, s, a, iv.name, iv.icon, IC_BOX, iv.active ? iv.prog : 1, line, iv.err, !iv.active && !iv.err);
+    *px += s + gap + 60;
+  }
+  InstallView mv;
+  if (storage_view(&mv)) {
+    job_tile(*px, ty, s, a, mv.name, NULL, IC_DRIVE, mv.active ? mv.prog : 1, mv.active ? mv.phase : mv.result, mv.err, !mv.active && !mv.err);
     *px += s + gap + 60;
   }
   if (upj.active) {
@@ -882,6 +898,7 @@ static void game_info(int y0, int alpha) {
   else if (ap->builtin == 3) snprintf(sub, sizeof sub, "%s", _("Homebrew della community e La mia libreria, con voti, commenti e amici"));
   else if (ap->builtin == 4) snprintf(sub, sizeof sub, "%s", _("Naviga il web dalla console: segnalibri, cronologia e lettura comoda"));
   else if (ap->builtin == 5) snprintf(sub, sizeof sub, "%s", _("Installa i .pkg da chiavette, dischi USB e cartelle a scelta"));
+  else if (ap->builtin == 6) snprintf(sub, sizeof sub, "%s", _("Omega sul telefono e sul PC: chat, party, amici, Store e caricamento dei giochi"));
   else if (ap->builtin) snprintf(sub, sizeof sub, "%s", _("Bacheca, gruppi, record e trofei di tutti gli iscritti"));
   else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);
   else if (ap->ext) { char on[96]; snprintf(on, sizeof on, _("Su %s"), ap->drive); snprintf(sub, sizeof sub, "%s  \xC2\xB7  %s", ap->tid, on); }
@@ -1130,7 +1147,7 @@ void home_update(void) {
   tab_anim = approach(tab_anim, 1, 8.0f);
 }
 
-enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_DELETE, GM_N };
+enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_MOVE, GM_DELETE, GM_N };
 static void game_more_menu(int idx, void *ud);
 
 // ------------------------------------------- per le altre modalità del menu --
@@ -1144,7 +1161,7 @@ void home_more(int i) {
   app_sel = i;
   if (SYS_TILE(&apps[i])) { launch_app(i); return; }
   if (apps[i].builtin == 2) { layout_folder_menu(apps[i].tid); return; }
-  const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Elimina dalla console") };
+  const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Elimina dalla console") };
   menu_open(apps[i].name, it, GM_N, game_more_menu, NULL);
 }
 void home_tile(int i, int x, int y, int s, int a) {   // una tessera come nella fila (icona, cartella, app di Omega)
@@ -1268,6 +1285,7 @@ static void game_more_menu(int idx, void *ud) {
       break;
     }
     case GM_INVITE: invite_to_game_menu(ap->tid, ap->name); break;
+    case GM_MOVE: if (ap->hb || ap->pld) set_msg(_("Si spostano solo i giochi: homebrew e payload stanno nelle cartelle del caricatore"), 1); else storage_move_app(app_sel); break;
     case GM_DELETE: {
       static char q[512];
       snprintf(q, sizeof q, ap->hb ? _("Eliminare l'homebrew %s dalla console?") : _("Eliminare %s dalla console? Il gioco verrà disinstallato."), ap->name);
@@ -1369,7 +1387,7 @@ void home_input(int b) {
         if (act_sel == 0) launch_app(app_sel);
         else if (apps[app_sel].builtin == 2) layout_folder_menu(apps[app_sel].tid);
         else {
-          const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Elimina dalla console") };
+          const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Elimina dalla console") };
           menu_open(apps[app_sel].name, it, GM_N, game_more_menu, NULL);
         }
       }

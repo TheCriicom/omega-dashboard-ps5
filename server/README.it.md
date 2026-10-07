@@ -278,6 +278,20 @@ text, log?}` salva i bug e le richieste di funzioni mandati dall'app
 (`lab_feedback`, notifica agli amministratori); nel pannello si leggono in
 «Bug e richieste».
 
+### Web app, console collegata e notifiche
+
+`GET /app` serve la web app di Omega (`api/webapp/`, pagina unica installabile,
+solo file locali). La console si annuncia con `POST console/announce {lan_ip,
+port, token}` ogni 30 s (servizio `omega_redirect`); `GET console` dice se è
+accesa (annuncio negli ultimi 90 s) e dà il link diretto
+`http://<ip>:9095/#k=<token>` alla sua pagina nella rete di casa, solo allo
+stesso account: i file dal telefono o dal PC vanno lì, mai al server. `POST
+console/queue {app_id}` è «Installa sulla PS5» dallo Store del telefono; la
+console legge la coda con `GET console/queue`. Le preferenze delle notifiche
+(`GET/POST notifications/prefs`, `POST notifications/prefs/friend`) decidono
+alla creazione: tipo spento, «solo preferiti» o amico silenziato = la notifica
+non nasce; orari di silenzio o gioco in corso = resta nell'elenco con `silent`.
+
 ### Voce nel party
 
 Relay in memoria (ultimi 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

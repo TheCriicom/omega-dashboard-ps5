@@ -11,16 +11,12 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
-  N_("Gli homebrew partono molto pi\xC3\xB9 spesso: Omega non si chiude pi\xC3\xB9 da sola durante l'avvio, controlla websrv, sistema i permessi e ripara l'app di lancio rovinata."),
-  N_("Corretto il testo che ogni tanto diventava enorme ovunque."),
-  N_("Installa PKG: i .pkg di chiavette, dischi e cartelle a scelta, con l'icona del gioco e la barra che avanza nella home, come sulla PS4. Errori chiari e coda di installazione."),
-  N_("Montaggio automatico come ShadowMount, dentro Omega: colleghi un disco e i giochi compaiono da soli. Scegli tu le cartelle dei giochi e dei PKG."),
-  N_("I giochi montati da ShadowMount, i pkg installati e gli homebrew caricati compaiono in home senza riavviare Omega."),
-  N_("Dal telefono o dal PC carichi i giochi e li installi subito; c'\xC3\xA8 una guida al JSON dei giochi con un esempio da scaricare."),
-  N_("Sei modalit\xC3\xA0 del menu: Omega, Classica PS4, XMB come sulla PS3, Griglia, Carosello e Cinema (Impostazioni \xE2\x80\xBA Aspetto)."),
-  N_("Store rinnovato: popolari tra i tuoi amici, di tendenza, lista dei desideri con avviso degli aggiornamenti, consiglia a un amico e creatori in evidenza."),
-  N_("Store, Browser e Installa PKG ora sono app nella fila, dopo la Community. Il browser apre anche il browser completo della PS5."),
-  N_("Impostazioni divise in sezioni, e in Aiuto puoi segnalare un bug o chiedere una funzione allo sviluppatore."),
+  N_("Nuovo: App mobile. Inquadra il codice dalla tessera nella home e hai Omega sul telefono e sul PC: chat, party, amici online, community, classifiche, trofei e Store, anche a console spenta."),
+  N_("Dall'App mobile, con la console accesa sulla stessa rete, carichi i giochi dal PC e gestisci La mia libreria e il JSON: i file vanno dritti alla console, non passano dal server."),
+  N_("\xC2\xABInstalla sulla PS5\xC2\xBB dallo Store del telefono: la console lo scarica e lo installa da sola, con la barra nella home."),
+  N_("Notifiche come vuoi tu: per ogni tipo scegli tutti, solo preferiti o nessuno, silenzia un amico, imposta gli orari di silenzio e cosa vedere mentre giochi (Impostazioni \xE2\x80\xBA Account \xE2\x80\xBA Notifiche)."),
+  N_("\xC2\xABUn amico \xC3\xA8 online\xC2\xBB e \xC2\xABUn amico inizia a giocare\xC2\xBB ora arrivano solo dagli amici preferiti: niente pi\xC3\xB9 notifiche continue."),
+  N_("Archivio e spostamenti: sposta o copia i giochi tra memoria interna e dischi esterni, e i .pkg su un disco. Dalle opzioni di un gioco: \xC2\xABSposta su un altro disco\xC2\xBB."),
 };
 #define NITEMS (int)(sizeof ITEMS / sizeof *ITEMS)
 

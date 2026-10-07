@@ -218,7 +218,8 @@ static void on_sync(int st, JVal *j, const char *raw, void *ud) {
   JFOR(n, jget(j, "notifications")) {
     Notif nn; parse_notif(&nn, n);
     // con "non disturbare" restano nella lista ma senza toast
-    if (!S.dnd) toast(notif_icon(nn.type), nn.actor, nn.avatar, nn.title, nn.type[0] == 'm' ? nn.body : (nn.body[0] ? nn.body : NULL));
+    // e così quelle arrivate negli orari di silenzio (Impostazioni › Notifiche)
+    if (!S.dnd && !jbool(n, "silent")) toast(notif_icon(nn.type), nn.actor, nn.avatar, nn.title, nn.type[0] == 'm' ? nn.body : (nn.body[0] ? nn.body : NULL));
     had_new = 1;
     if (!strcmp(nn.type, "friend_request") || !strcmp(nn.type, "friend_accept")) social_load_friends();
     if (!strcmp(nn.type, "message") && CH.open && !CH.party && !strcasecmp(CH.oid, nn.ref)) chat_poll();

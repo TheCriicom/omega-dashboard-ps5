@@ -273,7 +273,7 @@ void system_draw(float t) {
     draw_text(font(W_REG, 23), s, cx + 28, cy, si.svc[i].up ? C_TXT : C_FAINT, a, AL_L);
   }
   ry += 3 * 42 + 14;
-  static const char *acts[SY_N] = { N_("Gestore dei file"), N_("Installa PKG e cartelle dei giochi"), N_("Telecomando dal telefono"), N_("Componenti per il jailbreak"), N_("Soglia della ventola"), N_("Riavvia il lettore musicale"), N_("Invia diagnostica allo sviluppatore") };
+  static const char *acts[SY_N] = { N_("Gestore dei file"), N_("Installa PKG e cartelle dei giochi"), N_("Telecomando in Wi-Fi (avanzato)"), N_("Componenti per il jailbreak"), N_("Soglia della ventola"), N_("Riavvia il lettore musicale"), N_("Invia diagnostica allo sviluppatore") };
   static const int aic[SY_N] = { IC_FOLDER, IC_BOX, IC_CLOUD, IC_DOWNLOAD, IC_RELOAD, IC_MUSIC, IC_CHAT };
   sys_anim = approach(sys_anim, (float)sys_sel, 20.0f);
   for (int i = 0; i < SY_N; i++) {
@@ -288,7 +288,7 @@ void system_draw(float t) {
     draw_text_fit(font(W_MED, 24), lab, rx + 80, yy + 8, 660, fg, a, AL_L);
   }
   if (remote_pin[0] && strcmp(si.ip, "\xE2\x80\x94")) {
-    char m[200]; snprintf(m, sizeof m, _("Dal telefono, sulla stessa rete: http://%s:9095"), si.ip);
+    char m[200]; snprintf(m, sizeof m, _("Per tutto il resto c'è l'App mobile: %s/app/"), omega_base()); (void)si;
     draw_text_fit(font(W_REG, 22), m, rx, ry + SY_N * 50 + 2, 760, C_DIM, a, AL_L);
   }
   const int ic[] = { IC_BTN_X, IC_BTN_O };

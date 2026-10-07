@@ -846,7 +846,7 @@ void music_draw(float t) {
     else if (r && (r->kind == R_ALBUM || r->kind == R_PLAYLIST || r->kind == R_DIR)) { ic[n] = IC_BTN_TRI; lb[n++] = _("Ascolta tutto"); }
     if (r && r->kind == R_SERVER) { ic[n] = IC_BTN_SQ; lb[n++] = _("Rimuovi server"); }
   }
-  if (tab == MT_NOW) { ic[n] = IC_BTN_TRI; lb[n++] = _("Dal telefono"); }
+  if (tab == MT_NOW) { ic[n] = IC_BTN_TRI; lb[n++] = _("App mobile"); }
   ic[n] = IC_BTN_O; lb[n++] = tab != MT_NOW && depth[tab] > 1 ? _("Indietro") : _("Chiudi");
   ic[n] = -1; lb[n++] = _("L2/R2  Volume");
   grad_v(0, SCREEN_H - 110, SCREEN_W, 110, MBG, 0, MBG, a);
@@ -995,7 +995,7 @@ void music_input(int b) {
   if (b == B_L2 || b == B_R2) { int v = P.volume + (b == B_R2 ? 5 : -5); ctl_cmd("volume", v < 0 ? 0 : v > 100 ? 100 : v); P.volume = v < 0 ? 0 : v > 100 ? 100 : v; return; }
   if (tab == MT_NOW) {
     if (b == B_O) { ov_pop(); return; }
-    if (b == B_TRI) { remote_open(); return; }
+    if (b == B_TRI) { mobile_open(); return; }
     if (now_zone == 0) {
       if (b == B_LEFT && ctl_sel > 0) { ctl_sel--; sfx_play(SFX_MOVE); }
       else if (b == B_RIGHT && ctl_sel < CB_N - 1) { ctl_sel++; sfx_play(SFX_MOVE); }

@@ -29,6 +29,9 @@ const handlers = {
   admin: require('./endpoints/admin'),
   diag: require('./endpoints/diag'),
   feedback: require('./endpoints/feedback'),
+  console: require('./endpoints/console'),
+  notifyprefs: require('./endpoints/notifyprefs'),
+  webapp: require('./endpoints/webapp'),
 };
 
 // Le versioni dell'app uscite prima di /api/v1 chiamano /lab/v1: stesso gestore.

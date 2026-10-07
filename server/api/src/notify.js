@@ -8,19 +8,24 @@
 const db = require('./db');
 const lang = require('./lang');
 const { FRIENDS_SQL } = require('./relations');
+const { decide } = require('./notifyprefs');
 
 const langOf = (v) => (lang.isCode(v) ? v : lang.SOURCE);
 const render = (v, code) => (typeof v === 'function' ? v(code) : v);
 
 async function insert(accountId, recipientLang, type, { actorId = null, title, body = null, ref = null }) {
   try {
+    // preferenze del destinatario: non la vuole (tipo spento, solo preferiti,
+    // amico silenziato) oppure la vuole senza avviso (orari di silenzio, in gioco)
+    const d = await decide(accountId, type, actorId);
+    if (d.skip) return;
     const code = langOf(recipientLang);
     const t = render(title, code);
     const b = render(body, code);
     await db.query(
-      `INSERT INTO lab_notification (account_id, type, actor_id, title, body, ref)
-       VALUES ($1,$2,$3,$4,$5,$6)`,
-      [accountId, type, actorId, String(t).slice(0, 160), b == null ? null : String(b).slice(0, 400), ref]);
+      `INSERT INTO lab_notification (account_id, type, actor_id, title, body, ref, silent)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [accountId, type, actorId, String(t).slice(0, 160), b == null ? null : String(b).slice(0, 400), ref, !!d.silent]);
   } catch (err) {
     console.error(JSON.stringify({ ts: new Date().toISOString(), event: 'notify_error', type, error: err.message }));
   }

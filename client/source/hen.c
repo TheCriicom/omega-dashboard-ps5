@@ -239,7 +239,7 @@ static void plan(void) {
   char mk[340];
   if (daemon_src[0] && (!is_file(daemon_dst) || (strcmp(daemon_src, daemon_dst) && !same_file(daemon_src, daemon_dst)))) {
     steps[ST_DAEMON].todo = 1;
-    snprintf(steps[ST_DAEMON].label, sizeof steps[ST_DAEMON].label, _("Installare il servizio di Omega (musica, notifiche, telecomando) in %s"), owner_name(owner));
+    snprintf(steps[ST_DAEMON].label, sizeof steps[ST_DAEMON].label, _("Installare il servizio di Omega (musica, notifiche, App mobile) in %s"), owner_name(owner));
   }
   int autostart_ok = 0;
   if (owner == OWN_PLDMGR) {
@@ -336,7 +336,7 @@ void setup_draw(float t) {
   if (asking_home) {
     draw_text(font(W_LIGHT, 42), _("Omega come Home?"), x + 170, y + 66, C_WHITE, a, AL_L);
     draw_text_wrap(font(W_REG, 28), _("Se vuoi, Omega prende il posto della Home della console: si apre all'accensione e ogni volta che torni alla Home."), x + 70, y + 200, w - 140, 3, 42, C_TXT, a);
-    draw_text_wrap(font(W_REG, 28), _("Se preferisci di no, Omega resta un'app come le altre: la apri tu da websrv quando ti serve. Musica, notifiche durante i giochi e telecomando funzionano in tutti e due i casi."), x + 70, y + 350, w - 140, 4, 42, C_DIM, a);
+    draw_text_wrap(font(W_REG, 28), _("Se preferisci di no, Omega resta un'app come le altre: la apri tu da websrv quando ti serve. Musica, notifiche durante i giochi e caricamenti dall'App mobile funzionano in tutti e due i casi."), x + 70, y + 350, w - 140, 4, 42, C_DIM, a);
     draw_text_wrap(font(W_REG, 23), _("Puoi cambiare idea quando vuoi in Impostazioni › Omega come Home."), x + 70, y + 560, w - 140, 2, 32, C_FAINT, a);
     const char *hb[2] = { _("Sì, usa Omega come Home"), _("No, solo come app") };
     anim = approach(anim, (float)sel, 18.0f);
@@ -358,7 +358,7 @@ void setup_draw(float t) {
 
   int ly = y + 190;
   if (owner == OWN_NONE) {
-    draw_text_wrap(font(W_REG, 27), _("Senza un caricatore il servizio di Omega non parte da solo all'accensione: musica, notifiche durante i giochi e telecomando funzionano solo dopo averlo avviato a mano. Installa OnionHEN, etaHEN o Payload Manager e riapri questa schermata da Impostazioni › Sistema e strumenti."),
+    draw_text_wrap(font(W_REG, 27), _("Senza un caricatore il servizio di Omega non parte da solo all'accensione: musica, notifiche durante i giochi e caricamenti dall'App mobile funzionano solo dopo averlo avviato a mano. Installa OnionHEN, etaHEN o Payload Manager e riapri questa schermata da Impostazioni › Sistema e strumenti."),
                    x + 70, ly, w - 140, 6, 40, C_TXT, a);
   } else {
     draw_text(font(W_MED, 27), phase ? _("Ecco cosa è stato fatto:") : _("Per far funzionare Omega al meglio installo e attivo:"), x + 70, ly, C_TXT, a, AL_L);

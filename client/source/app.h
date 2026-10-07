@@ -185,9 +185,10 @@ void mic_probe(void);                         // comando di debug "micprobe"
 #define TID_STORE     "OMEGASTOR"
 #define TID_BROWSER   "OMEGAWEB0"
 #define TID_PKGS      "OMEGAPKG0"
-// tessere fisse di Omega in testa alla fila (Community, Store, Browser, PKG), non le cartelle
+#define TID_MOBILE    "OMEGAAPP0"
+// tessere fisse di Omega in testa alla fila (Community, Store, Browser, PKG, App mobile), non le cartelle
 #define SYS_TILE(a) ((a)->builtin && (a)->builtin != 2)
-static inline int sys_tile_order(int b) { return b == 1 ? 0 : b == 3 ? 1 : b == 4 ? 2 : b == 5 ? 3 : 9; }
+static inline int sys_tile_order(int b) { return b == 1 ? 0 : b == 3 ? 1 : b == 4 ? 2 : b == 5 ? 3 : b == 6 ? 4 : 9; }
 
 typedef struct {
   char oid[32]; int avatar; char about[168];
@@ -213,7 +214,7 @@ typedef struct {
   char tid[16]; char name[96]; char icon[256]; char art[256];
   int hb; char dir[256]; char sub[96];        // homebrew websrv nella cartella dir (tid = "HB" + hash)
   int pld;                                    // payload ELF: dir è il percorso dell'elf (tid = "PL" + hash)
-  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima), 2 = cartella (tid = fid), 3 = Store, 4 = Browser, 5 = Installa PKG
+  int builtin;                                // tessera di Omega, non un'app: 1 = Community (sempre la prima), 2 = cartella (tid = fid), 3 = Store, 4 = Browser, 5 = Installa PKG, 6 = App mobile
   int ext; char src[300]; char drive[40];     // gioco su un disco esterno (drives.c): cartella e nome del disco
   long last_played;                           // per l'ordine "Ultimi giocati"
   SDL_Texture *tex; int tex_state; Col avg;   // tex_state: 0 nulla, 1 in caricamento, 2 pronta
@@ -280,6 +281,10 @@ int paths_set(int kind, const char *path, int add);      // add 1 aggiunge, 0 to
 // installatore di pkg dai dischi e dalle cartelle (pkgs.c)
 void pkgs_open(void); void pkgs_draw(float t); void pkgs_input(int b);
 void paths_menu(void);                                   // Impostazioni › Giochi e PKG
+// archivio e spostamenti tra memoria interna e dischi (storage.c)
+void storage_open(void); void storage_draw(float t); void storage_input(int b); void storage_tick(void);
+void storage_move_app(int app_idx);                      // "Sposta su un altro disco" dal menu di un gioco
+void storage_move_pkg(const char *path, int copy);       // file .pkg (pkgs.c)
 
 long iso_epoch(const char *iso);
 void rel_time(const char *iso, char *out, size_t n);       // "5 min fa"
@@ -359,7 +364,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);
@@ -402,6 +407,10 @@ void settings_draw(float t); void settings_input(int b);
 void about_draw(float t); void about_input(int b);   // Informazioni su Omega
 void why_draw(float t); void why_input(int b);       // Perché Omega
 void feedback_open(void);                            // segnala un bug o chiedi una funzione
+void notifprefs_open(void); void notifprefs_draw(float t); void notifprefs_input(int b);   // Impostazioni › Notifiche (notifprefs.c)
+void mobile_open(void);                              // App mobile: codice QR della web app (remote.c)
+void mobile_link_card(int x, int y, int w, int a);   // riquadro con QR e indirizzo della web app (alto 150)
+void store_install_remote(const char *app_id);       // "Installa sulla PS5" chiesto dal telefono (store.c)
 void news_open(const News *n); void news_draw(float t); void news_input(int b);
 void news_art(const News *n, int x, int y, int w, int h, int radius, int alpha);
 void gallery_open(int kind); void gallery_draw(float t); void gallery_input(int b);
@@ -496,6 +505,7 @@ void install_dismiss(void);
 void install_cancel(void);
 void install_cleanup(void);               // file orfani (scaricamenti a metà, icone, registrazioni fallite)
 int  pkg_info(const char *path, char *title, size_t tn, char *cid, size_t cn, const char *icon_dest);
+int  storage_view(InstallView *v);         // spostamento in corso (storage.c), per la stessa tessera
 int  store_uninstall(const char *title_id);   // 0 = ok
 
 // Aggiornamenti automatici (update.c, solo nella build ufficiale)

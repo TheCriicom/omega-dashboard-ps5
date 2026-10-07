@@ -172,7 +172,7 @@ async function sync(ctx) {
     [auth.accountId])).rows[0];
   const fresh = since > 0
     ? (await db.query(
-      `SELECT n.notification_id::text, n.type, n.title, n.body, n.ref, n.created_at, a.online_id AS actor, a.avatar
+      `SELECT n.notification_id::text, n.type, n.title, n.body, n.ref, n.created_at, n.silent, a.online_id AS actor, a.avatar
          FROM lab_notification n LEFT JOIN lab_account a ON a.account_id=n.actor_id
         WHERE n.account_id=$1 AND n.notification_id > $2
         ORDER BY n.notification_id LIMIT 10`, [auth.accountId, since])).rows
@@ -204,7 +204,7 @@ async function sync(ctx) {
 // GET /api/v1/notifications
 async function notifications({ auth }) {
   const r = await db.query(
-    `SELECT n.notification_id::text, n.type, n.title, n.body, n.ref, n.read, n.created_at,
+    `SELECT n.notification_id::text, n.type, n.title, n.body, n.ref, n.read, n.created_at, n.silent,
             a.online_id AS actor, a.avatar
        FROM lab_notification n LEFT JOIN lab_account a ON a.account_id=n.actor_id
       WHERE n.account_id=$1 ORDER BY n.notification_id DESC LIMIT 50`, [auth.accountId]);

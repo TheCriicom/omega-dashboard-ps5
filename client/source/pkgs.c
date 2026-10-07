@@ -25,7 +25,7 @@ static SDL_atomic_t scanning, scan_done;
 static PkgEnt *scan_buf; static int scan_n; static char scan_path[300];
 static int focus_right;                             // 0 posizioni, 1 pacchetti
 static float loc_anim, pk_anim, pk_scroll;
-enum { A_BROWSE = 1, A_FOLDERS = 2 };
+enum { A_BROWSE = 1, A_FOLDERS = 2, A_STORAGE = 3 };
 
 // ---------------------------------------------------------------- posizioni --
 static void add_loc(const char *path, const char *label, int kind, double fr) {
@@ -44,6 +44,7 @@ static void build_locs(void) {
   for (int i = 0; i < nc; i++) { const char *b = strrchr(cp[i], '/'); char lb[96]; snprintf(lb, sizeof lb, "%s", b && b[1] ? b + 1 : cp[i]); add_loc(cp[i], lb, 2, -1); }
   add_loc("", _("Sfoglia una cartella..."), 9, A_BROWSE);
   add_loc("", _("Cartelle di giochi e PKG"), 9, A_FOLDERS);
+  add_loc("", _("Archivio e spostamenti"), 9, A_STORAGE);
   if (loc_sel >= nloc) loc_sel = 0;
 }
 
@@ -138,6 +139,7 @@ static void pkg_opts(int idx, void *ud) {
   if (idx == 0) install_one(k);
   else if (idx == 1) { snprintf(del_path, sizeof del_path, "%s", k->path); confirm_open(_("Eliminare questo file .pkg dal disco?"), _("Elimina"), del_yes, NULL); }
   else if (idx == 2) { char dir[300]; snprintf(dir, sizeof dir, "%s", k->path); char *sl = strrchr(dir, '/'); if (sl) *sl = 0; if (paths_set(1, dir, 1) > 0) { set_msg(_("Cartella aggiunta alle posizioni dei PKG"), 0); build_locs(); } }
+  else if (idx == 3 || idx == 4) storage_move_pkg(k->path, idx == 4);
 }
 
 // ----------------------------------------------------- esploratore cartelle --
@@ -254,7 +256,7 @@ void pkgs_draw(float t) {
     int on = i == loc_sel;
     fill_rrect(lx, y, lw, lrh - 10, 18, on ? mix(RGB(34, 40, 56), C_WHITE, fa) : RGB(255, 255, 255), on ? a : a * 5 / 100);
     Col fg = on && !focus_right ? RGB(12, 14, 22) : C_TXT;
-    int ic = locs[i].kind == 0 ? IC_USB : locs[i].kind == 9 ? (locs[i].free_gb == A_BROWSE ? IC_SEARCH : IC_GEAR) : IC_FOLDER;
+    int ic = locs[i].kind == 0 ? IC_USB : locs[i].kind == 9 ? (locs[i].free_gb == A_BROWSE ? IC_SEARCH : locs[i].free_gb == A_STORAGE ? IC_DRIVE : IC_GEAR) : IC_FOLDER;
     draw_icon(ic, lx + 38, y + (lrh - 10) / 2, 28, on && !focus_right ? fg : C_ACC2, a);
     draw_text_fit(font(W_MED, 24), locs[i].label, lx + 72, y + (locs[i].kind == 0 ? 8 : 18), lw - 90, fg, a, AL_L);
     if (locs[i].kind == 0) { char fr[64]; snprintf(fr, sizeof fr, _("%.0f GB liberi"), locs[i].free_gb); draw_text(font(W_REG, 19), fr, lx + 72, y + 38, on && !focus_right ? RGB(40, 44, 60) : C_DIM, a, AL_L); }
@@ -265,13 +267,15 @@ void pkgs_draw(float t) {
   if (SDL_AtomicGet(&scanning)) { draw_spinner(gx + gw / 2, top + 140, 22, a); draw_text(font(W_REG, 24), _("Cerco i pacchetti..."), gx + gw / 2, top + 190, C_DIM, a, AL_C); }
   else if (loc_sel < nloc && locs[loc_sel].kind == 9) {
     const char *msg = locs[loc_sel].free_gb == A_BROWSE ? _("Scegli una cartella qualsiasi (anche su un disco) e la aggiungi alle posizioni dei PKG.")
+                    : locs[loc_sel].free_gb == A_STORAGE ? _("Dove sta ogni gioco e quanto occupa. Sposta o copia i giochi tra memoria interna e dischi: Omega poi li legge dal disco da sola. Con □ su un pkg lo sposti o lo copi su un disco.")
                                                         : _("Scegli dove stanno i tuoi giochi (cartelle con eboot.bin) e i tuoi PKG: Omega li guarda da sola, come ShadowMount, e appena colleghi un disco i giochi compaiono in home.");
     draw_text_wrap(font(W_REG, 27), msg, gx, top + 40, gw, 5, 40, C_TXT, a);
     draw_text(font(W_MED, 24), _("Premi ✕ per continuare"), gx, top + 260, C_ACC2, a, AL_L);
   } else if (!npk) {
     draw_icon(IC_DOWNLOAD, gx + gw / 2, top + 120, 80, C_FAINT, a);
     draw_text(font(W_MED, 30), _("Nessun .pkg qui"), gx + gw / 2, top + 190, C_TXT, a, AL_C);
-    draw_text_wrap_al(font(W_REG, 23), _("Metti i file .pkg nella radice del disco o in una cartella qualsiasi (fino a 3 livelli sotto), oppure mandali dal telefono o dal PC con il Telecomando."), gx + gw / 2, top + 240, gw - 120, 3, 32, C_DIM, a, AL_C);
+    mobile_link_card(gx + 40, top + 360, gw - 80, a);
+    draw_text_wrap_al(font(W_REG, 23), _("Metti i file .pkg nella radice del disco o in una cartella qualsiasi (fino a 3 livelli sotto), oppure mandali dal telefono o dal PC con l'App mobile."), gx + gw / 2, top + 240, gw - 120, 3, 32, C_DIM, a, AL_C);
   } else {
     pk_anim = approach(pk_anim, (float)pk_sel, 20.0f);
     float tgt = pk_sel * rh + rh > bottom - top ? (float)(pk_sel * rh + rh - (bottom - top) + 20) : 0;
@@ -339,7 +343,7 @@ void pkgs_input(int b) {
     else if (b == B_X || b == B_RIGHT) {
       if (loc_sel < nloc && locs[loc_sel].kind == 9) {
         if (b != B_X) return;
-        if (locs[loc_sel].free_gb == A_BROWSE) browse_open(0, NULL); else paths_menu();
+        if (locs[loc_sel].free_gb == A_BROWSE) browse_open(0, NULL); else if (locs[loc_sel].free_gb == A_STORAGE) storage_open(); else paths_menu();
       } else if (npk) { focus_right = 1; sfx_play(SFX_SELECT); }
     }
     return;
@@ -350,7 +354,7 @@ void pkgs_input(int b) {
   else if (b == B_X && pk_sel < npk) install_one(&pk[pk_sel]);
   else if (b == B_TRI && npk) confirm_open(_("Installare tutti i pacchetti di questa posizione non ancora installati? Vanno in coda, uno alla volta."), _("Installa tutti"), all_yes, NULL);
   else if (b == B_SQ && pk_sel < npk) {
-    static const char *it[3]; it[0] = _("Installa"); it[1] = _("Elimina il file"); it[2] = _("Aggiungi questa cartella alle posizioni");
-    menu_open(pk[pk_sel].title[0] ? pk[pk_sel].title : pk[pk_sel].name, it, 3, pkg_opts, NULL);
+    static const char *it[5]; it[0] = _("Installa"); it[1] = _("Elimina il file"); it[2] = _("Aggiungi questa cartella alle posizioni"); it[3] = _("Sposta su un disco..."); it[4] = _("Copia su un disco...");
+    menu_open(pk[pk_sel].title[0] ? pk[pk_sel].title : pk[pk_sel].name, it, 5, pkg_opts, NULL);
   }
 }

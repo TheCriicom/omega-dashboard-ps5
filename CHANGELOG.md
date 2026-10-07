@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026.10.07.2
+
+- **Mobile app** (`/app` on the server): a real app-like web app for phones
+  and PCs (installable, works offline-first), signed in with the Omega account.
+  Friends online, chat, parties, community feed and groups, leaderboards,
+  records, trophies, user profiles, the full Store with wish list, recommend
+  and **"Install on PS5"** (queued on the server, the console picks it up and
+  installs it), notifications and notification settings, all working with the
+  console off.
+- **The console on the home network**: the Omega service announces its LAN
+  address every 30 s; with the console on, the web app opens the console's own
+  page in one tap (paired automatically) to upload games from the PC and manage
+  My library and the games JSON. Files go straight to the console over Wi-Fi,
+  never through the server.
+- On the console: a new **Mobile app** tile after Install PKG shows the QR code
+  of the web app; every screen that used to talk about the phone remote now
+  shows the web app link. The Wi-Fi remote with PIN stays in System as an
+  advanced option.
+- **Notifications your way**: per type (everyone, favourites only, nobody),
+  favourite or muted friends, quiet hours and what to show while playing, from
+  Settings › Account › Notifications or the web app. "A friend is online" and
+  "A friend started playing" now come only from favourites by default. Quiet or
+  in-game notifications stay in the list without a popup.
+- **Storage & moves**: see where each game is and how big it is, move or copy
+  folder games between internal storage and external drives (space check,
+  progress on the Home row, verification before the original is removed), move
+  or copy `.pkg` files to a drive; "Move to another drive" in each game's
+  options.
+- Server: migrations 015 (console link, install queue) and 016 (notification
+  preferences), new routes, tests.
+
 ## 2026.10.07.1
 
 - **Homebrew launch fixed**: Omega no longer quits on its own after asking

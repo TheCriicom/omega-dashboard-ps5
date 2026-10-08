@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026.10.08.1
+
+- **Your recap**, like PlayStation's Wrap-Up: a week, a month or a year of play
+  as story cards that play by themselves. Time played compared with the period
+  before, your game, your top 5, your rhythm (hours and weekdays), records
+  (longest session, days in a row, new games), trophies with the rarest one,
+  the friends you played with (same game at the same time), an anonymous
+  comparison with the community and, at the end, your player profile (Night
+  owl, Marathoner, Explorer, Trophy hunter…) to share on the feed.
+- On the console: Community › Play time › Triangle; once a week a notification
+  says last week's recap is ready. In the web app: Profile › Your recap, with a
+  shareable image drawn in the browser.
+- Server: every play session is now logged with start and end (migration 018,
+  kept 400 days) for rhythm, records and "played together"; `GET
+  /api/v1/wrap`; 38 new checks.
+
 ## 2026.10.07.3
 
 - **Cloud saves**, like PS Plus: after every session the saves that changed go
@@ -21,7 +37,7 @@
   per-account quota and concurrency limits, a server-wide cap and minimum free
   disk, random server-chosen file names, ownership checks on every request,
   downloads served as `octet-stream` with `nosniff` and a `sandbox` CSP, and
-  unfinished uploads purged after 2 hours. 48 new end-to-end checks.
+  unfinished uploads purged after 2 hours. 47 new end-to-end checks.
 - Web app: a **Cloud saves** page (list, storage used, delete a version).
 
 ## 2026.10.07.2

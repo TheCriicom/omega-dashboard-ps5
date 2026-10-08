@@ -32,6 +32,7 @@ const handlers = {
   console: require('./endpoints/console'),
   notifyprefs: require('./endpoints/notifyprefs'),
   saves: require('./endpoints/saves'),
+  wrap: require('./endpoints/wrap'),
   webapp: require('./endpoints/webapp'),
 };
 

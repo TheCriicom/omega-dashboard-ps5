@@ -40,6 +40,11 @@ async function addSegment(accountId, gameId, gameName, start, end) {
      VALUES ($1,$2, date_trunc('week', $4::timestamptz)::date, $3)
      ON CONFLICT (account_id, game_id, week_start) DO UPDATE SET seconds = lab_playtime_week.seconds + EXCLUDED.seconds`,
     [accountId, gameId, secs, new Date(end)]);
+  // il registro del riepilogo (endpoints/wrap.js): un tratto lungo oltre 12 h vale le ultime 12
+  await db.query(
+    `INSERT INTO lab_play_session (account_id, game_id, started_at, ended_at, seconds)
+     VALUES ($1,$2, $3::timestamptz - make_interval(secs => $4), $3, $4)`,
+    [accountId, gameId, new Date(end), secs]);
   return secs;
 }
 

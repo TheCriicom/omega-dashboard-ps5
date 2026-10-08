@@ -139,6 +139,19 @@ registra dal disco; verso la memoria interna si smonta e si registra da
 leggono da un disco: per quelli si indica lo spostamento della console. Anche i
 `.pkg` si spostano o si copiano su un disco (Installa PKG › □).
 
+## Il tuo riepilogo
+
+`source/wrap.c`, come il Wrap-Up di PlayStation: una settimana, un mese o un
+anno di gioco a schede che scorrono da sole (X avanti, L1/R1, Quadrato per il
+periodo): tempo giocato con il confronto col periodo prima, il gioco
+preferito, i primi cinque, il ritmo (ore e giorni), i record, i trofei, gli
+amici con cui hai giocato, il confronto anonimo con la community e il profilo
+finale da condividere sulla bacheca. Si apre da Community › Tempo di gioco con
+Triangolo; una volta a settimana, poco dopo l'accesso, una notifica avvisa che
+il riepilogo della settimana prima è pronto (se c'è almeno mezz'ora di gioco;
+la settimana già annunciata sta in `OMEGA_DIR/wrap-seen-<utente>`). I numeri li
+calcola il server (`GET /api/v1/wrap`) nel fuso della console.
+
 ## Salvataggi online
 
 `source/savesync.c`, come su PS Plus. Il salvataggio di un gioco si legge da una
@@ -278,6 +291,7 @@ In `OMEGA_DIR` (sulla console `/data/Omega`):
 | `util.c` | lettura file, codifica URL, FNV-1a, SHA-256 |
 | `session.c` | sessione salvata |
 | `savesync.c` | salvataggi online: lettura da una copia montata, cifratura, caricamento, ripristino e annullamento |
+| `wrap.c` | il tuo riepilogo: le schede stile Wrap-Up, la condivisione sulla bacheca e la notifica settimanale |
 | `servers.c`, `servers.h` | elenco dei server |
 | `ime.c` | tastiera di sistema (sceImeDialog) |
 | `gfx.c` | renderer: testo (con i font di ripiego), forme, icone SDF, marchio, temi, sfondi, particelle |

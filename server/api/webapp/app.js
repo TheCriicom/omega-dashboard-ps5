@@ -62,6 +62,7 @@ const ROUTES = [
   ['/settings/blocked', V.blocked, { tab: 'me', title: 'blocked.title' }],
   ['/settings/app', V.appSettings, { tab: 'me', title: 'appset.title' }],
   ['/stats', V.stats, { tab: 'community', title: 'stats.title' }],
+  ['/wrap', V.wrap, { tab: 'community', title: 'wrap.title' }],
   ['/about', V.about, { tab: 'me', title: 'about.title' }],
 ].map(([pattern, view, meta]) => {
   const keys = [];

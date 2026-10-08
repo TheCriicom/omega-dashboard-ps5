@@ -1,11 +1,11 @@
 // Service worker di Omega: guscio dell'app in cache, API sempre dalla rete.
 // Le risposte dell'API (con il token) non vengono mai messe in cache.
-const VERSION = 'omega-web-2';
+const VERSION = 'omega-web-3';
 const SHELL = [
   '/app/', '/app/app.css', '/app/app.js', '/app/manifest.webmanifest',
   '/app/js/api.js', '/app/js/auth.js', '/app/js/common.js', '/app/js/i18n.js', '/app/js/icons.js', '/app/js/install.js',
   '/app/js/nav.js', '/app/js/onboarding.js', '/app/js/state.js', '/app/js/ui.js', '/app/js/views.js',
-  '/app/js/v-chat.js', '/app/js/v-community.js', '/app/js/v-friends.js', '/app/js/v-home.js', '/app/js/v-me.js', '/app/js/v-store.js',
+  '/app/js/v-chat.js', '/app/js/v-community.js', '/app/js/v-friends.js', '/app/js/v-home.js', '/app/js/v-me.js', '/app/js/v-store.js', '/app/js/v-wrap.js',
   '/app/icons/icon.svg', '/app/icons/icon-192.png', '/app/icons/apple-touch-icon.png',
 ];
 

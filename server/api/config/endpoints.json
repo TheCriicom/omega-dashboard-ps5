@@ -127,6 +127,7 @@
     { "method": "POST",   "path": "/api/v1/groups/:id/leave",                     "handler": "groups.leave",             "family": "social",  "auth": true },
     { "method": "GET",    "path": "/api/v1/stats/me",                             "handler": "stats.me",                 "family": "social",  "auth": true, "note": "il mio tempo di gioco (totale, settimana, per gioco)" },
     { "method": "GET",    "path": "/api/v1/stats/friends",                        "handler": "stats.friends",            "family": "social",  "auth": true, "note": "?game_id=&period=week|all: classifica tra amici" },
+    { "method": "GET",    "path": "/api/v1/wrap",                                 "handler": "wrap.get",                 "family": "social",  "auth": true, "note": "?period=week|month|year&back=&tz=: il tuo riepilogo (stile Wrap-Up)" },
     { "method": "GET",    "path": "/api/v1/records",                              "handler": "records.overview",         "family": "social",  "auth": true, "note": "?period=week|all: record pubblici (giocatori, giochi più giocati, maratone)" },
     { "method": "GET",    "path": "/api/v1/records/games/:gameId",                "handler": "records.game",             "family": "social",  "auth": true, "note": "?period=week|all: classifica pubblica di un gioco" },
     { "method": "GET",    "path": "/api/v1/saves",                                "handler": "saves.list",               "family": "saves",   "auth": true, "note": "?title=: salvataggi online per gioco (ultime 3 versioni), chiave e quota" },

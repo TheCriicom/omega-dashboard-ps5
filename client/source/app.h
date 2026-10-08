@@ -366,7 +366,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS, OV_SAVES
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS, OV_SAVES, OV_WRAP
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);
@@ -411,6 +411,7 @@ void why_draw(float t); void why_input(int b);       // Perché Omega
 void feedback_open(void);                            // segnala un bug o chiedi una funzione
 void notifprefs_open(void); void notifprefs_draw(float t); void notifprefs_input(int b);   // Impostazioni › Notifiche (notifprefs.c)
 void saves_open(const char *tid); void saves_draw(float t); void saves_input(int b); void saves_tick(void);   // Salvataggi online (savesync.c); tid NULL = tutti
+void wrap_open(int opt); void wrap_draw(float t); void wrap_input(int b); void wrap_tick(void); int wrap_tz(void);   // Il tuo riepilogo (wrap.c); opt 0 questa settimana, 1 la scorsa, 2 mese, 3 mese scorso, 4 anno
 void mobile_open(void);                              // App mobile: codice QR della web app (remote.c)
 void mobile_link_card(int x, int y, int w, int a);   // riquadro con QR e indirizzo della web app (alto 150)
 void store_install_remote(const char *app_id);       // "Installa sulla PS5" chiesto dal telefono (store.c)

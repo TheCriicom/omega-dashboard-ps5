@@ -706,7 +706,7 @@ void community_draw(float t) {
     case SUB_PICK: ic[n] = IC_BTN_X; lb[n++] = _("Seleziona"); ic[n] = IC_BTN_TRI; lb[n++] = pick_mode == 0 ? _("Crea il gruppo") : _("Aggiungi"); ic[n] = IC_BTN_O; lb[n++] = _("Annulla"); break;
     default:
       if (tab == TAB_FEED && sel > 0) { ic[n] = IC_BTN_X; lb[n++] = _("Mi piace"); ic[n] = IC_BTN_TRI; lb[n++] = _("Commenti"); ic[n] = IC_BTN_SQ; lb[n++] = _("Opzioni"); }
-      else if (tab == TAB_STATS) { ic[n] = IC_BTN_SQ; lb[n++] = _("Periodo"); }
+      else if (tab == TAB_STATS) { ic[n] = IC_BTN_TRI; lb[n++] = _("Il tuo riepilogo"); ic[n] = IC_BTN_SQ; lb[n++] = _("Periodo"); }
       else { ic[n] = IC_BTN_X; lb[n++] = _("Seleziona"); }
       ic[n] = IC_BTN_O; lb[n++] = _("Chiudi");
   }
@@ -787,6 +787,7 @@ void community_input(int b) {
       break;
     case TAB_STATS:
       if (b == B_SQ || b == B_X) { period_week = !period_week; load_stats(); }
+      else if (b == B_TRI) wrap_open(0);
       break;
   }
 }

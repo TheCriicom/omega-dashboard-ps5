@@ -310,6 +310,20 @@ cancellano dopo 2 ore. Limiti: `SAVES_ACCOUNT_QUOTA` (2 GB), `SAVES_MAX`
 (1 GB), `SAVES_TOTAL_MAX` (60 GB), `SAVES_MIN_FREE` (15 GB liberi sul disco);
 volume `saves-data`.
 
+### Il tuo riepilogo
+
+`GET wrap?period=week|month|year&back=&tz=` racconta un periodo di gioco come
+il Wrap-Up di PlayStation: totale, giochi (primi 5, quanti nuovi), ritmo (ore e
+giorni della settimana nel fuso `tz` in minuti), sessione più lunga, giorni di
+fila, trofei del periodo con il più raro, amici che giocavano allo stesso gioco
+nello stesso momento (solo amici che mostrano la loro attività, mai bloccati),
+percentile tra i giocatori del periodo (solo totali anonimi, da 5 giocatori in
+su) e un profilo (`night_owl`, `marathoner`, `explorer`...). Ogni tratto di
+gioco chiuso da `src/playtime.js` finisce anche in `lab_play_session`
+(migrazione 018, conservato 400 giorni); per i periodi più vecchi del registro
+totali e giochi vengono da `lab_playtime_week`. Risposte in cache 60 s, 30
+richieste al minuto per account.
+
 ### Voce nel party
 
 Relay in memoria (ultimi 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

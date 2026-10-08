@@ -11,15 +11,12 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
+  N_("Nuovo: Il tuo riepilogo, come il Wrap-Up di PlayStation. La tua settimana, il tuo mese o il tuo anno di gioco raccontati a schede: tempo giocato, il gioco preferito, il tuo ritmo, i record, i trofei e gli amici con cui hai giocato."),
+  N_("Alla fine scopri il tuo profilo di giocatore (Nottambulo, Maratoneta, Esploratore...) e lo condividi sulla bacheca. Lo trovi in Community \xE2\x80\xBA Tempo di gioco con Triangolo, e ogni lunedì ti avvisa quando quello della settimana è pronto."),
+  N_("Nella web app: Profilo \xE2\x80\xBA Il tuo riepilogo, con l'immagine da condividere dove vuoi."),
   N_("Nuovo: Salvataggi online, come su PS Plus. Dopo ogni partita i salvataggi cambiati vanno online da soli e li ripristini su questa o su un'altra console (Impostazioni \xE2\x80\xBA Home e giochi, oppure dal menu del gioco)."),
   N_("Sono cifrati sulla console con una chiave protetta dalla tua parola d'ordine: il server riceve solo dati illeggibili e, se qualcuno li toccasse, la console se ne accorge e non li ripristina."),
-  N_("Prima di ogni ripristino Omega tiene una copia dei salvataggi della console: «Annulla l'ultimo ripristino» li rimette com'erano."),
-  N_("Nuovo: App mobile. Inquadra il codice dalla tessera nella home e hai Omega sul telefono e sul PC: chat, party, amici online, community, classifiche, trofei e Store, anche a console spenta."),
-  N_("Dall'App mobile, con la console accesa sulla stessa rete, carichi i giochi dal PC e gestisci La mia libreria e il JSON: i file vanno dritti alla console, non passano dal server."),
-  N_("\xC2\xABInstalla sulla PS5\xC2\xBB dallo Store del telefono: la console lo scarica e lo installa da sola, con la barra nella home."),
-  N_("Notifiche come vuoi tu: per ogni tipo scegli tutti, solo preferiti o nessuno, silenzia un amico, imposta gli orari di silenzio e cosa vedere mentre giochi (Impostazioni \xE2\x80\xBA Account \xE2\x80\xBA Notifiche)."),
-  N_("\xC2\xABUn amico \xC3\xA8 online\xC2\xBB e \xC2\xABUn amico inizia a giocare\xC2\xBB ora arrivano solo dagli amici preferiti: niente pi\xC3\xB9 notifiche continue."),
-  N_("Archivio e spostamenti: sposta o copia i giochi tra memoria interna e dischi esterni, e i .pkg su un disco. Dalle opzioni di un gioco: \xC2\xABSposta su un altro disco\xC2\xBB."),
+  N_("Prima di ogni ripristino Omega tiene una copia dei salvataggi della console: \xC2\xAB" "Annulla l'ultimo ripristino\xC2\xBB li rimette com'erano."),
 };
 #define NITEMS (int)(sizeof ITEMS / sizeof *ITEMS)
 

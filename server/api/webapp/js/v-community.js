@@ -396,6 +396,7 @@ async function playtimeTab(ctx, body) {
   const mine = h('div', {}, skeletonList(2, 'card'));
   const fr = h('div', {}, skeletonList(4));
   const seg = segmented([{ value: 'week', label: t('rec.week') }, { value: 'all', label: t('rec.all') }], period, (v) => { period = v; setPref('ptPeriod', v); loadFriends(); });
+  add(body, h('a', { class: 'wr-promo', href: '#/wrap' }, icon('sparkle', 22), h('div', {}, h('strong', { text: t('wrap.title') }), h('small', { text: t('wrap.sub') })), icon('chev', 18)));
   add(body, mine, h('div', { class: 'grid2' }, h('div', { id: 'pt-games' }), h('div', {}, section(t('stats.friendsRank'), { action: seg }, fr))));
   const gamesBox = body.querySelector('#pt-games');
   async function loadMine() {

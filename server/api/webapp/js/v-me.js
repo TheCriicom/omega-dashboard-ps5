@@ -24,6 +24,7 @@ export async function me(ctx) {
         listRow({ icon: 'chat', iconCls: 'c-accent', title: t('nav.messages'), href: '#/messages', trail: badge(state.counts.unread_messages) }),
         listRow({ icon: 'cloud', iconCls: 'c-accent', title: t('saves.title'), sub: t('saves.sub'), href: '#/settings/saves' }),
         listRow({ icon: 'trophy', iconCls: 'c-warn', title: t('trophies.mine'), href: `#/trophies/${E(auth.onlineId || '')}` }),
+        listRow({ icon: 'sparkle', iconCls: 'c-warn', title: t('wrap.title'), sub: t('wrap.sub'), href: '#/wrap' }),
         listRow({ icon: 'clock', iconCls: 'c-ok', title: t('stats.title'), href: '#/stats' }))),
       section(t('me.settings'), h('div', { class: 'list' },
         listRow({ icon: 'bell', iconCls: 'c-danger', title: t('nprefs.title'), sub: t('me.notifSub'), href: '#/settings/notifications' }),

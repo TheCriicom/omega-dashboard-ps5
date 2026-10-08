@@ -314,6 +314,20 @@ unfinished uploads are deleted after 2 hours. Limits: `SAVES_ACCOUNT_QUOTA`
 (2 GB), `SAVES_MAX` (1 GB), `SAVES_TOTAL_MAX` (60 GB), `SAVES_MIN_FREE` (15 GB
 left free on disk); `saves-data` volume.
 
+### Your recap
+
+`GET wrap?period=week|month|year&back=&tz=` tells a period of play like
+PlayStation's Wrap-Up: total, games (top 5, how many new), rhythm (hours and
+weekdays in the `tz` offset, in minutes), longest session, days in a row,
+trophies of the period with the rarest one, friends who played the same game at
+the same time (only friends who show their activity, never blocked ones),
+percentile among the period's players (anonymous totals only, from 5 players
+up) and a persona (`night_owl`, `marathoner`, `explorer`...). Every play
+segment closed by `src/playtime.js` also goes to `lab_play_session` (migration
+018, kept 400 days); for periods older than that log, totals and games come
+from `lab_playtime_week`. Responses cached for 60 s, 30 requests a minute per
+account.
+
 ### Party voice
 
 In-memory relay (last 8 s per party). `POST party/voice?codec=opus|adpcm&seq=`

@@ -65,7 +65,7 @@
 #define LOOP_S           2
 
 #ifndef OMEGA_DAEMON_VERSION
-#define OMEGA_DAEMON_VERSION "2026.10.09.2"
+#define OMEGA_DAEMON_VERSION "2026.10.09.3"
 #endif
 #define HTTP_GET  0
 #define HTTP_POST 1

@@ -41,14 +41,17 @@ static int pending_has(const char *tid) {
 }
 static void pending_set(const char *tid, int on) {
   char *f = file_read(GAMEUPD_PENDING, 64 * 1024, NULL);
-  char out[64 * 1024]; size_t o = 0; out[0] = 0;
+  enum { OUTMAX = 64 * 1024 };
+  char *out = malloc(OUTMAX); if (!out) { free(f); return; }
+  size_t o = 0; out[0] = 0;
   if (f) {
     for (char *l = strtok(f, "\n"); l; l = strtok(NULL, "\n"))
-      if (strcmp(l, tid) && l[0] && o + strlen(l) + 2 < sizeof out) o += (size_t)snprintf(out + o, sizeof out - o, "%s\n", l);
+      if (strcmp(l, tid) && l[0] && o + strlen(l) + 2 < OUTMAX) o += (size_t)snprintf(out + o, OUTMAX - o, "%s\n", l);
     free(f);
   }
-  if (on && o + strlen(tid) + 2 < sizeof out) o += (size_t)snprintf(out + o, sizeof out - o, "%s\n", tid);
+  if (on && o + strlen(tid) + 2 < OUTMAX) o += (size_t)snprintf(out + o, OUTMAX - o, "%s\n", tid);
   FILE *w = fopen(GAMEUPD_PENDING, "w"); if (w) { fwrite(out, 1, o, w); fclose(w); }
+  free(out);
 }
 
 static Game *find(const char *tid) { for (int i = 0; i < ng; i++) if (!strcmp(g[i].tid, tid)) return &g[i]; return NULL; }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026.10.09.3
+
+- **Installer**: if the HTTPS download through SceHttp fails at any step, it
+  retries over plain HTTP with its own socket (the console's DNS resolver, the
+  server IP as a last resort). `/updates` and `/download` are now served over
+  plain HTTP too; integrity still comes from the Ed25519 signature and the
+  SHA-256 of every file. The installer source is now in `installer/`.
+- Game updates screen: no 64 KB buffer on the stack.
+
 ## 2026.10.09.2
 
 - **Turning off, restarting and rest mode**: the daemon now watches the

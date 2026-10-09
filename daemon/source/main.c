@@ -24,6 +24,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -63,7 +64,7 @@
 #define LOOP_S           2
 
 #ifndef OMEGA_DAEMON_VERSION
-#define OMEGA_DAEMON_VERSION "2026.10.07.2"
+#define OMEGA_DAEMON_VERSION "2026.10.09.1"
 #endif
 #define HTTP_GET  0
 #define HTTP_POST 1
@@ -194,6 +195,26 @@ void omega_diag(const char *comp, const char *ev, int ok, int rc, const char *de
 }
 static int session_token(char *token, size_t n);
 static int post_json(const char *path, const char *token, const char *body);
+
+// Token rifiutato dal server (401): smettiamo di usarlo invece di ripetere la
+// richiesta ogni pochi secondi per ore. Si riprova ogni AUTH_RETRY_S (il server
+// può riaccettarlo) e subito se la UI salva un token diverso (nuovo login).
+#define AUTH_RETRY_S 900
+static pthread_mutex_t auth_mx = PTHREAD_MUTEX_INITIALIZER;
+static char auth_dead[700]; static time_t auth_dead_at;
+void auth_rejected(const char *token) {
+  pthread_mutex_lock(&auth_mx);
+  if (strcmp(auth_dead, token)) lg("sessione rifiutata dal server (401): pausa di %d s", AUTH_RETRY_S);
+  snprintf(auth_dead, sizeof auth_dead, "%s", token); auth_dead_at = time(NULL);
+  pthread_mutex_unlock(&auth_mx);
+}
+int auth_blocked(const char *token) {
+  pthread_mutex_lock(&auth_mx);
+  int b = auth_dead[0] && !strcmp(auth_dead, token) && time(NULL) - auth_dead_at < AUTH_RETRY_S;
+  pthread_mutex_unlock(&auth_mx);
+  return b;
+}
+
 static void diag_flush(void) {
   char token[700];
   if (!diag_n || !session_token(token, sizeof token)) return;
@@ -226,6 +247,7 @@ static int post_json(const char *path, const char *token, const char *body) {
     char sink[512]; while (sceHttpReadData(req, sink, sizeof sink) > 0) {}
   }
   sceHttpDeleteRequest(req); sceHttpDeleteConnection(conn);
+  if (status == 401) auth_rejected(token);
   return status;
 }
 
@@ -247,6 +269,7 @@ static int get_json(const char *path, const char *token, char *out, size_t n) {
     out[total] = 0;
   }
   sceHttpDeleteRequest(req); sceHttpDeleteConnection(conn);
+  if (status == 401) auth_rejected(token);
   return status;
 }
 
@@ -390,7 +413,8 @@ static int reported_game;
 // token della sessione salvata dalla UI; 0 se non c'è nessuno collegato
 static int session_token(char *token, size_t n) {
   char sess[2048];
-  return read_small(OMEGA_SESSION, sess, sizeof sess) > 0 && json_get(sess, "token", token, n) == 0 && token[0];
+  return read_small(OMEGA_SESSION, sess, sizeof sess) > 0 && json_get(sess, "token", token, n) == 0 && token[0] &&
+         !auth_blocked(token);
 }
 
 static int ui_in_foreground(void) {
@@ -455,6 +479,61 @@ static void presence_tick(void) {
   }
 }
 
+// --------------------------------------------- aggiornamenti dei giochi --
+// La UI (gameupd.c) mette in GAMEUPD_PENDING i giochi da installare a
+// download finito; i download li fa PatchDL (porta 12880) anche a Omega
+// chiusa, e qui si chiede l'installazione appena un download è completo.
+#define GAMEUPD_PENDING OMEGA_DIR "/gameupd-pending.txt"
+#define GAMEUPD_EVERY_S 15
+#define PDL_PORT 12880
+
+// Richiesta HTTP minima a PatchDL in locale: stato HTTP, corpo in out (troncato a n).
+static int pdl_http(const char *method, const char *path, char *out, size_t n) {
+  if (out && n) out[0] = 0;
+  int s = socket(AF_INET, SOCK_STREAM, 0); if (s < 0) return -1;
+  struct timeval tv = { 5, 0 };
+  setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv); setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
+  struct sockaddr_in a; memset(&a, 0, sizeof a);
+  a.sin_family = AF_INET; a.sin_port = htons(PDL_PORT); a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  if (connect(s, (struct sockaddr *)&a, sizeof a) != 0) { close(s); return -1; }
+  char req[512];
+  int rl = snprintf(req, sizeof req, "%s %s HTTP/1.0\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s",
+                    method, path, strcmp(method, "POST") ? 0 : 2, strcmp(method, "POST") ? "" : "{}");
+  if (send(s, req, (size_t)rl, 0) != rl) { close(s); return -1; }
+  static char buf[256 * 1024]; size_t got = 0; ssize_t k;
+  while (got + 1 < sizeof buf && (k = recv(s, buf + got, sizeof buf - 1 - got, 0)) > 0) got += (size_t)k;
+  close(s); buf[got] = 0;
+  int status = -1; if (sscanf(buf, "HTTP/%*s %d", &status) != 1) return -1;
+  char *body = strstr(buf, "\r\n\r\n");
+  if (out && n && body) snprintf(out, n, "%s", body + 4);
+  return status;
+}
+
+static void gameupd_tick(void) {
+  char pend[4096];
+  if (read_small(GAMEUPD_PENDING, pend, sizeof pend) <= 0) return;
+  static char dl[128 * 1024];
+  if (pdl_http("GET", "/api/downloads", dl, sizeof dl) != 200) return;   // PatchDL spento: ci pensa la UI
+  JVal *j = json_parse(dl); if (!j) return;
+  char keep[4096]; size_t ko = 0; keep[0] = 0; int changed = 0;
+  for (char *l = strtok(pend, "\n"); l; l = strtok(NULL, "\n")) {
+    if (!l[0]) continue;
+    const char *state = NULL;
+    JFOR(d, j) if (!strcmp(jstr(d, "title_id", ""), l)) state = jstr(d, "state", "");
+    if (state && !strcmp(state, "done")) {
+      char path[96], resp[512]; snprintf(path, sizeof path, "/api/titles/%.20s/install", l);
+      int rc = pdl_http("POST", path, resp, sizeof resp);
+      lg("aggiornamento %s: installazione chiesta -> %d %.160s", l, rc, resp);
+      if (rc == 200) { changed = 1; continue; }
+      if (rc >= 400 && rc < 500) { changed = 1; continue; }   // rifiutato (gioco non ufficiale, ecc.): non si riprova
+    }
+    if (!state) { changed = 1; continue; }   // download annullato o sparito
+    if (ko + strlen(l) + 2 < sizeof keep) ko += (size_t)snprintf(keep + ko, sizeof keep - ko, "%s\n", l);
+  }
+  json_free(j);
+  if (changed) { FILE *f = fopen(GAMEUPD_PENDING, "w"); if (f) { fwrite(keep, 1, ko, f); fclose(f); } }
+}
+
 // Brano nuovo: se si sta giocando lo si dice con una notifica di sistema
 // (nella UI lo mostra già il mini lettore).
 static void on_track(const char *title, const char *artist) {
@@ -489,17 +568,26 @@ static void system_json(char *out, size_t n) {
   if (sys_trace > 0) sys_trace--;
 }
 
-// La soglia della ventola si perde a ogni riavvio: se l'utente ne ha scelta
-// una in Omega, la si riapplica (stesso comando di etaHEN, 55-80 °C).
+// Soglia della ventola scelta in Omega (system.c): si perde a ogni riavvio e
+// giochi o sistema a volte la rimettono a 91 °C, quindi la si controlla ogni
+// FAN_EVERY_S e la si riapplica se è cambiata. Lettura-modifica-scrittura dei
+// 28 byte del controllo automatico, come drakmor/fan_target (GPL-3).
+#define FAN_EVERY_S 10
 static void fan_restore(void) {
+  static int logged_missing, last_logged = -1;
   char b[16];
   if (read_small(FAN_FILE, b, sizeof b) <= 0) return;
-  int t = atoi(b); if (t < 55 || t > 80) return;
-  int fd = open("/dev/icc_fan", O_RDONLY, 0);
-  if (fd < 0) { lg("ventola: /dev/icc_fan non disponibile"); return; }
-  char data[10] = { 0, 0, 0, 0, 0, (char)t, 0, 0, 0, 0 };
-  int rc = ioctl(fd, 0xC01C8F07, data); close(fd);
-  lg("ventola: soglia %d C -> %d", t, rc);
+  int t = atoi(b); if (t < 55 || t > 85) return;
+  int fd = open("/dev/icc_fan", 0x10002, 0);
+  if (fd < 0) fd = open("/dev/icc_fan", O_RDONLY, 0);
+  if (fd < 0) { if (!logged_missing++) lg("ventola: /dev/icc_fan non disponibile"); return; }
+  uint8_t cfg[28]; memset(cfg, 0, sizeof cfg);
+  if (ioctl(fd, 0xC01C8F08UL, cfg) == 0 && cfg[5] != (uint8_t)t) {
+    int was = cfg[5]; cfg[5] = (uint8_t)t;
+    int rc = ioctl(fd, 0xC01C8F07UL, cfg);
+    if (last_logged != was) { lg("ventola: soglia %d C -> %d C (%d)", was, t, rc); last_logged = was; }
+  }
+  close(fd);
 }
 
 // Stesso controllo della UI (main.c): chi parte per primo rinomina la cartella.
@@ -581,7 +669,7 @@ int main(void) {
     }
   } else lg("Omega non è impostata come Home: nessun avvio automatico della UI");
 
-  int last_home = 1; time_t last = time(NULL), last_presence = 0, last_notify = 0;
+  int last_home = 1; time_t last = time(NULL), last_presence = 0, last_notify = 0, last_gameupd = 0, last_fan = 0;
   for (;;) {
     int home = is_home();
     time_t now = time(NULL);
@@ -601,6 +689,8 @@ int main(void) {
     }
     if (now - last_presence >= PRESENCE_EVERY_S) { last_presence = now; presence_tick(); }
     if (now - last_notify >= NOTIFY_EVERY_S) { last_notify = now; notify_from_loop(); }
+    if (now - last_gameupd >= GAMEUPD_EVERY_S) { last_gameupd = now; gameupd_tick(); }
+    if (now - last_fan >= FAN_EVERY_S) { last_fan = now; fan_restore(); }
     diag_flush();
     sleep(LOOP_S);
   }

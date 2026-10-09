@@ -14,12 +14,14 @@
 #include <sys/mount.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/sysctl.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #define FAN_FILE OMEGA_DIR "/fan.txt"   // soglia scelta: la riapplica il demone all'avvio
 #define FAN_MIN 55
-#define FAN_MAX 80
+#define FAN_MAX 85                      // quella di fabbrica è 91 °C
 
 #ifdef PS5
 #include <ps5/kernel.h>
@@ -38,17 +40,22 @@ static void *ksym(const char *name) {
   }
   return NULL;
 }
+// Le firme di ventola, frequenza e modello vengono da progetti GPL-3 provati
+// su console vere: drakmor/fan_target e Marice/ps5-exporter. La ventola prima
+// si leggeva con due int e rovinava lo stack: vuole uint16_t e uint64_t.
 static struct {
   int done;
-  int (*cpu_t)(int *); int (*soc_t)(int, int *); int (*fan)(int *, int *);
-  int (*sw)(SwVer *); int (*mem)(size_t *);
+  int (*cpu_t)(int *); int (*soc_t)(int, int *); int (*fan)(uint16_t *, uint64_t *);
+  int (*sw)(SwVer *); int (*mem)(size_t *); long (*freq)(void); int (*model)(char *);
 } K;
 static void ksyms(void) {
   if (K.done) return;
   K.cpu_t = ksym("sceKernelGetCpuTemperature"); K.soc_t = ksym("sceKernelGetSocSensorTemperature");
-  K.sw = ksym("sceKernelGetProsperoSystemSwVersion");   // la ventola no: sceKernelGetCurrentFanDuty rovinava lo stack
+  K.sw = ksym("sceKernelGetProsperoSystemSwVersion");
+  K.fan = ksym("sceKernelGetCurrentFanDuty");
   K.mem = ksym("sceKernelAvailableFlexibleMemorySize");
-  omega_log("sistema: temp %d sensori %d ventola %d firmware %d memoria %d", !!K.cpu_t, !!K.soc_t, !!K.fan, !!K.sw, !!K.mem);
+  K.freq = ksym("sceKernelGetCpuFrequency"); K.model = ksym("sceKernelGetHwModelName");
+  omega_log("sistema: temp %d sensori %d ventola %d firmware %d memoria %d frequenza %d modello %d", !!K.cpu_t, !!K.soc_t, !!K.fan, !!K.sw, !!K.mem, !!K.freq, !!K.model);
   K.done = 1;
 }
 #endif
@@ -68,7 +75,8 @@ typedef struct { const char *name; int port; int up; } Svc;
 typedef struct {
   int cpu_t, soc_t, fan;           // -1 = non disponibile
   double mem_free;                 // MB, < 0 non disponibile
-  char fw[32], ip[48], jb[96];
+  char fw[32], kfw[16], ip[48], jb[96], model[64];
+  int cpu_mhz; long uptime;         // 0 = non disponibile
   int ndisk; Disk disk[8];
   Svc svc[6];
   int fan_threshold;               // quella salvata da Omega, 0 = mai impostata
@@ -112,7 +120,18 @@ static void gather(SysInfo *si) {
   int v;
   ksyms();
   if (K.cpu_t && K.cpu_t(&v) == 0 && v > 0 && v < 130) si->cpu_t = v;
-  if (K.soc_t && K.soc_t(0, &v) == 0 && v > 0 && v < 130) si->soc_t = v;
+  // il SoC ha fino a 16 sensori: si mostra il più caldo
+  for (int k = 0; K.soc_t && k < 16; k++) if (K.soc_t(k, &v) == 0 && v > 0 && v < 130 && v > si->soc_t) si->soc_t = v;
+  uint16_t duty = 0xffff; uint64_t chassis = 0;
+  if (K.fan && K.fan(&duty, &chassis) == 0 && duty <= 1024) si->fan = (duty * 100 + 512) / 1024;
+  if (K.freq) { long hz = K.freq(); if (hz > 100000000L && hz < 10000000000L) si->cpu_mhz = (int)(hz / 1000000); }
+  char model[128]; memset(model, 0, sizeof model);
+  if (K.model && K.model(model) == 0 && model[0]) snprintf(si->model, sizeof si->model, "%.63s", model);
+  // firmware vero del kernel: quello di sistema può essere falsato dal jailbreak per non chiedere aggiornamenti
+  uint32_t kv = kernel_get_fw_version();
+  if (kv) snprintf(si->kfw, sizeof si->kfw, "%x.%02x", (kv >> 24) & 0xff, (kv >> 16) & 0xff);
+  struct timeval boot; size_t bsz = sizeof boot; int mib[2] = { CTL_KERN, KERN_BOOTTIME };
+  if (sysctl(mib, 2, &boot, &bsz, NULL, 0) == 0 && boot.tv_sec > 0) si->uptime = (long)(time(NULL) - boot.tv_sec);
   SwVer sw; memset(&sw, 0, sizeof sw); sw.size = sizeof sw;
   if (K.sw && K.sw(&sw) == 0 && sw.str[0]) { snprintf(si->fw, sizeof si->fw, "%.27s", sw.str); char *sp = strchr(si->fw, ' '); if (sp) *sp = 0; }
   size_t mf = 0; if (K.mem && K.mem(&mf) == 0) si->mem_free = mf / 1048576.0;
@@ -145,24 +164,33 @@ static int sys_thread(void *arg) {
 }
 
 // ------------------------------------------------------------------- ventola --
-// Stesso comando di etaHEN (GPL-3): la ventola accelera sopra questa temperatura.
+// Temperatura obiettivo del controllo automatico della ventola (di fabbrica
+// 91 °C): più bassa = la ventola accelera prima. Si legge la configurazione
+// intera (28 byte), si cambia solo il byte 5 e si verifica, come fa
+// drakmor/fan_target (GPL-3); prima si mandavano 10 byte quasi tutti a zero.
+// Giochi e sistema a volte la rimettono a 91: il demone la ripristina.
+#define FAN_GET 0xC01C8F08UL
+#define FAN_SET 0xC01C8F07UL
 static int fan_apply(int t) {
   if (t < FAN_MIN) t = FAN_MIN;
   if (t > FAN_MAX) t = FAN_MAX;
 #ifdef PS5
-  int fd = open("/dev/icc_fan", O_RDONLY, 0);
+  int fd = open("/dev/icc_fan", 0x10002, 0);
+  if (fd < 0) fd = open("/dev/icc_fan", O_RDONLY, 0);
   if (fd < 0) return -1;
-  char data[10] = { 0, 0, 0, 0, 0, (char)t, 0, 0, 0, 0 };
-  int rc = ioctl(fd, 0xC01C8F07, data);
+  uint8_t cfg[28], chk[28]; memset(cfg, 0, sizeof cfg); memset(chk, 0, sizeof chk);
+  int rc = ioctl(fd, FAN_GET, cfg);
+  if (rc == 0) { cfg[5] = (uint8_t)t; rc = ioctl(fd, FAN_SET, cfg); }
+  if (rc == 0 && ioctl(fd, FAN_GET, chk) == 0 && chk[5] != (uint8_t)t) rc = -1;
   close(fd);
-  if (rc < 0) return -2;
+  if (rc != 0) return -2;
 #endif
   FILE *f = fopen(FAN_FILE, "w"); if (f) { fprintf(f, "%d\n", t); fclose(f); }
   return 0;
 }
 static void fan_pick(int idx, void *ud) {
   (void)ud; if (idx < 0) return;
-  if (idx == 6) { unlink(FAN_FILE); set_msg(_("Soglia della ventola: quella di sistema al prossimo riavvio"), 0); return; }
+  if (idx == 7) { unlink(FAN_FILE); set_msg(_("Soglia della ventola: quella di sistema al prossimo riavvio"), 0); return; }
   int t = FAN_MIN + idx * 5;
   int rc = fan_apply(t);
   char m[120];
@@ -171,15 +199,15 @@ static void fan_pick(int idx, void *ud) {
   set_msg(m, rc != 0);
 }
 static void fan_menu(void) {
-  static char l[7][64]; static const char *it[7];
-  for (int i = 0; i < 6; i++) {
+  static char l[8][64]; static const char *it[8];
+  for (int i = 0; i < 7; i++) {
     int t = FAN_MIN + i * 5;
     snprintf(l[i], sizeof l[i], t <= 65 ? _("%d \xC2\xB0""C \xE2\x80\x94 pi\xC3\xB9 fresca, pi\xC3\xB9 rumorosa") : t >= 75 ? _("%d \xC2\xB0""C \xE2\x80\x94 pi\xC3\xB9 silenziosa") : _("%d \xC2\xB0""C"), t);
     it[i] = l[i];
   }
-  snprintf(l[6], sizeof l[6], "%s", _("Usa quella di sistema"));
-  it[6] = l[6];
-  menu_open(_("Soglia della ventola"), it, 7, fan_pick, NULL);
+  snprintf(l[7], sizeof l[7], "%s", _("Usa quella di sistema"));
+  it[7] = l[7];
+  menu_open(_("Soglia della ventola"), it, 8, fan_pick, NULL);
 }
 
 // ---------------------------------------------------------------- pannello --
@@ -228,7 +256,8 @@ void system_draw(float t) {
 
   // riga di schede: temperature, ventola, memoria, firmware, IP
   char v[5][64];
-  if (si.cpu_t >= 0) snprintf(v[0], sizeof v[0], "%d \xC2\xB0""C", si.cpu_t); else snprintf(v[0], sizeof v[0], "\xE2\x80\x94");
+  if (si.cpu_t >= 0 && si.cpu_mhz) snprintf(v[0], sizeof v[0], "%d \xC2\xB0""C \xC2\xB7 %.1f GHz", si.cpu_t, si.cpu_mhz / 1000.0);
+  else if (si.cpu_t >= 0) snprintf(v[0], sizeof v[0], "%d \xC2\xB0""C", si.cpu_t); else snprintf(v[0], sizeof v[0], "\xE2\x80\x94");
   if (si.soc_t >= 0) snprintf(v[1], sizeof v[1], "%d \xC2\xB0""C", si.soc_t); else snprintf(v[1], sizeof v[1], "\xE2\x80\x94");
   if (si.fan >= 0) snprintf(v[2], sizeof v[2], "%d%%", si.fan); else snprintf(v[2], sizeof v[2], "\xE2\x80\x94");
   if (si.mem_free >= 0) snprintf(v[3], sizeof v[3], _("%.0f MB liberi"), si.mem_free); else snprintf(v[3], sizeof v[3], "\xE2\x80\x94");
@@ -259,9 +288,14 @@ void system_draw(float t) {
   // colonna destra: console, servizi, azioni
   int rx = 1040, ry = 310;
   draw_text(font(W_MED, 28), _("Console"), rx, ry, C_TXT, a, AL_L);
-  char l1[128]; snprintf(l1, sizeof l1, _("Firmware %s"), si.fw);
-  draw_text(font(W_REG, 24), l1, rx, ry + 48, C_DIM, a, AL_L);
+  char l1[200];
+  if (si.kfw[0] && strncmp(si.fw, si.kfw, strlen(si.kfw))) snprintf(l1, sizeof l1, _("Firmware %s (kernel %s)"), si.fw, si.kfw);
+  else snprintf(l1, sizeof l1, _("Firmware %s"), si.fw);
+  if (si.model[0]) { size_t L = strlen(l1); snprintf(l1 + L, sizeof l1 - L, "  \xC2\xB7  %s", si.model); }
+  draw_text_fit(font(W_REG, 24), l1, rx, ry + 48, 760, C_DIM, a, AL_L);
   snprintf(l1, sizeof l1, _("Jailbreak: %s"), si.jb);
+  if (si.uptime > 0) { size_t L = strlen(l1); long h = si.uptime / 3600, m = si.uptime / 60 % 60;
+    snprintf(l1 + L, sizeof l1 - L, h ? _("  \xC2\xB7  acceso da %ld h %ld min") : _("  \xC2\xB7  acceso da %ld min"), h ? h : m, m); }
   draw_text_fit(font(W_REG, 24), l1, rx, ry + 82, 760, C_DIM, a, AL_L);
   ry += 140;
   draw_text(font(W_MED, 28), _("Servizi"), rx, ry, C_TXT, a, AL_L);

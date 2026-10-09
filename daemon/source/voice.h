@@ -10,3 +10,6 @@ int voice_command(const char *cmd);          // mute | unmute | toggle | leave
 void voice_state_json(char *out, size_t n);  // stato per /v1/voice
 void voice_on_crash(void);                  // dal gestore dei crash: ricorda dove si era
 int foreground_user(void);                  // utente in primo piano (libSceUserService a runtime), -1 se non si sa
+// main.c: un token che il server ha rifiutato (401) non si usa per un po'
+void auth_rejected(const char *token);
+int auth_blocked(const char *token);         // 1 = rifiutato di recente, non usarlo

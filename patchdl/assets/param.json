@@ -1,0 +1,10 @@
+{
+    "titleId": "PTDL00001",
+    "deeplinkUri": "http://127.0.0.1:12880/",
+    "localizedParameters": {
+        "defaultLanguage": "en-US",
+        "en-US": {
+            "titleName": "PatchDL"
+        }
+    }
+}

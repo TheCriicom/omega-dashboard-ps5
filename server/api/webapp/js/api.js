@@ -6,7 +6,7 @@ const KEY = 'omega.session';
 
 let session = null;
 try { session = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { session = null; }
-if (session && session.expires_at && Date.parse(session.expires_at) < Date.now()) session = null;
+// niente controllo locale di expires_at: il server rinnova la sessione a ogni uso, decide lui (401)
 
 const listeners = new Set();
 export function onUnauthorized(fn) { listeners.add(fn); }

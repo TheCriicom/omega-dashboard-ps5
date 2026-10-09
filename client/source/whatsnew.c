@@ -11,12 +11,12 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
-  N_("Nuovo: Il tuo riepilogo, come il Wrap-Up di PlayStation. La tua settimana, il tuo mese o il tuo anno di gioco raccontati a schede: tempo giocato, il gioco preferito, il tuo ritmo, i record, i trofei e gli amici con cui hai giocato."),
-  N_("Alla fine scopri il tuo profilo di giocatore (Nottambulo, Maratoneta, Esploratore...) e lo condividi sulla bacheca. Lo trovi in Community \xE2\x80\xBA Tempo di gioco con Triangolo, e ogni lunedì ti avvisa quando quello della settimana è pronto."),
-  N_("Nella web app: Profilo \xE2\x80\xBA Il tuo riepilogo, con l'immagine da condividere dove vuoi."),
-  N_("Nuovo: Salvataggi online, come su PS Plus. Dopo ogni partita i salvataggi cambiati vanno online da soli e li ripristini su questa o su un'altra console (Impostazioni \xE2\x80\xBA Home e giochi, oppure dal menu del gioco)."),
-  N_("Sono cifrati sulla console con una chiave protetta dalla tua parola d'ordine: il server riceve solo dati illeggibili e, se qualcuno li toccasse, la console se ne accorge e non li ripristina."),
-  N_("Prima di ogni ripristino Omega tiene una copia dei salvataggi della console: \xC2\xAB" "Annulla l'ultimo ripristino\xC2\xBB li rimette com'erano."),
+  N_("Nuovo: Aggiornamenti dei giochi. Omega trova l'ultimo aggiornamento ufficiale di ogni gioco installato, compatibile con il tuo firmware, lo scarica dai server di Sony e lo installa. Lo trovi in home e in Impostazioni \xE2\x80\xBA Home e giochi."),
+  N_("I download continuano anche se chiudi Omega e riprendono da dove erano rimasti. Il servizio è PatchDL di Knutwurst, incluso in Omega."),
+  N_("Opzioni di alimentazione: ora puoi mettere la console in modalità riposo, riavviarla o spegnerla direttamente da Omega."),
+  N_("Ventola: la soglia scelta adesso viene applicata davvero e resta anche quando un gioco la cambia; si può scegliere fino a 85 \xC2\xB0""C. In Sistema vedi anche la velocità della ventola, la frequenza del processore, il modello della console e da quanto è accesa."),
+  N_("Suoni dell'interfaccia rifatti, più puliti e vicini a quelli della console."),
+  N_("Non vieni più disconnesso dopo un giorno: resti collegato finché usi Omega."),
 };
 #define NITEMS (int)(sizeof ITEMS / sizeof *ITEMS)
 

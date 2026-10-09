@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f2a1e"/>
+      <stop offset="1" stop-color="#0a1612"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#21d07a"/>
+      <stop offset="1" stop-color="#179a59"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="72" fill="url(#bg)"/>
+  <rect x="56" y="56" width="160" height="160" rx="36" fill="url(#badge)"/>
+  <text x="136" y="178" font-family="Helvetica,Arial,sans-serif" font-size="116"
+        font-weight="800" fill="#0a1612" text-anchor="middle">PD</text>
+  <text x="256" y="346" font-family="Helvetica,Arial,sans-serif" font-size="80"
+        font-weight="700" fill="#e7ecea" text-anchor="middle">PatchDL</text>
+  <text x="256" y="404" font-family="Helvetica,Arial,sans-serif" font-size="32"
+        font-weight="500" fill="#7a8f86" text-anchor="middle">PS5 Patch Tool</text>
+</svg>

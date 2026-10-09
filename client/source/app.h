@@ -188,6 +188,7 @@ void mic_probe(void);                         // comando di debug "micprobe"
 #define TID_BROWSER   "OMEGAWEB0"
 #define TID_PKGS      "OMEGAPKG0"
 #define TID_MOBILE    "OMEGAAPP0"
+#define TID_GAMEUPD   "OMEGAUPD0"
 // tessere fisse di Omega in testa alla fila (Community, Store, Browser, PKG, App mobile), non le cartelle
 #define SYS_TILE(a) ((a)->builtin && (a)->builtin != 2)
 static inline int sys_tile_order(int b) { return b == 1 ? 0 : b == 3 ? 1 : b == 4 ? 2 : b == 5 ? 3 : b == 6 ? 4 : 9; }
@@ -282,6 +283,7 @@ int paths_list(int kind, char (*out)[300], int max);
 int paths_set(int kind, const char *path, int add);      // add 1 aggiunge, 0 toglie
 // installatore di pkg dai dischi e dalle cartelle (pkgs.c)
 void pkgs_open(void); void pkgs_draw(float t); void pkgs_input(int b);
+void gameupd_open(void); void gameupd_draw(float t); void gameupd_input(int b);   // gameupd.c: aggiornamenti dei giochi
 void paths_menu(void);                                   // Impostazioni › Giochi e PKG
 // archivio e spostamenti tra memoria interna e dischi (storage.c)
 void storage_open(void); void storage_draw(float t); void storage_input(int b); void storage_tick(void);
@@ -366,7 +368,7 @@ void scene_set(Scene s);
 // Pannelli sopra la home, gestiti come una pila.
 typedef enum {
   OV_NONE, OV_CC, OV_GAMEBASE, OV_NOTIF, OV_PROFILE, OV_CHAT, OV_SEARCH, OV_MENU, OV_CONFIRM, OV_AVATAR,
-  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS, OV_SAVES, OV_WRAP
+  OV_SETTINGS, OV_NEWS, OV_BROWSER, OV_GALLERY, OV_STORE, OV_DOC, OV_COMMUNITY, OV_ABOUT, OV_MUSIC, OV_SYSTEM, OV_FILES, OV_REMOTE, OV_SETUP, OV_WHATSNEW, OV_CUSTOM, OV_TROPHIES, OV_FOLDER, OV_PKGS, OV_WHY, OV_STORAGE, OV_NOTIFPREFS, OV_SAVES, OV_WRAP, OV_GAMEUPD
 } Overlay;
 void ov_push(Overlay o);
 void ov_pop(void);

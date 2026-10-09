@@ -39,6 +39,14 @@ font in `/preinst`, compresi quelli per giapponese, cinese, coreano e thai) non
 sono incluse né ridistribuite: si usano quelle già presenti sulla console. La
 build desktop di prova usa allo stesso modo i font di macOS.
 
+## Codice e programmi di altri progetti homebrew
+
+| Componente | Uso in Omega | Licenza |
+|---|---|---|
+| [PatchDL](https://github.com/knutwurst/ps5-patchdl) di Knutwurst (commit `cb7a865`) | distribuito com'è in `patchdl-src/` → `payloads/patchdl.elf`: aggiornamenti ufficiali dei giochi (`source/gameupd.c` è solo la schermata). Include SQLite (pubblico dominio), libmicrohttpd (LGPL-2.1+), libcurl (curl License), OpenSSL (Apache-2.0) | GPL-3.0-or-later |
+| [fan_target](https://github.com/drakmor/fan_target) di drakmor | metodo di lettura-modifica-scrittura della temperatura obiettivo della ventola (`source/system.c`, demone) e firma di `sceKernelGetCurrentFanDuty` | GPL-3.0 |
+| [ps5-exporter](https://github.com/Marice/ps5-exporter) di Marice | letture di sensori, frequenza, modello, firmware del kernel e accensione (`source/system.c`) | GPL-3.0 |
+
 Il marchio di Omega (`source/logo_png.c`, `sce_sys/icon0.png`) è un disegno
 originale del progetto.
 

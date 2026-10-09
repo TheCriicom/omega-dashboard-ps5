@@ -1,0 +1,11 @@
+.DS_Store
+*.log
+dist/
+build/
+node_modules/
+gen/
+*.elf
+*.o
+__pycache__/
+*.pyc
+.toolchains/

@@ -7,7 +7,11 @@ const config = require('./config');
 const db = require('./db');
 
 const SECRET = config.sessionSecret;
+// Scadenza per inattività: ogni richiesta autenticata riporta la scadenza a
+// now + TTL (al massimo una scrittura l'ora per sessione). Chi usa Omega resta
+// collegato; esce solo chi non lo apre per TTL secondi, o chi fa logout.
 const TTL = config.sessionTtlSeconds;
+const RENEW_AFTER = Math.min(3600, Math.floor(TTL / 2));
 if (!SECRET || SECRET.length < 32) {
   throw new Error('OMEGA_SESSION_SECRET mancante o troppo corto (servono almeno 32 caratteri)');
 }
@@ -49,12 +53,20 @@ async function resolve(req) {
   const [, sessionId, signature] = m;
   if (!signatureMatches(sessionId, signature)) return null;
   const r = await db.query(
-    `SELECT s.account_id, a.online_id
+    `SELECT s.account_id, a.online_id,
+            s.expires_at < now() + make_interval(secs => $2) AS renew
        FROM lab_session s JOIN lab_account a USING (account_id)
       WHERE s.session_id = $1 AND NOT s.revoked AND s.expires_at > now() AND NOT a.disabled`,
-    [sessionId],
+    [sessionId, TTL - RENEW_AFTER],
   );
   if (r.rowCount === 0) return null;
+  if (r.rows[0].renew) {
+    await db.query(
+      `UPDATE lab_session SET expires_at = now() + make_interval(secs => $2)
+        WHERE session_id = $1 AND NOT revoked`,
+      [sessionId, TTL],
+    );
+  }
   return { accountId: String(r.rows[0].account_id), onlineId: r.rows[0].online_id, sessionId };
 }
 

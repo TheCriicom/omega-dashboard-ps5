@@ -251,7 +251,7 @@ void scan_apps(void) {
   // (bacheca, gruppi, record e trofei), Store, Browser e Installa PKG.
   {
     static const struct { int b; const char *tid, *name; int need_login; } SYS[] = {
-      { 1, TID_COMMUNITY, N_("Community"), 1 }, { 3, TID_STORE, N_("Store"), 1 }, { 4, TID_BROWSER, N_("Browser"), 0 }, { 5, TID_PKGS, N_("Installa PKG"), 0 }, { 6, TID_MOBILE, N_("App mobile"), 0 } };
+      { 1, TID_COMMUNITY, N_("Community"), 1 }, { 3, TID_STORE, N_("Store"), 1 }, { 4, TID_BROWSER, N_("Browser"), 0 }, { 5, TID_PKGS, N_("Installa PKG"), 0 }, { 7, TID_GAMEUPD, N_("Aggiornamenti"), 0 }, { 6, TID_MOBILE, N_("App mobile"), 0 } };
     int k = 0;
     for (unsigned d = 0; d < sizeof SYS / sizeof *SYS; d++) {
       if ((SYS[d].need_login && !g_token[0]) || napps >= MAX_APPS) continue;
@@ -466,6 +466,7 @@ void launch_app(int idx) {
   if (apps[idx].builtin == 4) { sfx_play(SFX_OPEN); browser_open(NULL); return; }
   if (apps[idx].builtin == 5) { sfx_play(SFX_OPEN); pkgs_open(); return; }
   if (apps[idx].builtin == 6) { sfx_play(SFX_OPEN); mobile_open(); return; }
+  if (apps[idx].builtin == 7) { sfx_play(SFX_OPEN); gameupd_open(); return; }
   if (apps[idx].hb) { hb_step(idx, -1); return; }
   if (apps[idx].pld) {
     char err[400];
@@ -753,6 +754,7 @@ void sys_tile_draw(const AppEntry *ap, int tx, int ty, int s, int a) {
     case 4: c1 = RGB(40, 200, 220); c2 = RGB(30, 90, 210); ic = IC_GLOBE; break;
     case 5: c1 = RGB(70, 210, 130); c2 = RGB(20, 120, 110); ic = IC_BOX; break;
     case 6: c1 = RGB(196, 91, 255); c2 = RGB(70, 60, 200); ic = IC_CHAT; break;
+    case 7: c1 = RGB(80, 170, 255); c2 = RGB(30, 70, 190); ic = IC_DOWNLOAD; break;
     default: c1 = mix(C_ACC, C_WHITE, 0.15f); c2 = mix(C_ACC, RGB(12, 16, 30), 0.45f); ic = IC_FRIENDS; break;
   }
   // sfumatura dall'alto: strati arrotondati sempre più bassi, niente bordi squadrati
@@ -902,6 +904,7 @@ static void game_info(int y0, int alpha) {
   else if (ap->builtin == 3) snprintf(sub, sizeof sub, "%s", _("Homebrew della community e La mia libreria, con voti, commenti e amici"));
   else if (ap->builtin == 4) snprintf(sub, sizeof sub, "%s", _("Naviga il web dalla console: segnalibri, cronologia e lettura comoda"));
   else if (ap->builtin == 5) snprintf(sub, sizeof sub, "%s", _("Installa i .pkg da chiavette, dischi USB e cartelle a scelta"));
+  else if (ap->builtin == 7) snprintf(sub, sizeof sub, "%s", _("Scarica e installa gli aggiornamenti ufficiali dei tuoi giochi"));
   else if (ap->builtin == 6) snprintf(sub, sizeof sub, "%s", _("Omega sul telefono e sul PC: chat, party, amici, Store e caricamento dei giochi"));
   else if (ap->builtin) snprintf(sub, sizeof sub, "%s", _("Bacheca, gruppi, record e trofei di tutti gli iscritti"));
   else if (ap->hb) snprintf(sub, sizeof sub, "%s%s%s", _("Homebrew"), ap->sub[0] ? "  \xC2\xB7  " : "", ap->sub);

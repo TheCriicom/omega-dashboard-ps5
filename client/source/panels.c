@@ -134,10 +134,29 @@ void confirm_input(int b) {
 enum { CC_NOTIF, CC_GB, CC_COMMUNITY, CC_PARTY, CC_MSG, CC_MUSIC, CC_BROWSER, CC_PROFILE, CC_SETTINGS, CC_POWER, CC_N };
 static int cc_sel; static float cc_anim;
 
+// Riposo, riavvio e spegnimento: le stesse richieste del menu di sistema
+// (libSceSystemService), così la console chiude giochi e dischi in ordine.
+#ifdef PS5
+int sceSystemStateMgrEnterStandby(void);
+int sceSystemStateMgrReboot(void);
+int sceSystemStateMgrTurnOff(void);
+#endif
+static void power_do(int idx, void *ud) {
+  if (idx != 0) return;
+  int what = (int)(intptr_t)ud, rc = -1;
+  omega_log("alimentazione: %s", what == 0 ? "riposo" : what == 1 ? "riavvio" : "spegnimento");
+#ifdef PS5
+  rc = what == 0 ? sceSystemStateMgrEnterStandby() : what == 1 ? sceSystemStateMgrReboot() : sceSystemStateMgrTurnOff();
+#endif
+  if (rc != 0) { char m[120]; snprintf(m, sizeof m, _("La console ha rifiutato la richiesta (0x%x)"), (unsigned)rc); set_msg(m, 1); }
+}
 static void power_menu(int idx, void *ud) {
   (void)ud;
-  if (idx == 0) app_quit();
-  else if (idx == 1) do_logout();
+  if (idx == 0) power_do(0, (void *)(intptr_t)0);
+  else if (idx == 1) confirm_open(_("Riavviare la console? Il jailbreak andrà caricato di nuovo."), _("Riavvia"), power_do, (void *)(intptr_t)1);
+  else if (idx == 2) confirm_open(_("Spegnere la console? Il jailbreak andrà caricato di nuovo alla prossima accensione."), _("Spegni"), power_do, (void *)(intptr_t)2);
+  else if (idx == 3) app_quit();
+  else if (idx == 4) do_logout();
 }
 
 void cc_draw(float t) {
@@ -207,7 +226,7 @@ void cc_input(int b) {
       case CC_BROWSER: browser_open(NULL); break;
       case CC_PROFILE: profile_open(S.me); break;
       case CC_SETTINGS: ov_push(OV_SETTINGS); break;
-      case CC_POWER: { const char *it[] = { _("Chiudi Omega"), _("Esci dall'account") }; menu_open(_("Opzioni di alimentazione"), it, 2, power_menu, NULL); break; }
+      case CC_POWER: { const char *it[] = { _("Modalità riposo"), _("Riavvia la console"), _("Spegni la console"), _("Chiudi Omega"), _("Esci dall'account") }; menu_open(_("Opzioni di alimentazione"), it, 5, power_menu, NULL); break; }
     }
   }
 }
@@ -1031,12 +1050,12 @@ static void open_lang_menu(void) {
 enum {
   SO_PROFILE, SO_AVATAR, SO_BIO, SO_NOTIFY, SO_PRIVACY, SO_LOGOUT,
   SO_CUSTOM, SO_STYLE, SO_THEME, SO_LANG, SO_AUDIO,
-  SO_HOME, SO_HIDDEN, SO_PATHS, SO_STORAGE, SO_SAVES, SO_PKGS, SO_AUTOMOUNT,
+  SO_HOME, SO_HIDDEN, SO_PATHS, SO_STORAGE, SO_SAVES, SO_PKGS, SO_GAMEUPD, SO_AUTOMOUNT,
   SO_SYSTEM, SO_REMOTE, SO_SERVER, SO_FILES,
   SO_WHY, SO_FEEDBACK, SO_ABOUT, SO_QUIT, N_OPT
 };
 static const struct { const char *name; int ic; int first, n; } ST_SECT[] = {
-  { N_("Account"), IC_USER, SO_PROFILE, 6 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 7 },
+  { N_("Account"), IC_USER, SO_PROFILE, 6 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 8 },
   { N_("Sistema"), IC_GEAR, SO_SYSTEM, 4 }, { N_("Aiuto"), IC_IDEA, SO_WHY, 4 },
 };
 #define ST_NSECT (int)(sizeof ST_SECT / sizeof *ST_SECT)
@@ -1044,14 +1063,14 @@ static int st_sect, st_col; static float st_sect_anim;   // st_col: 0 sezioni, 1
 static const char *st_label(int o) {
   static const char *L[N_OPT] = { N_("Il mio profilo"), N_("Cambia avatar"), N_("Modifica bio"), N_("Notifiche"), N_("Privacy"), N_("Esci dall'account"),
     N_("Personalizza"), N_("Modalità del menu"), N_("Tema"), N_("Lingua"), N_("Audio"),
-    N_("Omega come Home"), N_("App nascoste"), N_("Cartelle di giochi e PKG"), N_("Archivio e spostamenti"), N_("Salvataggi online"), N_("Installa PKG"), N_("Montaggio automatico"),
+    N_("Omega come Home"), N_("App nascoste"), N_("Cartelle di giochi e PKG"), N_("Archivio e spostamenti"), N_("Salvataggi online"), N_("Installa PKG"), N_("Aggiornamenti dei giochi"), N_("Montaggio automatico"),
     N_("Sistema e strumenti"), N_("App mobile"), N_("Server"), N_("Gestore dei file"),
     N_("Perché Omega"), N_("Segnala un bug o chiedi una funzione"), N_("Informazioni su Omega"), N_("Chiudi Omega") };
   return _(L[o]);
 }
 static int st_icon(int o) {
   static const int I[N_OPT] = { IC_USER, IC_STAR, IC_NEWS, IC_BELL, IC_SHIELD, IC_EXIT, IC_BRUSH, IC_GRID, IC_GEAR, IC_CHAT, IC_VOLUME,
-    IC_HOME, IC_CLOSE, IC_FOLDER, IC_DRIVE, IC_CLOUD, IC_BOX, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
+    IC_HOME, IC_CLOSE, IC_FOLDER, IC_DRIVE, IC_CLOUD, IC_BOX, IC_DOWNLOAD, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
   return I[o];
 }
 static void st_value(int o, char *v, size_t n) {
@@ -1203,6 +1222,7 @@ void settings_input(int b) {
       case SO_HIDDEN: hidden_menu(); break;
       case SO_PATHS: paths_menu(); break;
       case SO_PKGS: pkgs_open(); break;
+      case SO_GAMEUPD: gameupd_open(); break;
       case SO_STORAGE: storage_open(); break;
       case SO_SAVES: saves_open(NULL); break;
       case SO_AUTOMOUNT: automount_toggle(); break;

@@ -38,6 +38,7 @@ static const Target TARGETS[] = {
   // copie da cui la configurazione (hen.c) installa servizio e plugin
   { "omega_redirect", OMEGA_HB_ROOT "/OmegaUI/payloads/omega_redirect.elf", 0, OMEGA_HB_ROOT "/OmegaUI/payloads" },
   { "omega_onion",    OMEGA_HB_ROOT "/OmegaUI/payloads/OMGA00001.elf", 0, OMEGA_HB_ROOT "/OmegaUI/payloads" },
+  { "patchdl",        OMEGA_HB_ROOT "/OmegaUI/payloads/patchdl.elf", 0, OMEGA_HB_ROOT "/OmegaUI/payloads" },   // aggiornamenti dei giochi (gameupd.c)
   // copie attive, ovunque la configurazione le abbia messe (solo se ci sono già)
   { "omega_redirect", OMEGA_PLD_ROOT "/OmegaRedirect/omega_redirect.elf", 1, NULL },   // + .elf.json di Payload Manager
   { "omega_redirect", OMEGA_SYSROOT "/data/OnionHEN/payloads/omega_redirect.elf", 0, NULL },

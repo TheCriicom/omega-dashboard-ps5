@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026.10.09.1
+
+- **Game updates**: Omega finds the latest official update for every installed
+  game that runs on your firmware, downloads it from Sony's servers and
+  installs it. Home tile and Settings › Home and games. Downloads resume after
+  a reboot and keep going with Omega closed; the daemon starts the install when
+  a download finishes. The work is done by [PatchDL](https://github.com/knutwurst/ps5-patchdl)
+  by Knutwurst (GPL-3.0), shipped as a payload from `patchdl/`.
+- **Power options**: rest mode, restart and turn off from the power menu.
+- **Fan**: the threshold is now written as a read-modify-write of the whole
+  28-byte controller config and verified (it used to send 10 bytes, mostly
+  zeros); the daemon puts it back when a game resets it to 91 °C. Up to 85 °C.
+  Method from [fan_target](https://github.com/drakmor/fan_target).
+- **System**: fan speed, hottest of the 16 SoC sensors, CPU frequency, console
+  model, uptime and the kernel's real firmware version (readings as in
+  [ps5-exporter](https://github.com/Marice/ps5-exporter)).
+- **Interface sounds** redone: FM bells, filtered air and a small reverb.
+- **Sessions** no longer expire 24 hours after login: they expire after 90 days
+  without use and renew on every request (migration 019 brings back sessions
+  that had expired in the last 30 days). The daemon stops retrying a token the
+  server rejects instead of polling every few seconds.
+
 ## 2026.10.08.1
 
 - **Your recap**, like PlayStation's Wrap-Up: a week, a month or a year of play

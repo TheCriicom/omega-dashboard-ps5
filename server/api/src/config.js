@@ -13,7 +13,7 @@ module.exports = {
   publicUrl: process.env.PUBLIC_BASE_URL || 'https://play.omegasuite.it',
 
   sessionSecret: env('OMEGA_SESSION_SECRET', 'LAB_SESSION_SECRET'),
-  sessionTtlSeconds: num(env('OMEGA_SESSION_TTL_SECONDS', 'LAB_SESSION_TTL_SECONDS'), 86400),
+  sessionTtlSeconds: num(env('OMEGA_SESSION_TTL_SECONDS', 'LAB_SESSION_TTL_SECONDS'), 90 * 86400),
   // vuota = registrazione aperta
   registrationKey: env('OMEGA_REGISTRATION_KEY', 'LAB_REGISTRATION_KEY'),
   // solo per le prove in locale su http: in produzione il cookie admin è Secure

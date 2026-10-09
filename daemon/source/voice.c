@@ -522,6 +522,7 @@ static int party_poll(const char *token) {
   unsigned char *b = NULL; size_t len = 0;
   int st = keep_req(&k, 0, url, token, NULL, 0, NULL, &b, &len, 128 * 1024);
   keep_close(&k);
+  if (st == 401) auth_rejected(token);
   if (st != 200 || !b) { free(b); return st == 401 ? 0 : -1; }   // -1 = non si sa (rete)
   JVal *j = json_parse((const char *)b); free(b);
   if (!j) return -1;
@@ -550,7 +551,7 @@ static void *manager(void *arg) {
     if (has_session) {
       JVal *j = json_parse(sess);
       if (j) { jcpy(token, sizeof token, j, "token"); jcpy(server, sizeof server, j, "server"); pthread_mutex_lock(&mx); jcpy(me, sizeof me, j, "online_id"); pthread_mutex_unlock(&mx); json_free(j); }
-      has_session = token[0] != 0;
+      has_session = token[0] != 0 && !auth_blocked(token);
     }
     if (!has_session || ui_has_it) {
       if (running) session_stop(ui_has_it ? "la UI è in primo piano" : "nessuna sessione");

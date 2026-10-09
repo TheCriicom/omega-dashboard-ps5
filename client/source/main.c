@@ -80,6 +80,7 @@ static void ov_draw_one(Overlay o, float t) {
     case OV_TROPHIES: trophies_draw(t); break;
     case OV_FOLDER: folder_draw(t); break;
     case OV_PKGS: pkgs_draw(t); break;
+    case OV_GAMEUPD: gameupd_draw(t); break;
     case OV_WHY: why_draw(t); break;
     case OV_STORAGE: storage_draw(t); break;
     case OV_NOTIFPREFS: notifprefs_draw(t); break;
@@ -309,6 +310,7 @@ static void dispatch(int b) {
       case OV_TROPHIES: trophies_input(b); break;
       case OV_FOLDER: folder_input(b); break;
       case OV_PKGS: pkgs_input(b); break;
+      case OV_GAMEUPD: gameupd_input(b); break;
       case OV_WHY: why_input(b); break;
       case OV_STORAGE: storage_input(b); break;
       case OV_NOTIFPREFS: notifprefs_input(b); break;

@@ -222,6 +222,7 @@ typedef struct {
   long last_played;                           // per l'ordine "Ultimi giocati"
   SDL_Texture *tex; int tex_state; Col avg;   // tex_state: 0 nulla, 1 in caricamento, 2 pronta
   float appear;
+  float vx; int vx_ok;                        // posizione disegnata nella fila: insegue quella vera (scorrimento quando si riordina)
 } AppEntry;
 
 typedef struct {
@@ -266,6 +267,14 @@ void layout_unfold(const char *tid);
 void layout_move_menu(const char *tid);
 void layout_folder_menu(const char *fid);
 int  layout_hidden_count(void);
+int  layout_moving(void);                                // indice della tessera che si sta spostando, -1 se nessuna
+void layout_move_begin(int i);
+int  layout_move_step(int d);                            // nuova posizione
+void layout_move_end(int keep);                          // keep: salva l'ordine, altrimenti torna com'era
+int  layout_order_custom(void);
+void layout_order_reset(void);                           // torna all'ordine automatico
+void home_move_start(int i);                             // home.c: prende la tessera i (modalità Sposta)
+int  hs_move_input(int b);                               // homestyles.c: tasti della modalità Sposta negli altri stili
 void hidden_menu(void);                                  // Impostazioni › App nascoste
 void folder_open(const char *fid); void folder_draw(float t); void folder_input(int b);
 void home_relayout(const char *keep_tid);

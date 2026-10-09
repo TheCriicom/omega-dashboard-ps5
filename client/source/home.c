@@ -44,6 +44,7 @@ static int app_sel, top_sel = 0, act_sel, card_sel, feed_sel;
 static int ex_zone = 1, ex_news_sel, ex_fr_sel, ex_act_sel;   // Esplora: 1 notizie, 2 amici, 3 attività
 static float row_scroll, page_scroll, page_scroll_t, tab_anim;
 static float tile_size[MAX_APPS];
+static float move_lift;                 // Sposta: quanto è sollevata la tessera presa (0..1)
 static float sel_anim_card, sel_anim_feed, sel_anim_act, sel_anim_top;
 static Uint32 focus_at; static int focus_loaded = -1;
 static Uint32 last_feed;
@@ -664,6 +665,57 @@ static void top_activate(void) {
 // -------------------------------------------------------------- fila giochi --
 static int job_tiles(InstallView *iv);
 static void draw_jobs(int *px, int ty, int s, int gap, int a);
+// Una tessera della fila nella sua posizione (anche quella sollevata in Sposta).
+static void row_tile(int i, int tx, int ty, int s, int alpha, float pulse) {
+  int a = alpha;
+  if (tx < 110) a = (int)(alpha * clampf(1 - (110 - tx) / 200.0f, 0, 1) * 0.6f);   // quelli già passati sfumano
+  AppEntry *ap = &apps[i];
+  int foc = i == app_sel;
+  if (foc) shadow_rrect(tx, ty, s, s, 28, 26, a * 70 / 100);
+  if (ap->builtin == 2) {
+    // cartella: le prime quattro icone in un mosaico 2×2
+    fill_rrect(tx, ty, s, s, 28, mix(C_PANEL, C_WHITE, 0.08f), a);
+    stroke_rrect(tx, ty, s, s, 28, 2, C_WHITE, a * 18 / 100);
+    int pad = s / 12, cell = (s - 3 * pad) / 2, k = 0;
+    for (; k < 4; k++) {
+      int j = layout_folder_app(ap->tid, k); if (j < 0) break;
+      int cx = tx + pad + (k % 2) * (cell + pad), cy = ty + pad + (k / 2) * (cell + pad);
+      if (apps[j].tex) draw_tex(apps[j].tex, cx, cy, cell, cell, a); else fill_rrect(cx, cy, cell, cell, 12, RGB(40, 48, 70), a);
+    }
+    if (!g_prefs.labels || foc) {
+      fill_rrect(tx + 10, ty + s - 40, s - 20, 30, 15, RGB(8, 10, 20), a * 70 / 100);
+      draw_text_fit(font(W_MED, 19), ap->name, tx + s / 2, ty + s - 37, s - 36, C_WHITE, a, AL_C);
+    }
+  } else if (ap->builtin) {
+    sys_tile_draw(ap, tx, ty, s, a);
+    if (ap->builtin == 1 && S.unread_groups) draw_badge(tx + s - 22, ty + 22, S.unread_groups, a);
+  } else if (ap->tex) {
+    ap->appear = approach(ap->appear, 1, 8.0f);
+    SDL_SetTextureColorMod(ap->tex, 255, 255, 255);
+    draw_tex(ap->tex, tx, ty, s, s, (int)(a * ap->appear));
+  } else {
+    fill_rrect(tx, ty, s, s, 28, RGB(30, 38, 60), a);
+    draw_icon(IC_GAMEPAD, tx + s / 2, ty + s / 2 - 14, s / 3, C_DIM, a);
+    draw_text_fit(font(W_REG, 20), ap->tid, tx + s / 2, ty + s - 46, s - 20, C_FAINT, a, AL_C);
+  }
+  if (foc && zone == Z_ROW && tab == T_GAMES) focus_ring(tx, ty, s, s, 28, pulse, a);
+  // gioco su disco esterno: piccolo disco in basso a destra
+  if (ap->ext) {
+    fill_circle(tx + s - 24, ty + s - 24, 19, RGB(10, 14, 24), a * 90 / 100);
+    draw_icon(IC_DRIVE, tx + s - 24, ty + s - 24, 24, C_ACC2, a);
+  }
+  // Personalizza › Nomi sotto le icone (quello scelto ha già il titolo grande)
+  if (g_prefs.labels && !foc) draw_text_fit(font(W_REG, 19), ap->name, tx + s / 2, ty + s + 8, s + 10, C_DIM, a * 85 / 100, AL_C);
+  // amici che ci stanno giocando
+  int playing = 0; for (int k = 0; k < S.nfriends; k++) if (!strcmp(S.friends[k].game_id, ap->tid)) playing++;
+  if (playing) {
+    fill_rrect(tx + 10, ty + s - 42, 70, 32, 16, RGB(10, 14, 24), a * 85 / 100);
+    draw_icon(IC_FRIENDS, tx + 32, ty + s - 26, 22, C_OK, a);
+    char n[8]; snprintf(n, sizeof n, "%d", playing);
+    draw_text(font(W_BOLD, 20), n, tx + 50, ty + s - 38, C_TXT, a, AL_L);
+  }
+}
+
 static void game_row(int y0, int alpha) {
   if (!nrow) {
     int w = 900, h = 220, x = 110;
@@ -686,63 +738,35 @@ static void game_row(int y0, int alpha) {
   float before = 0; for (int i = 0; i < app_sel; i++) before += tile_size[i] + gap;
   if (app_sel >= nsys) before += jobw;
   row_scroll = approach(row_scroll, before, 12.0f);
-  float x = 110 - row_scroll;
+  float xr = 0;                                  // posizione nella fila, prima dello scorrimento
   float pulse = 0.5f + 0.5f * sinf((float)g_time * 3.2f);
+  int mvi = layout_moving(), mx = 0, ms = 0;
+  move_lift = approach(move_lift, mvi >= 0 ? 1.0f : 0.0f, 10.0f);
   for (int i = 0; i < nrow; i++) {
-    if (i == nsys && njob) { int jx = (int)x; draw_jobs(&jx, y0 + (int)(BIG[ts] - BASE[ts]) / 2, (int)BASE[ts], gap, alpha); x = (float)jx; }
+    if (i == nsys && njob) { int j0 = (int)(110 - row_scroll + xr), jx = j0; draw_jobs(&jx, y0 + (int)(BIG[ts] - BASE[ts]) / 2, (int)BASE[ts], gap, alpha); xr += (float)(jx - j0); }
+    AppEntry *ap = &apps[i];
+    // ognuna insegue il suo posto: riordinando, nascondendo o aggiungendo, le tessere scorrono invece di saltare
+    if (!ap->vx_ok) { ap->vx = xr; ap->vx_ok = 1; }
+    ap->vx = approach(ap->vx, xr, 16.0f);
     int s = (int)tile_size[i];
-    int tx = (int)x, ty = y0;
-    if (tx > SCREEN_W) break;
-    if (tx + s > -40) {
-      int a = alpha;
-      if (tx < 110) a = (int)(alpha * clampf(1 - (110 - tx) / 200.0f, 0, 1) * 0.6f);   // quelli già passati sfumano
-      AppEntry *ap = &apps[i];
-      int foc = i == app_sel;
-      if (foc) shadow_rrect(tx, ty, s, s, 28, 26, a * 70 / 100);
-      if (ap->builtin == 2) {
-        // cartella: le prime quattro icone in un mosaico 2×2
-        fill_rrect(tx, ty, s, s, 28, mix(C_PANEL, C_WHITE, 0.08f), a);
-        stroke_rrect(tx, ty, s, s, 28, 2, C_WHITE, a * 18 / 100);
-        int pad = s / 12, cell = (s - 3 * pad) / 2, k = 0;
-        for (; k < 4; k++) {
-          int j = layout_folder_app(ap->tid, k); if (j < 0) break;
-          int cx = tx + pad + (k % 2) * (cell + pad), cy = ty + pad + (k / 2) * (cell + pad);
-          if (apps[j].tex) draw_tex(apps[j].tex, cx, cy, cell, cell, a); else fill_rrect(cx, cy, cell, cell, 12, RGB(40, 48, 70), a);
-        }
-        if (!g_prefs.labels || foc) {
-          fill_rrect(tx + 10, ty + s - 40, s - 20, 30, 15, RGB(8, 10, 20), a * 70 / 100);
-          draw_text_fit(font(W_MED, 19), ap->name, tx + s / 2, ty + s - 37, s - 36, C_WHITE, a, AL_C);
-        }
-      } else if (ap->builtin) {
-        sys_tile_draw(ap, tx, ty, s, a);
-        if (ap->builtin == 1 && S.unread_groups) draw_badge(tx + s - 22, ty + 22, S.unread_groups, a);
-      } else if (ap->tex) {
-        ap->appear = approach(ap->appear, 1, 8.0f);
-        SDL_SetTextureColorMod(ap->tex, 255, 255, 255);
-        draw_tex(ap->tex, tx, ty, s, s, (int)(a * ap->appear));
-      } else {
-        fill_rrect(tx, ty, s, s, 28, RGB(30, 38, 60), a);
-        draw_icon(IC_GAMEPAD, tx + s / 2, ty + s / 2 - 14, s / 3, C_DIM, a);
-        draw_text_fit(font(W_REG, 20), ap->tid, tx + s / 2, ty + s - 46, s - 20, C_FAINT, a, AL_C);
-      }
-      if (foc && zone == Z_ROW && tab == T_GAMES) focus_ring(tx, ty, s, s, 28, pulse, a);
-      // gioco su disco esterno: piccolo disco in basso a destra
-      if (ap->ext) {
-        fill_circle(tx + s - 24, ty + s - 24, 19, RGB(10, 14, 24), a * 90 / 100);
-        draw_icon(IC_DRIVE, tx + s - 24, ty + s - 24, 24, C_ACC2, a);
-      }
-      // Personalizza › Nomi sotto le icone (quello scelto ha già il titolo grande)
-      if (g_prefs.labels && !foc) draw_text_fit(font(W_REG, 19), ap->name, tx + s / 2, ty + s + 8, s + 10, C_DIM, a * 85 / 100, AL_C);
-      // amici che ci stanno giocando
-      int playing = 0; for (int k = 0; k < S.nfriends; k++) if (!strcmp(S.friends[k].game_id, ap->tid)) playing++;
-      if (playing) {
-        fill_rrect(tx + 10, ty + s - 42, 70, 32, 16, RGB(10, 14, 24), a * 85 / 100);
-        draw_icon(IC_FRIENDS, tx + 32, ty + s - 26, 22, C_OK, a);
-        char n[8]; snprintf(n, sizeof n, "%d", playing);
-        draw_text(font(W_BOLD, 20), n, tx + 50, ty + s - 38, C_TXT, a, AL_L);
-      }
-    }
-    x += s + gap;
+    int tx = (int)(110 - row_scroll + ap->vx), ty = y0;
+    xr += s + gap;
+    if (i == mvi) { mx = tx; ms = s; continue; }  // la si disegna sopra tutte, dopo
+    if (tx > SCREEN_W || tx + s < -40) continue;
+    row_tile(i, tx, ty, s, mvi >= 0 ? alpha * 55 / 100 : alpha, pulse);
+  }
+  // Sposta: la tessera presa, un po' più grande, appena sollevata e con
+  // un'ombra ampia, che ondeggia piano; sotto, le frecce dove può ancora andare
+  if (mvi >= 0) {
+    float l = ease_out(clampf(move_lift, 0, 1));
+    int s = (int)(ms * (1 + 0.08f * l));
+    int tx = mx - (s - ms) / 2, ty = y0 - (int)(10 * l + 3 * sinf((float)g_time * 3.0f) * l) - (s - ms) / 2;
+    shadow_rrect(tx, ty + (int)(22 * l), s, s, 30, 44, alpha * 65 / 100);
+    row_tile(mvi, tx, ty, s, alpha, 1.0f);
+    stroke_rrect(tx - 6, ty - 6, s + 12, s + 12, 34, 4, C_WHITE, (int)(alpha * (0.75f + 0.25f * pulse)));
+    int cx = tx + s / 2, cy = y0 + ms + 34, la = (int)(alpha * l);
+    if (mvi > 0) { fill_circle(cx - 30, cy, 20, RGB(255, 255, 255), la * 90 / 100); draw_text(font(W_BOLD, 28), "\xE2\x80\xB9", cx - 30, cy - 19, RGB(12, 14, 22), la, AL_C); }
+    if (mvi < nrow - 1) { fill_circle(cx + 30, cy, 20, RGB(255, 255, 255), la * 90 / 100); draw_text(font(W_BOLD, 28), "\xE2\x80\xBA", cx + 30, cy - 19, RGB(12, 14, 22), la, AL_C); }
   }
 }
 
@@ -918,7 +942,7 @@ static void game_info(int y0, int alpha) {
   int by = y0 + 168;
   float f0 = clampf(1 - fabsf(sel_anim_act - 0), 0, 1), f1 = clampf(1 - fabsf(sel_anim_act - 1), 0, 1);
   int w0 = pill(110, by, 84, ap->builtin ? _("Apri") : _("Gioca"), ap->builtin == 2 ? IC_FOLDER : SYS_TILE(ap) ? IC_ARROW_R : IC_PLAY, zone == Z_ACT && act_sel == 0, f0 > 0 ? f0 : 0.0f, alpha);
-  if (!SYS_TILE(ap)) pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
+  pill(110 + w0 + 20, by, 84, "", IC_MORE, zone == Z_ACT && act_sel == 1, f1, alpha);
   if (zone == Z_ACT) focus_ring(act_sel == 0 ? 110 : 110 + w0 + 20, by, act_sel == 0 ? w0 : 84, 84, 42, 0.5f + 0.5f * sinf((float)g_time * 3.2f), (int)(alpha * (act_sel == 0 ? f0 : f1)));
 }
 
@@ -1154,8 +1178,20 @@ void home_update(void) {
   tab_anim = approach(tab_anim, 1, 8.0f);
 }
 
-enum { GM_PLAY, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_MOVE, GM_SAVES, GM_DELETE, GM_N };
+enum { GM_PLAY, GM_ORDER, GM_PARTY, GM_REFRESH, GM_FOLDER, GM_HIDE, GM_INVITE, GM_MOVE, GM_SAVES, GM_DELETE, GM_N };
 static void game_more_menu(int idx, void *ud);
+static void sys_more_menu(int idx, void *ud);
+// Opzioni della tessera i: giochi e app, cartelle, app di Omega.
+static void more_menu(int i) {
+  if (apps[i].builtin == 2) { layout_folder_menu(apps[i].tid); return; }
+  if (SYS_TILE(&apps[i])) {
+    const char *it[3] = { _("Apri"), _("Cambia posizione"), _("Nascondi dalla home") };
+    menu_open(apps[i].name, it, 3, sys_more_menu, NULL);
+    return;
+  }
+  const char *it[GM_N] = { _("Gioca"), _("Cambia posizione"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Salvataggi online"), _("Elimina dalla console") };
+  menu_open(apps[i].name, it, GM_N, game_more_menu, NULL);
+}
 
 // ------------------------------------------- per le altre modalità del menu --
 // homestyles.c disegna la home in altri modi (PS4, XMB, griglia...) ma usa la
@@ -1166,10 +1202,7 @@ int  home_launching(void) { return launching; }
 void home_more(int i) {
   if (i < 0 || i >= nrow) return;
   app_sel = i;
-  if (SYS_TILE(&apps[i])) { launch_app(i); return; }
-  if (apps[i].builtin == 2) { layout_folder_menu(apps[i].tid); return; }
-  const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Salvataggi online"), _("Elimina dalla console") };
-  menu_open(apps[i].name, it, GM_N, game_more_menu, NULL);
+  more_menu(i);
 }
 void home_tile(int i, int x, int y, int s, int a) {   // una tessera come nella fila (icona, cartella, app di Omega)
   if (i < 0 || i >= napps) return;
@@ -1226,6 +1259,13 @@ void home_draw(void) {
   Uint32 since = SDL_GetTicks() - entered_at;
   int ha = since < 9000 ? 255 : since < 10000 ? (int)(255 * (10000 - since) / 1000) : 0;
   if (g_prefs.hints == 0) ha = 0; else if (g_prefs.hints == 2) ha = 255;   // Personalizza › Barra dei comandi
+  if (layout_moving() >= 0) {    // in Sposta i comandi si vedono sempre
+    n = 0; ha = 255;
+    ic[n] = -1; lb[n++] = _("\xE2\x97\x80 \xE2\x96\xB6  Sposta");
+    ic[n] = -1; lb[n++] = _("L2 / R2  In testa / In fondo");
+    ic[n] = IC_BTN_X; lb[n++] = _("Conferma");
+    ic[n] = IC_BTN_O; lb[n++] = _("Annulla");
+  }
   if (ov_depth() == 0 && ha > 0) {
     grad_v(0, SCREEN_H - 120, SCREEN_W, 120, RGB(4, 8, 18), 0, RGB(4, 8, 18), ha * 80 / 100);
     hints(ic, lb, n, ha);
@@ -1278,6 +1318,7 @@ static void game_more_menu(int idx, void *ud) {
   AppEntry *ap = &apps[app_sel];
   switch (idx) {
     case GM_PLAY: launch_app(app_sel); break;
+    case GM_ORDER: home_move_start(app_sel); break;
     case GM_PARTY: {
       if (!S.party.active) { set_msg(_("Non sei in un party: creane uno dalla Game Base"), 1); return; }
       char m[200]; snprintf(m, sizeof m, _("Giochiamo a %s?"), ap->name);
@@ -1303,6 +1344,60 @@ static void game_more_menu(int idx, void *ud) {
   }
 }
 
+static void sys_more_menu(int idx, void *ud) {
+  (void)ud;
+  if (!nrow || !SYS_TILE(&apps[app_sel])) return;
+  AppEntry *ap = &apps[app_sel];
+  if (idx == 0) launch_app(app_sel);
+  else if (idx == 1) home_move_start(app_sel);
+  else if (idx == 2) {
+    char m[200]; snprintf(m, sizeof m, _("%s nascosta: la rimetti in Impostazioni \xE2\x80\xBA App nascoste"), ap->name);
+    layout_hide(ap->tid, 1); set_msg(m, 0);
+  }
+}
+
+// ---------------------------------------------------------------- Sposta --
+// La tessera scelta si solleva e segue le frecce; le altre le fanno posto
+// scorrendo (AppEntry.vx in game_row). tile_size va dietro alle tessere,
+// altrimenti quella scelta tornerebbe piccola a ogni passo.
+void home_move_start(int i) {
+  if (i < 0 || i >= nrow) return;
+  app_sel = i; zone = Z_ROW; tab = T_GAMES;
+  layout_move_begin(i);
+  move_lift = 0;
+  sfx_play(SFX_OPEN);
+}
+static void home_move_step(int d) {
+  int from = layout_moving(); if (from < 0) return;
+  int to = layout_move_step(d);
+  if (to == from) return;
+  float ts = tile_size[from];
+  if (to > from) memmove(&tile_size[from], &tile_size[from + 1], sizeof(float) * (size_t)(to - from));
+  else memmove(&tile_size[to + 1], &tile_size[to], sizeof(float) * (size_t)(from - to));
+  tile_size[to] = ts;
+  app_sel = to; focus_at = SDL_GetTicks();
+  sfx_play(SFX_MOVE);
+}
+static void home_move_finish(int keep) {
+  char tid[16]; snprintf(tid, sizeof tid, "%s", apps[app_sel].tid);
+  layout_move_end(keep);
+  for (int i = 0; i < nrow; i++) if (!strcmp(apps[i].tid, tid)) app_sel = i;
+  for (int i = 0; i < nrow; i++) tile_size[i] = i == app_sel ? tile_size[i] : 150;
+  sfx_play(keep ? SFX_SELECT : SFX_BACK);
+}
+// 1 se il tasto è della modalità Sposta (stile Omega; gli altri stili passano da hs_move_input)
+static int move_input(int b) {
+  if (layout_moving() < 0) return 0;
+  if (b == B_X) home_move_finish(1);
+  else if (b == B_O) home_move_finish(0);
+  else if (g_prefs.home_style) { int d = hs_move_input(b); if (d) home_move_step(d); }
+  else if (b == B_LEFT) home_move_step(-1);
+  else if (b == B_RIGHT) home_move_step(1);
+  else if (b == B_L2) home_move_step(-1000);    // in testa
+  else if (b == B_R2) home_move_step(1000);     // in fondo
+  return 1;
+}
+
 // Dopo un cambio di cartelle o di app nascoste: si rifà la fila senza
 // rileggere i dischi, tenendo a fuoco keep_tid (o la tessera di prima, o la
 // cartella in cui è finita).
@@ -1324,7 +1419,6 @@ void home_relayout(const char *keep_tid) {
   if (sel < 0) sel = app_sel < nrow ? app_sel : nrow - 1;
   app_sel = sel < 0 ? 0 : sel;
   for (int i = 0; i < nrow; i++) tile_size[i] = 150;
-  if (zone == Z_ACT && SYS_TILE(&apps[app_sel])) act_sel = 0;
   focus_at = SDL_GetTicks(); focus_loaded = -1;
   if (!nrow) bg_set_default();
 }
@@ -1342,6 +1436,7 @@ static void open_people(UserRef *u, int n, const char *title) {
 
 void home_input(int b) {
   if (launching >= 0) return;
+  if (move_input(b)) return;
   if (b == B_TRI) { gb_open(0); return; }
   if (b == B_OPT) { ov_push(OV_CC); return; }
   if (b == B_SQ) { social_load_notifications(); ov_push(OV_NOTIF); return; }
@@ -1388,16 +1483,12 @@ void home_input(int b) {
       break;
     case Z_ACT:
       if (b == B_LEFT && act_sel > 0) act_sel--;
-      else if (b == B_RIGHT && act_sel < 1 && !SYS_TILE(&apps[app_sel])) act_sel++;
+      else if (b == B_RIGHT && act_sel < 1) act_sel++;
       else if (b == B_UP || b == B_O) zone = Z_ROW;
       else if (b == B_DOWN && g_prefs.cards) { zone = Z_CARDS; card_sel = 0; }
       else if (b == B_X) {
         if (act_sel == 0) launch_app(app_sel);
-        else if (apps[app_sel].builtin == 2) layout_folder_menu(apps[app_sel].tid);
-        else {
-          const char *it[GM_N] = { _("Gioca"), _("Proponi al party"), _("Aggiorna informazioni"), _("Sposta in una cartella"), _("Nascondi dalla home"), _("Invita un amico a giocare"), _("Sposta su un altro disco"), _("Salvataggi online"), _("Elimina dalla console") };
-          menu_open(apps[app_sel].name, it, GM_N, game_more_menu, NULL);
-        }
+        else more_menu(app_sel);
       }
       break;
     case Z_CARDS:

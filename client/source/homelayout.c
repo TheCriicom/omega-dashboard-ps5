@@ -4,17 +4,21 @@
 //   hide <tid>              app tolta dalla home (si riattiva in Impostazioni)
 //   folder <fid> <nome>     cartella (fid = "FD" + numero)
 //   in <tid> <fid>          app dentro una cartella
+//   order <tid>             ordine scelto dall'utente per la fila, una riga per
+//                           tessera (giochi, cartelle, app di Omega); chi non c'è
+//                           (un gioco appena installato) va in testa
 // Nascondere un'app la toglie dalla sua cartella e viceversa: una voce sola
 // per app. Le righe di app non più installate restano: se l'app torna, torna
 // dov'era.
 //
-// layout_apply() riordina apps[]: in testa le tessere della fila (Community,
-// cartelle non vuote, app visibili), in coda le app dentro le cartelle e
-// quelle nascoste. nrow è il numero di tessere della fila; il resto del
+// layout_apply() riordina apps[]: in testa le tessere della fila (app di
+// Omega, cartelle non vuote, app visibili, oppure l'ordine scelto), in coda le
+// app dentro le cartelle e quelle nascoste, anche le app di Omega. nrow è il numero di tessere della fila; il resto del
 // programma continua a vedere tutte le app installate fino a napps.
 #include "app.h"
 #include <math.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define LAYOUT_FILE OMEGA_DIR "/home-layout.txt"
 #define MAX_FOLDERS 32
@@ -27,6 +31,7 @@ typedef struct { char tid[16]; char fid[16]; } Item;      // fid vuoto = nascost
 static Folder folders[MAX_FOLDERS]; static int nfolders;
 static Item items[MAX_ITEMS]; static int nitems;
 static int loaded;
+static char order[MAX_ITEMS][16]; static int norder;   // vuoto = ordine automatico
 
 // ------------------------------------------------------------------- file --
 static void load(void) {
@@ -45,6 +50,8 @@ static void load(void) {
       snprintf(folders[nfolders].fid, sizeof folders[0].fid, "%s", a);
       snprintf(folders[nfolders].name, sizeof folders[0].name, "%s", *name ? name : a);
       nfolders++;
+    } else if (!strncmp(line, "order ", 6) && norder < MAX_ITEMS && sscanf(line + 6, "%15s", a) == 1) {
+      snprintf(order[norder++], sizeof order[0], "%s", a);
     } else if (!strncmp(line, "in ", 3) && nitems < MAX_ITEMS && sscanf(line + 3, "%15s %15s", a, b) == 2) {
       snprintf(items[nitems].tid, sizeof items[0].tid, "%s", a); snprintf(items[nitems].fid, sizeof items[0].fid, "%s", b); nitems++;
     }
@@ -60,6 +67,8 @@ static void save(void) {
     if (items[i].fid[0]) fprintf(f, "in %s %s\n", items[i].tid, items[i].fid);
     else fprintf(f, "hide %s\n", items[i].tid);
   }
+  for (int i = 0; i < norder; i++) fprintf(f, "order %s\n", order[i]);
+  fflush(f); fsync(fileno(f));
   fclose(f);
   rename(LAYOUT_FILE ".tmp", LAYOUT_FILE);
 }
@@ -100,12 +109,14 @@ int layout_folder_app(const char *fid, int k) {
 const char *layout_folder_name(const char *fid) { load(); Folder *f = folder_of_id(fid); return f ? f->name : ""; }
 
 // ------------------------------------------------------------------ riordino --
+static int order_of(const char *tid) { for (int i = 0; i < norder; i++) if (!strcmp(order[i], tid)) return i; return -1; }
+
 void layout_apply(void) {
   load();
   static AppEntry tmp[MAX_APPS];
   int n = 0;
-  // 1) Community e cartelle con almeno un'app installata
-  for (int i = 0; i < napps; i++) if (SYS_TILE(&apps[i])) tmp[n++] = apps[i];
+  // 1) app di Omega non nascoste e cartelle con almeno un'app installata
+  for (int i = 0; i < napps; i++) if (SYS_TILE(&apps[i]) && !layout_is_hidden(apps[i].tid)) tmp[n++] = apps[i];
   for (int f = 0; f < nfolders && n < MAX_APPS; f++) {
     int has = 0;
     for (int i = 0; i < napps && !has; i++) { const char *fi = apps[i].builtin ? NULL : layout_folder_of(apps[i].tid); has = fi && !strcmp(fi, folders[f].fid); }
@@ -119,12 +130,71 @@ void layout_apply(void) {
   for (int i = 0; i < napps && n < MAX_APPS; i++)
     if (!apps[i].builtin && !layout_is_hidden(apps[i].tid) && !layout_folder_of(apps[i].tid)) tmp[n++] = apps[i];
   int row = n;
-  // 3) app nelle cartelle, poi quelle nascoste
+  // ordine scelto: prima le tessere nuove (non ancora in elenco) nell'ordine
+  // automatico, poi le altre come le ha messe l'utente
+  if (norder) {
+    static AppEntry sorted[MAX_APPS]; int m = 0;
+    for (int i = 0; i < row; i++) if (order_of(tmp[i].tid) < 0) sorted[m++] = tmp[i];
+    for (int k = 0; k < norder; k++) for (int i = 0; i < row; i++) if (!strcmp(tmp[i].tid, order[k])) { sorted[m++] = tmp[i]; break; }
+    memcpy(tmp, sorted, sizeof(AppEntry) * (size_t)row);
+  }
+  // 3) app nelle cartelle, poi quelle nascoste (app di Omega comprese)
   for (int i = 0; i < napps && n < MAX_APPS; i++) if (!apps[i].builtin && layout_folder_of(apps[i].tid)) tmp[n++] = apps[i];
-  for (int i = 0; i < napps && n < MAX_APPS; i++) if (!apps[i].builtin && layout_is_hidden(apps[i].tid)) tmp[n++] = apps[i];
+  for (int i = 0; i < napps && n < MAX_APPS; i++) if ((!apps[i].builtin || SYS_TILE(&apps[i])) && layout_is_hidden(apps[i].tid)) tmp[n++] = apps[i];
   memcpy(apps, tmp, sizeof(AppEntry) * (size_t)n);
   napps = n; nrow = row;
 }
+
+// ------------------------------------------------------------- Sposta --
+// Si prende una tessera e la si porta dove si vuole: le altre scorrono per
+// farle posto (l'animazione la fa chi disegna, seguendo l'ordine di apps[]).
+// ✕ salva l'ordine di tutta la fila, ◯ rimette tutto com'era.
+static int mv = -1;
+static char mv_orig[MAX_APPS][16]; static int mv_n;
+
+int layout_moving(void) { return mv; }
+
+void layout_move_begin(int i) {
+  if (i < 0 || i >= nrow) return;
+  mv_n = 0;
+  for (int k = 0; k < nrow; k++) snprintf(mv_orig[mv_n++], sizeof mv_orig[0], "%s", apps[k].tid);
+  mv = i;
+}
+
+// sposta la tessera di d posti (anche più di uno: la griglia salta di una riga);
+// ritorna la nuova posizione
+int layout_move_step(int d) {
+  if (mv < 0) return -1;
+  int to = mv + d;
+  if (to < 0) to = 0;
+  if (to > nrow - 1) to = nrow - 1;
+  if (to == mv) return mv;
+  AppEntry t = apps[mv];
+  if (to > mv) memmove(&apps[mv], &apps[mv + 1], sizeof(AppEntry) * (size_t)(to - mv));
+  else memmove(&apps[to + 1], &apps[to], sizeof(AppEntry) * (size_t)(mv - to));
+  apps[to] = t;
+  mv = to;
+  return mv;
+}
+
+void layout_move_end(int keep) {
+  if (mv < 0) return;
+  load();
+  if (keep) {
+    norder = 0;
+    for (int k = 0; k < nrow && norder < MAX_ITEMS; k++) snprintf(order[norder++], sizeof order[0], "%s", apps[k].tid);
+    save();
+  } else {
+    // ordine di prima: stesse tessere, solo rimesse al loro posto
+    static AppEntry back[MAX_APPS]; int m = 0;
+    for (int k = 0; k < mv_n; k++) for (int i = 0; i < nrow; i++) if (!strcmp(apps[i].tid, mv_orig[k])) { back[m++] = apps[i]; break; }
+    if (m == nrow) memcpy(apps, back, sizeof(AppEntry) * (size_t)m);
+  }
+  mv = -1;
+}
+
+int  layout_order_custom(void) { load(); return norder > 0; }
+void layout_order_reset(void) { load(); norder = 0; save(); home_relayout(NULL); }
 
 // --------------------------------------------------------------- modifiche --
 void layout_hide(const char *tid, int hide) {
@@ -200,14 +270,16 @@ static void folder_opt_pick(int idx, void *ud) {
     snprintf(f->name, sizeof f->name, "%s", name);
     save(); home_relayout(NULL);
   } else if (idx == 1) {
+    for (int i = 0; i < nrow; i++) if (!strcmp(apps[i].tid, edit_fid)) { home_move_start(i); break; }
+  } else if (idx == 2) {
     confirm_open(_("Eliminare la cartella? Le app che contiene tornano in home, non vengono disinstallate."), _("Elimina"), folder_delete_yes, NULL);
   }
 }
 void layout_folder_menu(const char *fid) {
   load();
   snprintf(edit_fid, sizeof edit_fid, "%s", fid);
-  const char *it[] = { _("Rinomina cartella"), _("Elimina cartella") };
-  menu_open(layout_folder_name(fid), it, 2, folder_opt_pick, NULL);
+  const char *it[] = { _("Rinomina cartella"), _("Cambia posizione"), _("Elimina cartella") };
+  menu_open(layout_folder_name(fid), it, 3, folder_opt_pick, NULL);
 }
 
 // ------------------------------------------------- app nascoste (Impostazioni) --

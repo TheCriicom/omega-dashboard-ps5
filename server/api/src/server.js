@@ -89,6 +89,11 @@ migrate()
     require('./endpoints/saves').start();
     require('./endpoints/wrap').start();
     require('./endpoints/trophies').rereadUnparsed().catch((e) => console.error(JSON.stringify({ ts: new Date().toISOString(), event: 'trophy_reread_failed', error: e.message })));
+    // Le connessioni dal proxy restano aperte più a lungo di quanto il proxy le
+    // tenga (30 s, proxy/src/server.js): così è sempre il proxy a chiuderle e
+    // non riusa mai un socket appena chiuso qui ("socket hang up" → 502).
+    server.keepAliveTimeout = 65_000;
+    server.headersTimeout = 66_000;
     server.listen(config.port, () => {
       console.log(JSON.stringify({
         ts: new Date().toISOString(), event: 'startup', component: 'api', port: config.port,

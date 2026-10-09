@@ -14,6 +14,10 @@ const list = (value) => value.split(',').map((s) => s.trim()).filter(Boolean);
 
 const PORT = Number(process.env.PROXY_PORT || 9986);
 const UPSTREAM = new URL(process.env.UPSTREAM_URL || 'http://api:8080');
+// Connessioni verso l'api riusate, ma scartate dopo 30 s ferme: l'api le tiene
+// 65 s, quindi non capita di mandare una richiesta su un socket che l'api sta
+// chiudendo in quell'istante (era la causa dei 502 "socket hang up").
+const upstreamAgent = new http.Agent({ keepAlive: true, timeout: 30_000 });
 const LOG_DIR = process.env.LOG_DIR || '/var/log/omega';
 const RETENTION_DAYS = Math.max(1, Number(process.env.LOG_RETENTION_DAYS || 30));
 const REDACT_HEADERS = new Set(list(process.env.REDACT_HEADERS || 'authorization,cookie,set-cookie').map((s) => s.toLowerCase()));
@@ -129,6 +133,7 @@ const server = http.createServer((req, res) => {
       method: req.method,
       path: reqUrl.pathname + reqUrl.search,
       headers: proxyHeaders,
+      agent: upstreamAgent,
     },
     (upstreamRes) => {
       let bytes = 0;

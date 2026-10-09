@@ -11,6 +11,8 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
+  N_("Nuovo: la home la ordini tu. Dalle opzioni di un gioco, di una cartella o di un'app scegli Cambia posizione e la porti dove vuoi con le frecce (L2 e R2 la mandano in testa o in fondo): le altre tessere le fanno posto. L'ordine resta anche dopo il riavvio."),
+  N_("Anche Community, Store, Browser, Installa PKG, Aggiornamenti e App mobile si possono spostare o nascondere; le rimetti in Impostazioni \xE2\x80\xBA Home e giochi \xE2\x80\xBA App nascoste, e da Ordine della home torni all'ordine automatico."),
   N_("Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi."),
   N_("Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti."),
   N_("Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado."),

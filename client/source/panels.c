@@ -1119,27 +1119,28 @@ static void open_lang_menu(void) {
 enum {
   SO_PROFILE, SO_AVATAR, SO_BIO, SO_NOTIFY, SO_PRIVACY, SO_LOGOUT,
   SO_CUSTOM, SO_STYLE, SO_THEME, SO_LANG, SO_AUDIO,
-  SO_HOME, SO_HIDDEN, SO_PATHS, SO_STORAGE, SO_SAVES, SO_PKGS, SO_GAMEUPD, SO_AUTOMOUNT,
+  SO_HOME, SO_HIDDEN, SO_ORDER, SO_PATHS, SO_STORAGE, SO_SAVES, SO_PKGS, SO_GAMEUPD, SO_AUTOMOUNT,
   SO_SYSTEM, SO_REMOTE, SO_SERVER, SO_FILES,
   SO_WHY, SO_FEEDBACK, SO_ABOUT, SO_QUIT, N_OPT
 };
 static const struct { const char *name; int ic; int first, n; } ST_SECT[] = {
-  { N_("Account"), IC_USER, SO_PROFILE, 6 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 8 },
+  { N_("Account"), IC_USER, SO_PROFILE, 6 }, { N_("Aspetto"), IC_BRUSH, SO_CUSTOM, 5 }, { N_("Home e giochi"), IC_HOME, SO_HOME, 9 },
   { N_("Sistema"), IC_GEAR, SO_SYSTEM, 4 }, { N_("Aiuto"), IC_IDEA, SO_WHY, 4 },
 };
 #define ST_NSECT (int)(sizeof ST_SECT / sizeof *ST_SECT)
 static int st_sect, st_col; static float st_sect_anim;   // st_col: 0 sezioni, 1 voci
+static void order_reset_yes(int idx, void *ud) { (void)ud; if (idx == 0) { layout_order_reset(); set_msg(_("Ordine automatico ripristinato"), 0); } }
 static const char *st_label(int o) {
   static const char *L[N_OPT] = { N_("Il mio profilo"), N_("Cambia avatar"), N_("Modifica bio"), N_("Notifiche"), N_("Privacy"), N_("Esci dall'account"),
     N_("Personalizza"), N_("Modalità del menu"), N_("Tema"), N_("Lingua"), N_("Audio"),
-    N_("Omega come Home"), N_("App nascoste"), N_("Cartelle di giochi e PKG"), N_("Archivio e spostamenti"), N_("Salvataggi online"), N_("Installa PKG"), N_("Aggiornamenti dei giochi"), N_("Montaggio automatico"),
+    N_("Omega come Home"), N_("App nascoste"), N_("Ordine della home"), N_("Cartelle di giochi e PKG"), N_("Archivio e spostamenti"), N_("Salvataggi online"), N_("Installa PKG"), N_("Aggiornamenti dei giochi"), N_("Montaggio automatico"),
     N_("Sistema e strumenti"), N_("App mobile"), N_("Server"), N_("Gestore dei file"),
     N_("Perché Omega"), N_("Segnala un bug o chiedi una funzione"), N_("Informazioni su Omega"), N_("Chiudi Omega") };
   return _(L[o]);
 }
 static int st_icon(int o) {
   static const int I[N_OPT] = { IC_USER, IC_STAR, IC_NEWS, IC_BELL, IC_SHIELD, IC_EXIT, IC_BRUSH, IC_GRID, IC_GEAR, IC_CHAT, IC_VOLUME,
-    IC_HOME, IC_CLOSE, IC_FOLDER, IC_DRIVE, IC_CLOUD, IC_BOX, IC_DOWNLOAD, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
+    IC_HOME, IC_CLOSE, IC_GRID, IC_FOLDER, IC_DRIVE, IC_CLOUD, IC_BOX, IC_DOWNLOAD, IC_USB, IC_FOLDER, IC_GLOBE, IC_CLOUD, IC_FOLDER, IC_HEART, IC_BUG, IC_MORE, IC_POWER };
   return I[o];
 }
 static void st_value(int o, char *v, size_t n) {
@@ -1151,6 +1152,7 @@ static void st_value(int o, char *v, size_t n) {
     case SO_SERVER: snprintf(v, n, "%s", server_label()); break;
     case SO_HOME: snprintf(v, n, "%s", home_mode() == 1 ? _("s\xC3\xAC") : _("no")); break;
     case SO_HIDDEN: snprintf(v, n, "%d", layout_hidden_count()); break;
+    case SO_ORDER: snprintf(v, n, "%s", layout_order_custom() ? _("Scelto da te") : _("Automatico")); break;
     case SO_STYLE: snprintf(v, n, "%s", hs_name(g_prefs.home_style)); break;
     case SO_AUTOMOUNT: snprintf(v, n, "%s", g_prefs.automount ? _("s\xC3\xAC") : _("no")); break;
     case SO_SAVES: snprintf(v, n, "%s", g_prefs.save_auto ? _("automatici") : _("manuali")); break;
@@ -1289,6 +1291,10 @@ void settings_input(int b) {
       case SO_SERVER: server_menu(); break;
       case SO_HOME: home_mode_menu(); break;
       case SO_HIDDEN: hidden_menu(); break;
+      case SO_ORDER:
+        if (layout_order_custom()) confirm_open(_("Tornare all'ordine automatico? Le tessere si rimettono da sole, con i giochi usati di recente davanti."), _("Ripristina"), order_reset_yes, NULL);
+        else set_msg(_("Per scegliere l'ordine: opzioni di una tessera in home \xE2\x80\xBA Cambia posizione"), 0);
+        break;
       case SO_PATHS: paths_menu(); break;
       case SO_PKGS: pkgs_open(); break;
       case SO_GAMEUPD: gameupd_open(); break;

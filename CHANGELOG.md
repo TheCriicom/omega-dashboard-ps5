@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026.10.09.4
+
+- **Home order is yours**: from the options of a game, a folder or one of
+  Omega's apps pick **Move** and bring it wherever you want with the arrows
+  (L2/R2 send it to the start or the end). The picked tile lifts up and the
+  others slide out of its way; ✕ keeps the new order, ◯ puts everything back.
+  Works in every home layout. Saved in `home-layout.txt`, so it survives
+  restarts; new games show up at the front. Settings › Home and games ›
+  Home order goes back to the automatic order.
+- Community, Store, Browser, Install PKG, Updates and Mobile app can now be
+  moved and hidden like any other tile, and brought back from Hidden apps.
+- Tiles in the home row slide to their new place whenever the row changes
+  (reordering, hiding, folders) instead of jumping.
+- Server: the proxy no longer reuses a connection to the API that the API is
+  closing (keep-alive 65 s on the API, 30 s idle limit on the proxy): that
+  race caused the occasional 502 "socket hang up".
+
 ## 2026.10.09.3
 
 - **Installer**: if the HTTPS download through SceHttp fails at any step, it

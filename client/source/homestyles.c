@@ -49,6 +49,15 @@ static const char *sub_of(const AppEntry *ap) {
 
 static void hints_alt(int a, const char *extra_lbl) {
   int ic[5]; const char *lb[5]; int n = 0;
+  if (layout_moving() >= 0) {    // Sposta: frecce dello stile, conferma e annulla
+    int vert = g_prefs.home_style == 2 || g_prefs.home_style == 5;
+    ic[n] = -1; lb[n++] = g_prefs.home_style == 3 ? _("Frecce  Sposta") : vert ? _("\xE2\x96\xB2 \xE2\x96\xBC  Sposta") : _("\xE2\x97\x80 \xE2\x96\xB6  Sposta");
+    ic[n] = -1; lb[n++] = _("L2 / R2  In testa / In fondo");
+    ic[n] = IC_BTN_X; lb[n++] = _("Conferma");
+    ic[n] = IC_BTN_O; lb[n++] = _("Annulla");
+    grad_v(0, SCREEN_H - 120, SCREEN_W, 120, RGB(4, 8, 18), 0, RGB(4, 8, 18), a * 70 / 100); hints(ic, lb, n, a);
+    return;
+  }
   ic[n] = IC_BTN_X; lb[n++] = nrow && apps[home_selected()].builtin ? _("Apri") : _("Gioca");
   ic[n] = -1; lb[n++] = _("R1  Opzioni");
   ic[n] = -1; lb[n++] = _("L1  Esplora");
@@ -231,6 +240,8 @@ static void xmb_draw(int a) {
   draw_text(font(W_LIGHT, 34), clock, SCREEN_W - 110, 60, C_WHITE, a, AL_R);
   draw_text(font(W_REG, 22), date, SCREEN_W - 110, 104, C_DIM, a, AL_R);
   xbuild(xcat);
+  // Sposta: la voce selezionata segue la tessera che si muove
+  if (layout_moving() >= 0) for (int k = 0; k < nxit; k++) if (xit[k].app == home_selected()) xsel[xcat] = k;
   xcat_f = approach(xcat_f, (float)xcat, 12.0f);
   const int cx0 = 520, cy = 300, step = 210;
   for (int c = 0; c < XC_N; c++) {
@@ -416,6 +427,18 @@ void hs_draw(void) {
     default: cinema_draw(a); break;
   }
   hints_alt(a, NULL);
+}
+
+// Sposta negli altri stili: di quanti posti va la tessera per questo tasto
+// (0 = tasto non usato). La selezione la segue, e ogni stile la anima già.
+int hs_move_input(int b) {
+  if (b == B_L2) return -1000;
+  if (b == B_R2) return 1000;
+  switch (g_prefs.home_style) {
+    case 2: case 5: return b == B_UP ? -1 : b == B_DOWN ? 1 : 0;                       // XMB e Cinema: in verticale
+    case 3: return b == B_LEFT ? -1 : b == B_RIGHT ? 1 : b == B_UP ? -GR_COLS : b == B_DOWN ? GR_COLS : 0;
+    default: return b == B_LEFT ? -1 : b == B_RIGHT ? 1 : 0;
+  }
 }
 
 int hs_input(int b) {

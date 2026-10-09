@@ -7403,6 +7403,1289 @@
    "screenshots": [
     "asset:shot-d34ed83099.jpg"
    ]
+  },
+  {
+   "catalog_key": "ghcat:mupen64plus-ps5",
+   "title": "Mupen64Plus PS5",
+   "tagline": "Nintendo 64 sulla PS5",
+   "description": "Emulatore Nintendo 64 basato su mupen64plus-core 2.6.0, con ricompilatore dinamico e una libreria di giochi pensata per il DualSense. Legge le ROM .z64, .n64, .v64 e .rom, anche zippate, da /data/mupen64plus/roms o dalla cartella mupen64plus/roms di una chiavetta USB. Serve kstuff e un caricatore di payload attivo (elfldr, etaHEN o Payload Manager): l'app manda da sola il suo helper. Non contiene giochi: servono i tuoi backup.",
+   "category": "emulatore",
+   "version": "0.7.0",
+   "platform": "PS5",
+   "title_id": "PPSA99064",
+   "hashtags": [
+    "n64",
+    "nintendo64",
+    "mupen64plus"
+   ],
+   "download_url": "https://github.com/TheRealRetro/mupen64plus-ps5/releases/download/00.007.000/Mupen64PlusPS5.zip",
+   "file_kind": "zip",
+   "size_bytes": 8706107,
+   "homepage_url": "https://github.com/TheRealRetro/mupen64plus-ps5",
+   "license": "GPL-3.0",
+   "icon": "asset:mupen64plus.jpg",
+   "cover": "asset:mupen64plus.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "Nintendo 64 on PS5",
+     "description": "A Nintendo 64 emulator built on mupen64plus-core 2.6.0, with a dynamic recompiler and a game library made for the DualSense. It reads .z64, .n64, .v64 and .rom ROMs, zipped too, from /data/mupen64plus/roms or from the mupen64plus/roms folder on a USB stick. It needs kstuff and a running payload loader (elfldr, etaHEN or Payload Manager): the app sends its own helper by itself. It includes no games: you need your own backups."
+    },
+    "ja": {
+     "tagline": "PS5でNintendo 64を",
+     "description": "mupen64plus-core 2.6.0ベースのNintendo 64エミュレーター。動的リコンパイラーと、DualSenseに最適化されたゲームライブラリを備えています。.z64、.n64、.v64、.romのROMをZIP圧縮のままでも、/data/mupen64plus/roms またはUSBメモリーの mupen64plus/roms フォルダーから読み込めます。kstuffと、起動中のペイロードローダー(elfldr、etaHEN、Payload Manager のいずれか)が必要です。ヘルパーはアプリが自動で送信します。ゲームは含まれません。ご自身のバックアップをご用意ください。"
+    },
+    "fr": {
+     "tagline": "La Nintendo 64 sur PS5",
+     "description": "Un émulateur Nintendo 64 basé sur mupen64plus-core 2.6.0, avec un recompilateur dynamique et une bibliothèque de jeux pensée pour la DualSense. Il lit les ROM .z64, .n64, .v64 et .rom, même zippées, depuis /data/mupen64plus/roms ou depuis le dossier mupen64plus/roms d'une clé USB. Il faut kstuff et un chargeur de payload actif (elfldr, etaHEN ou Payload Manager) : l'application envoie elle-même son helper. Aucun jeu inclus : il vous faut vos propres sauvegardes."
+    },
+    "es": {
+     "tagline": "Nintendo 64 en PS5",
+     "description": "Un emulador de Nintendo 64 basado en mupen64plus-core 2.6.0, con recompilador dinámico y una biblioteca de juegos pensada para el DualSense. Lee ROM .z64, .n64, .v64 y .rom, también comprimidas en zip, desde /data/mupen64plus/roms o desde la carpeta mupen64plus/roms de un pendrive USB. Necesita kstuff y un cargador de payloads activo (elfldr, etaHEN o Payload Manager): la app envía su helper por sí sola. No incluye juegos: necesitas tus propias copias de seguridad."
+    },
+    "de": {
+     "tagline": "Nintendo 64 auf der PS5",
+     "description": "Ein Nintendo-64-Emulator auf Basis von mupen64plus-core 2.6.0, mit dynamischem Recompiler und einer Spielebibliothek für den DualSense. Er liest ROMs im Format .z64, .n64, .v64 und .rom, auch gezippt, aus /data/mupen64plus/roms oder aus dem Ordner mupen64plus/roms auf einem USB-Stick. Du brauchst kstuff und einen laufenden Payload-Loader (elfldr, etaHEN oder Payload Manager): Die App schickt ihren Helper selbst. Enthält keine Spiele: Du brauchst deine eigenen Backups."
+    },
+    "nl": {
+     "tagline": "Nintendo 64 op PS5",
+     "description": "Een Nintendo 64-emulator op basis van mupen64plus-core 2.6.0, met een dynamische recompiler en een gamebibliotheek gemaakt voor de DualSense. Hij leest .z64-, .n64-, .v64- en .rom-ROM's, ook gezipt, uit /data/mupen64plus/roms of uit de map mupen64plus/roms op een USB-stick. Je hebt kstuff en een actieve payload-loader nodig (elfldr, etaHEN of Payload Manager): de app stuurt zelf zijn helper mee. Bevat geen games: je hebt je eigen back-ups nodig."
+    },
+    "pt-PT": {
+     "tagline": "Nintendo 64 na PS5",
+     "description": "Um emulador de Nintendo 64 baseado no mupen64plus-core 2.6.0, com recompilador dinâmico e uma biblioteca de jogos pensada para o DualSense. Lê ROMs .z64, .n64, .v64 e .rom, mesmo em zip, a partir de /data/mupen64plus/roms ou da pasta mupen64plus/roms de uma pen USB. Precisa do kstuff e de um carregador de payloads ativo (elfldr, etaHEN ou Payload Manager): a app envia o seu helper sozinha. Não inclui jogos: precisas das tuas próprias cópias de segurança."
+    },
+    "pt-BR": {
+     "tagline": "Nintendo 64 no PS5",
+     "description": "Um emulador de Nintendo 64 baseado no mupen64plus-core 2.6.0, com recompilador dinâmico e uma biblioteca de jogos pensada para o DualSense. Lê ROMs .z64, .n64, .v64 e .rom, inclusive zipadas, a partir de /data/mupen64plus/roms ou da pasta mupen64plus/roms de um pendrive. Precisa do kstuff e de um carregador de payloads ativo (elfldr, etaHEN ou Payload Manager): o app envia o próprio helper sozinho. Não inclui jogos: você precisa dos seus próprios backups."
+    },
+    "ru": {
+     "tagline": "Nintendo 64 на PS5",
+     "description": "Эмулятор Nintendo 64 на базе mupen64plus-core 2.6.0 с динамическим рекомпилятором и библиотекой игр, удобной для DualSense. Читает ROM в форматах .z64, .n64, .v64 и .rom, в том числе в zip, из /data/mupen64plus/roms или из папки mupen64plus/roms на USB-флешке. Нужны kstuff и запущенный загрузчик пейлоадов (elfldr, etaHEN или Payload Manager): свой helper приложение отправляет само. Игры не входят в комплект: понадобятся ваши собственные резервные копии."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 닌텐도 64",
+     "description": "mupen64plus-core 2.6.0 기반의 닌텐도 64 에뮬레이터로, 동적 리컴파일러와 DualSense에 맞춘 게임 라이브러리를 제공합니다. .z64, .n64, .v64, .rom 형식의 ROM을 압축된 zip 상태로도 /data/mupen64plus/roms 또는 USB 메모리의 mupen64plus/roms 폴더에서 읽습니다. kstuff와 실행 중인 페이로드 로더(elfldr, etaHEN 또는 Payload Manager)가 필요하며, 헬퍼는 앱이 알아서 전송합니다. 게임은 포함되어 있지 않으며, 직접 만든 백업이 필요합니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩Nintendo 64",
+     "description": "基于mupen64plus-core 2.6.0的Nintendo 64模拟器，带有动态重编译器和为DualSense设计的游戏库。可从 /data/mupen64plus/roms 或U盘上的 mupen64plus/roms 文件夹读取 .z64、.n64、.v64 和 .rom 格式的ROM，压缩成zip的也可以。需要kstuff和一个正在运行的payload加载器（elfldr、etaHEN或Payload Manager），应用会自行发送它的helper。不包含游戏，需要使用你自己的备份。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩Nintendo 64",
+     "description": "基於mupen64plus-core 2.6.0的Nintendo 64模擬器，具備動態重編譯器和為DualSense設計的遊戲庫。可從 /data/mupen64plus/roms 或隨身碟上的 mupen64plus/roms 資料夾讀取 .z64、.n64、.v64 和 .rom 格式的ROM，壓縮成zip的也可以。需要kstuff和一個正在執行的payload載入器（elfldr、etaHEN或Payload Manager），應用程式會自行傳送它的helper。不含遊戲，需要使用你自己的備份。"
+    },
+    "fi": {
+     "tagline": "Nintendo 64 PS5:llä",
+     "description": "mupen64plus-core 2.6.0:aan perustuva Nintendo 64 -emulaattori, jossa on dynaaminen uudelleenkääntäjä ja DualSenselle suunniteltu pelikirjasto. Se lukee .z64-, .n64-, .v64- ja .rom-ROMit, myös zip-pakattuina, kansiosta /data/mupen64plus/roms tai USB-tikun mupen64plus/roms-kansiosta. Tarvitset kstuffin ja käynnissä olevan payload-lataajan (elfldr, etaHEN tai Payload Manager): sovellus lähettää oman helperinsä itse. Mukana ei ole pelejä: tarvitset omat varmuuskopiosi."
+    },
+    "sv": {
+     "tagline": "Nintendo 64 på PS5",
+     "description": "En Nintendo 64-emulator baserad på mupen64plus-core 2.6.0, med dynamisk omkompilator och ett spelbibliotek gjort för DualSense. Den läser ROM-filer i .z64, .n64, .v64 och .rom, även zippade, från /data/mupen64plus/roms eller från mappen mupen64plus/roms på ett USB-minne. Den kräver kstuff och en aktiv payload-laddare (elfldr, etaHEN eller Payload Manager): appen skickar sin helper på egen hand. Inga spel ingår: du behöver dina egna säkerhetskopior."
+    },
+    "da": {
+     "tagline": "Nintendo 64 på PS5",
+     "description": "En Nintendo 64-emulator baseret på mupen64plus-core 2.6.0, med dynamisk genkompilering og et spilbibliotek lavet til DualSense. Den læser ROM'er i .z64, .n64, .v64 og .rom, også zippede, fra /data/mupen64plus/roms eller fra mappen mupen64plus/roms på en USB-nøgle. Den kræver kstuff og en aktiv payload-loader (elfldr, etaHEN eller Payload Manager): appen sender selv sin helper. Der følger ingen spil med: du skal bruge dine egne sikkerhedskopier."
+    },
+    "nb": {
+     "tagline": "Nintendo 64 på PS5",
+     "description": "En Nintendo 64-emulator basert på mupen64plus-core 2.6.0, med dynamisk rekompilator og et spillbibliotek laget for DualSense. Den leser ROM-er i .z64, .n64, .v64 og .rom, også zippet, fra /data/mupen64plus/roms eller fra mappen mupen64plus/roms på en minnepinne. Den trenger kstuff og en aktiv payload-laster (elfldr, etaHEN eller Payload Manager): appen sender sin egen helper av seg selv. Ingen spill følger med: du trenger dine egne sikkerhetskopier."
+    },
+    "pl": {
+     "tagline": "Nintendo 64 na PS5",
+     "description": "Emulator Nintendo 64 oparty na mupen64plus-core 2.6.0, z dynamicznym rekompilatorem i biblioteką gier stworzoną z myślą o DualSense. Odczytuje ROM-y .z64, .n64, .v64 i .rom, także spakowane w zip, z /data/mupen64plus/roms lub z folderu mupen64plus/roms na pendrivie. Wymaga kstuff i działającego loadera payloadów (elfldr, etaHEN lub Payload Manager): aplikacja sama wysyła swój helper. Nie zawiera gier: potrzebujesz własnych kopii zapasowych."
+    },
+    "tr": {
+     "tagline": "PS5'te Nintendo 64",
+     "description": "mupen64plus-core 2.6.0 tabanlı bir Nintendo 64 emülatörü; dinamik yeniden derleyici ve DualSense için tasarlanmış bir oyun kütüphanesiyle gelir. .z64, .n64, .v64 ve .rom ROM'larını, zip içindeyken bile, /data/mupen64plus/roms klasöründen veya bir USB belleğin mupen64plus/roms klasöründen okur. kstuff ve çalışan bir payload yükleyici (elfldr, etaHEN veya Payload Manager) gerekir: uygulama kendi helper'ını kendisi gönderir. Oyun içermez: kendi yedeklerine ihtiyacın var."
+    },
+    "cs": {
+     "tagline": "Nintendo 64 na PS5",
+     "description": "Emulátor Nintendo 64 založený na mupen64plus-core 2.6.0, s dynamickým rekompilátorem a knihovnou her vytvořenou pro DualSense. Čte ROM ve formátech .z64, .n64, .v64 a .rom, i zazipované, z /data/mupen64plus/roms nebo ze složky mupen64plus/roms na USB flash disku. Potřebuje kstuff a spuštěný zavaděč payloadů (elfldr, etaHEN nebo Payload Manager): svůj helper si aplikace pošle sama. Neobsahuje žádné hry: potřebuješ vlastní zálohy."
+    },
+    "hu": {
+     "tagline": "Nintendo 64 a PS5-ön",
+     "description": "mupen64plus-core 2.6.0-alapú Nintendo 64-emulátor dinamikus újrafordítóval és a DualSense-re szabott játékkönyvtárral. Beolvassa a .z64, .n64, .v64 és .rom ROM-okat, zip-be tömörítve is, a /data/mupen64plus/roms mappából vagy egy pendrive mupen64plus/roms mappájából. Szükség van a kstuffra és egy futó payload-betöltőre (elfldr, etaHEN vagy Payload Manager): a helperét az alkalmazás magától elküldi. Nem tartalmaz játékokat: a saját biztonsági mentéseidre van szükség."
+    },
+    "el": {
+     "tagline": "Nintendo 64 στο PS5",
+     "description": "Ένας εξομοιωτής Nintendo 64 βασισμένος στο mupen64plus-core 2.6.0, με δυναμικό recompiler και βιβλιοθήκη παιχνιδιών φτιαγμένη για το DualSense. Διαβάζει ROM .z64, .n64, .v64 και .rom, ακόμα και σε zip, από το /data/mupen64plus/roms ή από τον φάκελο mupen64plus/roms σε ένα USB stick. Χρειάζεται το kstuff και έναν ενεργό φορτωτή payload (elfldr, etaHEN ή Payload Manager): η εφαρμογή στέλνει μόνη της τον helper της. Δεν περιλαμβάνει παιχνίδια: χρειάζεσαι τα δικά σου αντίγραφα ασφαλείας."
+    },
+    "ro": {
+     "tagline": "Nintendo 64 pe PS5",
+     "description": "Un emulator Nintendo 64 bazat pe mupen64plus-core 2.6.0, cu recompilator dinamic și o bibliotecă de jocuri gândită pentru DualSense. Citește ROM-uri .z64, .n64, .v64 și .rom, chiar și arhivate zip, din /data/mupen64plus/roms sau din folderul mupen64plus/roms de pe un stick USB. Are nevoie de kstuff și de un încărcător de payload activ (elfldr, etaHEN sau Payload Manager): aplicația își trimite singură helperul. Nu include jocuri: ai nevoie de propriile copii de rezervă."
+    },
+    "th": {
+     "tagline": "เล่น Nintendo 64 บน PS5",
+     "description": "อีมูเลเตอร์ Nintendo 64 ที่สร้างบน mupen64plus-core 2.6.0 มี dynamic recompiler และคลังเกมที่ออกแบบมาสำหรับ DualSense อ่าน ROM แบบ .z64, .n64, .v64 และ .rom รวมถึงไฟล์ zip ได้จาก /data/mupen64plus/roms หรือจากโฟลเดอร์ mupen64plus/roms ในแฟลชไดรฟ์ USB ต้องใช้ kstuff และตัวโหลด payload ที่เปิดอยู่ (elfldr, etaHEN หรือ Payload Manager) โดยแอปจะส่ง helper ของตัวเองให้อัตโนมัติ ไม่รวมเกม: คุณต้องมีไฟล์สำรองของตัวเอง"
+    },
+    "vi": {
+     "tagline": "Nintendo 64 trên PS5",
+     "description": "Trình giả lập Nintendo 64 dựa trên mupen64plus-core 2.6.0, có trình biên dịch lại động và thư viện game thiết kế cho DualSense. Đọc được ROM .z64, .n64, .v64 và .rom, kể cả khi nén zip, từ /data/mupen64plus/roms hoặc thư mục mupen64plus/roms trên USB. Cần kstuff và một trình nạp payload đang chạy (elfldr, etaHEN hoặc Payload Manager): ứng dụng tự gửi helper của mình. Không kèm game: bạn cần bản sao lưu của riêng mình."
+    },
+    "id": {
+     "tagline": "Nintendo 64 di PS5",
+     "description": "Emulator Nintendo 64 berbasis mupen64plus-core 2.6.0, dengan dynamic recompiler dan pustaka game yang dibuat untuk DualSense. Membaca ROM .z64, .n64, .v64, dan .rom, termasuk yang di-zip, dari /data/mupen64plus/roms atau dari folder mupen64plus/roms di flashdisk USB. Membutuhkan kstuff dan payload loader yang sedang berjalan (elfldr, etaHEN, atau Payload Manager): aplikasinya mengirim helper-nya sendiri. Tidak menyertakan game: kamu perlu backup milikmu sendiri."
+    },
+    "uk": {
+     "tagline": "Nintendo 64 на PS5",
+     "description": "Емулятор Nintendo 64 на базі mupen64plus-core 2.6.0 з динамічним рекомпілятором і бібліотекою ігор, зручною для DualSense. Читає ROM у форматах .z64, .n64, .v64 і .rom, зокрема в zip, з /data/mupen64plus/roms або з папки mupen64plus/roms на USB-флешці. Потрібні kstuff і запущений завантажувач пейлоадів (elfldr, etaHEN або Payload Manager): свій helper застосунок надсилає сам. Ігор у комплекті немає: потрібні ваші власні резервні копії."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:psxs5",
+   "title": "PSXS5",
+   "tagline": "PlayStation 1 sulla PS5",
+   "description": "Emulatore PlayStation 1 nativo con due motori: Beetle PSX HW, che usa la GPU della PS5, e PCSX-ReARMed, che funziona anche senza BIOS. Sceglie da solo quello giusto per ogni gioco. Metti i giochi in /data/PSXS5/games, una cartella per gioco (.cue/.bin, .chd e altri formati). Il BIOS è facoltativo e va preso dalla tua console. Serve kstuff. Non contiene giochi né BIOS.",
+   "category": "emulatore",
+   "version": "2.2.0",
+   "platform": "PS5",
+   "title_id": "PPSA97510",
+   "hashtags": [
+    "ps1",
+    "psx",
+    "playstation",
+    "beetle"
+   ],
+   "download_url": "https://github.com/SynoPiia/PSXS5/releases/download/v2.2.0/PSXS5-v2.2.0.zip",
+   "file_kind": "zip",
+   "size_bytes": 18360114,
+   "homepage_url": "https://github.com/SynoPiia/PSXS5",
+   "license": "GPL-3.0",
+   "icon": "asset:psxs5.jpg",
+   "cover": "asset:psxs5.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "PlayStation 1 on PS5",
+     "description": "A native PlayStation 1 emulator with two engines: Beetle PSX HW, which uses the PS5's GPU, and PCSX-ReARMed, which also works without a BIOS. It picks the right one for each game by itself. Put your games in /data/PSXS5/games, one folder per game (.cue/.bin, .chd and other formats). The BIOS is optional and must come from your own console. It needs kstuff. It includes no games or BIOS."
+    },
+    "ja": {
+     "tagline": "PS5で初代PlayStationを",
+     "description": "2つのエンジンを搭載したネイティブの初代PlayStationエミュレーター。PS5のGPUを使う Beetle PSX HW と、BIOSなしでも動く PCSX-ReARMed を、ゲームごとに自動で使い分けます。ゲームは /data/PSXS5/games に1タイトルにつき1フォルダーで置いてください(.cue/.bin、.chd などに対応)。BIOSは任意で、ご自身の本体から吸い出したものを使います。kstuffが必要です。ゲームやBIOSは含まれません。"
+    },
+    "fr": {
+     "tagline": "La PlayStation 1 sur PS5",
+     "description": "Un émulateur PlayStation 1 natif avec deux moteurs : Beetle PSX HW, qui utilise le GPU de la PS5, et PCSX-ReARMed, qui fonctionne aussi sans BIOS. Il choisit tout seul le bon pour chaque jeu. Placez vos jeux dans /data/PSXS5/games, un dossier par jeu (.cue/.bin, .chd et d'autres formats). Le BIOS est facultatif et doit provenir de votre propre console. Il faut kstuff. Aucun jeu ni BIOS inclus."
+    },
+    "es": {
+     "tagline": "PlayStation 1 en PS5",
+     "description": "Un emulador nativo de PlayStation 1 con dos motores: Beetle PSX HW, que usa la GPU de la PS5, y PCSX-ReARMed, que también funciona sin BIOS. Elige él solo el adecuado para cada juego. Pon los juegos en /data/PSXS5/games, una carpeta por juego (.cue/.bin, .chd y otros formatos). La BIOS es opcional y debe sacarse de tu propia consola. Necesita kstuff. No incluye juegos ni BIOS."
+    },
+    "de": {
+     "tagline": "PlayStation 1 auf der PS5",
+     "description": "Ein nativer PlayStation-1-Emulator mit zwei Engines: Beetle PSX HW, das die GPU der PS5 nutzt, und PCSX-ReARMed, das auch ohne BIOS läuft. Er wählt für jedes Spiel selbst die passende aus. Lege deine Spiele in /data/PSXS5/games ab, ein Ordner pro Spiel (.cue/.bin, .chd und andere Formate). Das BIOS ist optional und muss von deiner eigenen Konsole stammen. Du brauchst kstuff. Enthält weder Spiele noch BIOS."
+    },
+    "nl": {
+     "tagline": "PlayStation 1 op PS5",
+     "description": "Een native PlayStation 1-emulator met twee engines: Beetle PSX HW, dat de GPU van de PS5 gebruikt, en PCSX-ReARMed, dat ook zonder BIOS werkt. Hij kiest zelf de juiste voor elke game. Zet je games in /data/PSXS5/games, één map per game (.cue/.bin, .chd en andere formaten). Het BIOS is optioneel en moet van je eigen console komen. Je hebt kstuff nodig. Bevat geen games of BIOS."
+    },
+    "pt-PT": {
+     "tagline": "PlayStation 1 na PS5",
+     "description": "Um emulador nativo de PlayStation 1 com dois motores: o Beetle PSX HW, que usa a GPU da PS5, e o PCSX-ReARMed, que também funciona sem BIOS. Escolhe sozinho o mais adequado para cada jogo. Coloca os jogos em /data/PSXS5/games, uma pasta por jogo (.cue/.bin, .chd e outros formatos). A BIOS é opcional e deve vir da tua própria consola. Precisa do kstuff. Não inclui jogos nem BIOS."
+    },
+    "pt-BR": {
+     "tagline": "PlayStation 1 no PS5",
+     "description": "Um emulador nativo de PlayStation 1 com dois motores: o Beetle PSX HW, que usa a GPU do PS5, e o PCSX-ReARMed, que funciona até sem BIOS. Ele escolhe sozinho o mais adequado para cada jogo. Coloque os jogos em /data/PSXS5/games, uma pasta por jogo (.cue/.bin, .chd e outros formatos). A BIOS é opcional e deve vir do seu próprio console. Precisa do kstuff. Não inclui jogos nem BIOS."
+    },
+    "ru": {
+     "tagline": "PlayStation 1 на PS5",
+     "description": "Нативный эмулятор PlayStation 1 с двумя движками: Beetle PSX HW, который использует GPU PS5, и PCSX-ReARMed, который работает и без BIOS. Подходящий движок для каждой игры выбирается автоматически. Положите игры в /data/PSXS5/games, по одной папке на игру (.cue/.bin, .chd и другие форматы). BIOS необязателен, его нужно снять со своей консоли. Нужен kstuff. Игры и BIOS не входят в комплект."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 플레이스테이션 1",
+     "description": "두 가지 엔진을 갖춘 네이티브 플레이스테이션 1 에뮬레이터입니다. PS5의 GPU를 사용하는 Beetle PSX HW와 BIOS 없이도 동작하는 PCSX-ReARMed 중에서 게임마다 알맞은 엔진을 자동으로 고릅니다. 게임은 /data/PSXS5/games에 게임별로 폴더를 하나씩 만들어 넣으세요(.cue/.bin, .chd 등 지원). BIOS는 선택 사항이며 직접 가진 콘솔에서 추출한 것을 사용해야 합니다. kstuff가 필요합니다. 게임과 BIOS는 포함되어 있지 않습니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩PlayStation 1",
+     "description": "原生PlayStation 1模拟器，带有两个引擎：使用PS5 GPU的Beetle PSX HW，以及无需BIOS也能运行的PCSX-ReARMed。它会为每个游戏自动选择合适的引擎。把游戏放到 /data/PSXS5/games，每个游戏一个文件夹（支持 .cue/.bin、.chd 等格式）。BIOS可选，需从你自己的主机中提取。需要kstuff。不包含游戏和BIOS。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩PlayStation 1",
+     "description": "原生PlayStation 1模擬器，內建兩個引擎：使用PS5 GPU的Beetle PSX HW，以及不需BIOS也能執行的PCSX-ReARMed。它會為每款遊戲自動選擇合適的引擎。把遊戲放到 /data/PSXS5/games，每款遊戲一個資料夾（支援 .cue/.bin、.chd 等格式）。BIOS為選用，需從你自己的主機取得。需要kstuff。不含遊戲和BIOS。"
+    },
+    "fi": {
+     "tagline": "PlayStation 1 PS5:llä",
+     "description": "Natiivi PlayStation 1 -emulaattori kahdella moottorilla: Beetle PSX HW käyttää PS5:n grafiikkaprosessoria, ja PCSX-ReARMed toimii myös ilman BIOSta. Emulaattori valitsee itse sopivan moottorin kullekin pelille. Laita pelit kansioon /data/PSXS5/games, yksi kansio peliä kohden (.cue/.bin, .chd ja muita muotoja). BIOS on valinnainen, ja sen pitää olla peräisin omasta konsolistasi. Tarvitset kstuffin. Mukana ei ole pelejä eikä BIOSta."
+    },
+    "sv": {
+     "tagline": "PlayStation 1 på PS5",
+     "description": "En inbyggd PlayStation 1-emulator med två motorer: Beetle PSX HW, som använder PS5:ans GPU, och PCSX-ReARMed, som fungerar även utan BIOS. Den väljer själv rätt motor för varje spel. Lägg dina spel i /data/PSXS5/games, en mapp per spel (.cue/.bin, .chd och andra format). BIOS är valfritt och ska komma från din egen konsol. Den kräver kstuff. Inga spel eller BIOS ingår."
+    },
+    "da": {
+     "tagline": "PlayStation 1 på PS5",
+     "description": "En native PlayStation 1-emulator med to motorer: Beetle PSX HW, der bruger PS5'ens GPU, og PCSX-ReARMed, der også virker uden BIOS. Den vælger selv den rigtige til hvert spil. Læg dine spil i /data/PSXS5/games, én mappe pr. spil (.cue/.bin, .chd og andre formater). BIOS er valgfri og skal komme fra din egen konsol. Den kræver kstuff. Der følger hverken spil eller BIOS med."
+    },
+    "nb": {
+     "tagline": "PlayStation 1 på PS5",
+     "description": "En innebygd PlayStation 1-emulator med to motorer: Beetle PSX HW, som bruker GPU-en i PS5, og PCSX-ReARMed, som også fungerer uten BIOS. Den velger selv riktig motor for hvert spill. Legg spillene i /data/PSXS5/games, én mappe per spill (.cue/.bin, .chd og andre formater). BIOS er valgfritt og må komme fra din egen konsoll. Den trenger kstuff. Ingen spill eller BIOS følger med."
+    },
+    "pl": {
+     "tagline": "PlayStation 1 na PS5",
+     "description": "Natywny emulator PlayStation 1 z dwoma silnikami: Beetle PSX HW, który korzysta z GPU PS5, oraz PCSX-ReARMed, który działa także bez BIOS-u. Sam wybiera odpowiedni dla każdej gry. Umieść gry w /data/PSXS5/games, jeden folder na grę (.cue/.bin, .chd i inne formaty). BIOS jest opcjonalny i musi pochodzić z twojej własnej konsoli. Wymaga kstuff. Nie zawiera gier ani BIOS-u."
+    },
+    "tr": {
+     "tagline": "PS5'te PlayStation 1",
+     "description": "İki motorlu yerel bir PlayStation 1 emülatörü: PS5'in GPU'sunu kullanan Beetle PSX HW ve BIOS olmadan da çalışan PCSX-ReARMed. Her oyun için doğru olanı kendisi seçer. Oyunlarını /data/PSXS5/games klasörüne, her oyun için ayrı bir klasör olacak şekilde koy (.cue/.bin, .chd ve diğer biçimler). BIOS isteğe bağlıdır ve kendi konsolundan alınmalıdır. kstuff gerekir. Oyun ya da BIOS içermez."
+    },
+    "cs": {
+     "tagline": "PlayStation 1 na PS5",
+     "description": "Nativní emulátor PlayStation 1 se dvěma jádry: Beetle PSX HW, které využívá GPU PS5, a PCSX-ReARMed, které funguje i bez BIOSu. Pro každou hru si samo vybere to správné. Hry dej do /data/PSXS5/games, každou do vlastní složky (.cue/.bin, .chd a další formáty). BIOS je volitelný a musí pocházet z tvé vlastní konzole. Potřebuje kstuff. Neobsahuje žádné hry ani BIOS."
+    },
+    "hu": {
+     "tagline": "PlayStation 1 a PS5-ön",
+     "description": "Natív PlayStation 1-emulátor két motorral: a Beetle PSX HW a PS5 GPU-ját használja, a PCSX-ReARMed pedig BIOS nélkül is működik. Minden játékhoz magától kiválasztja a megfelelőt. A játékokat a /data/PSXS5/games mappába tedd, játékonként külön mappába (.cue/.bin, .chd és más formátumok). A BIOS nem kötelező, és a saját konzolodról kell származnia. Szükség van a kstuffra. Nem tartalmaz játékokat és BIOS-t."
+    },
+    "el": {
+     "tagline": "PlayStation 1 στο PS5",
+     "description": "Ένας εγγενής εξομοιωτής PlayStation 1 με δύο μηχανές: το Beetle PSX HW, που χρησιμοποιεί τη GPU του PS5, και το PCSX-ReARMed, που λειτουργεί και χωρίς BIOS. Διαλέγει μόνος του τη σωστή για κάθε παιχνίδι. Βάλε τα παιχνίδια στο /data/PSXS5/games, έναν φάκελο για κάθε παιχνίδι (.cue/.bin, .chd και άλλες μορφές). Το BIOS είναι προαιρετικό και πρέπει να προέρχεται από τη δική σου κονσόλα. Χρειάζεται το kstuff. Δεν περιλαμβάνει παιχνίδια ή BIOS."
+    },
+    "ro": {
+     "tagline": "PlayStation 1 pe PS5",
+     "description": "Un emulator PlayStation 1 nativ cu două motoare: Beetle PSX HW, care folosește GPU-ul PS5, și PCSX-ReARMed, care merge și fără BIOS. Alege singur motorul potrivit pentru fiecare joc. Pune jocurile în /data/PSXS5/games, câte un folder pentru fiecare joc (.cue/.bin, .chd și alte formate). BIOS-ul este opțional și trebuie să provină de pe propria ta consolă. Are nevoie de kstuff. Nu include jocuri și nici BIOS."
+    },
+    "th": {
+     "tagline": "เล่น PlayStation 1 บน PS5",
+     "description": "อีมูเลเตอร์ PlayStation 1 แบบเนทีฟที่มีสองเอนจิน: Beetle PSX HW ที่ใช้ GPU ของ PS5 และ PCSX-ReARMed ที่ใช้งานได้แม้ไม่มี BIOS โดยจะเลือกเอนจินที่เหมาะกับแต่ละเกมให้เอง วางเกมไว้ใน /data/PSXS5/games โดยแยกโฟลเดอร์ละหนึ่งเกม (.cue/.bin, .chd และฟอร์แมตอื่น) BIOS ไม่บังคับ และต้องดึงมาจากเครื่องของคุณเอง ต้องใช้ kstuff ไม่รวมเกมและ BIOS"
+    },
+    "vi": {
+     "tagline": "PlayStation 1 trên PS5",
+     "description": "Trình giả lập PlayStation 1 chạy native với hai engine: Beetle PSX HW dùng GPU của PS5 và PCSX-ReARMed chạy được cả khi không có BIOS. Nó tự chọn engine phù hợp cho từng game. Đặt game vào /data/PSXS5/games, mỗi game một thư mục (.cue/.bin, .chd và các định dạng khác). BIOS là tùy chọn và phải lấy từ máy của chính bạn. Cần kstuff. Không kèm game hay BIOS."
+    },
+    "id": {
+     "tagline": "PlayStation 1 di PS5",
+     "description": "Emulator PlayStation 1 native dengan dua mesin: Beetle PSX HW, yang memakai GPU PS5, dan PCSX-ReARMed, yang tetap jalan tanpa BIOS. Emulator ini memilih sendiri mesin yang cocok untuk tiap game. Taruh game di /data/PSXS5/games, satu folder per game (.cue/.bin, .chd, dan format lain). BIOS bersifat opsional dan harus berasal dari konsolmu sendiri. Membutuhkan kstuff. Tidak menyertakan game maupun BIOS."
+    },
+    "uk": {
+     "tagline": "PlayStation 1 на PS5",
+     "description": "Нативний емулятор PlayStation 1 із двома рушіями: Beetle PSX HW, що використовує GPU PS5, і PCSX-ReARMed, що працює й без BIOS. Потрібний рушій для кожної гри вибирається автоматично. Покладіть ігри в /data/PSXS5/games, по одній папці на гру (.cue/.bin, .chd та інші формати). BIOS необов'язковий, його треба зняти з власної консолі. Потрібен kstuff. Ігор і BIOS у комплекті немає."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:psp5",
+   "title": "PSP5",
+   "tagline": "PSP sulla PS5, con PPSSPP",
+   "description": "Emulatore PSP basato su PPSSPP, come app a sé: si apre sulla sua schermata, legge i giochi dalla memory stick emulata e li avvia. Supporta RetroAchievements, trucchi CWCheat e pacchetti di texture. I giochi (.iso, .cso, .chd, EBOOT.PBP) vanno nella cartella memstick/PSP/GAME dentro la cartella dell'app (/user/app/PPSA99131). Non contiene giochi: servono i tuoi backup.",
+   "category": "emulatore",
+   "version": "1.0",
+   "platform": "PS5",
+   "title_id": "PPSA99131",
+   "hashtags": [
+    "psp",
+    "ppsspp"
+   ],
+   "download_url": "https://github.com/tsuramatsu1/psp5/releases/download/v1.000.000/PPSA99131.zip",
+   "file_kind": "zip",
+   "size_bytes": 34654033,
+   "homepage_url": "https://github.com/tsuramatsu1/psp5",
+   "license": "GPL-2.0",
+   "icon": "asset:psp5.jpg",
+   "cover": "asset:psp5.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "PSP on PS5, powered by PPSSPP",
+     "description": "A PSP emulator built on PPSSPP, as a standalone app: it opens on its own screen, reads games from the emulated memory stick and launches them. It supports RetroAchievements, CWCheat cheats and texture packs. Games (.iso, .cso, .chd, EBOOT.PBP) go in the memstick/PSP/GAME folder inside the app's folder (/user/app/PPSA99131). It includes no games: you need your own backups."
+    },
+    "ja": {
+     "tagline": "PS5でPSPを、PPSSPPで",
+     "description": "PPSSPPベースの単体アプリとして動くPSPエミュレーター。専用の画面で起動し、エミュレートされたメモリースティックからゲームを読み込んで起動します。RetroAchievements、CWCheatのチート、テクスチャパックに対応。ゲーム(.iso、.cso、.chd、EBOOT.PBP)はアプリのフォルダー(/user/app/PPSA99131)内の memstick/PSP/GAME フォルダーに置いてください。ゲームは含まれません。ご自身のバックアップをご用意ください。"
+    },
+    "fr": {
+     "tagline": "La PSP sur PS5, grâce à PPSSPP",
+     "description": "Un émulateur PSP basé sur PPSSPP, sous forme d'application à part : il s'ouvre sur son propre écran, lit les jeux depuis la memory stick émulée et les lance. Il prend en charge RetroAchievements, les codes CWCheat et les packs de textures. Les jeux (.iso, .cso, .chd, EBOOT.PBP) vont dans le dossier memstick/PSP/GAME à l'intérieur du dossier de l'application (/user/app/PPSA99131). Aucun jeu inclus : il vous faut vos propres sauvegardes."
+    },
+    "es": {
+     "tagline": "PSP en PS5, con PPSSPP",
+     "description": "Un emulador de PSP basado en PPSSPP, como app independiente: se abre en su propia pantalla, lee los juegos de la memory stick emulada y los inicia. Admite RetroAchievements, trucos CWCheat y packs de texturas. Los juegos (.iso, .cso, .chd, EBOOT.PBP) van en la carpeta memstick/PSP/GAME dentro de la carpeta de la app (/user/app/PPSA99131). No incluye juegos: necesitas tus propias copias de seguridad."
+    },
+    "de": {
+     "tagline": "PSP auf der PS5, mit PPSSPP",
+     "description": "Ein PSP-Emulator auf Basis von PPSSPP als eigenständige App: Er öffnet sich auf seinem eigenen Bildschirm, liest die Spiele vom emulierten Memory Stick und startet sie. Er unterstützt RetroAchievements, CWCheat-Cheats und Texturpakete. Die Spiele (.iso, .cso, .chd, EBOOT.PBP) gehören in den Ordner memstick/PSP/GAME im Ordner der App (/user/app/PPSA99131). Enthält keine Spiele: Du brauchst deine eigenen Backups."
+    },
+    "nl": {
+     "tagline": "PSP op PS5, met PPSSPP",
+     "description": "Een PSP-emulator op basis van PPSSPP, als losse app: hij opent op zijn eigen scherm, leest games van de geëmuleerde memory stick en start ze. Hij ondersteunt RetroAchievements, CWCheat-cheats en texturepacks. Games (.iso, .cso, .chd, EBOOT.PBP) horen in de map memstick/PSP/GAME binnen de map van de app (/user/app/PPSA99131). Bevat geen games: je hebt je eigen back-ups nodig."
+    },
+    "pt-PT": {
+     "tagline": "PSP na PS5, com o PPSSPP",
+     "description": "Um emulador de PSP baseado no PPSSPP, como app independente: abre no seu próprio ecrã, lê os jogos do memory stick emulado e inicia-os. Suporta RetroAchievements, batotas CWCheat e pacotes de texturas. Os jogos (.iso, .cso, .chd, EBOOT.PBP) vão para a pasta memstick/PSP/GAME dentro da pasta da app (/user/app/PPSA99131). Não inclui jogos: precisas das tuas próprias cópias de segurança."
+    },
+    "pt-BR": {
+     "tagline": "PSP no PS5, com o PPSSPP",
+     "description": "Um emulador de PSP baseado no PPSSPP, como app independente: abre na própria tela, lê os jogos do memory stick emulado e os inicia. Suporta RetroAchievements, cheats CWCheat e pacotes de texturas. Os jogos (.iso, .cso, .chd, EBOOT.PBP) vão na pasta memstick/PSP/GAME dentro da pasta do app (/user/app/PPSA99131). Não inclui jogos: você precisa dos seus próprios backups."
+    },
+    "ru": {
+     "tagline": "PSP на PS5 с помощью PPSSPP",
+     "description": "Эмулятор PSP на базе PPSSPP в виде отдельного приложения: открывается на своём экране, читает игры с эмулированной карты Memory Stick и запускает их. Поддерживает RetroAchievements, читы CWCheat и пакеты текстур. Игры (.iso, .cso, .chd, EBOOT.PBP) кладите в папку memstick/PSP/GAME внутри папки приложения (/user/app/PPSA99131). Игры не входят в комплект: понадобятся ваши собственные резервные копии."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 PSP, PPSSPP 기반",
+     "description": "PPSSPP 기반의 PSP 에뮬레이터로, 독립된 앱으로 동작합니다. 자체 화면에서 열리고, 에뮬레이트된 메모리 스틱에서 게임을 읽어 실행합니다. RetroAchievements, CWCheat 치트, 텍스처 팩을 지원합니다. 게임(.iso, .cso, .chd, EBOOT.PBP)은 앱 폴더(/user/app/PPSA99131) 안의 memstick/PSP/GAME 폴더에 넣으세요. 게임은 포함되어 있지 않으며, 직접 만든 백업이 필요합니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩PSP，基于PPSSPP",
+     "description": "基于PPSSPP的PSP模拟器，以独立应用的形式运行：打开后进入自己的界面，从模拟的记忆棒读取游戏并启动。支持RetroAchievements、CWCheat金手指和材质包。游戏（.iso、.cso、.chd、EBOOT.PBP）放在应用文件夹（/user/app/PPSA99131）内的 memstick/PSP/GAME 文件夹中。不包含游戏，需要使用你自己的备份。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩PSP，基於PPSSPP",
+     "description": "基於PPSSPP的PSP模擬器，以獨立應用程式的形式執行：開啟後進入自己的畫面，從模擬的記憶卡讀取遊戲並啟動。支援RetroAchievements、CWCheat金手指和材質包。遊戲（.iso、.cso、.chd、EBOOT.PBP）放在應用程式資料夾（/user/app/PPSA99131）內的 memstick/PSP/GAME 資料夾中。不含遊戲，需要使用你自己的備份。"
+    },
+    "fi": {
+     "tagline": "PSP PS5:llä PPSSPP:n avulla",
+     "description": "PPSSPP:hen perustuva PSP-emulaattori omana sovelluksenaan: se avautuu omaan näkymäänsä, lukee pelit emuloidulta muistikortilta ja käynnistää ne. Se tukee RetroAchievementsia, CWCheat-huijauskoodeja ja tekstuuripaketteja. Pelit (.iso, .cso, .chd, EBOOT.PBP) laitetaan sovelluksen kansion (/user/app/PPSA99131) sisällä olevaan memstick/PSP/GAME-kansioon. Mukana ei ole pelejä: tarvitset omat varmuuskopiosi."
+    },
+    "sv": {
+     "tagline": "PSP på PS5, med PPSSPP",
+     "description": "En PSP-emulator baserad på PPSSPP, som en fristående app: den öppnas på sin egen skärm, läser spelen från det emulerade minneskortet och startar dem. Den stöder RetroAchievements, CWCheat-fusk och texturpaket. Spelen (.iso, .cso, .chd, EBOOT.PBP) läggs i mappen memstick/PSP/GAME i appens mapp (/user/app/PPSA99131). Inga spel ingår: du behöver dina egna säkerhetskopior."
+    },
+    "da": {
+     "tagline": "PSP på PS5, med PPSSPP",
+     "description": "En PSP-emulator baseret på PPSSPP, som en selvstændig app: den åbner på sin egen skærm, læser spillene fra det emulerede memory stick og starter dem. Den understøtter RetroAchievements, CWCheat-snydekoder og teksturpakker. Spillene (.iso, .cso, .chd, EBOOT.PBP) skal ligge i mappen memstick/PSP/GAME inde i appens mappe (/user/app/PPSA99131). Der følger ingen spil med: du skal bruge dine egne sikkerhedskopier."
+    },
+    "nb": {
+     "tagline": "PSP på PS5, med PPSSPP",
+     "description": "En PSP-emulator basert på PPSSPP, som en frittstående app: den åpner på sin egen skjerm, leser spillene fra det emulerte minnekortet og starter dem. Den støtter RetroAchievements, CWCheat-juksekoder og teksturpakker. Spillene (.iso, .cso, .chd, EBOOT.PBP) legges i mappen memstick/PSP/GAME inne i appens mappe (/user/app/PPSA99131). Ingen spill følger med: du trenger dine egne sikkerhetskopier."
+    },
+    "pl": {
+     "tagline": "PSP na PS5, dzięki PPSSPP",
+     "description": "Emulator PSP oparty na PPSSPP, jako osobna aplikacja: otwiera się na własnym ekranie, odczytuje gry z emulowanej karty Memory Stick i je uruchamia. Obsługuje RetroAchievements, kody CWCheat i paczki tekstur. Gry (.iso, .cso, .chd, EBOOT.PBP) umieść w folderze memstick/PSP/GAME wewnątrz folderu aplikacji (/user/app/PPSA99131). Nie zawiera gier: potrzebujesz własnych kopii zapasowych."
+    },
+    "tr": {
+     "tagline": "PS5'te PSP, PPSSPP ile",
+     "description": "PPSSPP tabanlı, ayrı bir uygulama olarak çalışan PSP emülatörü: kendi ekranında açılır, oyunları emüle edilen memory stick'ten okur ve başlatır. RetroAchievements, CWCheat hileleri ve doku paketlerini destekler. Oyunlar (.iso, .cso, .chd, EBOOT.PBP) uygulama klasörünün (/user/app/PPSA99131) içindeki memstick/PSP/GAME klasörüne konur. Oyun içermez: kendi yedeklerine ihtiyacın var."
+    },
+    "cs": {
+     "tagline": "PSP na PS5 díky PPSSPP",
+     "description": "Emulátor PSP založený na PPSSPP jako samostatná aplikace: otevře se na vlastní obrazovce, načte hry z emulované paměťové karty Memory Stick a spustí je. Podporuje RetroAchievements, cheaty CWCheat a balíčky textur. Hry (.iso, .cso, .chd, EBOOT.PBP) patří do složky memstick/PSP/GAME uvnitř složky aplikace (/user/app/PPSA99131). Neobsahuje žádné hry: potřebuješ vlastní zálohy."
+    },
+    "hu": {
+     "tagline": "PSP a PS5-ön, PPSSPP-vel",
+     "description": "PPSSPP-alapú PSP-emulátor önálló alkalmazásként: a saját képernyőjén nyílik meg, az emulált memóriakártyáról olvassa be a játékokat, és elindítja őket. Támogatja a RetroAchievementset, a CWCheat csalásokat és a textúracsomagokat. A játékok (.iso, .cso, .chd, EBOOT.PBP) az alkalmazás mappáján (/user/app/PPSA99131) belüli memstick/PSP/GAME mappába kerülnek. Nem tartalmaz játékokat: a saját biztonsági mentéseidre van szükség."
+    },
+    "el": {
+     "tagline": "PSP στο PS5, με το PPSSPP",
+     "description": "Ένας εξομοιωτής PSP βασισμένος στο PPSSPP, ως αυτόνομη εφαρμογή: ανοίγει στη δική του οθόνη, διαβάζει τα παιχνίδια από το εξομοιωμένο memory stick και τα ξεκινά. Υποστηρίζει RetroAchievements, cheats CWCheat και πακέτα υφών. Τα παιχνίδια (.iso, .cso, .chd, EBOOT.PBP) μπαίνουν στον φάκελο memstick/PSP/GAME μέσα στον φάκελο της εφαρμογής (/user/app/PPSA99131). Δεν περιλαμβάνει παιχνίδια: χρειάζεσαι τα δικά σου αντίγραφα ασφαλείας."
+    },
+    "ro": {
+     "tagline": "PSP pe PS5, cu PPSSPP",
+     "description": "Un emulator PSP bazat pe PPSSPP, ca aplicație separată: se deschide pe propriul ecran, citește jocurile de pe memory stick-ul emulat și le pornește. Suportă RetroAchievements, cheat-uri CWCheat și pachete de texturi. Jocurile (.iso, .cso, .chd, EBOOT.PBP) se pun în folderul memstick/PSP/GAME din folderul aplicației (/user/app/PPSA99131). Nu include jocuri: ai nevoie de propriile copii de rezervă."
+    },
+    "th": {
+     "tagline": "เล่น PSP บน PS5 ด้วย PPSSPP",
+     "description": "อีมูเลเตอร์ PSP ที่สร้างบน PPSSPP ในรูปแบบแอปแยก: เปิดขึ้นมาที่หน้าจอของตัวเอง อ่านเกมจากเมมโมรีสติกจำลองแล้วเริ่มเล่นได้ทันที รองรับ RetroAchievements สูตรโกง CWCheat และแพ็กเท็กซ์เจอร์ วางเกม (.iso, .cso, .chd, EBOOT.PBP) ไว้ในโฟลเดอร์ memstick/PSP/GAME ภายในโฟลเดอร์ของแอป (/user/app/PPSA99131) ไม่รวมเกม: คุณต้องมีไฟล์สำรองของตัวเอง"
+    },
+    "vi": {
+     "tagline": "PSP trên PS5, nhờ PPSSPP",
+     "description": "Trình giả lập PSP dựa trên PPSSPP, dưới dạng ứng dụng riêng: mở ra màn hình của chính nó, đọc game từ memory stick giả lập và khởi chạy. Hỗ trợ RetroAchievements, mã gian lận CWCheat và gói texture. Game (.iso, .cso, .chd, EBOOT.PBP) đặt trong thư mục memstick/PSP/GAME bên trong thư mục của ứng dụng (/user/app/PPSA99131). Không kèm game: bạn cần bản sao lưu của riêng mình."
+    },
+    "id": {
+     "tagline": "PSP di PS5, dengan PPSSPP",
+     "description": "Emulator PSP berbasis PPSSPP sebagai aplikasi tersendiri: terbuka di layarnya sendiri, membaca game dari memory stick yang diemulasikan, lalu menjalankannya. Mendukung RetroAchievements, cheat CWCheat, dan texture pack. Game (.iso, .cso, .chd, EBOOT.PBP) ditaruh di folder memstick/PSP/GAME di dalam folder aplikasi (/user/app/PPSA99131). Tidak menyertakan game: kamu perlu backup milikmu sendiri."
+    },
+    "uk": {
+     "tagline": "PSP на PS5 завдяки PPSSPP",
+     "description": "Емулятор PSP на базі PPSSPP у вигляді окремого застосунку: відкривається на власному екрані, читає ігри з емульованої карти Memory Stick і запускає їх. Підтримує RetroAchievements, чити CWCheat і пакети текстур. Ігри (.iso, .cso, .chd, EBOOT.PBP) кладіть у папку memstick/PSP/GAME всередині папки застосунку (/user/app/PPSA99131). Ігор у комплекті немає: потрібні ваші власні резервні копії."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:ps5sx2",
+   "title": "PS5SX2",
+   "tagline": "PlayStation 2 sulla PS5, con PCSX2",
+   "description": "Port di PCSX2 per PS5. Questo è l'installer ufficiale: scarica l'ultima versione di PS5SX2 da GitHub e la tiene aggiornata. Mettilo nell'avvio automatico del tuo HEN insieme a PS5SX2 Helper (anche quello nello Store) e a kstuff; serve anche ShadowMountPlus. Il BIOS della tua PS2 va in /data/PCSX2/bios, i giochi (.iso, .chd, .cso, .zso) in /data/PCSX2/games. Non contiene giochi né BIOS.",
+   "category": "emulatore",
+   "version": "vk-285-139",
+   "platform": "PS5",
+   "hashtags": [
+    "ps2",
+    "pcsx2",
+    "playstation2"
+   ],
+   "download_url": "https://github.com/Swordpdf/PS5SX2/releases/download/vk-285-139/PS5SX2Installer.elf",
+   "file_kind": "elf",
+   "size_bytes": 1196432,
+   "homepage_url": "https://github.com/Swordpdf/PS5SX2",
+   "license": "GPL-3.0",
+   "icon": "asset:ps5sx2.jpg",
+   "cover": "asset:ps5sx2.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "PlayStation 2 on PS5, powered by PCSX2",
+     "description": "A PCSX2 port for PS5. This is the official installer: it downloads the latest PS5SX2 release from GitHub and keeps it up to date. Add it to your HEN's autoload together with PS5SX2 Helper (also in the Store) and kstuff; you also need ShadowMountPlus. Your PS2 BIOS goes in /data/PCSX2/bios, games (.iso, .chd, .cso, .zso) in /data/PCSX2/games. It includes no games or BIOS."
+    },
+    "ja": {
+     "tagline": "PS5でPlayStation 2を、PCSX2で",
+     "description": "PCSX2のPS5移植版。これは公式インストーラーで、GitHubからPS5SX2の最新版をダウンロードし、常に最新の状態に保ちます。PS5SX2 Helper(こちらもストアにあります)とkstuffと一緒に、HENの自動起動に登録してください。ShadowMountPlusも必要です。PS2のBIOSは /data/PCSX2/bios に、ゲーム(.iso、.chd、.cso、.zso)は /data/PCSX2/games に置きます。ゲームやBIOSは含まれません。"
+    },
+    "fr": {
+     "tagline": "La PlayStation 2 sur PS5, grâce à PCSX2",
+     "description": "Un portage de PCSX2 pour PS5. Voici l'installateur officiel : il télécharge la dernière version de PS5SX2 depuis GitHub et la garde à jour. Ajoutez-le au démarrage automatique de votre HEN avec PS5SX2 Helper (aussi dans le Store) et kstuff ; il faut aussi ShadowMountPlus. Le BIOS de votre PS2 va dans /data/PCSX2/bios, les jeux (.iso, .chd, .cso, .zso) dans /data/PCSX2/games. Aucun jeu ni BIOS inclus."
+    },
+    "es": {
+     "tagline": "PlayStation 2 en PS5, con PCSX2",
+     "description": "Un port de PCSX2 para PS5. Este es el instalador oficial: descarga la última versión de PS5SX2 desde GitHub y la mantiene actualizada. Añádelo al inicio automático de tu HEN junto con PS5SX2 Helper (también en la Store) y kstuff; además necesitas ShadowMountPlus. La BIOS de tu PS2 va en /data/PCSX2/bios y los juegos (.iso, .chd, .cso, .zso) en /data/PCSX2/games. No incluye juegos ni BIOS."
+    },
+    "de": {
+     "tagline": "PlayStation 2 auf der PS5, mit PCSX2",
+     "description": "Ein PCSX2-Port für die PS5. Das ist der offizielle Installer: Er lädt die neueste Version von PS5SX2 von GitHub herunter und hält sie aktuell. Nimm ihn zusammen mit PS5SX2 Helper (ebenfalls im Store) und kstuff in den Autostart deines HEN auf; außerdem brauchst du ShadowMountPlus. Das BIOS deiner PS2 kommt nach /data/PCSX2/bios, die Spiele (.iso, .chd, .cso, .zso) nach /data/PCSX2/games. Enthält weder Spiele noch BIOS."
+    },
+    "nl": {
+     "tagline": "PlayStation 2 op PS5, met PCSX2",
+     "description": "Een port van PCSX2 voor PS5. Dit is de officiële installer: hij downloadt de nieuwste versie van PS5SX2 van GitHub en houdt die up-to-date. Zet hem in de autoload van je HEN, samen met PS5SX2 Helper (ook in de Store) en kstuff; je hebt ook ShadowMountPlus nodig. Het BIOS van je PS2 hoort in /data/PCSX2/bios, games (.iso, .chd, .cso, .zso) in /data/PCSX2/games. Bevat geen games of BIOS."
+    },
+    "pt-PT": {
+     "tagline": "PlayStation 2 na PS5, com o PCSX2",
+     "description": "Um port do PCSX2 para a PS5. Este é o instalador oficial: transfere a versão mais recente do PS5SX2 a partir do GitHub e mantém-na atualizada. Coloca-o no arranque automático do teu HEN juntamente com o PS5SX2 Helper (também na Store) e o kstuff; precisas também do ShadowMountPlus. A BIOS da tua PS2 vai para /data/PCSX2/bios e os jogos (.iso, .chd, .cso, .zso) para /data/PCSX2/games. Não inclui jogos nem BIOS."
+    },
+    "pt-BR": {
+     "tagline": "PlayStation 2 no PS5, com o PCSX2",
+     "description": "Um port do PCSX2 para o PS5. Este é o instalador oficial: baixa a versão mais recente do PS5SX2 do GitHub e a mantém atualizada. Coloque-o na inicialização automática do seu HEN junto com o PS5SX2 Helper (também na Store) e o kstuff; você também precisa do ShadowMountPlus. A BIOS do seu PS2 vai em /data/PCSX2/bios e os jogos (.iso, .chd, .cso, .zso) em /data/PCSX2/games. Não inclui jogos nem BIOS."
+    },
+    "ru": {
+     "tagline": "PlayStation 2 на PS5 с помощью PCSX2",
+     "description": "Порт PCSX2 для PS5. Это официальный установщик: он скачивает последнюю версию PS5SX2 с GitHub и поддерживает её в актуальном состоянии. Добавьте его в автозагрузку вашего HEN вместе с PS5SX2 Helper (он тоже есть в Store) и kstuff; также нужен ShadowMountPlus. BIOS вашей PS2 кладите в /data/PCSX2/bios, игры (.iso, .chd, .cso, .zso) в /data/PCSX2/games. Игры и BIOS не входят в комплект."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 플레이스테이션 2, PCSX2 기반",
+     "description": "PS5용 PCSX2 포트입니다. 이 앱은 공식 설치 프로그램으로, GitHub에서 PS5SX2 최신 버전을 내려받고 계속 최신 상태로 유지합니다. PS5SX2 Helper(역시 스토어에 있음), kstuff와 함께 HEN 자동 실행에 등록하세요. ShadowMountPlus도 필요합니다. PS2 BIOS는 /data/PCSX2/bios에, 게임(.iso, .chd, .cso, .zso)은 /data/PCSX2/games에 넣으세요. 게임과 BIOS는 포함되어 있지 않습니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩PlayStation 2，基于PCSX2",
+     "description": "PCSX2的PS5移植版。这是官方安装器：它会从GitHub下载最新版PS5SX2，并保持更新。请把它和PS5SX2 Helper（同样在商店中）以及kstuff一起加入HEN的自动加载；还需要ShadowMountPlus。PS2的BIOS放在 /data/PCSX2/bios，游戏（.iso、.chd、.cso、.zso）放在 /data/PCSX2/games。不包含游戏和BIOS。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩PlayStation 2，基於PCSX2",
+     "description": "PCSX2的PS5移植版。這是官方安裝程式：它會從GitHub下載最新版PS5SX2，並保持更新。請把它和PS5SX2 Helper（同樣在商店中）以及kstuff一起加入HEN的自動載入；另外還需要ShadowMountPlus。PS2的BIOS放在 /data/PCSX2/bios，遊戲（.iso、.chd、.cso、.zso）放在 /data/PCSX2/games。不含遊戲和BIOS。"
+    },
+    "fi": {
+     "tagline": "PlayStation 2 PS5:llä PCSX2:n avulla",
+     "description": "PCSX2:n PS5-käännös. Tämä on virallinen asennusohjelma: se lataa PS5SX2:n uusimman version GitHubista ja pitää sen ajan tasalla. Lisää se HENin automaattiseen käynnistykseen yhdessä PS5SX2 Helperin (sekin löytyy Storesta) ja kstuffin kanssa; tarvitset myös ShadowMountPlussan. PS2:si BIOS menee kansioon /data/PCSX2/bios ja pelit (.iso, .chd, .cso, .zso) kansioon /data/PCSX2/games. Mukana ei ole pelejä eikä BIOSta."
+    },
+    "sv": {
+     "tagline": "PlayStation 2 på PS5, med PCSX2",
+     "description": "En PCSX2-port för PS5. Det här är den officiella installeraren: den laddar ner den senaste versionen av PS5SX2 från GitHub och håller den uppdaterad. Lägg den i din HEN:s autostart tillsammans med PS5SX2 Helper (finns också i Store) och kstuff; du behöver även ShadowMountPlus. BIOS från din PS2 läggs i /data/PCSX2/bios och spelen (.iso, .chd, .cso, .zso) i /data/PCSX2/games. Inga spel eller BIOS ingår."
+    },
+    "da": {
+     "tagline": "PlayStation 2 på PS5, med PCSX2",
+     "description": "En PCSX2-port til PS5. Dette er den officielle installer: den henter den nyeste version af PS5SX2 fra GitHub og holder den opdateret. Læg den i din HEN's autostart sammen med PS5SX2 Helper (også i Store) og kstuff; du skal også bruge ShadowMountPlus. BIOS fra din PS2 skal ligge i /data/PCSX2/bios, spillene (.iso, .chd, .cso, .zso) i /data/PCSX2/games. Der følger hverken spil eller BIOS med."
+    },
+    "nb": {
+     "tagline": "PlayStation 2 på PS5, med PCSX2",
+     "description": "En PCSX2-port for PS5. Dette er det offisielle installasjonsprogrammet: det laster ned den nyeste versjonen av PS5SX2 fra GitHub og holder den oppdatert. Legg det i autostart for HEN-en din sammen med PS5SX2 Helper (også i Store) og kstuff; du trenger også ShadowMountPlus. BIOS fra din PS2 legges i /data/PCSX2/bios, spillene (.iso, .chd, .cso, .zso) i /data/PCSX2/games. Ingen spill eller BIOS følger med."
+    },
+    "pl": {
+     "tagline": "PlayStation 2 na PS5, dzięki PCSX2",
+     "description": "Port PCSX2 na PS5. To oficjalny instalator: pobiera najnowszą wersję PS5SX2 z GitHuba i dba o jej aktualizacje. Dodaj go do autostartu swojego HEN-a razem z PS5SX2 Helper (też jest w Store) i kstuff; potrzebny jest też ShadowMountPlus. BIOS z twojej PS2 umieść w /data/PCSX2/bios, a gry (.iso, .chd, .cso, .zso) w /data/PCSX2/games. Nie zawiera gier ani BIOS-u."
+    },
+    "tr": {
+     "tagline": "PS5'te PlayStation 2, PCSX2 ile",
+     "description": "PCSX2'nin PS5 portu. Bu resmi yükleyicidir: PS5SX2'nin en son sürümünü GitHub'dan indirir ve güncel tutar. PS5SX2 Helper (o da Store'da) ve kstuff ile birlikte HEN'inin otomatik başlatma listesine ekle; ShadowMountPlus da gerekir. PS2'nin BIOS'u /data/PCSX2/bios klasörüne, oyunlar (.iso, .chd, .cso, .zso) /data/PCSX2/games klasörüne gider. Oyun ya da BIOS içermez."
+    },
+    "cs": {
+     "tagline": "PlayStation 2 na PS5 díky PCSX2",
+     "description": "Port PCSX2 pro PS5. Tohle je oficiální instalátor: stáhne nejnovější verzi PS5SX2 z GitHubu a udržuje ji aktuální. Přidej ho do automatického spouštění svého HENu spolu s PS5SX2 Helper (také ve Storu) a kstuff; potřebuješ i ShadowMountPlus. BIOS tvé PS2 patří do /data/PCSX2/bios, hry (.iso, .chd, .cso, .zso) do /data/PCSX2/games. Neobsahuje žádné hry ani BIOS."
+    },
+    "hu": {
+     "tagline": "PlayStation 2 a PS5-ön, PCSX2-vel",
+     "description": "A PCSX2 PS5-ös portja. Ez a hivatalos telepítő: letölti a PS5SX2 legújabb kiadását a GitHubról, és naprakészen tartja. Tedd be a HEN-ed automatikus indításába a PS5SX2 Helperrel (az is megvan a Store-ban) és a kstuffal együtt; a ShadowMountPlus is kell hozzá. A PS2-d BIOS-a a /data/PCSX2/bios, a játékok (.iso, .chd, .cso, .zso) a /data/PCSX2/games mappába kerülnek. Nem tartalmaz játékokat és BIOS-t."
+    },
+    "el": {
+     "tagline": "PlayStation 2 στο PS5, με το PCSX2",
+     "description": "Ένα port του PCSX2 για το PS5. Αυτός είναι ο επίσημος installer: κατεβάζει την πιο πρόσφατη έκδοση του PS5SX2 από το GitHub και την κρατά ενημερωμένη. Βάλε τον στην αυτόματη εκκίνηση του HEN σου μαζί με το PS5SX2 Helper (κι αυτό στο Store) και το kstuff· χρειάζεσαι επίσης το ShadowMountPlus. Το BIOS του PS2 σου μπαίνει στο /data/PCSX2/bios και τα παιχνίδια (.iso, .chd, .cso, .zso) στο /data/PCSX2/games. Δεν περιλαμβάνει παιχνίδια ή BIOS."
+    },
+    "ro": {
+     "tagline": "PlayStation 2 pe PS5, cu PCSX2",
+     "description": "Un port PCSX2 pentru PS5. Acesta este instalatorul oficial: descarcă ultima versiune PS5SX2 de pe GitHub și o ține actualizată. Pune-l în pornirea automată a HEN-ului tău împreună cu PS5SX2 Helper (tot în Store) și kstuff; ai nevoie și de ShadowMountPlus. BIOS-ul PS2-ului tău se pune în /data/PCSX2/bios, iar jocurile (.iso, .chd, .cso, .zso) în /data/PCSX2/games. Nu include jocuri și nici BIOS."
+    },
+    "th": {
+     "tagline": "เล่น PlayStation 2 บน PS5 ด้วย PCSX2",
+     "description": "PCSX2 ที่พอร์ตมาลง PS5 ตัวนี้คือตัวติดตั้งอย่างเป็นทางการ: จะดาวน์โหลด PS5SX2 เวอร์ชันล่าสุดจาก GitHub และคอยอัปเดตให้ ตั้งให้โหลดอัตโนมัติใน HEN ของคุณพร้อมกับ PS5SX2 Helper (มีใน Store เช่นกัน) และ kstuff และต้องมี ShadowMountPlus ด้วย วาง BIOS ของ PS2 ไว้ใน /data/PCSX2/bios และเกม (.iso, .chd, .cso, .zso) ไว้ใน /data/PCSX2/games ไม่รวมเกมและ BIOS"
+    },
+    "vi": {
+     "tagline": "PlayStation 2 trên PS5, nhờ PCSX2",
+     "description": "Bản port PCSX2 cho PS5. Đây là trình cài đặt chính thức: nó tải bản PS5SX2 mới nhất từ GitHub và giữ cho luôn được cập nhật. Thêm nó vào mục tự khởi động của HEN cùng với PS5SX2 Helper (cũng có trong Store) và kstuff; bạn cũng cần ShadowMountPlus. BIOS của PS2 đặt trong /data/PCSX2/bios, game (.iso, .chd, .cso, .zso) đặt trong /data/PCSX2/games. Không kèm game hay BIOS."
+    },
+    "id": {
+     "tagline": "PlayStation 2 di PS5, dengan PCSX2",
+     "description": "Port PCSX2 untuk PS5. Ini installer resminya: mengunduh rilis PS5SX2 terbaru dari GitHub dan menjaganya tetap terbaru. Masukkan ke autoload HEN-mu bersama PS5SX2 Helper (juga ada di Store) dan kstuff; kamu juga butuh ShadowMountPlus. BIOS PS2 milikmu ditaruh di /data/PCSX2/bios, game (.iso, .chd, .cso, .zso) di /data/PCSX2/games. Tidak menyertakan game maupun BIOS."
+    },
+    "uk": {
+     "tagline": "PlayStation 2 на PS5 завдяки PCSX2",
+     "description": "Порт PCSX2 для PS5. Це офіційний інсталятор: він завантажує останню версію PS5SX2 з GitHub і підтримує її актуальною. Додайте його до автозавантаження вашого HEN разом із PS5SX2 Helper (він теж є в Store) і kstuff; також потрібен ShadowMountPlus. BIOS вашої PS2 кладіть у /data/PCSX2/bios, ігри (.iso, .chd, .cso, .zso) у /data/PCSX2/games. Ігор і BIOS у комплекті немає."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:ps5sx2-helper",
+   "title": "PS5SX2 Helper",
+   "tagline": "Il payload che serve a PS5SX2",
+   "description": "Payload di supporto per PS5SX2, basato su OnionHEN: quando l'emulatore parte gli dà i permessi che servono ai ricompilatori e l'accesso a /data (anche per scaricare le copertine). Va caricato insieme a kstuff, meglio dall'avvio automatico.",
+   "category": "utility",
+   "version": "vk-285-139",
+   "platform": "PS5",
+   "hashtags": [
+    "ps2",
+    "pcsx2"
+   ],
+   "download_url": "https://github.com/Swordpdf/PS5SX2/releases/download/vk-285-139/PS5SXHelper.elf",
+   "file_kind": "elf",
+   "size_bytes": 1052384,
+   "homepage_url": "https://github.com/Swordpdf/PS5SX2",
+   "license": "GPL-3.0",
+   "icon": "asset:ps5sx2.jpg",
+   "cover": "asset:ps5sx2.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "The payload PS5SX2 needs",
+     "description": "Support payload for PS5SX2, based on OnionHEN: when the emulator starts, it gives it the permissions the recompilers need and access to /data (also for downloading cover art). Load it together with kstuff, ideally from autoload."
+    },
+    "ja": {
+     "tagline": "PS5SX2に必要なペイロード",
+     "description": "OnionHENベースのPS5SX2用サポートペイロード。エミュレーターの起動時に、リコンパイラーに必要な権限と /data へのアクセス(カバー画像のダウンロードにも使います)を与えます。kstuffと一緒に、できれば自動起動で読み込んでください。"
+    },
+    "fr": {
+     "tagline": "Le payload dont PS5SX2 a besoin",
+     "description": "Payload d'appoint pour PS5SX2, basé sur OnionHEN : au lancement de l'émulateur, il lui donne les permissions dont les recompilateurs ont besoin et l'accès à /data (aussi pour télécharger les jaquettes). À charger avec kstuff, de préférence depuis le démarrage automatique."
+    },
+    "es": {
+     "tagline": "El payload que necesita PS5SX2",
+     "description": "Payload de apoyo para PS5SX2, basado en OnionHEN: cuando arranca el emulador, le da los permisos que necesitan los recompiladores y acceso a /data (también para descargar las carátulas). Se carga junto con kstuff, mejor desde el inicio automático."
+    },
+    "de": {
+     "tagline": "Der Payload, den PS5SX2 braucht",
+     "description": "Hilfs-Payload für PS5SX2 auf Basis von OnionHEN: Beim Start des Emulators gibt er ihm die Rechte, die die Recompiler brauchen, und Zugriff auf /data (auch zum Herunterladen der Cover). Wird zusammen mit kstuff geladen, am besten über den Autostart."
+    },
+    "nl": {
+     "tagline": "De payload die PS5SX2 nodig heeft",
+     "description": "Ondersteunende payload voor PS5SX2, op basis van OnionHEN: als de emulator start, geeft hij hem de rechten die de recompilers nodig hebben en toegang tot /data (ook om hoesafbeeldingen te downloaden). Laad hem samen met kstuff, het liefst via autoload."
+    },
+    "pt-PT": {
+     "tagline": "O payload de que o PS5SX2 precisa",
+     "description": "Payload de apoio para o PS5SX2, baseado no OnionHEN: quando o emulador arranca, dá-lhe as permissões de que os recompiladores precisam e acesso a /data (também para transferir as capas). Deve ser carregado juntamente com o kstuff, de preferência a partir do arranque automático."
+    },
+    "pt-BR": {
+     "tagline": "O payload de que o PS5SX2 precisa",
+     "description": "Payload de apoio para o PS5SX2, baseado no OnionHEN: quando o emulador inicia, ele dá as permissões de que os recompiladores precisam e acesso a /data (também para baixar as capas). Deve ser carregado junto com o kstuff, de preferência pela inicialização automática."
+    },
+    "ru": {
+     "tagline": "Пейлоад, нужный PS5SX2",
+     "description": "Вспомогательный пейлоад для PS5SX2 на базе OnionHEN: при запуске эмулятора он выдаёт ему права, нужные рекомпиляторам, и доступ к /data (в том числе для загрузки обложек). Загружайте его вместе с kstuff, лучше через автозагрузку."
+    },
+    "ko": {
+     "tagline": "PS5SX2에 필요한 페이로드",
+     "description": "OnionHEN 기반의 PS5SX2 지원 페이로드입니다. 에뮬레이터가 시작될 때 리컴파일러에 필요한 권한과 /data 접근 권한(커버 아트 다운로드에도 사용)을 부여합니다. kstuff와 함께, 가능하면 자동 실행으로 로드하세요."
+    },
+    "zh-Hans": {
+     "tagline": "PS5SX2所需的payload",
+     "description": "基于OnionHEN的PS5SX2辅助payload：模拟器启动时，它会授予重编译器所需的权限以及 /data 的访问权限（也用于下载封面）。需要和kstuff一起加载，最好放在自动加载中。"
+    },
+    "zh-Hant": {
+     "tagline": "PS5SX2所需的payload",
+     "description": "基於OnionHEN的PS5SX2輔助payload：模擬器啟動時，它會授予重編譯器所需的權限以及 /data 的存取權限（也用於下載封面）。需要和kstuff一起載入，最好放在自動載入中。"
+    },
+    "fi": {
+     "tagline": "PS5SX2:n tarvitsema payload",
+     "description": "OnionHENiin perustuva tukipayload PS5SX2:lle: kun emulaattori käynnistyy, se antaa sille uudelleenkääntäjien tarvitsemat oikeudet ja pääsyn kansioon /data (myös kansikuvien lataamista varten). Lataa se yhdessä kstuffin kanssa, mieluiten automaattisesta käynnistyksestä."
+    },
+    "sv": {
+     "tagline": "Payloaden som PS5SX2 behöver",
+     "description": "Stödpayload för PS5SX2, baserad på OnionHEN: när emulatorn startar ger den de behörigheter som omkompilatorerna behöver och åtkomst till /data (även för att ladda ner omslag). Laddas tillsammans med kstuff, helst via autostart."
+    },
+    "da": {
+     "tagline": "Den payload, PS5SX2 skal bruge",
+     "description": "Hjælpe-payload til PS5SX2, baseret på OnionHEN: når emulatoren starter, giver den de rettigheder, som genkompilatorerne har brug for, og adgang til /data (også til at hente covers). Den skal indlæses sammen med kstuff, helst via autostart."
+    },
+    "nb": {
+     "tagline": "Payloaden PS5SX2 trenger",
+     "description": "Støttepayload for PS5SX2, basert på OnionHEN: når emulatoren starter, gir den tillatelsene rekompilatorene trenger og tilgang til /data (også for å laste ned omslagsbilder). Lastes sammen med kstuff, helst via autostart."
+    },
+    "pl": {
+     "tagline": "Payload, którego potrzebuje PS5SX2",
+     "description": "Pomocniczy payload dla PS5SX2 oparty na OnionHEN: przy starcie emulatora nadaje mu uprawnienia potrzebne rekompilatorom i dostęp do /data (także do pobierania okładek). Ładuj go razem z kstuff, najlepiej z autostartu."
+    },
+    "tr": {
+     "tagline": "PS5SX2'nin ihtiyaç duyduğu payload",
+     "description": "OnionHEN tabanlı PS5SX2 destek payload'ı: emülatör başladığında ona yeniden derleyicilerin ihtiyaç duyduğu izinleri ve /data erişimini (kapak görsellerini indirmek için de) verir. kstuff ile birlikte, tercihen otomatik başlatmadan yüklenmelidir."
+    },
+    "cs": {
+     "tagline": "Payload, který potřebuje PS5SX2",
+     "description": "Podpůrný payload pro PS5SX2 založený na OnionHEN: když se emulátor spustí, dá mu oprávnění, která potřebují rekompilátory, a přístup k /data (i pro stahování obalů). Načítá se spolu s kstuff, nejlépe z automatického spouštění."
+    },
+    "hu": {
+     "tagline": "A payload, ami a PS5SX2-höz kell",
+     "description": "OnionHEN-alapú támogató payload a PS5SX2-höz: amikor az emulátor elindul, megadja neki az újrafordítókhoz szükséges jogosultságokat és a /data elérését (a borítók letöltéséhez is). A kstuffal együtt kell betölteni, lehetőleg az automatikus indításból."
+    },
+    "el": {
+     "tagline": "Το payload που χρειάζεται το PS5SX2",
+     "description": "Βοηθητικό payload για το PS5SX2, βασισμένο στο OnionHEN: όταν ξεκινά ο εξομοιωτής, του δίνει τα δικαιώματα που χρειάζονται οι recompilers και πρόσβαση στο /data (και για τη λήψη εξωφύλλων). Φορτώνεται μαζί με το kstuff, ιδανικά από την αυτόματη εκκίνηση."
+    },
+    "ro": {
+     "tagline": "Payload-ul de care are nevoie PS5SX2",
+     "description": "Payload de suport pentru PS5SX2, bazat pe OnionHEN: când pornește emulatorul, îi dă permisiunile de care au nevoie recompilatoarele și acces la /data (inclusiv pentru descărcarea copertelor). Se încarcă împreună cu kstuff, de preferat din pornirea automată."
+    },
+    "th": {
+     "tagline": "payload ที่ PS5SX2 ต้องใช้",
+     "description": "payload เสริมสำหรับ PS5SX2 ที่สร้างบน OnionHEN: เมื่ออีมูเลเตอร์เริ่มทำงาน จะให้สิทธิ์ที่ตัว recompiler ต้องใช้ และสิทธิ์เข้าถึง /data (ใช้ดาวน์โหลดภาพปกด้วย) ต้องโหลดคู่กับ kstuff ทางที่ดีควรตั้งให้โหลดอัตโนมัติ"
+    },
+    "vi": {
+     "tagline": "Payload mà PS5SX2 cần",
+     "description": "Payload hỗ trợ cho PS5SX2, dựa trên OnionHEN: khi trình giả lập khởi động, nó cấp các quyền mà trình biên dịch lại cần và quyền truy cập /data (kể cả để tải ảnh bìa). Nạp cùng với kstuff, tốt nhất là qua mục tự khởi động."
+    },
+    "id": {
+     "tagline": "Payload yang dibutuhkan PS5SX2",
+     "description": "Payload pendukung untuk PS5SX2, berbasis OnionHEN: saat emulator dijalankan, payload ini memberinya izin yang dibutuhkan recompiler dan akses ke /data (juga untuk mengunduh sampul). Muat bersama kstuff, sebaiknya lewat autoload."
+    },
+    "uk": {
+     "tagline": "Пейлоад, потрібний PS5SX2",
+     "description": "Допоміжний пейлоад для PS5SX2 на базі OnionHEN: під час запуску емулятора він надає йому дозволи, потрібні рекомпіляторам, і доступ до /data (зокрема для завантаження обкладинок). Завантажуйте його разом із kstuff, краще через автозавантаження."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:xpsemu",
+   "title": "XPSemu",
+   "tagline": "La prima Xbox sulla PS5, con xemu",
+   "description": "Port di xemu, l'emulatore della Xbox originale. Prima di aprirlo carica XPSemu Helper (nello Store) con kstuff. Servono i file della tua Xbox: mcpx_1.0.bin e il BIOS Complex_4627.bin in /data/xemu/. I giochi in formato XISO (.iso, .xiso) vanno in /data/xemu/games o in xemu/games su una chiavetta USB. Versione alpha. Non contiene giochi né BIOS.",
+   "category": "emulatore",
+   "version": "Alpha 2",
+   "platform": "PS5",
+   "title_id": "PPSA97358",
+   "hashtags": [
+    "xbox",
+    "xemu"
+   ],
+   "download_url": "https://github.com/ZiZc3/XPSemu/releases/download/Alpha-2/PPSA97358.zip",
+   "file_kind": "zip",
+   "size_bytes": 21791630,
+   "homepage_url": "https://github.com/ZiZc3/XPSemu",
+   "license": "GPL-2.0",
+   "icon": "asset:xpsemu.jpg",
+   "cover": "asset:xpsemu.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "The original Xbox on PS5, powered by xemu",
+     "description": "A port of xemu, the original Xbox emulator. Before opening it, load XPSemu Helper (in the Store) with kstuff. You need files from your own Xbox: mcpx_1.0.bin and the Complex_4627.bin BIOS in /data/xemu/. Games in XISO format (.iso, .xiso) go in /data/xemu/games or in xemu/games on a USB stick. Alpha version. It includes no games or BIOS."
+    },
+    "ja": {
+     "tagline": "PS5で初代Xboxを、xemuで",
+     "description": "初代Xboxエミュレーター xemu の移植版。起動する前に、XPSemu Helper(ストアにあります)をkstuffと一緒に読み込んでください。ご自身のXboxから吸い出したファイルが必要です。mcpx_1.0.bin とBIOSの Complex_4627.bin を /data/xemu/ に置きます。XISO形式のゲーム(.iso、.xiso)は /data/xemu/games、またはUSBメモリーの xemu/games に置いてください。アルファ版です。ゲームやBIOSは含まれません。"
+    },
+    "fr": {
+     "tagline": "La première Xbox sur PS5, grâce à xemu",
+     "description": "Un portage de xemu, l'émulateur de la Xbox originale. Avant de l'ouvrir, chargez XPSemu Helper (dans le Store) avec kstuff. Il faut les fichiers de votre propre Xbox : mcpx_1.0.bin et le BIOS Complex_4627.bin dans /data/xemu/. Les jeux au format XISO (.iso, .xiso) vont dans /data/xemu/games ou dans xemu/games sur une clé USB. Version alpha. Aucun jeu ni BIOS inclus."
+    },
+    "es": {
+     "tagline": "La primera Xbox en PS5, con xemu",
+     "description": "Un port de xemu, el emulador de la Xbox original. Antes de abrirlo, carga XPSemu Helper (en la Store) con kstuff. Necesitas archivos de tu propia Xbox: mcpx_1.0.bin y la BIOS Complex_4627.bin en /data/xemu/. Los juegos en formato XISO (.iso, .xiso) van en /data/xemu/games o en xemu/games en un pendrive USB. Versión alpha. No incluye juegos ni BIOS."
+    },
+    "de": {
+     "tagline": "Die erste Xbox auf der PS5, mit xemu",
+     "description": "Ein Port von xemu, dem Emulator für die originale Xbox. Lade vor dem Öffnen XPSemu Helper (im Store) zusammen mit kstuff. Du brauchst Dateien von deiner eigenen Xbox: mcpx_1.0.bin und das BIOS Complex_4627.bin in /data/xemu/. Spiele im XISO-Format (.iso, .xiso) kommen nach /data/xemu/games oder nach xemu/games auf einem USB-Stick. Alpha-Version. Enthält weder Spiele noch BIOS."
+    },
+    "nl": {
+     "tagline": "De eerste Xbox op PS5, met xemu",
+     "description": "Een port van xemu, de emulator voor de originele Xbox. Laad vóór het openen XPSemu Helper (in de Store) met kstuff. Je hebt bestanden van je eigen Xbox nodig: mcpx_1.0.bin en het BIOS Complex_4627.bin in /data/xemu/. Games in XISO-formaat (.iso, .xiso) horen in /data/xemu/games of in xemu/games op een USB-stick. Alfaversie. Bevat geen games of BIOS."
+    },
+    "pt-PT": {
+     "tagline": "A primeira Xbox na PS5, com o xemu",
+     "description": "Um port do xemu, o emulador da Xbox original. Antes de o abrir, carrega o XPSemu Helper (na Store) com o kstuff. Precisas de ficheiros da tua própria Xbox: mcpx_1.0.bin e a BIOS Complex_4627.bin em /data/xemu/. Os jogos em formato XISO (.iso, .xiso) vão para /data/xemu/games ou para xemu/games numa pen USB. Versão alfa. Não inclui jogos nem BIOS."
+    },
+    "pt-BR": {
+     "tagline": "O primeiro Xbox no PS5, com o xemu",
+     "description": "Um port do xemu, o emulador do Xbox original. Antes de abri-lo, carregue o XPSemu Helper (na Store) com o kstuff. Você precisa de arquivos do seu próprio Xbox: mcpx_1.0.bin e a BIOS Complex_4627.bin em /data/xemu/. Os jogos em formato XISO (.iso, .xiso) vão em /data/xemu/games ou em xemu/games num pendrive. Versão alfa. Não inclui jogos nem BIOS."
+    },
+    "ru": {
+     "tagline": "Первый Xbox на PS5 с помощью xemu",
+     "description": "Порт xemu, эмулятора оригинального Xbox. Перед запуском загрузите XPSemu Helper (есть в Store) вместе с kstuff. Нужны файлы с вашего собственного Xbox: mcpx_1.0.bin и BIOS Complex_4627.bin в /data/xemu/. Игры в формате XISO (.iso, .xiso) кладите в /data/xemu/games или в xemu/games на USB-флешке. Альфа-версия. Игры и BIOS не входят в комплект."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 초대 Xbox, xemu 기반",
+     "description": "초대 Xbox 에뮬레이터인 xemu의 포트입니다. 실행하기 전에 XPSemu Helper(스토어에 있음)를 kstuff와 함께 로드하세요. 직접 가진 Xbox의 파일이 필요합니다: mcpx_1.0.bin과 BIOS 파일 Complex_4627.bin을 /data/xemu/에 넣으세요. XISO 형식의 게임(.iso, .xiso)은 /data/xemu/games 또는 USB 메모리의 xemu/games에 넣으면 됩니다. 알파 버전입니다. 게임과 BIOS는 포함되어 있지 않습니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩初代Xbox，基于xemu",
+     "description": "初代Xbox模拟器xemu的移植版。打开之前，请先用kstuff加载XPSemu Helper（在商店中）。需要来自你自己Xbox的文件：把 mcpx_1.0.bin 和BIOS文件 Complex_4627.bin 放到 /data/xemu/。XISO格式的游戏（.iso、.xiso）放在 /data/xemu/games 或U盘上的 xemu/games。目前为alpha版本。不包含游戏和BIOS。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩初代Xbox，基於xemu",
+     "description": "初代Xbox模擬器xemu的移植版。開啟之前，請先用kstuff載入XPSemu Helper（在商店中）。需要來自你自己Xbox的檔案：把 mcpx_1.0.bin 和BIOS檔案 Complex_4627.bin 放到 /data/xemu/。XISO格式的遊戲（.iso、.xiso）放在 /data/xemu/games 或隨身碟上的 xemu/games。目前為alpha版本。不含遊戲和BIOS。"
+    },
+    "fi": {
+     "tagline": "Alkuperäinen Xbox PS5:llä xemun avulla",
+     "description": "Käännös xemusta, alkuperäisen Xboxin emulaattorista. Lataa ennen avaamista XPSemu Helper (löytyy Storesta) kstuffin kanssa. Tarvitset tiedostot omasta Xboxistasi: mcpx_1.0.bin ja BIOS Complex_4627.bin kansioon /data/xemu/. XISO-muotoiset pelit (.iso, .xiso) laitetaan kansioon /data/xemu/games tai USB-tikun xemu/games-kansioon. Alfaversio. Mukana ei ole pelejä eikä BIOSta."
+    },
+    "sv": {
+     "tagline": "Första Xbox på PS5, med xemu",
+     "description": "En port av xemu, emulatorn för den ursprungliga Xbox. Innan du öppnar den, ladda XPSemu Helper (finns i Store) med kstuff. Du behöver filer från din egen Xbox: mcpx_1.0.bin och BIOS-filen Complex_4627.bin i /data/xemu/. Spel i XISO-format (.iso, .xiso) läggs i /data/xemu/games eller i xemu/games på ett USB-minne. Alfaversion. Inga spel eller BIOS ingår."
+    },
+    "da": {
+     "tagline": "Den første Xbox på PS5, med xemu",
+     "description": "En port af xemu, emulatoren til den originale Xbox. Før du åbner den, skal du indlæse XPSemu Helper (i Store) med kstuff. Du skal bruge filer fra din egen Xbox: mcpx_1.0.bin og BIOS'en Complex_4627.bin i /data/xemu/. Spil i XISO-format (.iso, .xiso) skal ligge i /data/xemu/games eller i xemu/games på en USB-nøgle. Alfaversion. Der følger hverken spil eller BIOS med."
+    },
+    "nb": {
+     "tagline": "Den første Xbox på PS5, med xemu",
+     "description": "En port av xemu, emulatoren for den originale Xbox. Før du åpner den, last inn XPSemu Helper (i Store) med kstuff. Du trenger filer fra din egen Xbox: mcpx_1.0.bin og BIOS-en Complex_4627.bin i /data/xemu/. Spill i XISO-format (.iso, .xiso) legges i /data/xemu/games eller i xemu/games på en minnepinne. Alfaversjon. Ingen spill eller BIOS følger med."
+    },
+    "pl": {
+     "tagline": "Pierwszy Xbox na PS5, dzięki xemu",
+     "description": "Port xemu, emulatora oryginalnego Xboxa. Przed uruchomieniem załaduj XPSemu Helper (jest w Store) razem z kstuff. Potrzebne są pliki z twojego własnego Xboxa: mcpx_1.0.bin i BIOS Complex_4627.bin w /data/xemu/. Gry w formacie XISO (.iso, .xiso) umieść w /data/xemu/games lub w xemu/games na pendrivie. Wersja alfa. Nie zawiera gier ani BIOS-u."
+    },
+    "tr": {
+     "tagline": "PS5'te ilk Xbox, xemu ile",
+     "description": "Orijinal Xbox emülatörü xemu'nun portu. Açmadan önce XPSemu Helper'ı (Store'da) kstuff ile yükle. Kendi Xbox'ından alınmış dosyalar gerekir: mcpx_1.0.bin ve Complex_4627.bin BIOS'u /data/xemu/ klasörüne. XISO biçimindeki oyunlar (.iso, .xiso) /data/xemu/games klasörüne veya bir USB bellekteki xemu/games klasörüne gider. Alfa sürüm. Oyun ya da BIOS içermez."
+    },
+    "cs": {
+     "tagline": "První Xbox na PS5 díky xemu",
+     "description": "Port xemu, emulátoru původního Xboxu. Než ho otevřeš, načti s kstuff XPSemu Helper (ve Storu). Potřebuješ soubory z vlastního Xboxu: mcpx_1.0.bin a BIOS Complex_4627.bin v /data/xemu/. Hry ve formátu XISO (.iso, .xiso) patří do /data/xemu/games nebo do xemu/games na USB flash disku. Verze alfa. Neobsahuje žádné hry ani BIOS."
+    },
+    "hu": {
+     "tagline": "Az első Xbox a PS5-ön, xemuval",
+     "description": "Az eredeti Xbox emulátorának, a xemunak a portja. Megnyitás előtt töltsd be a kstuffal az XPSemu Helpert (megvan a Store-ban). A saját Xboxodról származó fájlok kellenek: az mcpx_1.0.bin és a Complex_4627.bin BIOS a /data/xemu/ mappába. Az XISO formátumú játékok (.iso, .xiso) a /data/xemu/games mappába vagy egy pendrive xemu/games mappájába kerülnek. Alfa verzió. Nem tartalmaz játékokat és BIOS-t."
+    },
+    "el": {
+     "tagline": "Το πρώτο Xbox στο PS5, με το xemu",
+     "description": "Ένα port του xemu, του εξομοιωτή του αρχικού Xbox. Πριν το ανοίξεις, φόρτωσε το XPSemu Helper (στο Store) με το kstuff. Χρειάζεσαι αρχεία από το δικό σου Xbox: το mcpx_1.0.bin και το BIOS Complex_4627.bin στο /data/xemu/. Τα παιχνίδια σε μορφή XISO (.iso, .xiso) μπαίνουν στο /data/xemu/games ή στο xemu/games σε ένα USB stick. Έκδοση alpha. Δεν περιλαμβάνει παιχνίδια ή BIOS."
+    },
+    "ro": {
+     "tagline": "Primul Xbox pe PS5, cu xemu",
+     "description": "Un port al xemu, emulatorul Xbox-ului original. Înainte să-l deschizi, încarcă XPSemu Helper (din Store) cu kstuff. Ai nevoie de fișiere de pe propriul Xbox: mcpx_1.0.bin și BIOS-ul Complex_4627.bin în /data/xemu/. Jocurile în format XISO (.iso, .xiso) se pun în /data/xemu/games sau în xemu/games pe un stick USB. Versiune alpha. Nu include jocuri și nici BIOS."
+    },
+    "th": {
+     "tagline": "เล่น Xbox รุ่นแรกบน PS5 ด้วย xemu",
+     "description": "xemu อีมูเลเตอร์ Xbox รุ่นแรกที่พอร์ตมาลง PS5 ก่อนเปิดให้โหลด XPSemu Helper (มีใน Store) พร้อมกับ kstuff ต้องใช้ไฟล์จาก Xbox ของคุณเอง: mcpx_1.0.bin และ BIOS Complex_4627.bin ไว้ใน /data/xemu/ วางเกมฟอร์แมต XISO (.iso, .xiso) ไว้ใน /data/xemu/games หรือใน xemu/games บนแฟลชไดรฟ์ USB เป็นเวอร์ชัน alpha ไม่รวมเกมและ BIOS"
+    },
+    "vi": {
+     "tagline": "Xbox đời đầu trên PS5, nhờ xemu",
+     "description": "Bản port của xemu, trình giả lập Xbox đời đầu. Trước khi mở, hãy nạp XPSemu Helper (có trong Store) cùng kstuff. Bạn cần các file từ chính máy Xbox của mình: mcpx_1.0.bin và BIOS Complex_4627.bin trong /data/xemu/. Game định dạng XISO (.iso, .xiso) đặt trong /data/xemu/games hoặc xemu/games trên USB. Phiên bản alpha. Không kèm game hay BIOS."
+    },
+    "id": {
+     "tagline": "Xbox pertama di PS5, dengan xemu",
+     "description": "Port xemu, emulator Xbox original. Sebelum membukanya, muat XPSemu Helper (ada di Store) dengan kstuff. Kamu butuh file dari Xbox milikmu sendiri: mcpx_1.0.bin dan BIOS Complex_4627.bin di /data/xemu/. Game berformat XISO (.iso, .xiso) ditaruh di /data/xemu/games atau di xemu/games pada flashdisk USB. Versi alpha. Tidak menyertakan game maupun BIOS."
+    },
+    "uk": {
+     "tagline": "Перший Xbox на PS5 завдяки xemu",
+     "description": "Порт xemu, емулятора оригінального Xbox. Перед запуском завантажте XPSemu Helper (є в Store) разом із kstuff. Потрібні файли з вашого власного Xbox: mcpx_1.0.bin і BIOS Complex_4627.bin у /data/xemu/. Ігри у форматі XISO (.iso, .xiso) кладіть у /data/xemu/games або в xemu/games на USB-флешці. Альфа-версія. Ігор і BIOS у комплекті немає."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:xpsemu-helper",
+   "title": "XPSemu Helper",
+   "tagline": "Il payload che serve a XPSemu",
+   "description": "Payload di supporto per XPSemu: va caricato con kstuff prima di aprire l'emulatore. Se XPSemu si chiude subito o dice che helper.elf non risponde, è questo che manca.",
+   "category": "utility",
+   "version": "Alpha 2",
+   "platform": "PS5",
+   "hashtags": [
+    "xbox",
+    "xemu"
+   ],
+   "download_url": "https://github.com/ZiZc3/XPSemu/releases/download/Alpha-2/helper.elf",
+   "file_kind": "elf",
+   "size_bytes": 111032,
+   "homepage_url": "https://github.com/ZiZc3/XPSemu",
+   "license": "GPL-2.0",
+   "icon": "asset:xpsemu.jpg",
+   "cover": "asset:xpsemu.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "The payload XPSemu needs",
+     "description": "Support payload for XPSemu: load it with kstuff before opening the emulator. If XPSemu closes right away or says helper.elf is not responding, this is what's missing."
+    },
+    "ja": {
+     "tagline": "XPSemuに必要なペイロード",
+     "description": "XPSemu用のサポートペイロード。エミュレーターを開く前に、kstuffと一緒に読み込んでください。XPSemuがすぐに終了したり、helper.elf が応答しないと表示されたりする場合は、これが読み込まれていません。"
+    },
+    "fr": {
+     "tagline": "Le payload dont XPSemu a besoin",
+     "description": "Payload d'appoint pour XPSemu : à charger avec kstuff avant d'ouvrir l'émulateur. Si XPSemu se ferme aussitôt ou indique que helper.elf ne répond pas, c'est lui qui manque."
+    },
+    "es": {
+     "tagline": "El payload que necesita XPSemu",
+     "description": "Payload de apoyo para XPSemu: se carga con kstuff antes de abrir el emulador. Si XPSemu se cierra enseguida o dice que helper.elf no responde, es esto lo que falta."
+    },
+    "de": {
+     "tagline": "Der Payload, den XPSemu braucht",
+     "description": "Hilfs-Payload für XPSemu: Lade ihn mit kstuff, bevor du den Emulator öffnest. Wenn XPSemu sofort wieder schließt oder meldet, dass helper.elf nicht antwortet, fehlt genau dieser."
+    },
+    "nl": {
+     "tagline": "De payload die XPSemu nodig heeft",
+     "description": "Ondersteunende payload voor XPSemu: laad hem met kstuff voordat je de emulator opent. Als XPSemu meteen sluit of meldt dat helper.elf niet reageert, is dit wat er ontbreekt."
+    },
+    "pt-PT": {
+     "tagline": "O payload de que o XPSemu precisa",
+     "description": "Payload de apoio para o XPSemu: deve ser carregado com o kstuff antes de abrires o emulador. Se o XPSemu fechar logo ou disser que o helper.elf não responde, é isto que falta."
+    },
+    "pt-BR": {
+     "tagline": "O payload de que o XPSemu precisa",
+     "description": "Payload de apoio para o XPSemu: deve ser carregado com o kstuff antes de abrir o emulador. Se o XPSemu fechar na hora ou disser que o helper.elf não responde, é isso que está faltando."
+    },
+    "ru": {
+     "tagline": "Пейлоад, нужный XPSemu",
+     "description": "Вспомогательный пейлоад для XPSemu: загрузите его вместе с kstuff перед запуском эмулятора. Если XPSemu сразу закрывается или пишет, что helper.elf не отвечает, значит, не хватает именно его."
+    },
+    "ko": {
+     "tagline": "XPSemu에 필요한 페이로드",
+     "description": "XPSemu용 지원 페이로드입니다. 에뮬레이터를 열기 전에 kstuff와 함께 로드하세요. XPSemu가 바로 종료되거나 helper.elf가 응답하지 않는다고 나온다면 이 페이로드가 빠진 것입니다."
+    },
+    "zh-Hans": {
+     "tagline": "XPSemu所需的payload",
+     "description": "XPSemu的辅助payload：打开模拟器之前，需要和kstuff一起加载。如果XPSemu一打开就关闭，或提示 helper.elf 没有响应，就是缺少它。"
+    },
+    "zh-Hant": {
+     "tagline": "XPSemu所需的payload",
+     "description": "XPSemu的輔助payload：開啟模擬器之前，需要和kstuff一起載入。如果XPSemu一開啟就關閉，或提示 helper.elf 沒有回應，就是缺少它。"
+    },
+    "fi": {
+     "tagline": "XPSemun tarvitsema payload",
+     "description": "Tukipayload XPSemulle: lataa se kstuffin kanssa ennen emulaattorin avaamista. Jos XPSemu sulkeutuu heti tai ilmoittaa, ettei helper.elf vastaa, juuri tämä puuttuu."
+    },
+    "sv": {
+     "tagline": "Payloaden som XPSemu behöver",
+     "description": "Stödpayload för XPSemu: ladda den med kstuff innan du öppnar emulatorn. Om XPSemu stängs direkt eller säger att helper.elf inte svarar är det den här som saknas."
+    },
+    "da": {
+     "tagline": "Den payload, XPSemu skal bruge",
+     "description": "Hjælpe-payload til XPSemu: indlæs den med kstuff, før du åbner emulatoren. Hvis XPSemu lukker med det samme eller siger, at helper.elf ikke svarer, er det denne, der mangler."
+    },
+    "nb": {
+     "tagline": "Payloaden XPSemu trenger",
+     "description": "Støttepayload for XPSemu: last den inn med kstuff før du åpner emulatoren. Hvis XPSemu lukkes med en gang eller sier at helper.elf ikke svarer, er det denne som mangler."
+    },
+    "pl": {
+     "tagline": "Payload, którego potrzebuje XPSemu",
+     "description": "Pomocniczy payload dla XPSemu: załaduj go razem z kstuff przed otwarciem emulatora. Jeśli XPSemu od razu się zamyka albo pisze, że helper.elf nie odpowiada, brakuje właśnie jego."
+    },
+    "tr": {
+     "tagline": "XPSemu'nun ihtiyaç duyduğu payload",
+     "description": "XPSemu için destek payload'ı: emülatörü açmadan önce kstuff ile yüklenmelidir. XPSemu hemen kapanıyorsa ya da helper.elf yanıt vermiyor diyorsa, eksik olan budur."
+    },
+    "cs": {
+     "tagline": "Payload, který potřebuje XPSemu",
+     "description": "Podpůrný payload pro XPSemu: načti ho s kstuff dřív, než otevřeš emulátor. Pokud se XPSemu hned zavře nebo hlásí, že helper.elf neodpovídá, chybí právě tohle."
+    },
+    "hu": {
+     "tagline": "A payload, ami az XPSemuhoz kell",
+     "description": "Támogató payload az XPSemuhoz: az emulátor megnyitása előtt töltsd be a kstuffal. Ha az XPSemu azonnal bezáródik, vagy azt írja, hogy a helper.elf nem válaszol, akkor ez hiányzik."
+    },
+    "el": {
+     "tagline": "Το payload που χρειάζεται το XPSemu",
+     "description": "Βοηθητικό payload για το XPSemu: φόρτωσέ το με το kstuff πριν ανοίξεις τον εξομοιωτή. Αν το XPSemu κλείνει αμέσως ή λέει ότι το helper.elf δεν αποκρίνεται, αυτό είναι που λείπει."
+    },
+    "ro": {
+     "tagline": "Payload-ul de care are nevoie XPSemu",
+     "description": "Payload de suport pentru XPSemu: încarcă-l cu kstuff înainte să deschizi emulatorul. Dacă XPSemu se închide imediat sau spune că helper.elf nu răspunde, asta lipsește."
+    },
+    "th": {
+     "tagline": "payload ที่ XPSemu ต้องใช้",
+     "description": "payload เสริมสำหรับ XPSemu: ต้องโหลดพร้อมกับ kstuff ก่อนเปิดอีมูเลเตอร์ หาก XPSemu ปิดตัวทันทีหรือแจ้งว่า helper.elf ไม่ตอบสนอง แสดงว่ายังขาดตัวนี้"
+    },
+    "vi": {
+     "tagline": "Payload mà XPSemu cần",
+     "description": "Payload hỗ trợ cho XPSemu: nạp cùng kstuff trước khi mở trình giả lập. Nếu XPSemu tắt ngay hoặc báo helper.elf không phản hồi, thì đây chính là thứ còn thiếu."
+    },
+    "id": {
+     "tagline": "Payload yang dibutuhkan XPSemu",
+     "description": "Payload pendukung untuk XPSemu: muat bersama kstuff sebelum membuka emulator. Kalau XPSemu langsung tertutup atau bilang helper.elf tidak merespons, berarti payload inilah yang belum dimuat."
+    },
+    "uk": {
+     "tagline": "Пейлоад, потрібний XPSemu",
+     "description": "Допоміжний пейлоад для XPSemu: завантажте його разом із kstuff перед запуском емулятора. Якщо XPSemu одразу закривається або пише, що helper.elf не відповідає, бракує саме його."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:ps5x360",
+   "title": "PS5X360",
+   "tagline": "Xbox 360 sulla PS5 (sperimentale)",
+   "description": "Emulatore Xbox 360 sperimentale basato su Xenia Canary. Ogni gioco va in una sua cartella dentro assets/roms nella cartella dell'app (/user/app/PPSA50011/assets/roms); poi riapri l'emulatore o usa Settings › Refresh game list (le voci dell'emulatore sono in inglese). Provato con firmware 13.60, etaHEN, ShadowMountPlus e kstuff. Molti giochi non partono ancora. Non contiene giochi.",
+   "category": "emulatore",
+   "version": "0.5.9",
+   "platform": "PS5",
+   "title_id": "PPSA50011",
+   "hashtags": [
+    "xbox360",
+    "xenia"
+   ],
+   "download_url": "https://github.com/BrinooTk/PS5X360/releases/download/v0.5.9-fix1/PPSA50011.zip",
+   "file_kind": "zip",
+   "size_bytes": 24375695,
+   "homepage_url": "https://github.com/BrinooTk/PS5X360",
+   "license": "MIT",
+   "icon": "asset:ps5x360.jpg",
+   "cover": "asset:ps5x360.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "Xbox 360 on PS5 (experimental)",
+     "description": "An experimental Xbox 360 emulator built on Xenia Canary. Each game goes in its own folder inside assets/roms in the app's folder (/user/app/PPSA50011/assets/roms); then reopen the emulator or use Settings › Refresh game list. Tested with firmware 13.60, etaHEN, ShadowMountPlus and kstuff. Many games don't start yet. It includes no games."
+    },
+    "ja": {
+     "tagline": "PS5でXbox 360を(実験版)",
+     "description": "Xenia Canaryベースの実験的なXbox 360エミュレーター。ゲームは1タイトルずつフォルダーに分けて、アプリのフォルダー内の assets/roms(/user/app/PPSA50011/assets/roms)に置きます。その後、エミュレーターを開き直すか、設定 › ゲームリストを更新 を使ってください。ファームウェア13.60、etaHEN、ShadowMountPlus、kstuffで動作確認済み。まだ起動しないゲームも多くあります。ゲームは含まれません。"
+    },
+    "fr": {
+     "tagline": "La Xbox 360 sur PS5 (expérimental)",
+     "description": "Un émulateur Xbox 360 expérimental basé sur Xenia Canary. Chaque jeu va dans son propre dossier dans assets/roms, à l'intérieur du dossier de l'application (/user/app/PPSA50011/assets/roms) ; rouvrez ensuite l'émulateur ou utilisez Paramètres › Actualiser la liste des jeux. Testé avec le firmware 13.60, etaHEN, ShadowMountPlus et kstuff. Beaucoup de jeux ne démarrent pas encore. Aucun jeu inclus."
+    },
+    "es": {
+     "tagline": "Xbox 360 en PS5 (experimental)",
+     "description": "Un emulador experimental de Xbox 360 basado en Xenia Canary. Cada juego va en su propia carpeta dentro de assets/roms, en la carpeta de la app (/user/app/PPSA50011/assets/roms); luego vuelve a abrir el emulador o usa Ajustes › Actualizar la lista de juegos. Probado con el firmware 13.60, etaHEN, ShadowMountPlus y kstuff. Muchos juegos todavía no arrancan. No incluye juegos."
+    },
+    "de": {
+     "tagline": "Xbox 360 auf der PS5 (experimentell)",
+     "description": "Ein experimenteller Xbox-360-Emulator auf Basis von Xenia Canary. Jedes Spiel kommt in einen eigenen Ordner unter assets/roms im Ordner der App (/user/app/PPSA50011/assets/roms); danach öffnest du den Emulator neu oder nutzt Einstellungen › Spieleliste aktualisieren. Getestet mit Firmware 13.60, etaHEN, ShadowMountPlus und kstuff. Viele Spiele starten noch nicht. Enthält keine Spiele."
+    },
+    "nl": {
+     "tagline": "Xbox 360 op PS5 (experimenteel)",
+     "description": "Een experimentele Xbox 360-emulator op basis van Xenia Canary. Elke game krijgt een eigen map in assets/roms binnen de map van de app (/user/app/PPSA50011/assets/roms); open daarna de emulator opnieuw of gebruik Instellingen › Gamelijst vernieuwen. Getest met firmware 13.60, etaHEN, ShadowMountPlus en kstuff. Veel games starten nog niet. Bevat geen games."
+    },
+    "pt-PT": {
+     "tagline": "Xbox 360 na PS5 (experimental)",
+     "description": "Um emulador experimental de Xbox 360 baseado no Xenia Canary. Cada jogo vai para a sua própria pasta dentro de assets/roms, na pasta da app (/user/app/PPSA50011/assets/roms); depois volta a abrir o emulador ou usa Definições › Atualizar a lista de jogos. Testado com o firmware 13.60, etaHEN, ShadowMountPlus e kstuff. Muitos jogos ainda não arrancam. Não inclui jogos."
+    },
+    "pt-BR": {
+     "tagline": "Xbox 360 no PS5 (experimental)",
+     "description": "Um emulador experimental de Xbox 360 baseado no Xenia Canary. Cada jogo vai na sua própria pasta dentro de assets/roms, na pasta do app (/user/app/PPSA50011/assets/roms); depois abra o emulador de novo ou use Configurações › Atualizar a lista de jogos. Testado com o firmware 13.60, etaHEN, ShadowMountPlus e kstuff. Muitos jogos ainda não iniciam. Não inclui jogos."
+    },
+    "ru": {
+     "tagline": "Xbox 360 на PS5 (экспериментально)",
+     "description": "Экспериментальный эмулятор Xbox 360 на базе Xenia Canary. Каждую игру кладите в отдельную папку внутри assets/roms в папке приложения (/user/app/PPSA50011/assets/roms), затем перезапустите эмулятор или выберите Настройки › Обновить список игр. Проверено на прошивке 13.60 с etaHEN, ShadowMountPlus и kstuff. Многие игры пока не запускаются. Игры не входят в комплект."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 Xbox 360 (실험적)",
+     "description": "Xenia Canary 기반의 실험적인 Xbox 360 에뮬레이터입니다. 게임마다 폴더를 하나씩 만들어 앱 폴더 안의 assets/roms(/user/app/PPSA50011/assets/roms)에 넣으세요. 그런 다음 에뮬레이터를 다시 열거나 설정 › 게임 목록 새로 고침을 사용하세요. 펌웨어 13.60, etaHEN, ShadowMountPlus, kstuff 환경에서 테스트했습니다. 아직 실행되지 않는 게임이 많습니다. 게임은 포함되어 있지 않습니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩Xbox 360（实验性）",
+     "description": "基于Xenia Canary的实验性Xbox 360模拟器。每个游戏放在应用文件夹内 assets/roms 下的单独文件夹中（/user/app/PPSA50011/assets/roms）；然后重新打开模拟器，或使用 设置 › 刷新游戏列表。已在固件13.60、etaHEN、ShadowMountPlus和kstuff下测试。很多游戏目前还无法启动。不包含游戏。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩Xbox 360（實驗性）",
+     "description": "基於Xenia Canary的實驗性Xbox 360模擬器。每款遊戲放在應用程式資料夾內 assets/roms 下的獨立資料夾中（/user/app/PPSA50011/assets/roms）；然後重新開啟模擬器，或使用 設定 › 重新整理遊戲清單。已在韌體13.60、etaHEN、ShadowMountPlus和kstuff下測試。許多遊戲目前還無法啟動。不含遊戲。"
+    },
+    "fi": {
+     "tagline": "Xbox 360 PS5:llä (kokeellinen)",
+     "description": "Xenia Canaryyn perustuva kokeellinen Xbox 360 -emulaattori. Jokainen peli laitetaan omaan kansioonsa sovelluksen kansion assets/roms-kansioon (/user/app/PPSA50011/assets/roms); avaa sitten emulaattori uudelleen tai valitse Asetukset › Päivitä peliluettelo. Testattu laiteohjelmistolla 13.60 sekä etaHENin, ShadowMountPlussan ja kstuffin kanssa. Monet pelit eivät vielä käynnisty. Mukana ei ole pelejä."
+    },
+    "sv": {
+     "tagline": "Xbox 360 på PS5 (experimentell)",
+     "description": "En experimentell Xbox 360-emulator baserad på Xenia Canary. Varje spel läggs i en egen mapp i assets/roms i appens mapp (/user/app/PPSA50011/assets/roms); öppna sedan emulatorn igen eller använd Inställningar › Uppdatera spellistan. Testad med firmware 13.60, etaHEN, ShadowMountPlus och kstuff. Många spel startar inte än. Inga spel ingår."
+    },
+    "da": {
+     "tagline": "Xbox 360 på PS5 (eksperimentel)",
+     "description": "En eksperimentel Xbox 360-emulator baseret på Xenia Canary. Hvert spil skal ligge i sin egen mappe i assets/roms i appens mappe (/user/app/PPSA50011/assets/roms); åbn derefter emulatoren igen, eller brug Indstillinger › Opdater spillisten. Testet med firmware 13.60, etaHEN, ShadowMountPlus og kstuff. Mange spil starter ikke endnu. Der følger ingen spil med."
+    },
+    "nb": {
+     "tagline": "Xbox 360 på PS5 (eksperimentell)",
+     "description": "En eksperimentell Xbox 360-emulator basert på Xenia Canary. Hvert spill legges i sin egen mappe i assets/roms i appens mappe (/user/app/PPSA50011/assets/roms); åpne deretter emulatoren på nytt eller bruk Innstillinger › Oppdater spillisten. Testet med fastvare 13.60, etaHEN, ShadowMountPlus og kstuff. Mange spill starter ikke ennå. Ingen spill følger med."
+    },
+    "pl": {
+     "tagline": "Xbox 360 na PS5 (eksperymentalnie)",
+     "description": "Eksperymentalny emulator Xbox 360 oparty na Xenia Canary. Każda gra trafia do osobnego folderu w assets/roms w folderze aplikacji (/user/app/PPSA50011/assets/roms); potem otwórz emulator ponownie albo użyj Ustawienia › Odśwież listę gier. Testowany na firmware 13.60 z etaHEN, ShadowMountPlus i kstuff. Wiele gier jeszcze się nie uruchamia. Nie zawiera gier."
+    },
+    "tr": {
+     "tagline": "PS5'te Xbox 360 (deneysel)",
+     "description": "Xenia Canary tabanlı deneysel bir Xbox 360 emülatörü. Her oyun, uygulama klasöründeki assets/roms içinde kendi klasörüne konur (/user/app/PPSA50011/assets/roms); ardından emülatörü yeniden aç ya da Ayarlar › Oyun listesini yenile seçeneğini kullan. 13.60 yazılımı, etaHEN, ShadowMountPlus ve kstuff ile test edildi. Pek çok oyun henüz açılmıyor. Oyun içermez."
+    },
+    "cs": {
+     "tagline": "Xbox 360 na PS5 (experimentální)",
+     "description": "Experimentální emulátor Xbox 360 založený na Xenia Canary. Každá hra patří do vlastní složky v assets/roms ve složce aplikace (/user/app/PPSA50011/assets/roms); pak emulátor znovu otevři nebo použij Nastavení › Obnovit seznam her. Testováno s firmwarem 13.60, etaHEN, ShadowMountPlus a kstuff. Spousta her se zatím nespustí. Neobsahuje žádné hry."
+    },
+    "hu": {
+     "tagline": "Xbox 360 a PS5-ön (kísérleti)",
+     "description": "Kísérleti Xbox 360-emulátor Xenia Canary alapon. Minden játék külön mappába kerül az alkalmazás mappáján belüli assets/roms mappában (/user/app/PPSA50011/assets/roms); utána nyisd meg újra az emulátort, vagy használd a Beállítások › Játéklista frissítése lehetőséget. 13.60-as firmware-rel, etaHEN-nel, ShadowMountPlusszal és kstuffal tesztelve. Sok játék még nem indul el. Nem tartalmaz játékokat."
+    },
+    "el": {
+     "tagline": "Xbox 360 στο PS5 (πειραματικό)",
+     "description": "Ένας πειραματικός εξομοιωτής Xbox 360 βασισμένος στο Xenia Canary. Κάθε παιχνίδι μπαίνει σε δικό του φάκελο μέσα στο assets/roms, στον φάκελο της εφαρμογής (/user/app/PPSA50011/assets/roms)· μετά άνοιξε ξανά τον εξομοιωτή ή χρησιμοποίησε Ρυθμίσεις › Ανανέωση λίστας παιχνιδιών. Δοκιμασμένο με firmware 13.60, etaHEN, ShadowMountPlus και kstuff. Πολλά παιχνίδια δεν ξεκινούν ακόμα. Δεν περιλαμβάνει παιχνίδια."
+    },
+    "ro": {
+     "tagline": "Xbox 360 pe PS5 (experimental)",
+     "description": "Un emulator Xbox 360 experimental bazat pe Xenia Canary. Fiecare joc se pune în propriul folder din assets/roms, în folderul aplicației (/user/app/PPSA50011/assets/roms); apoi redeschide emulatorul sau folosește Setări › Actualizează lista de jocuri. Testat cu firmware 13.60, etaHEN, ShadowMountPlus și kstuff. Multe jocuri încă nu pornesc. Nu include jocuri."
+    },
+    "th": {
+     "tagline": "เล่น Xbox 360 บน PS5 (ทดลอง)",
+     "description": "อีมูเลเตอร์ Xbox 360 รุ่นทดลองที่สร้างบน Xenia Canary วางแต่ละเกมไว้ในโฟลเดอร์ของตัวเองภายใน assets/roms ในโฟลเดอร์ของแอป (/user/app/PPSA50011/assets/roms) จากนั้นเปิดอีมูเลเตอร์ใหม่ หรือใช้ การตั้งค่า › รีเฟรชรายการเกม ทดสอบแล้วกับเฟิร์มแวร์ 13.60, etaHEN, ShadowMountPlus และ kstuff ยังมีหลายเกมที่เปิดไม่ได้ ไม่รวมเกม"
+    },
+    "vi": {
+     "tagline": "Xbox 360 trên PS5 (thử nghiệm)",
+     "description": "Trình giả lập Xbox 360 thử nghiệm dựa trên Xenia Canary. Mỗi game đặt trong một thư mục riêng bên trong assets/roms ở thư mục của ứng dụng (/user/app/PPSA50011/assets/roms); sau đó mở lại trình giả lập hoặc dùng Cài đặt › Làm mới danh sách game. Đã thử với firmware 13.60, etaHEN, ShadowMountPlus và kstuff. Nhiều game vẫn chưa chạy được. Không kèm game."
+    },
+    "id": {
+     "tagline": "Xbox 360 di PS5 (eksperimental)",
+     "description": "Emulator Xbox 360 eksperimental berbasis Xenia Canary. Setiap game ditaruh di foldernya sendiri di dalam assets/roms pada folder aplikasi (/user/app/PPSA50011/assets/roms); lalu buka ulang emulator atau gunakan Pengaturan › Muat ulang daftar game. Sudah diuji dengan firmware 13.60, etaHEN, ShadowMountPlus, dan kstuff. Banyak game yang belum bisa jalan. Tidak menyertakan game."
+    },
+    "uk": {
+     "tagline": "Xbox 360 на PS5 (експериментально)",
+     "description": "Експериментальний емулятор Xbox 360 на базі Xenia Canary. Кожну гру кладіть в окрему папку всередині assets/roms у папці застосунку (/user/app/PPSA50011/assets/roms), потім перезапустіть емулятор або виберіть Налаштування › Оновити список ігор. Перевірено на прошивці 13.60 з etaHEN, ShadowMountPlus і kstuff. Багато ігор поки не запускаються. Ігор у комплекті немає."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:snes9x-ps5",
+   "title": "Snes9x PS5",
+   "tagline": "Super Nintendo sulla PS5, con Snes9x",
+   "description": "Port di Snes9x 1.63. Al primo avvio il payload installa l'app in /data/homebrew/PPSA99009 e resta attivo come helper; poi la apri dalla sua icona (serve ShadowMountPlus per vederla nella Home della console). Le ROM (.sfc, .smc, .zip e altre) vanno in /data/snes9x/roms o in snes9x/roms su una chiavetta USB. Serve kstuff. Non contiene giochi.",
+   "category": "emulatore",
+   "version": "2.3",
+   "platform": "PS5",
+   "hashtags": [
+    "snes",
+    "supernintendo",
+    "snes9x"
+   ],
+   "download_url": "https://github.com/MisterTemaki/snes9xPS5/releases/download/v2.3/Snes9xPS5-v2.3.elf",
+   "file_kind": "elf",
+   "size_bytes": 26148160,
+   "homepage_url": "https://github.com/MisterTemaki/snes9xPS5",
+   "license": "Snes9x (non commerciale)",
+   "icon": "asset:snes9x.jpg",
+   "cover": "asset:snes9x.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "Super Nintendo on PS5, powered by Snes9x",
+     "description": "A port of Snes9x 1.63. On first launch the payload installs the app in /data/homebrew/PPSA99009 and stays running as a helper; after that you open it from its icon (you need ShadowMountPlus to see it on the console's Home screen). ROMs (.sfc, .smc, .zip and others) go in /data/snes9x/roms or in snes9x/roms on a USB stick. It needs kstuff. It includes no games."
+    },
+    "ja": {
+     "tagline": "PS5でスーパーファミコンを、Snes9xで",
+     "description": "Snes9x 1.63の移植版。初回起動時にペイロードがアプリを /data/homebrew/PPSA99009 にインストールし、そのままヘルパーとして常駐します。以降はアイコンから起動できます(本体のホーム画面に表示するにはShadowMountPlusが必要です)。ROM(.sfc、.smc、.zip など)は /data/snes9x/roms、またはUSBメモリーの snes9x/roms に置いてください。kstuffが必要です。ゲームは含まれません。"
+    },
+    "fr": {
+     "tagline": "La Super Nintendo sur PS5, grâce à Snes9x",
+     "description": "Un portage de Snes9x 1.63. Au premier lancement, le payload installe l'application dans /data/homebrew/PPSA99009 et reste actif comme helper ; ensuite, vous l'ouvrez depuis son icône (il faut ShadowMountPlus pour la voir sur l'écran d'accueil de la console). Les ROM (.sfc, .smc, .zip et autres) vont dans /data/snes9x/roms ou dans snes9x/roms sur une clé USB. Il faut kstuff. Aucun jeu inclus."
+    },
+    "es": {
+     "tagline": "Super Nintendo en PS5, con Snes9x",
+     "description": "Un port de Snes9x 1.63. En el primer arranque, el payload instala la app en /data/homebrew/PPSA99009 y se queda activo como helper; después la abres desde su icono (necesitas ShadowMountPlus para verla en la pantalla de inicio de la consola). Las ROM (.sfc, .smc, .zip y otras) van en /data/snes9x/roms o en snes9x/roms en un pendrive USB. Necesita kstuff. No incluye juegos."
+    },
+    "de": {
+     "tagline": "Super Nintendo auf der PS5, mit Snes9x",
+     "description": "Ein Port von Snes9x 1.63. Beim ersten Start installiert der Payload die App nach /data/homebrew/PPSA99009 und bleibt als Helper aktiv; danach öffnest du sie über ihr Symbol (du brauchst ShadowMountPlus, damit sie im Startbildschirm der Konsole erscheint). ROMs (.sfc, .smc, .zip und andere) kommen nach /data/snes9x/roms oder nach snes9x/roms auf einem USB-Stick. Du brauchst kstuff. Enthält keine Spiele."
+    },
+    "nl": {
+     "tagline": "Super Nintendo op PS5, met Snes9x",
+     "description": "Een port van Snes9x 1.63. Bij de eerste start installeert de payload de app in /data/homebrew/PPSA99009 en blijft hij actief als helper; daarna open je hem via zijn pictogram (je hebt ShadowMountPlus nodig om hem op het startscherm van de console te zien). ROM's (.sfc, .smc, .zip en andere) horen in /data/snes9x/roms of in snes9x/roms op een USB-stick. Je hebt kstuff nodig. Bevat geen games."
+    },
+    "pt-PT": {
+     "tagline": "Super Nintendo na PS5, com o Snes9x",
+     "description": "Um port do Snes9x 1.63. No primeiro arranque, o payload instala a app em /data/homebrew/PPSA99009 e fica ativo como helper; depois abres a app pelo seu ícone (precisas do ShadowMountPlus para a ver no ecrã inicial da consola). As ROMs (.sfc, .smc, .zip e outras) vão para /data/snes9x/roms ou para snes9x/roms numa pen USB. Precisa do kstuff. Não inclui jogos."
+    },
+    "pt-BR": {
+     "tagline": "Super Nintendo no PS5, com o Snes9x",
+     "description": "Um port do Snes9x 1.63. Na primeira execução, o payload instala o app em /data/homebrew/PPSA99009 e continua ativo como helper; depois você abre o app pelo ícone (precisa do ShadowMountPlus para vê-lo na tela inicial do console). As ROMs (.sfc, .smc, .zip e outras) vão em /data/snes9x/roms ou em snes9x/roms num pendrive. Precisa do kstuff. Não inclui jogos."
+    },
+    "ru": {
+     "tagline": "Super Nintendo на PS5 с помощью Snes9x",
+     "description": "Порт Snes9x 1.63. При первом запуске пейлоад устанавливает приложение в /data/homebrew/PPSA99009 и остаётся активным как helper; дальше приложение открывается по его значку (чтобы оно появилось на главном экране консоли, нужен ShadowMountPlus). ROM (.sfc, .smc, .zip и другие) кладите в /data/snes9x/roms или в snes9x/roms на USB-флешке. Нужен kstuff. Игры не входят в комплект."
+    },
+    "ko": {
+     "tagline": "PS5에서 즐기는 슈퍼 패미컴, Snes9x 기반",
+     "description": "Snes9x 1.63 포트입니다. 처음 실행하면 페이로드가 앱을 /data/homebrew/PPSA99009에 설치하고 헬퍼로 계속 실행됩니다. 이후에는 아이콘으로 앱을 열면 됩니다(콘솔 홈 화면에 표시하려면 ShadowMountPlus가 필요합니다). ROM(.sfc, .smc, .zip 등)은 /data/snes9x/roms 또는 USB 메모리의 snes9x/roms에 넣으세요. kstuff가 필요합니다. 게임은 포함되어 있지 않습니다."
+    },
+    "zh-Hans": {
+     "tagline": "在PS5上玩超级任天堂，基于Snes9x",
+     "description": "Snes9x 1.63的移植版。首次启动时，payload会把应用安装到 /data/homebrew/PPSA99009，并作为helper保持运行；之后从它的图标打开即可（需要ShadowMountPlus才能在主机主屏幕上看到它）。ROM（.sfc、.smc、.zip等）放在 /data/snes9x/roms 或U盘上的 snes9x/roms。需要kstuff。不包含游戏。"
+    },
+    "zh-Hant": {
+     "tagline": "在PS5上玩超級任天堂，基於Snes9x",
+     "description": "Snes9x 1.63的移植版。首次啟動時，payload會把應用程式安裝到 /data/homebrew/PPSA99009，並作為helper持續執行；之後從它的圖示開啟即可（需要ShadowMountPlus才能在主機主畫面上看到它）。ROM（.sfc、.smc、.zip等）放在 /data/snes9x/roms 或隨身碟上的 snes9x/roms。需要kstuff。不含遊戲。"
+    },
+    "fi": {
+     "tagline": "Super Nintendo PS5:llä Snes9x:n avulla",
+     "description": "Käännös Snes9x 1.63:sta. Ensimmäisellä käynnistyskerralla payload asentaa sovelluksen kansioon /data/homebrew/PPSA99009 ja jää käyntiin helperiksi; sen jälkeen avaat sovelluksen sen kuvakkeesta (tarvitset ShadowMountPlussan, jotta se näkyy konsolin aloitusnäytössä). ROMit (.sfc, .smc, .zip ja muut) laitetaan kansioon /data/snes9x/roms tai USB-tikun snes9x/roms-kansioon. Tarvitset kstuffin. Mukana ei ole pelejä."
+    },
+    "sv": {
+     "tagline": "Super Nintendo på PS5, med Snes9x",
+     "description": "En port av Snes9x 1.63. Vid första start installerar payloaden appen i /data/homebrew/PPSA99009 och fortsätter köras som helper; sedan öppnar du den från dess ikon (du behöver ShadowMountPlus för att se den på konsolens hemskärm). ROM-filer (.sfc, .smc, .zip med flera) läggs i /data/snes9x/roms eller i snes9x/roms på ett USB-minne. Den kräver kstuff. Inga spel ingår."
+    },
+    "da": {
+     "tagline": "Super Nintendo på PS5, med Snes9x",
+     "description": "En port af Snes9x 1.63. Ved første start installerer payloaden appen i /data/homebrew/PPSA99009 og bliver kørende som helper; derefter åbner du den fra dens ikon (du skal bruge ShadowMountPlus for at se den på konsollens startskærm). ROM'er (.sfc, .smc, .zip og andre) skal ligge i /data/snes9x/roms eller i snes9x/roms på en USB-nøgle. Den kræver kstuff. Der følger ingen spil med."
+    },
+    "nb": {
+     "tagline": "Super Nintendo på PS5, med Snes9x",
+     "description": "En port av Snes9x 1.63. Ved første oppstart installerer payloaden appen i /data/homebrew/PPSA99009 og blir kjørende som helper; deretter åpner du den fra ikonet (du trenger ShadowMountPlus for å se den på startskjermen til konsollen). ROM-er (.sfc, .smc, .zip og andre) legges i /data/snes9x/roms eller i snes9x/roms på en minnepinne. Den trenger kstuff. Ingen spill følger med."
+    },
+    "pl": {
+     "tagline": "Super Nintendo na PS5, dzięki Snes9x",
+     "description": "Port Snes9x 1.63. Przy pierwszym uruchomieniu payload instaluje aplikację w /data/homebrew/PPSA99009 i działa dalej jako helper; potem otwierasz ją z jej ikony (żeby była widoczna na ekranie głównym konsoli, potrzebny jest ShadowMountPlus). ROM-y (.sfc, .smc, .zip i inne) umieść w /data/snes9x/roms lub w snes9x/roms na pendrivie. Wymaga kstuff. Nie zawiera gier."
+    },
+    "tr": {
+     "tagline": "PS5'te Super Nintendo, Snes9x ile",
+     "description": "Snes9x 1.63 portu. İlk açılışta payload uygulamayı /data/homebrew/PPSA99009 konumuna kurar ve helper olarak çalışmaya devam eder; sonrasında uygulamayı simgesinden açarsın (konsolun ana ekranında görmek için ShadowMountPlus gerekir). ROM'lar (.sfc, .smc, .zip ve diğerleri) /data/snes9x/roms klasörüne veya bir USB bellekteki snes9x/roms klasörüne gider. kstuff gerekir. Oyun içermez."
+    },
+    "cs": {
+     "tagline": "Super Nintendo na PS5 díky Snes9x",
+     "description": "Port Snes9x 1.63. Při prvním spuštění payload nainstaluje aplikaci do /data/homebrew/PPSA99009 a zůstane běžet jako helper; potom ji otevíráš z její ikony (aby byla vidět na domovské obrazovce konzole, potřebuješ ShadowMountPlus). ROM (.sfc, .smc, .zip a další) patří do /data/snes9x/roms nebo do snes9x/roms na USB flash disku. Potřebuje kstuff. Neobsahuje žádné hry."
+    },
+    "hu": {
+     "tagline": "Super Nintendo a PS5-ön, Snes9x-szel",
+     "description": "A Snes9x 1.63 portja. Első indításkor a payload telepíti az alkalmazást a /data/homebrew/PPSA99009 mappába, és helperként futva marad; ezután az ikonjáról nyithatod meg (ahhoz, hogy megjelenjen a konzol kezdőképernyőjén, ShadowMountPlus kell). A ROM-ok (.sfc, .smc, .zip és mások) a /data/snes9x/roms mappába vagy egy pendrive snes9x/roms mappájába kerülnek. Szükség van a kstuffra. Nem tartalmaz játékokat."
+    },
+    "el": {
+     "tagline": "Super Nintendo στο PS5, με το Snes9x",
+     "description": "Ένα port του Snes9x 1.63. Στην πρώτη εκκίνηση, το payload εγκαθιστά την εφαρμογή στο /data/homebrew/PPSA99009 και μένει ενεργό ως helper· μετά την ανοίγεις από το εικονίδιό της (χρειάζεσαι το ShadowMountPlus για να εμφανίζεται στην αρχική οθόνη της κονσόλας). Τα ROM (.sfc, .smc, .zip και άλλα) μπαίνουν στο /data/snes9x/roms ή στο snes9x/roms σε ένα USB stick. Χρειάζεται το kstuff. Δεν περιλαμβάνει παιχνίδια."
+    },
+    "ro": {
+     "tagline": "Super Nintendo pe PS5, cu Snes9x",
+     "description": "Un port al Snes9x 1.63. La prima pornire, payload-ul instalează aplicația în /data/homebrew/PPSA99009 și rămâne activ ca helper; apoi o deschizi din pictograma ei (ai nevoie de ShadowMountPlus ca să apară pe ecranul principal al consolei). ROM-urile (.sfc, .smc, .zip și altele) se pun în /data/snes9x/roms sau în snes9x/roms pe un stick USB. Are nevoie de kstuff. Nu include jocuri."
+    },
+    "th": {
+     "tagline": "เล่น Super Nintendo บน PS5 ด้วย Snes9x",
+     "description": "Snes9x 1.63 ที่พอร์ตมาลง PS5 เมื่อเปิดครั้งแรก payload จะติดตั้งแอปไว้ที่ /data/homebrew/PPSA99009 และทำงานค้างไว้เป็น helper หลังจากนั้นเปิดแอปได้จากไอคอน (ต้องมี ShadowMountPlus จึงจะเห็นแอปบนหน้าโฮมของเครื่อง) วาง ROM (.sfc, .smc, .zip และอื่น ๆ) ไว้ใน /data/snes9x/roms หรือใน snes9x/roms บนแฟลชไดรฟ์ USB ต้องใช้ kstuff ไม่รวมเกม"
+    },
+    "vi": {
+     "tagline": "Super Nintendo trên PS5, nhờ Snes9x",
+     "description": "Bản port của Snes9x 1.63. Lần chạy đầu, payload cài ứng dụng vào /data/homebrew/PPSA99009 và tiếp tục chạy làm helper; sau đó bạn mở ứng dụng từ biểu tượng của nó (cần ShadowMountPlus để thấy nó trên màn hình Home của máy). ROM (.sfc, .smc, .zip và các định dạng khác) đặt trong /data/snes9x/roms hoặc snes9x/roms trên USB. Cần kstuff. Không kèm game."
+    },
+    "id": {
+     "tagline": "Super Nintendo di PS5, dengan Snes9x",
+     "description": "Port Snes9x 1.63. Saat pertama dijalankan, payload memasang aplikasi di /data/homebrew/PPSA99009 dan tetap aktif sebagai helper; setelah itu kamu membukanya dari ikonnya (perlu ShadowMountPlus agar muncul di layar Home konsol). ROM (.sfc, .smc, .zip, dan lainnya) ditaruh di /data/snes9x/roms atau di snes9x/roms pada flashdisk USB. Membutuhkan kstuff. Tidak menyertakan game."
+    },
+    "uk": {
+     "tagline": "Super Nintendo на PS5 завдяки Snes9x",
+     "description": "Порт Snes9x 1.63. Під час першого запуску пейлоад встановлює застосунок у /data/homebrew/PPSA99009 і залишається активним як helper; далі застосунок відкривається з його значка (щоб він з'явився на головному екрані консолі, потрібен ShadowMountPlus). ROM (.sfc, .smc, .zip та інші) кладіть у /data/snes9x/roms або в snes9x/roms на USB-флешці. Потрібен kstuff. Ігор у комплекті немає."
+    }
+   }
+  },
+  {
+   "catalog_key": "ghcat:retroarch-ps5",
+   "title": "RetroArch PS5",
+   "tagline": "33 emulatori in un'app, con EmulationStation",
+   "description": "RetroArch nativo per PS5 di Mihawk, con 33 core (dal NES e Mega Drive fino a Dreamcast, GameCube e PSP), grafica Vulkan e fino a quattro controller. All'avvio scegli tra RetroArch ed EmulationStation; una pagina web locale ti fa gestire libreria e copertine dal telefono o dal PC. Pensato per ShadowMountPlus 1.7beta4 o successivo. È un download grande (circa 790 MB). Non contiene giochi né BIOS.",
+   "category": "emulatore",
+   "version": "1.0.0 beta 1",
+   "platform": "PS5",
+   "title_id": "PPSA99169",
+   "hashtags": [
+    "retroarch",
+    "emulationstation",
+    "libretro",
+    "retro"
+   ],
+   "download_url": "https://github.com/mihawk-99/PS5_RetroArch/releases/download/v1.0.0-beta.1/PS5_RetroArch-v1.0.0-beta1.zip",
+   "file_kind": "zip",
+   "size_bytes": 788929239,
+   "homepage_url": "https://github.com/mihawk-99/PS5_RetroArch",
+   "license": "GPL-3.0",
+   "icon": "asset:retroarch-ps5.jpg",
+   "cover": "asset:retroarch-ps5.jpg",
+   "screenshots": [],
+   "i18n": {
+    "en": {
+     "tagline": "33 emulators in one app, with EmulationStation",
+     "description": "Mihawk's native RetroArch for PS5, with 33 cores (from NES and Mega Drive up to Dreamcast, GameCube and PSP), Vulkan graphics and up to four controllers. At startup you choose between RetroArch and EmulationStation; a local web page lets you manage your library and cover art from your phone or PC. Designed for ShadowMountPlus 1.7beta4 or later. It's a big download (about 790 MB). It includes no games or BIOS."
+    },
+    "ja": {
+     "tagline": "1つのアプリに33のエミュレーター、EmulationStation付き",
+     "description": "MihawkによるPS5ネイティブのRetroArch。33のコア(ファミコンやメガドライブから、ドリームキャスト、ゲームキューブ、PSPまで)、Vulkanグラフィックス、最大4台のコントローラーに対応します。起動時にRetroArchとEmulationStationを選べます。ローカルのWebページから、スマホやPCでライブラリとカバー画像を管理できます。ShadowMountPlus 1.7beta4以降向けです。ダウンロードサイズが大きめです(約790 MB)。ゲームやBIOSは含まれません。"
+    },
+    "fr": {
+     "tagline": "33 émulateurs dans une seule application, avec EmulationStation",
+     "description": "RetroArch natif pour PS5 par Mihawk, avec 33 cores (de la NES et de la Mega Drive jusqu'à la Dreamcast, la GameCube et la PSP), un rendu Vulkan et jusqu'à quatre manettes. Au démarrage, vous choisissez entre RetroArch et EmulationStation ; une page web locale vous permet de gérer la bibliothèque et les jaquettes depuis votre téléphone ou votre PC. Conçu pour ShadowMountPlus 1.7beta4 ou ultérieur. Le téléchargement est volumineux (environ 790 Mo). Aucun jeu ni BIOS inclus."
+    },
+    "es": {
+     "tagline": "33 emuladores en una app, con EmulationStation",
+     "description": "RetroArch nativo para PS5 de Mihawk, con 33 cores (desde la NES y la Mega Drive hasta la Dreamcast, la GameCube y la PSP), gráficos Vulkan y hasta cuatro mandos. Al arrancar eliges entre RetroArch y EmulationStation; una página web local te permite gestionar la biblioteca y las carátulas desde el móvil o el PC. Pensado para ShadowMountPlus 1.7beta4 o posterior. Es una descarga grande (unos 790 MB). No incluye juegos ni BIOS."
+    },
+    "de": {
+     "tagline": "33 Emulatoren in einer App, mit EmulationStation",
+     "description": "Mihawks natives RetroArch für die PS5, mit 33 Cores (vom NES und Mega Drive bis zu Dreamcast, GameCube und PSP), Vulkan-Grafik und bis zu vier Controllern. Beim Start wählst du zwischen RetroArch und EmulationStation; über eine lokale Webseite verwaltest du Bibliothek und Cover vom Handy oder PC aus. Gedacht für ShadowMountPlus 1.7beta4 oder neuer. Der Download ist groß (etwa 790 MB). Enthält weder Spiele noch BIOS."
+    },
+    "nl": {
+     "tagline": "33 emulators in één app, met EmulationStation",
+     "description": "Native RetroArch voor PS5 van Mihawk, met 33 cores (van NES en Mega Drive tot Dreamcast, GameCube en PSP), Vulkan-graphics en tot vier controllers. Bij het opstarten kies je tussen RetroArch en EmulationStation; via een lokale webpagina beheer je je bibliotheek en hoesafbeeldingen vanaf je telefoon of pc. Gemaakt voor ShadowMountPlus 1.7beta4 of nieuwer. Het is een grote download (ongeveer 790 MB). Bevat geen games of BIOS."
+    },
+    "pt-PT": {
+     "tagline": "33 emuladores numa só app, com EmulationStation",
+     "description": "RetroArch nativo para a PS5 do Mihawk, com 33 cores (da NES e da Mega Drive até à Dreamcast, à GameCube e à PSP), gráficos Vulkan e até quatro comandos. Ao arrancar, escolhes entre o RetroArch e o EmulationStation; uma página web local permite-te gerir a biblioteca e as capas a partir do telemóvel ou do PC. Pensado para o ShadowMountPlus 1.7beta4 ou posterior. É uma transferência grande (cerca de 790 MB). Não inclui jogos nem BIOS."
+    },
+    "pt-BR": {
+     "tagline": "33 emuladores em um só app, com EmulationStation",
+     "description": "RetroArch nativo para PS5 do Mihawk, com 33 cores (do NES e do Mega Drive até o Dreamcast, o GameCube e o PSP), gráficos Vulkan e até quatro controles. Ao iniciar, você escolhe entre o RetroArch e o EmulationStation; uma página web local permite gerenciar a biblioteca e as capas pelo celular ou pelo PC. Feito para o ShadowMountPlus 1.7beta4 ou posterior. É um download grande (cerca de 790 MB). Não inclui jogos nem BIOS."
+    },
+    "ru": {
+     "tagline": "33 эмулятора в одном приложении, с EmulationStation",
+     "description": "Нативный RetroArch для PS5 от Mihawk: 33 ядра (от NES и Mega Drive до Dreamcast, GameCube и PSP), графика Vulkan и до четырёх контроллеров. При запуске можно выбрать RetroArch или EmulationStation, а локальная веб-страница позволяет управлять библиотекой и обложками с телефона или ПК. Рассчитан на ShadowMountPlus 1.7beta4 или новее. Загрузка большая (около 790 МБ). Игры и BIOS не входят в комплект."
+    },
+    "ko": {
+     "tagline": "앱 하나에 에뮬레이터 33개, EmulationStation 포함",
+     "description": "Mihawk가 만든 PS5 네이티브 RetroArch로, 33개의 코어(NES와 메가 드라이브부터 드림캐스트, 게임큐브, PSP까지), Vulkan 그래픽, 최대 4개의 컨트롤러를 지원합니다. 시작할 때 RetroArch와 EmulationStation 중에서 고를 수 있고, 로컬 웹 페이지를 통해 휴대폰이나 PC에서 라이브러리와 커버 아트를 관리할 수 있습니다. ShadowMountPlus 1.7beta4 이상에 맞춰 만들어졌습니다. 다운로드 용량이 큽니다(약 790 MB). 게임과 BIOS는 포함되어 있지 않습니다."
+    },
+    "zh-Hans": {
+     "tagline": "一个应用内含33款模拟器，附带EmulationStation",
+     "description": "Mihawk制作的PS5原生RetroArch，内含33个核心（从NES、Mega Drive到Dreamcast、GameCube和PSP），使用Vulkan图形，最多支持四个手柄。启动时可以在RetroArch和EmulationStation之间选择；通过本地网页，可以在手机或电脑上管理游戏库和封面。适用于ShadowMountPlus 1.7beta4或更高版本。下载体积较大（约790 MB）。不包含游戏和BIOS。"
+    },
+    "zh-Hant": {
+     "tagline": "一個應用程式內含33款模擬器，附帶EmulationStation",
+     "description": "Mihawk製作的PS5原生RetroArch，內含33個核心（從NES、Mega Drive到Dreamcast、GameCube和PSP），使用Vulkan圖形，最多支援四個控制器。啟動時可以在RetroArch和EmulationStation之間選擇；透過本機網頁，可以在手機或電腦上管理遊戲庫和封面。適用於ShadowMountPlus 1.7beta4或更新版本。下載容量較大（約790 MB）。不含遊戲和BIOS。"
+    },
+    "fi": {
+     "tagline": "33 emulaattoria yhdessä sovelluksessa, mukana EmulationStation",
+     "description": "Mihawkin natiivi RetroArch PS5:lle: 33 corea (NESistä ja Mega Drivesta aina Dreamcastiin, GameCubeen ja PSP:hen asti), Vulkan-grafiikka ja jopa neljä ohjainta. Käynnistyksessä valitset RetroArchin tai EmulationStationin; paikallisen verkkosivun kautta voit hallita kirjastoa ja kansikuvia puhelimella tai tietokoneella. Tehty ShadowMountPlus 1.7beta4:lle tai uudemmalle. Lataus on iso (noin 790 Mt). Mukana ei ole pelejä eikä BIOSta."
+    },
+    "sv": {
+     "tagline": "33 emulatorer i en app, med EmulationStation",
+     "description": "Mihawks inbyggda RetroArch för PS5, med 33 cores (från NES och Mega Drive till Dreamcast, GameCube och PSP), Vulkan-grafik och upp till fyra handkontroller. Vid start väljer du mellan RetroArch och EmulationStation; via en lokal webbsida kan du hantera biblioteket och omslagen från mobilen eller datorn. Gjord för ShadowMountPlus 1.7beta4 eller senare. Det är en stor nedladdning (cirka 790 MB). Inga spel eller BIOS ingår."
+    },
+    "da": {
+     "tagline": "33 emulatorer i én app, med EmulationStation",
+     "description": "Mihawks native RetroArch til PS5, med 33 cores (fra NES og Mega Drive op til Dreamcast, GameCube og PSP), Vulkan-grafik og op til fire controllere. Ved opstart vælger du mellem RetroArch og EmulationStation; via en lokal webside kan du styre biblioteket og covers fra telefonen eller pc'en. Lavet til ShadowMountPlus 1.7beta4 eller nyere. Det er en stor download (cirka 790 MB). Der følger hverken spil eller BIOS med."
+    },
+    "nb": {
+     "tagline": "33 emulatorer i én app, med EmulationStation",
+     "description": "Mihawks innebygde RetroArch for PS5, med 33 cores (fra NES og Mega Drive til Dreamcast, GameCube og PSP), Vulkan-grafikk og opptil fire kontrollere. Ved oppstart velger du mellom RetroArch og EmulationStation; via en lokal nettside kan du administrere biblioteket og omslagsbildene fra telefonen eller PC-en. Laget for ShadowMountPlus 1.7beta4 eller nyere. Det er en stor nedlasting (omtrent 790 MB). Ingen spill eller BIOS følger med."
+    },
+    "pl": {
+     "tagline": "33 emulatory w jednej aplikacji, z EmulationStation",
+     "description": "Natywny RetroArch na PS5 od Mihawka, z 33 rdzeniami (od NES i Mega Drive po Dreamcast, GameCube i PSP), grafiką Vulkan i obsługą do czterech kontrolerów. Przy starcie wybierasz RetroArch albo EmulationStation; lokalna strona WWW pozwala zarządzać biblioteką i okładkami z telefonu lub komputera. Przygotowany dla ShadowMountPlus 1.7beta4 lub nowszego. To duży plik do pobrania (około 790 MB). Nie zawiera gier ani BIOS-u."
+    },
+    "tr": {
+     "tagline": "Tek uygulamada 33 emülatör, EmulationStation ile",
+     "description": "Mihawk'ın PS5 için yerel RetroArch'ı: 33 çekirdek (NES ve Mega Drive'dan Dreamcast, GameCube ve PSP'ye kadar), Vulkan grafikleri ve dört kontrolcüye kadar destek. Açılışta RetroArch ile EmulationStation arasında seçim yaparsın; yerel bir web sayfası sayesinde kütüphaneyi ve kapakları telefondan ya da bilgisayardan yönetebilirsin. ShadowMountPlus 1.7beta4 veya sonrası için tasarlandı. İndirme boyutu büyük (yaklaşık 790 MB). Oyun ya da BIOS içermez."
+    },
+    "cs": {
+     "tagline": "33 emulátorů v jedné aplikaci, s EmulationStation",
+     "description": "Nativní RetroArch pro PS5 od Mihawka, s 33 jádry (od NES a Mega Drive až po Dreamcast, GameCube a PSP), grafikou Vulkan a až čtyřmi ovladači. Při spuštění si vybereš mezi RetroArch a EmulationStation; místní webová stránka ti umožní spravovat knihovnu a obaly z telefonu nebo PC. Určeno pro ShadowMountPlus 1.7beta4 nebo novější. Je to velké stahování (asi 790 MB). Neobsahuje žádné hry ani BIOS."
+    },
+    "hu": {
+     "tagline": "33 emulátor egy alkalmazásban, EmulationStationnel",
+     "description": "Mihawk natív RetroArch-ja PS5-re, 33 core-ral (a NES-től és a Mega Drive-tól a Dreamcastig, a GameCube-ig és a PSP-ig), Vulkan grafikával és legfeljebb négy kontrollerrel. Indításkor választhatsz a RetroArch és az EmulationStation között; egy helyi weboldalon telefonról vagy PC-ről kezelheted a játékkönyvtárat és a borítókat. ShadowMountPlus 1.7beta4 vagy újabb verzióhoz készült. Nagy letöltés (kb. 790 MB). Nem tartalmaz játékokat és BIOS-t."
+    },
+    "el": {
+     "tagline": "33 εξομοιωτές σε μία εφαρμογή, με EmulationStation",
+     "description": "Εγγενές RetroArch για PS5 από τον Mihawk, με 33 cores (από NES και Mega Drive μέχρι Dreamcast, GameCube και PSP), γραφικά Vulkan και έως τέσσερα χειριστήρια. Στην εκκίνηση διαλέγεις ανάμεσα σε RetroArch και EmulationStation· μια τοπική ιστοσελίδα σού επιτρέπει να διαχειρίζεσαι τη βιβλιοθήκη και τα εξώφυλλα από το κινητό ή τον υπολογιστή. Φτιαγμένο για ShadowMountPlus 1.7beta4 ή νεότερο. Είναι μεγάλη λήψη (περίπου 790 MB). Δεν περιλαμβάνει παιχνίδια ή BIOS."
+    },
+    "ro": {
+     "tagline": "33 de emulatoare într-o singură aplicație, cu EmulationStation",
+     "description": "RetroArch nativ pentru PS5 de la Mihawk, cu 33 de core-uri (de la NES și Mega Drive până la Dreamcast, GameCube și PSP), grafică Vulkan și până la patru controlere. La pornire alegi între RetroArch și EmulationStation; o pagină web locală te lasă să gestionezi biblioteca și copertele de pe telefon sau PC. Gândit pentru ShadowMountPlus 1.7beta4 sau mai nou. E o descărcare mare (aproximativ 790 MB). Nu include jocuri și nici BIOS."
+    },
+    "th": {
+     "tagline": "33 อีมูเลเตอร์ในแอปเดียว พร้อม EmulationStation",
+     "description": "RetroArch แบบเนทีฟสำหรับ PS5 โดย Mihawk มาพร้อม 33 คอร์ (ตั้งแต่ NES และ Mega Drive ไปจนถึง Dreamcast, GameCube และ PSP) กราฟิก Vulkan และรองรับคอนโทรลเลอร์ได้สูงสุดสี่ตัว ตอนเปิดแอปเลือกได้ว่าจะใช้ RetroArch หรือ EmulationStation และมีหน้าเว็บในเครื่องให้จัดการคลังเกมและภาพปกจากมือถือหรือคอมพิวเตอร์ ออกแบบมาสำหรับ ShadowMountPlus 1.7beta4 ขึ้นไป ไฟล์ดาวน์โหลดมีขนาดใหญ่ (ประมาณ 790 MB) ไม่รวมเกมและ BIOS"
+    },
+    "vi": {
+     "tagline": "33 trình giả lập trong một ứng dụng, kèm EmulationStation",
+     "description": "RetroArch chạy native trên PS5 của Mihawk, với 33 core (từ NES và Mega Drive đến Dreamcast, GameCube và PSP), đồ họa Vulkan và hỗ trợ tối đa bốn tay cầm. Khi khởi động, bạn chọn giữa RetroArch và EmulationStation; một trang web cục bộ cho phép quản lý thư viện và ảnh bìa từ điện thoại hoặc PC. Thiết kế cho ShadowMountPlus 1.7beta4 trở lên. Dung lượng tải về khá lớn (khoảng 790 MB). Không kèm game hay BIOS."
+    },
+    "id": {
+     "tagline": "33 emulator dalam satu aplikasi, dengan EmulationStation",
+     "description": "RetroArch native untuk PS5 buatan Mihawk, dengan 33 core (dari NES dan Mega Drive sampai Dreamcast, GameCube, dan PSP), grafis Vulkan, dan hingga empat controller. Saat dibuka, kamu memilih antara RetroArch dan EmulationStation; halaman web lokal memungkinkanmu mengelola pustaka dan sampul dari ponsel atau PC. Dibuat untuk ShadowMountPlus 1.7beta4 atau yang lebih baru. Ukuran unduhannya besar (sekitar 790 MB). Tidak menyertakan game maupun BIOS."
+    },
+    "uk": {
+     "tagline": "33 емулятори в одному застосунку, з EmulationStation",
+     "description": "Нативний RetroArch для PS5 від Mihawk: 33 ядра (від NES і Mega Drive до Dreamcast, GameCube і PSP), графіка Vulkan і до чотирьох контролерів. Під час запуску можна вибрати RetroArch або EmulationStation, а локальна вебсторінка дає змогу керувати бібліотекою й обкладинками з телефона чи ПК. Розраховано на ShadowMountPlus 1.7beta4 або новіший. Завантаження велике (близько 790 МБ). Ігор і BIOS у комплекті немає."
+    }
+   }
   }
  ]
 }

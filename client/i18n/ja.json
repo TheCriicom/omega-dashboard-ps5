@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "コピーしましたが、本体に登録されませんでした（0x%08X）",
   "Copiato: scegli la cartella e premi △": "コピーしました：フォルダーを選んで△を押してください",
   "Copio %s": "%sをコピー中",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "修正：システムパーティションが書き込み可能のまま残らなくなり、突然電源が切れてもファイルが壊れなくなり、ログが際限なく大きくならなくなりました。",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "ホームの背景。「カスタム画像」：/data/Omega に wallpaper.jpg または wallpaper.png を置いてください。",
   "Cosa fanno i tuoi amici": "フレンドの近況",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "作動中に表示するもの。ボタンを押せば戻ります。",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Omegaサービスが応答しないため、リモコンは無効です。Omegaを更新するか、本体を再起動してください。",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Omegaサービスが応答しません：Omegaを更新するか、本体を再起動してください",
   "Il servizio era già attivo.": "サービスはすでに動作していました。",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "バックグラウンドサービスの負荷を軽減：パーティーと通知は必要なときだけ確認し、ネットワークがないときは再試行の間隔を徐々に空けます。",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "ミュージックサービスが応答しません。最新バージョンのOmegaデーモン（omega_redirect）が必要です：Omegaを更新して本体を再起動してください。",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "ミュージックサービスが応答しません：Omegaを更新するか、本体を再起動してください",
   "Il servizio è già partito.": "サービスはすでに起動しています。",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "半数以上のプレイヤーを上回っています。",
   "Più scaricati": "ダウンロード数順",
   "Più scuro, più leggibili i testi sopra le copertine.": "暗くするほど、カバー画像の上の文字が読みやすくなります。",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "電源オフ時の安定性が向上：本体の電源を切る、再起動する、レストモードにするときにOmegaがそれを検知し、先にミュージック、ボイスパーティー、接続、外付けディスクから起動したゲームを終了するようになりました。これらがフリーズの最も多い原因でした。",
   "Più votati": "高評価順",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "プラチナ300 · ゴールド90 · シルバー30 · ブロンズ15ポイント。トロフィーは本体から読み込まれます。",
   "Playlist": "プレイリスト",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "自動アップロードをオフにする",
   "Spegni il microfono": "マイクをオフ",
   "Spegni la console": "電源を切る",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Omegaのメニューからの電源オフ、再起動、レストモードは、インストール、コピー、クラウドセーブの完了を待ってから実行されます。",
   "Spenta": "オフ",
   "Spenti": "オフ",
   "Sposta": "移動",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  移動",
   "◀ ▶  Sposta": "◀ ▶  移動",
   "✕ ingrandisci": "✕ 拡大",
-  "✕ preferito   □ silenzia": "✕ お気に入り   □ ミュート"
+  "✕ preferito   □ silenzia": "✕ お気に入り   □ ミュート",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "ストアに新しいエミュレーターを追加：Nintendo 64、PlayStation 1、PlayStation 2、PSP、スーパーファミコン、Xbox、Xbox 360（実験版）、33コアとEmulationStationを備えたRetroArch。",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "アプリのフォルダーが別のフォルダーの中にあるzipも正しくインストールできるようになり、アプリのファイルに起動に必要な権限が付くようになりました。"
 }

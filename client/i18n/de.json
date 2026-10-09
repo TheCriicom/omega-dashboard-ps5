@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "Kopiert, aber die Konsole hat es nicht registriert (0x%08X)",
   "Copiato: scegli la cartella e premi △": "Kopiert: Wähle den Ordner und drücke △",
   "Copio %s": "Kopiere %s",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "Korrekturen: Die Systempartition bleibt nicht mehr beschreibbar, Dateien werden bei plötzlichem Stromausfall nicht mehr beschädigt und Protokolle wachsen nicht mehr endlos.",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "Was hinter dem Home liegt. „Eigenes Bild“: Lege wallpaper.jpg oder wallpaper.png in /data/Omega ab.",
   "Cosa fanno i tuoi amici": "Was deine Freunde machen",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "Was angezeigt wird, solange er aktiv ist. Eine Taste genügt, um zurückzukehren.",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Der Omega-Dienst antwortet nicht, daher ist die Fernbedienung nicht aktiv. Aktualisiere Omega oder starte die Konsole neu.",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Der Omega-Dienst antwortet nicht: Aktualisiere Omega oder starte die Konsole neu",
   "Il servizio era già attivo.": "Der Dienst war bereits aktiv.",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "Der Hintergrunddienst arbeitet weniger: Er prüft Party und Mitteilungen nur bei Bedarf und versucht es ohne Netzwerk immer seltener.",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "Der Musikdienst antwortet nicht. Die aktuelle Version des Omega-Daemons (omega_redirect) wird benötigt: Aktualisiere Omega und starte die Konsole neu.",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "Der Musikdienst antwortet nicht: Aktualisiere Omega oder starte die Konsole neu",
   "Il servizio è già partito.": "Der Dienst wurde bereits gestartet.",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "Mehr als die Hälfte der Spieler hinter dir.",
   "Più scaricati": "Meistgeladen",
   "Più scuro, più leggibili i testi sopra le copertine.": "Je dunkler, desto lesbarer die Texte über den Titelbildern.",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "Stabiler beim Ausschalten: Omega erkennt jetzt, wenn du die Konsole ausschaltest, neu startest oder in den Ruhemodus versetzt, und beendet zuerst Musik, Voice-Party, Verbindungen und Spiele, die von einem externen Laufwerk gestartet wurden. Das war die häufigste Ursache für Hänger.",
   "Più votati": "Bestbewertet",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "Platin 300 · Gold 90 · Silber 30 · Bronze 15 Punkte. Die Trophäen kommen von der Konsole.",
   "Playlist": "Playlists",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "Automatisches Hochladen ausschalten",
   "Spegni il microfono": "Mikro ausschalten",
   "Spegni la console": "Konsole ausschalten",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Ausschalten, Neu starten und Ruhemodus im Omega-Menü warten, bis Installationen, Kopiervorgänge und Cloud-Spielstände fertig sind.",
   "Spenta": "Aus",
   "Spenti": "Aus",
   "Sposta": "Verschieben",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  Verschieben",
   "◀ ▶  Sposta": "◀ ▶  Verschieben",
   "✕ ingrandisci": "✕ vergrößern",
-  "✕ preferito   □ silenzia": "✕ Favorit   □ stumm"
+  "✕ preferito   □ silenzia": "✕ Favorit   □ stumm",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "Neue Emulatoren im Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (experimentell) und RetroArch mit 33 Cores und EmulationStation.",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "App-ZIPs, bei denen der App-Ordner in einem weiteren Ordner liegt, werden jetzt richtig installiert, und die Dateien der App bekommen die Rechte, die sie zum Starten brauchen."
 }

@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "Gekopieerd, maar de console heeft het niet geregistreerd (0x%08X)",
   "Copiato: scegli la cartella e premi △": "Gekopieerd: kies de map en druk op △",
   "Copio %s": "%s kopiëren",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "Oplossingen: de systeempartitie blijft niet meer schrijfbaar, bestanden raken niet meer beschadigd als de console plots uitvalt en de logboeken groeien niet meer eindeloos.",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "Wat er achter de Home staat. ‘Eigen afbeelding’: zet wallpaper.jpg of wallpaper.png in /data/Omega.",
   "Cosa fanno i tuoi amici": "Wat je vrienden doen",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "Wat je ziet terwijl hij actief is. Eén knop is genoeg om terug te gaan.",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "De Omega-service reageert niet, dus de afstandsbediening is niet actief. Werk Omega bij of herstart de console.",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "De Omega-service reageert niet: werk Omega bij of herstart de console",
   "Il servizio era già attivo.": "De service was al actief.",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "De achtergronddienst doet minder: hij controleert party en meldingen alleen als dat nodig is en probeert het zonder netwerk steeds minder vaak opnieuw.",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "De muziekservice reageert niet. De bijgewerkte versie van de Omega-daemon (omega_redirect) is nodig: werk Omega bij en herstart de console.",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "De muziekservice reageert niet: werk Omega bij of herstart de console",
   "Il servizio è già partito.": "De service is al gestart.",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "Meer dan de helft van de spelers achter je.",
   "Più scaricati": "Meest gedownload",
   "Più scuro, più leggibili i testi sopra le copertine.": "Hoe donkerder, hoe beter leesbaar de tekst op de omslagen.",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "Stabieler bij uitschakelen: Omega merkt nu wanneer je de console uitschakelt, opnieuw start of in rustmodus zet, en sluit eerst muziek, voice-party, verbindingen en games die vanaf een externe schijf zijn gestart. Dat was de meest voorkomende oorzaak van vastlopers.",
   "Più votati": "Best beoordeeld",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "Platina 300 · goud 90 · zilver 30 · brons 15 punten. De trofeeën komen van de console.",
   "Playlist": "Afspeellijsten",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "Automatisch uploaden uitschakelen",
   "Spegni il microfono": "Microfoon uitzetten",
   "Spegni la console": "Console uitschakelen",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Uitschakelen, Opnieuw starten en Rustmodus in het menu van Omega wachten tot installaties, kopieën en opgeslagen data in de cloud klaar zijn.",
   "Spenta": "Uit",
   "Spenti": "Uit",
   "Sposta": "Verplaatsen",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  Verplaatsen",
   "◀ ▶  Sposta": "◀ ▶  Verplaatsen",
   "✕ ingrandisci": "✕ vergroten",
-  "✕ preferito   □ silenzia": "✕ favoriet   □ dempen"
+  "✕ preferito   □ silenzia": "✕ favoriet   □ dempen",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "Nieuwe emulators in de Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (experimenteel) en RetroArch met 33 cores en EmulationStation.",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "App-zips waarbij de app-map in een andere map zit, worden nu goed geïnstalleerd, en de bestanden van de app krijgen de rechten die ze nodig hebben om te starten."
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026.10.10.1
+
+- **Store: new emulators.** Mupen64Plus PS5 (Nintendo 64), PSXS5
+  (PlayStation 1), PS5SX2 and its Helper (PlayStation 2), PSP5 (PSP), Snes9x
+  PS5 (Super Nintendo), XPSemu and its helper (original Xbox), PS5X360 (Xbox
+  360, experimental) and Mihawk's RetroArch PS5 (33 cores, EmulationStation).
+  All from their GitHub releases, with descriptions in 27 languages.
+- **App zips with a Title ID**: the app folder is now found even when it sits
+  one level down next to PC tools (`PSXS5-v2.2.0/PPSA97510/`), and only that
+  folder is extracted. The app's files and folders are made readable and
+  executable by everyone, as these apps need to start (CE-107750-0).
+
 ## 2026.10.09.4
 
 - **Home order is yours**: from the options of a game, a folder or one of

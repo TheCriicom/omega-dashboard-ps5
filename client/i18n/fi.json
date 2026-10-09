@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "Kopioitu, mutta konsoli ei rekisteröinyt sitä (0x%08X)",
   "Copiato: scegli la cartella e premi △": "Kopioitu: valitse kansio ja paina △",
   "Copio %s": "Kopioidaan: %s",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "Korjaukset: järjestelmäosio ei enää jää kirjoitettavaksi, tiedostot eivät enää vioitu, jos konsoli sammuu äkkiä, eivätkä lokit enää kasva loputtomiin.",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "Mitä aloitusnäytön takana on. ”Oma kuva”: laita wallpaper.jpg tai wallpaper.png kansioon /data/Omega.",
   "Cosa fanno i tuoi amici": "Mitä kaverisi puuhaavat",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "Mitä näkyy, kun se on päällä. Palaat painamalla mitä tahansa painiketta.",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Omegan palvelu ei vastaa, joten kaukosäädin ei ole käytössä. Päivitä Omega tai käynnistä konsoli uudelleen.",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Omegan palvelu ei vastaa: päivitä Omega tai käynnistä konsoli uudelleen",
   "Il servizio era già attivo.": "Palvelu oli jo käynnissä.",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "Taustapalvelu tekee vähemmän töitä: se tarkistaa partyt ja ilmoitukset vain tarvittaessa ja yrittää ilman verkkoa uudelleen yhä harvemmin.",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "Musiikkipalvelu ei vastaa. Tarvitaan Omegan taustaprosessin (omega_redirect) päivitetty versio: päivitä Omega ja käynnistä konsoli uudelleen.",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "Musiikkipalvelu ei vastaa: päivitä Omega tai käynnistä konsoli uudelleen",
   "Il servizio è già partito.": "Palvelu on jo käynnistynyt.",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "Yli puolet pelaajista jäi taaksesi.",
   "Più scaricati": "Ladatuimmat",
   "Più scuro, più leggibili i testi sopra le copertine.": "Mitä tummempi, sitä luettavampia tekstit kansikuvien päällä.",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "Vakaampi sammutettaessa: Omega huomaa nyt, kun sammutat konsolin, käynnistät sen uudelleen tai siirrät sen lepotilaan, ja sulkee ensin musiikin, äänipartyn, yhteydet ja ulkoiselta levyltä käynnistetyt pelit. Ne olivat yleisin syy jumiutumisiin.",
   "Più votati": "Parhaiten arvioidut",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "Platina 300 · kulta 90 · hopea 30 · pronssi 15 pistettä. Trophyt luetaan konsolilta.",
   "Playlist": "Soittolistat",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "Poista automaattinen lataus käytöstä",
   "Spegni il microfono": "Mikrofoni pois",
   "Spegni la console": "Sammuta konsoli",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Omegan valikon Sammuta, Käynnistä uudelleen ja Lepotila odottavat, että asennukset, kopioinnit ja verkkotallennukset valmistuvat.",
   "Spenta": "Pois",
   "Spenti": "Pois",
   "Sposta": "Siirrä",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  Siirrä",
   "◀ ▶  Sposta": "◀ ▶  Siirrä",
   "✕ ingrandisci": "✕ suurenna",
-  "✕ preferito   □ silenzia": "✕ suosikki   □ mykistä"
+  "✕ preferito   □ silenzia": "✕ suosikki   □ mykistä",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "Uusia emulaattoreita Storessa: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (kokeellinen) sekä RetroArch, jossa on 33 corea ja EmulationStation.",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "Sovellus-zipit, joissa sovelluksen kansio on toisen kansion sisällä, asentuvat nyt oikein, ja sovelluksen tiedostot saavat käynnistykseen tarvittavat oikeudet."
 }

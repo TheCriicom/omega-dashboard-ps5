@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "คัดลอกแล้ว แต่คอนโซลไม่ได้ลงทะเบียน (0x%08X)",
   "Copiato: scegli la cartella e premi △": "คัดลอกแล้ว: เลือกโฟลเดอร์แล้วกด △",
   "Copio %s": "กำลังคัดลอก %s",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "การแก้ไข: พาร์ติชันระบบไม่ค้างอยู่ในสถานะเขียนได้อีกต่อไป ไฟล์ไม่เสียหายแล้วเมื่อเครื่องดับกะทันหัน และไฟล์บันทึกไม่ขยายใหญ่ไม่สิ้นสุดอีกต่อไป",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "สิ่งที่อยู่ด้านหลังหน้าหลัก «รูปภาพของคุณ»: วาง wallpaper.jpg หรือ wallpaper.png ไว้ใน /data/Omega",
   "Cosa fanno i tuoi amici": "เพื่อนของคุณกำลังทำอะไร",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "สิ่งที่แสดงขณะทำงาน กดปุ่มใดก็ได้เพื่อกลับ",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "บริการของ Omega ไม่ตอบสนอง รีโมตจึงไม่ทำงาน อัปเดต Omega หรือรีสตาร์ทเครื่อง",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "บริการของ Omega ไม่ตอบสนอง: อัปเดต Omega หรือรีสตาร์ทเครื่อง",
   "Il servizio era già attivo.": "บริการทำงานอยู่แล้ว",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "บริการพื้นหลังทำงานน้อยลง: ตรวจสอบปาร์ตี้และการแจ้งเตือนเฉพาะเมื่อจำเป็น และเมื่อไม่มีเครือข่ายจะลองใหม่ห่างขึ้นเรื่อยๆ",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "บริการเพลงไม่ตอบสนอง ต้องใช้ดีมอนของ Omega (omega_redirect) เวอร์ชันล่าสุด: อัปเดต Omega แล้วรีสตาร์ทเครื่อง",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "บริการเพลงไม่ตอบสนอง: อัปเดต Omega หรือรีสตาร์ทเครื่อง",
   "Il servizio è già partito.": "บริการเริ่มทำงานแล้ว",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "ผู้เล่นมากกว่าครึ่งตามหลังคุณ",
   "Più scaricati": "ดาวน์โหลดมากที่สุด",
   "Più scuro, più leggibili i testi sopra le copertine.": "ยิ่งมืด ข้อความบนภาพปกยิ่งอ่านง่าย",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "ปิดเครื่องได้เสถียรขึ้น: ตอนนี้ Omega จะรู้เมื่อคุณปิดเครื่อง รีสตาร์ท หรือเข้าโหมดพัก และจะปิดเพลง ปาร์ตี้เสียง การเชื่อมต่อ และเกมที่เปิดจากดิสก์ภายนอกก่อน ซึ่งเป็นสาเหตุที่พบบ่อยที่สุดของอาการค้าง",
   "Più votati": "คะแนนสูงสุด",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "แพลตตินัม 300 · ทอง 90 · เงิน 30 · ทองแดง 15 คะแนน ถ้วยรางวัลมาจากคอนโซล",
   "Playlist": "เพลย์ลิสต์",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "ปิดการอัปโหลดอัตโนมัติ",
   "Spegni il microfono": "ปิดไมค์",
   "Spegni la console": "ปิดเครื่อง",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "ปิดเครื่อง รีสตาร์ท และโหมดพักจากเมนูของ Omega จะรอให้การติดตั้ง การคัดลอก และข้อมูลเซฟบนคลาวด์เสร็จก่อน",
   "Spenta": "ปิด",
   "Spenti": "ปิด",
   "Sposta": "ย้าย",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  ย้าย",
   "◀ ▶  Sposta": "◀ ▶  ย้าย",
   "✕ ingrandisci": "✕ ขยาย",
-  "✕ preferito   □ silenzia": "✕ รายการโปรด   □ ปิดเสียง"
+  "✕ preferito   □ silenzia": "✕ รายการโปรด   □ ปิดเสียง",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "อีมูเลเตอร์ใหม่ใน Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (ทดลอง) และ RetroArch พร้อม 33 คอร์และ EmulationStation",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "ไฟล์ zip ของแอปที่มีโฟลเดอร์แอปอยู่ในอีกโฟลเดอร์หนึ่งติดตั้งได้ถูกต้องแล้ว และไฟล์ของแอปได้รับสิทธิ์ที่จำเป็นในการเปิด"
 }

@@ -2,7 +2,8 @@
 //  · .zip con <Nome>/homebrew.js o eboot.elf (formato websrv) → /data/homebrew;
 //  · .zip con homebrew.js in radice → /data/homebrew/<Nome>;
 //  · .elf → Payload Manager, con il .elf.json accanto;
-//  · .zip di un'app con Title ID → /user/app/<TID> e registrazione del titolo;
+//  · .zip di un'app con Title ID (anche dentro una sottocartella) → /user/app/<TID>
+//    e registrazione del titolo;
 //  · .pkg → sceAppInstUtilInstallByPackage: la console lo scarica da sé;
 //  · cartella di un gioco (caricata dal telefono o dal PC, file:///data/...) →
 //    /user/app/<TID> e registrazione del titolo.
@@ -93,6 +94,21 @@ static void mkparents(const char *path) {
   for (char *p = tmp + 1; *p; p++) if (*p == '/') { *p = 0; mkdir(tmp, 0755); *p = '/'; }
 }
 static void mkdirs(const char *dir) { char t[700]; snprintf(t, sizeof t, "%s/", dir); mkparents(t); }
+#ifdef HAVE_ZIP
+// cartelle di un'app aperte a tutti, come i file (vedi unzip_to)
+static void chmod_dirs(const char *dir, int depth) {
+  chmod(dir, 0777);
+  if (depth > 12) return;
+  DIR *d = opendir(dir); if (!d) return;
+  struct dirent *e;
+  while ((e = readdir(d))) {
+    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) continue;
+    char p[900]; snprintf(p, sizeof p, "%s/%s", dir, e->d_name);
+    struct stat st; if (lstat(p, &st) == 0 && S_ISDIR(st.st_mode)) chmod_dirs(p, depth + 1);
+  }
+  closedir(d);
+}
+#endif
 
 // nome di cartella sicuro da un titolo: lettere, cifre, - e _
 static void safe_name(const char *src, char *out, size_t n) {
@@ -128,9 +144,12 @@ static int unsafe_entry(const char *name) {
   return strstr(name, "..") != NULL;
 }
 
-typedef struct { char top[256]; int hb_top, hb_root, files; } ZipInfo;
+typedef struct { char top[256], app[256]; int hb_top, hb_root, files, app_found; } ZipInfo;
 
-// cartella comune di primo livello e posizione di homebrew.js / eboot.elf
+// cartella comune di primo livello, posizione di homebrew.js / eboot.elf e
+// cartella dell'app (quella con sce_sys/param.json, la meno profonda): alcuni
+// zip la mettono un livello più giù, accanto a strumenti per il PC
+// (PSXS5-v2.2.0/PPSA97510/...)
 static int zip_scan(const char *zip, ZipInfo *zi) {
   memset(zi, 0, sizeof *zi);
   unzFile uf = unzOpen64(zip); if (!uf) return -1;
@@ -145,14 +164,21 @@ static int zip_scan(const char *zip, ZipInfo *zi) {
     else if (strncmp(nm, zi->top, strlen(zi->top))) common = 0;
     if (!strcmp(nm, "homebrew.js") || !strcmp(nm, "eboot.elf")) zi->hb_root = 1;
     if (slash && strchr(slash + 1, '/') == NULL && (!strcmp(slash + 1, "homebrew.js") || !strcmp(slash + 1, "eboot.elf"))) zi->hb_top = 1;
+    size_t nl = strlen(nm), pl = strlen("sce_sys/param.json");
+    if (nl >= pl && !strcmp(nm + nl - pl, "sce_sys/param.json") && (nl == pl || nm[nl - pl - 1] == '/')
+        && (!zi->app_found || nl - pl < strlen(zi->app))) {
+      snprintf(zi->app, sizeof zi->app, "%.*s", (int)(nl - pl), nm); zi->app_found = 1;
+    }
   } while (unzGoToNextFile(uf) == UNZ_OK);
   unzClose(uf);
   if (!common) { zi->top[0] = 0; zi->hb_top = 0; }
   return zi->files ? 0 : -1;
 }
 
-// estrae in dest togliendo il prefisso strip dai nomi
-static int unzip_to(const char *zip, const char *dest, const char *strip) {
+// estrae in dest togliendo il prefisso strip dai nomi; con only si salta
+// quello che sta fuori da strip, con app i file restano leggibili ed eseguibili
+// da tutti (un'app con permessi stretti non parte: CE-107750-0)
+static int unzip_to(const char *zip, const char *dest, const char *strip, int only, int app) {
   unzFile uf = unzOpen64(zip); if (!uf) return -1;
   size_t striplen = strip ? strlen(strip) : 0;
   int rc = 0, files = 0;
@@ -161,6 +187,7 @@ static int unzip_to(const char *zip, const char *dest, const char *strip) {
     unz_file_info64 fi; char nm[512];
     if (unzGetCurrentFileInfo64(uf, &fi, nm, sizeof nm, NULL, 0, NULL, 0) != UNZ_OK) { rc = -1; break; }
     if (unsafe_entry(nm)) continue;
+    if (only && striplen && strncmp(nm, strip, striplen)) continue;
     const char *rel = (striplen && !strncmp(nm, strip, striplen)) ? nm + striplen : nm;
     if (!rel[0]) continue;
     char out[900]; snprintf(out, sizeof out, "%s/%s", dest, rel);
@@ -175,7 +202,8 @@ static int unzip_to(const char *zip, const char *dest, const char *strip) {
     fclose(f); unzCloseCurrentFile(uf);
     if (k < 0) { rc = -1; break; }
     // gli eseguibili devono restare tali (anche i file senza estensione)
-    if (ends_with(out, ".elf") || ends_with(out, ".so") || !strchr(rel, '.')) chmod(out, 0755);
+    if (app) chmod(out, 0777);
+    else if (ends_with(out, ".elf") || ends_with(out, ".so") || !strchr(rel, '.')) chmod(out, 0755);
     files++;
     snprintf(g_phase, sizeof g_phase, _("Estrazione (%d file)"), files);
   } while (unzGoToNextFile(uf) == UNZ_OK);
@@ -610,7 +638,7 @@ static int do_zip(const InstallReq *j) {
       snprintf(dest, sizeof dest, OMEGA_HB_ROOT "/%s", folder);
     }
     mkdirs(dest);
-    rc = unzip_to(zip, dest, "");
+    rc = unzip_to(zip, dest, "", 0, 0);
     if (!lp) unlink(zip);
     if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
     omega_log("install: homebrew %s → %s/%s", j->name, OMEGA_HB_ROOT, folder);
@@ -624,7 +652,8 @@ static int do_zip(const InstallReq *j) {
     // (drives.c) e la registra al primo avvio
     char ed[300]; snprintf(ed, sizeof ed, "%s/homebrew/%s", j->dest_mount, j->title_id);
     mkdirs(ed);
-    rc = unzip_to(zip, ed, zi.top);
+    rc = unzip_to(zip, ed, zi.app_found ? zi.app : zi.top, zi.app_found, 1);
+    if (!rc) chmod_dirs(ed, 0);
     if (!lp) unlink(zip);
     if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
     snprintf(g_result, sizeof g_result, _("%s installato su %s: lo trovi in home"), j->name[0] ? j->name : j->title_id, j->dest_label);
@@ -637,7 +666,8 @@ static int do_zip(const InstallReq *j) {
   sceAppInstUtilAppUnInstall(j->title_id);     // reinstallazione
 # endif
   mkdirs(dest);
-  rc = unzip_to(zip, dest, zi.top);
+  rc = unzip_to(zip, dest, zi.app_found ? zi.app : zi.top, zi.app_found, 1);
+  if (!rc) chmod_dirs(dest, 0);
   if (!lp) unlink(zip);
   if (rc) { snprintf(g_result, sizeof g_result, "%s", _("Estrazione dello zip non riuscita")); return -1; }
 # ifdef PS5

@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "Đã sao chép, nhưng máy chưa đăng ký được (0x%08X)",
   "Copiato: scegli la cartella e premi △": "Đã sao chép: chọn thư mục rồi nhấn △",
   "Copio %s": "Đang sao chép %s",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "Sửa lỗi: phân vùng hệ thống không còn bị để ở chế độ ghi, tệp không còn bị hỏng khi máy tắt đột ngột và nhật ký không còn phình to mãi.",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "Phía sau Màn hình chính. «Ảnh riêng»: đặt wallpaper.jpg hoặc wallpaper.png vào /data/Omega.",
   "Cosa fanno i tuoi amici": "Bạn bè của bạn đang làm gì",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "Nội dung hiển thị khi đang bật. Nhấn một nút bất kỳ để quay lại.",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Dịch vụ Omega không phản hồi nên điều khiển từ xa không hoạt động. Cập nhật Omega hoặc khởi động lại máy.",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Dịch vụ Omega không phản hồi: cập nhật Omega hoặc khởi động lại máy",
   "Il servizio era già attivo.": "Dịch vụ đã chạy từ trước.",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "Dịch vụ chạy nền làm việc ít hơn: chỉ kiểm tra party và thông báo khi cần và, khi không có mạng, thử lại ngày càng thưa hơn.",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "Dịch vụ nhạc không phản hồi. Cần phiên bản mới của daemon Omega (omega_redirect): cập nhật Omega rồi khởi động lại máy.",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "Dịch vụ nhạc không phản hồi: cập nhật Omega hoặc khởi động lại máy",
   "Il servizio è già partito.": "Dịch vụ đã khởi chạy.",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "Hơn một nửa người chơi xếp sau bạn.",
   "Più scaricati": "Tải nhiều nhất",
   "Più scuro, più leggibili i testi sopra le copertine.": "Càng tối, chữ trên ảnh bìa càng dễ đọc.",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "Ổn định hơn khi tắt máy: Omega giờ nhận biết khi bạn tắt máy, khởi động lại hoặc đưa máy vào chế độ nghỉ, và đóng trước nhạc, party thoại, các kết nối và trò chơi chạy từ ổ đĩa ngoài. Đây là nguyên nhân phổ biến nhất gây treo máy.",
   "Più votati": "Đánh giá cao nhất",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "Bạch kim 300 · vàng 90 · bạc 30 · đồng 15 điểm. Cúp được lấy từ máy.",
   "Playlist": "Danh sách phát",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "Tắt tự động tải lên",
   "Spegni il microfono": "Tắt micrô",
   "Spegni la console": "Tắt máy",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Tắt máy, Khởi động lại và Chế độ nghỉ trong menu của Omega sẽ chờ việc cài đặt, sao chép và dữ liệu lưu trên đám mây hoàn tất.",
   "Spenta": "Tắt",
   "Spenti": "Tắt",
   "Sposta": "Di chuyển",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  Di chuyển",
   "◀ ▶  Sposta": "◀ ▶  Di chuyển",
   "✕ ingrandisci": "✕ phóng to",
-  "✕ preferito   □ silenzia": "✕ yêu thích   □ tắt tiếng"
+  "✕ preferito   □ silenzia": "✕ yêu thích   □ tắt tiếng",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "Trình giả lập mới trong Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (thử nghiệm) và RetroArch với 33 core cùng EmulationStation.",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "Các file zip ứng dụng có thư mục ứng dụng nằm trong một thư mục khác giờ đã cài đặt đúng, và các file của ứng dụng được cấp quyền cần thiết để khởi động."
 }

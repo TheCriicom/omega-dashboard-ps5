@@ -546,13 +546,13 @@
   },
   "%s  ·  %.1f / %.1f MB": {
     "where": [
-      "omega-ui-src/source/install.c:880"
+      "omega-ui-src/source/install.c:910"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s f f; unit or abbreviation: use the usual short form of your language"
   },
   "%s  ·  %d%%  ·  %.0f / %.0f MB": {
     "where": [
-      "omega-ui-src/source/install.c:810"
+      "omega-ui-src/source/install.c:840"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s d %% f f; unit or abbreviation: use the usual short form of your language"
   },
@@ -631,33 +631,33 @@
   },
   "%s installato": {
     "where": [
-      "omega-ui-src/source/install.c:649",
-      "omega-ui-src/source/install.c:700"
+      "omega-ui-src/source/install.c:679",
+      "omega-ui-src/source/install.c:730"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato in Payload Manager": {
     "where": [
-      "omega-ui-src/source/install.c:585"
+      "omega-ui-src/source/install.c:613"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
   "%s installato per %s: lo trovi in home e tra i payload del caricatore": {
     "where": [
-      "omega-ui-src/source/install.c:552"
+      "omega-ui-src/source/install.c:580"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
   "%s installato su %s: lo trovi in home": {
     "where": [
-      "omega-ui-src/source/install.c:630",
-      "omega-ui-src/source/install.c:674"
+      "omega-ui-src/source/install.c:659",
+      "omega-ui-src/source/install.c:704"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s s"
   },
   "%s installato: lo trovi nella Home di Omega": {
     "where": [
-      "omega-ui-src/source/install.c:617"
+      "omega-ui-src/source/install.c:645"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -698,7 +698,7 @@
   },
   "%s · %.0f GB liberi": {
     "where": [
-      "omega-ui-src/source/install.c:741"
+      "omega-ui-src/source/install.c:771"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s f; unit or abbreviation: use the usual short form of your language"
   },
@@ -734,7 +734,7 @@
   },
   "%s è in Payload Manager: avvialo una volta per completare l'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:583"
+      "omega-ui-src/source/install.c:611"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -1345,12 +1345,12 @@
   },
   "Analisi": {
     "where": [
-      "omega-ui-src/source/install.c:595"
+      "omega-ui-src/source/install.c:623"
     ]
   },
   "Anche Community, Store, Browser, Installa PKG, Aggiornamenti e App mobile si possono spostare o nascondere; le rimetti in Impostazioni › Home e giochi › App nascoste, e da Ordine della home torni all'ordine automatico.": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:15"
+      "omega-ui-src/source/whatsnew.c:17"
     ]
   },
   "Anche a console spenta: la web app parla con il server di Omega, come la dash.": {
@@ -1846,8 +1846,8 @@
   },
   "Avvio dell'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:483",
-      "omega-ui-src/source/install.c:504"
+      "omega-ui-src/source/install.c:511",
+      "omega-ui-src/source/install.c:532"
     ]
   },
   "Avvio già in corso...": {
@@ -2327,7 +2327,7 @@
   },
   "Cartella non valida: manca il Title ID": {
     "where": [
-      "omega-ui-src/source/install.c:662"
+      "omega-ui-src/source/install.c:692"
     ]
   },
   "Cartella tolta": {
@@ -3135,8 +3135,8 @@
   },
   "Copia non riuscita": {
     "where": [
-      "omega-ui-src/source/install.c:281",
-      "omega-ui-src/source/install.c:688"
+      "omega-ui-src/source/install.c:309",
+      "omega-ui-src/source/install.c:718"
     ]
   },
   "Copia non riuscita (errore %d): il disco è pieno o in sola lettura?": {
@@ -3162,12 +3162,12 @@
   },
   "Copia non riuscita: c'è spazio sul disco?": {
     "where": [
-      "omega-ui-src/source/install.c:673"
+      "omega-ui-src/source/install.c:703"
     ]
   },
   "Copia su %s": {
     "where": [
-      "omega-ui-src/source/install.c:672"
+      "omega-ui-src/source/install.c:702"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -3183,9 +3183,9 @@
   },
   "Copia sulla console": {
     "where": [
-      "omega-ui-src/source/install.c:278",
-      "omega-ui-src/source/install.c:684",
-      "omega-ui-src/source/install.c:809"
+      "omega-ui-src/source/install.c:306",
+      "omega-ui-src/source/install.c:714",
+      "omega-ui-src/source/install.c:839"
     ]
   },
   "Copiato su %s": {
@@ -3214,11 +3214,6 @@
       "omega-ui-src/source/system.c:532"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
-  },
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:19"
-    ]
   },
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": {
     "where": [
@@ -3622,7 +3617,7 @@
   },
   "Dove lo installo?": {
     "where": [
-      "omega-ui-src/source/install.c:742"
+      "omega-ui-src/source/install.c:772"
     ],
     "kind": [
       "menu"
@@ -3636,7 +3631,7 @@
   },
   "Download interrotto a metà (connessione caduta): riprova": {
     "where": [
-      "omega-ui-src/source/install.c:290"
+      "omega-ui-src/source/install.c:318"
     ]
   },
   "Download interrotto: ✕ per riprendere": {
@@ -3646,7 +3641,7 @@
   },
   "Download non riuscito (%d)": {
     "where": [
-      "omega-ui-src/source/install.c:292"
+      "omega-ui-src/source/install.c:320"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -3958,15 +3953,15 @@
   },
   "Estrazione (%d file)": {
     "where": [
-      "omega-ui-src/source/install.c:180"
+      "omega-ui-src/source/install.c:208"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
   "Estrazione dello zip non riuscita": {
     "where": [
-      "omega-ui-src/source/install.c:615",
-      "omega-ui-src/source/install.c:629",
-      "omega-ui-src/source/install.c:642"
+      "omega-ui-src/source/install.c:643",
+      "omega-ui-src/source/install.c:658",
+      "omega-ui-src/source/install.c:672"
     ]
   },
   "Fatta a modo tuo": {
@@ -4029,8 +4024,8 @@
   },
   "Finalizzazione": {
     "where": [
-      "omega-ui-src/source/install.c:444",
-      "omega-ui-src/source/install.c:526"
+      "omega-ui-src/source/install.c:472",
+      "omega-ui-src/source/install.c:554"
     ]
   },
   "Firmware %s": {
@@ -4262,6 +4257,11 @@
     ],
     "hint": "one-line message at the bottom of the screen"
   },
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:15"
+    ]
+  },
   "Grandi": {
     "where": [
       "omega-ui-src/source/prefs.c:40"
@@ -4434,7 +4434,7 @@
   "Ho capito": {
     "where": [
       "omega-ui-src/source/storage.c:326",
-      "omega-ui-src/source/whatsnew.c:62"
+      "omega-ui-src/source/whatsnew.c:60"
     ],
     "kind": [
       "confirm",
@@ -4543,8 +4543,8 @@
   },
   "I file del gioco non ci sono più: caricalo di nuovo dal telefono": {
     "where": [
-      "omega-ui-src/source/install.c:666",
-      "omega-ui-src/source/install.c:669"
+      "omega-ui-src/source/install.c:696",
+      "omega-ui-src/source/install.c:699"
     ]
   },
   "I giochi e le app installati compariranno qui.": {
@@ -4744,7 +4744,7 @@
   },
   "Il link non funziona più (HTTP %d): aggiornalo nella libreria": {
     "where": [
-      "omega-ui-src/source/install.c:291"
+      "omega-ui-src/source/install.c:319"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: d"
   },
@@ -4759,7 +4759,7 @@
   },
   "Il link porta a una pagina web, non al file: serve il link diretto al pkg, zip o elf": {
     "where": [
-      "omega-ui-src/source/install.c:713"
+      "omega-ui-src/source/install.c:743"
     ]
   },
   "Il minimo lavoro per la console: utile se scalda o rallenta.": {
@@ -4909,11 +4909,6 @@
       "omega-ui-src/source/hen.c:385"
     ]
   },
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:18"
-    ]
-  },
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": {
     "where": [
       "omega-ui-src/source/music.c:753"
@@ -5061,7 +5056,7 @@
   },
   "Impossibile avviare l'installazione": {
     "where": [
-      "omega-ui-src/source/install.c:760"
+      "omega-ui-src/source/install.c:790"
     ],
     "kind": [
       "message"
@@ -5108,8 +5103,8 @@
   },
   "Impossibile salvare il payload": {
     "where": [
-      "omega-ui-src/source/install.c:548",
-      "omega-ui-src/source/install.c:560"
+      "omega-ui-src/source/install.c:576",
+      "omega-ui-src/source/install.c:588"
     ]
   },
   "Impossibile salvare la cartella": {
@@ -5182,14 +5177,14 @@
   },
   "In coda: %s (%d in attesa)": {
     "where": [
-      "omega-ui-src/source/install.c:769"
+      "omega-ui-src/source/install.c:799"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s d"
   },
   "In corso": {
     "where": [
-      "omega-ui-src/source/install.c:811",
-      "omega-ui-src/source/install.c:883"
+      "omega-ui-src/source/install.c:841",
+      "omega-ui-src/source/install.c:913"
     ]
   },
   "In diretta": {
@@ -5471,12 +5466,12 @@
   },
   "Installato: lo trovi nella Home": {
     "where": [
-      "omega-ui-src/source/install.c:521"
+      "omega-ui-src/source/install.c:549"
     ]
   },
   "Installato: ora è nella tua Home": {
     "where": [
-      "omega-ui-src/source/install.c:791"
+      "omega-ui-src/source/install.c:821"
     ],
     "kind": [
       "toast"
@@ -5485,23 +5480,23 @@
   },
   "Installatore di sistema non disponibile: riavvia Omega. Ripiego: installa il pkg con ItemzFlow.": {
     "where": [
-      "omega-ui-src/source/install.c:466"
+      "omega-ui-src/source/install.c:494"
     ]
   },
   "Installazione": {
     "where": [
-      "omega-ui-src/source/install.c:421",
-      "omega-ui-src/source/install.c:526",
-      "omega-ui-src/source/install.c:752",
-      "omega-ui-src/source/install.c:769"
+      "omega-ui-src/source/install.c:449",
+      "omega-ui-src/source/install.c:554",
+      "omega-ui-src/source/install.c:782",
+      "omega-ui-src/source/install.c:799"
     ]
   },
   "Installazione annullata": {
     "where": [
-      "omega-ui-src/source/install.c:281",
-      "omega-ui-src/source/install.c:289",
-      "omega-ui-src/source/install.c:673",
-      "omega-ui-src/source/install.c:688"
+      "omega-ui-src/source/install.c:309",
+      "omega-ui-src/source/install.c:317",
+      "omega-ui-src/source/install.c:703",
+      "omega-ui-src/source/install.c:718"
     ]
   },
   "Installazione chiesta dal telefono": {
@@ -5515,7 +5510,7 @@
   },
   "Installazione non riuscita (0x%08X)": {
     "where": [
-      "omega-ui-src/source/install.c:440"
+      "omega-ui-src/source/install.c:468"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
@@ -5527,14 +5522,14 @@
   },
   "Installazione non riuscita: %s (0x%08X)": {
     "where": [
-      "omega-ui-src/source/install.c:314",
-      "omega-ui-src/source/install.c:439"
+      "omega-ui-src/source/install.c:342",
+      "omega-ui-src/source/install.c:467"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s X"
   },
   "Installazione pkg non riuscita (0x%08X). Ripiego: ItemzFlow.": {
     "where": [
-      "omega-ui-src/source/install.c:315"
+      "omega-ui-src/source/install.c:343"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
@@ -5813,7 +5808,7 @@
   },
   "L'installazione continua in background: la trovi nella Home della console": {
     "where": [
-      "omega-ui-src/source/install.c:449"
+      "omega-ui-src/source/install.c:477"
     ]
   },
   "L'invito non è più valido": {
@@ -6193,7 +6188,7 @@
   },
   "Link di download mancante": {
     "where": [
-      "omega-ui-src/source/install.c:735"
+      "omega-ui-src/source/install.c:765"
     ],
     "kind": [
       "message"
@@ -6257,7 +6252,7 @@
   },
   "Lo zip è vuoto o danneggiato": {
     "where": [
-      "omega-ui-src/source/install.c:597"
+      "omega-ui-src/source/install.c:625"
     ]
   },
   "Lucciole": {
@@ -6347,12 +6342,12 @@
   },
   "Memoria della console": {
     "where": [
-      "omega-ui-src/source/install.c:740"
+      "omega-ui-src/source/install.c:770"
     ]
   },
   "Memoria insufficiente": {
     "where": [
-      "omega-ui-src/source/install.c:750",
+      "omega-ui-src/source/install.c:780",
       "omega-ui-src/source/savesync.c:860",
       "omega-ui-src/source/savesync.c:899"
     ],
@@ -7445,7 +7440,7 @@
   },
   "Novità": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:52"
+      "omega-ui-src/source/whatsnew.c:50"
     ]
   },
   "Nuova cartella": {
@@ -7461,6 +7456,11 @@
   "Nuova copertina": {
     "where": [
       "omega-ui-src/source/gallery.c:120"
+    ]
+  },
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": {
+    "where": [
+      "omega-ui-src/source/whatsnew.c:14"
     ]
   },
   "Nuovo PIN": {
@@ -7508,7 +7508,7 @@
   },
   "Nuovo: la home la ordini tu. Dalle opzioni di un gioco, di una cartella o di un'app scegli Cambia posizione e la porti dove vuoi con le frecce (L2 e R2 la mandano in testa o in fondo): le altre tessere le fanno posto. L'ordine resta anche dopo il riavvio.": {
     "where": [
-      "omega-ui-src/source/whatsnew.c:14"
+      "omega-ui-src/source/whatsnew.c:16"
     ]
   },
   "OK": {
@@ -8230,11 +8230,6 @@
       "omega-ui-src/source/prefs.c:28"
     ]
   },
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:16"
-    ]
-  },
   "Più votati": {
     "where": [
       "omega-ui-src/source/store.c:809"
@@ -8334,7 +8329,7 @@
   },
   "Preparazione": {
     "where": [
-      "omega-ui-src/source/install.c:708"
+      "omega-ui-src/source/install.c:738"
     ]
   },
   "Preparazione dei tuoi dati...": {
@@ -8799,8 +8794,8 @@
   },
   "Registrazione": {
     "where": [
-      "omega-ui-src/source/install.c:644",
-      "omega-ui-src/source/install.c:694",
+      "omega-ui-src/source/install.c:674",
+      "omega-ui-src/source/install.c:724",
       "omega-ui-src/source/storage.c:217"
     ]
   },
@@ -8824,8 +8819,8 @@
   },
   "Registrazione non riuscita (0x%08X). Privilegio ShellCore mancante?": {
     "where": [
-      "omega-ui-src/source/install.c:646",
-      "omega-ui-src/source/install.c:696"
+      "omega-ui-src/source/install.c:676",
+      "omega-ui-src/source/install.c:726"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: X"
   },
@@ -9374,8 +9369,8 @@
   },
   "Scaricamento": {
     "where": [
-      "omega-ui-src/source/install.c:284",
-      "omega-ui-src/source/install.c:809",
+      "omega-ui-src/source/install.c:312",
+      "omega-ui-src/source/install.c:839",
       "omega-ui-src/source/savesync.c:764"
     ]
   },
@@ -10290,11 +10285,6 @@
     "maxlen": 11,
     "hint": "Control Center tile, 186 px wide: about 11 characters max; menu entry or title: one line"
   },
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": {
-    "where": [
-      "omega-ui-src/source/whatsnew.c:17"
-    ]
-  },
   "Spenta": {
     "where": [
       "omega-ui-src/source/prefs.c:79"
@@ -10937,7 +10927,7 @@
   },
   "Troppe installazioni in coda: aspetta che finiscano": {
     "where": [
-      "omega-ui-src/source/install.c:767"
+      "omega-ui-src/source/install.c:797"
     ],
     "kind": [
       "message"
@@ -11329,7 +11319,7 @@
   },
   "Verifica": {
     "where": [
-      "omega-ui-src/source/install.c:562",
+      "omega-ui-src/source/install.c:590",
       "omega-ui-src/source/storage.c:212"
     ]
   },
@@ -11356,7 +11346,7 @@
   "Versione %s": {
     "where": [
       "omega-ui-src/source/panels.c:1385",
-      "omega-ui-src/source/whatsnew.c:53"
+      "omega-ui-src/source/whatsnew.c:51"
     ],
     "hint": "printf format: keep exactly these specifiers in this order: s"
   },
@@ -11501,7 +11491,7 @@
   },
   "Zip non riconosciuto: manca homebrew.js/eboot.elf e non c'è un Title ID": {
     "where": [
-      "omega-ui-src/source/install.c:621"
+      "omega-ui-src/source/install.c:649"
     ]
   },
   "adesso": {
@@ -11567,7 +11557,7 @@
   },
   "c'è già un'installazione in corso nel sistema": {
     "where": [
-      "omega-ui-src/source/install.c:307"
+      "omega-ui-src/source/install.c:335"
     ]
   },
   "caricare giochi dal PC alla console: .pkg, .zip, .elf o cartelle intere, anche trascinandoli": {
@@ -11783,7 +11773,7 @@
   },
   "il gioco è aperto: chiudilo e riprova": {
     "where": [
-      "omega-ui-src/source/install.c:304"
+      "omega-ui-src/source/install.c:332"
     ]
   },
   "il più giocato": {
@@ -11793,7 +11783,7 @@
   },
   "il pkg non corrisponde al gioco già installato": {
     "where": [
-      "omega-ui-src/source/install.c:306"
+      "omega-ui-src/source/install.c:334"
     ]
   },
   "immagine quadrata": {
@@ -11813,7 +11803,7 @@
   },
   "installatore di sistema non pronto: riavvia Omega": {
     "where": [
-      "omega-ui-src/source/install.c:308"
+      "omega-ui-src/source/install.c:336"
     ]
   },
   "invisibile": {
@@ -11983,17 +11973,17 @@
   },
   "pkg danneggiato o scaricato a metà": {
     "where": [
-      "omega-ui-src/source/install.c:303"
+      "omega-ui-src/source/install.c:331"
     ]
   },
   "pkg non installabile su questa console (tipo o licenza)": {
     "where": [
-      "omega-ui-src/source/install.c:302"
+      "omega-ui-src/source/install.c:330"
     ]
   },
   "pkg non valido o link sbagliato": {
     "where": [
-      "omega-ui-src/source/install.c:301"
+      "omega-ui-src/source/install.c:329"
     ]
   },
   "pkg, zip, elf (se manca si capisce dal link)": {
@@ -12040,7 +12030,7 @@
   },
   "serve un firmware più recente": {
     "where": [
-      "omega-ui-src/source/install.c:305"
+      "omega-ui-src/source/install.c:333"
     ]
   },
   "set": {
@@ -12057,7 +12047,7 @@
   },
   "spazio esaurito sulla console": {
     "where": [
-      "omega-ui-src/source/install.c:300"
+      "omega-ui-src/source/install.c:328"
     ]
   },
   "su disco, si sposta": {
@@ -12173,7 +12163,7 @@
   },
   "È già in coda": {
     "where": [
-      "omega-ui-src/source/install.c:766"
+      "omega-ui-src/source/install.c:796"
     ],
     "kind": [
       "message"

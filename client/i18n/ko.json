@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "복사했지만 콘솔에 등록되지 않았습니다(0x%08X)",
   "Copiato: scegli la cartella e premi △": "복사됨: 폴더를 선택하고 △를 누르세요",
   "Copio %s": "%s 복사 중",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "수정 사항: 시스템 파티션이 더 이상 쓰기 가능한 상태로 남지 않고, 콘솔이 갑자기 꺼져도 파일이 손상되지 않으며, 로그가 끝없이 커지지 않습니다.",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "홈 뒤에 보이는 것. «사용자 이미지»: /data/Omega에 wallpaper.jpg 또는 wallpaper.png를 넣으세요.",
   "Cosa fanno i tuoi amici": "친구들의 소식",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "작동 중에 보이는 것. 아무 버튼이나 누르면 돌아옵니다.",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Omega 서비스가 응답하지 않아 리모컨이 활성화되지 않았습니다. Omega를 업데이트하거나 본체를 재시작하세요.",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Omega 서비스가 응답하지 않습니다: Omega를 업데이트하거나 본체를 재시작하세요",
   "Il servizio era già attivo.": "서비스가 이미 실행 중이었습니다.",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "백그라운드 서비스가 덜 일합니다: 파티와 알림은 필요할 때만 확인하고, 네트워크가 없으면 재시도 간격을 점점 늘립니다.",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "음악 서비스가 응답하지 않습니다. 최신 버전의 Omega 데몬(omega_redirect)이 필요합니다: Omega를 업데이트하고 본체를 재시작하세요.",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "음악 서비스가 응답하지 않습니다: Omega를 업데이트하거나 본체를 재시작하세요",
   "Il servizio è già partito.": "서비스가 시작되었습니다.",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "플레이어 절반 이상을 앞섰어요.",
   "Più scaricati": "다운로드 순",
   "Più scuro, più leggibili i testi sopra le copertine.": "더 어두울수록 커버 위의 글자가 잘 보입니다.",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "전원을 끌 때 더 안정적입니다: 이제 Omega가 콘솔을 끄거나 재시작하거나 휴식 모드로 전환하는 것을 감지하고, 음악, 음성 파티, 연결, 외장 디스크에서 실행한 게임을 먼저 종료합니다. 이것들이 멈춤의 가장 흔한 원인이었습니다.",
   "Più votati": "평점 순",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "플래티넘 300 · 골드 90 · 실버 30 · 브론즈 15점. 트로피는 콘솔에서 가져옵니다.",
   "Playlist": "재생목록",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "자동 업로드 끄기",
   "Spegni il microfono": "마이크 끄기",
   "Spegni la console": "본체 끄기",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Omega 메뉴의 끄기, 재시작, 휴식 모드는 설치, 복사, 클라우드 저장 데이터가 끝날 때까지 기다립니다.",
   "Spenta": "끄기",
   "Spenti": "끔",
   "Sposta": "이동",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  이동",
   "◀ ▶  Sposta": "◀ ▶  이동",
   "✕ ingrandisci": "✕ 확대",
-  "✕ preferito   □ silenzia": "✕ 즐겨찾기   □ 음소거"
+  "✕ preferito   □ silenzia": "✕ 즐겨찾기   □ 음소거",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "스토어에 새 에뮬레이터 추가: Nintendo 64, PlayStation 1, PlayStation 2, PSP, 슈퍼 패미컴, Xbox, Xbox 360(실험적), 33개 코어와 EmulationStation을 갖춘 RetroArch.",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "앱 폴더가 다른 폴더 안에 있는 앱 zip도 이제 제대로 설치되며, 앱 파일에 실행에 필요한 권한이 부여됩니다."
 }

@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "Kopiert, men konsollen registrerte det ikke (0x%08X)",
   "Copiato: scegli la cartella e premi △": "Kopiert: velg mappen og trykk △",
   "Copio %s": "Kopierer %s",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "Rettelser: systempartisjonen står ikke lenger åpen for skriving, filer blir ikke lenger ødelagt hvis konsollen plutselig slår seg av, og loggene vokser ikke lenger i det uendelige.",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "Hva som er bak startsiden. «Eget bilde»: legg wallpaper.jpg eller wallpaper.png i /data/Omega.",
   "Cosa fanno i tuoi amici": "Hva vennene dine driver med",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "Hva som vises mens den er aktiv. Trykk på en hvilken som helst knapp for å gå tilbake.",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Omega-tjenesten svarer ikke, så fjernkontrollen er ikke aktiv. Oppdater Omega eller start konsollen på nytt.",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Omega-tjenesten svarer ikke: oppdater Omega eller start konsollen på nytt",
   "Il servizio era già attivo.": "Tjenesten var allerede aktiv.",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "Bakgrunnstjenesten jobber mindre: den sjekker party og varsler bare når det trengs, og uten nettverk prøver den igjen stadig sjeldnere.",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "Musikktjenesten svarer ikke. Du trenger en oppdatert versjon av Omega-demonen (omega_redirect): oppdater Omega og start konsollen på nytt.",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "Musikktjenesten svarer ikke: oppdater Omega eller start konsollen på nytt",
   "Il servizio è già partito.": "Tjenesten har allerede startet.",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "Mer enn halvparten av spillerne ligger bak deg.",
   "Più scaricati": "Mest nedlastet",
   "Più scuro, più leggibili i testi sopra le copertine.": "Jo mørkere, desto lettere å lese teksten over omslagene.",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "Mer stabil ved avslåing: Omega merker nå når du slår av, starter på nytt eller setter konsollen i hvilemodus, og lukker først musikk, taleparty, tilkoblinger og spill startet fra en ekstern disk. De var den vanligste årsaken til heng.",
   "Più votati": "Best vurdert",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "Platina 300 · gull 90 · sølv 30 · bronse 15 poeng. Trofeene hentes fra konsollen.",
   "Playlist": "Spillelister",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "Slå av automatisk opplasting",
   "Spegni il microfono": "Slå av mikrofonen",
   "Spegni la console": "Slå av konsollen",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "Slå av, Start på nytt og Hvilemodus fra Omega-menyen venter til installasjoner, kopier og lagrede data på nettet er ferdige.",
   "Spenta": "Av",
   "Spenti": "Av",
   "Sposta": "Flytt",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  Flytt",
   "◀ ▶  Sposta": "◀ ▶  Flytt",
   "✕ ingrandisci": "✕ forstørr",
-  "✕ preferito   □ silenzia": "✕ favoritt   □ demp"
+  "✕ preferito   □ silenzia": "✕ favoritt   □ demp",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "Nye emulatorer i Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (eksperimentell) og RetroArch med 33 kjerner og EmulationStation.",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "App-zip-filer der app-mappen ligger i en annen mappe, installeres nå riktig, og appens filer får tillatelsene de trenger for å starte."
 }

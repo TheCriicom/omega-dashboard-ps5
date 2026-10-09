@@ -475,7 +475,6 @@
   "Copiato, ma la console non l'ha registrato (0x%08X)": "已複製，但主機未能註冊（0x%08X）",
   "Copiato: scegli la cartella e premi △": "已複製：選擇資料夾後按 △",
   "Copio %s": "正在複製 %s",
-  "Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito.": "修正：系統分割區不再保持可寫入狀態，主機突然斷電時檔案不再損毀，記錄檔也不再無限增長。",
   "Cosa c'è dietro la home. «Immagine personale»: metti wallpaper.jpg o wallpaper.png in /data/Omega.": "主畫面背後顯示的內容。「自訂圖片」：將 wallpaper.jpg 或 wallpaper.png 放入 /data/Omega。",
   "Cosa fanno i tuoi amici": "好友動態",
   "Cosa si vede mentre è attivo. Basta un tasto per tornare.": "啟動時顯示的內容。按任一按鈕即可返回。",
@@ -728,7 +727,6 @@
   "Il servizio di Omega non risponde, quindi il telecomando non è attivo. Aggiorna Omega o riavvia la console.": "Omega 服務沒有回應，因此遙控未啟用。請更新 Omega 或重新啟動主機。",
   "Il servizio di Omega non risponde: aggiorna Omega o riavvia la console": "Omega 服務沒有回應：請更新 Omega 或重新啟動主機",
   "Il servizio era già attivo.": "服務先前已在執行。",
-  "Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado.": "背景服務更省資源：只在需要時檢查派對和通知，沒有網路時重試間隔會越來越長。",
   "Il servizio musicale non risponde. Serve la versione aggiornata del demone di Omega (omega_redirect): aggiorna Omega e riavvia la console.": "音樂服務沒有回應。需要更新版的 Omega 常駐程式（omega_redirect）：請更新 Omega 並重新啟動主機。",
   "Il servizio musicale non risponde: aggiorna Omega o riavvia la console": "音樂服務沒有回應：請更新 Omega 或重新啟動主機",
   "Il servizio è già partito.": "服務已啟動。",
@@ -1223,7 +1221,6 @@
   "Più della metà dei giocatori dietro di te.": "超過一半的玩家在你身後。",
   "Più scaricati": "最多下載",
   "Più scuro, più leggibili i testi sopra le copertine.": "越暗，封面上的文字越清楚。",
-  "Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi.": "關機更穩定：現在 Omega 會在關機、重新啟動或進入待命模式時察覺，並先關閉音樂、語音派對、連線以及從外接磁碟啟動的遊戲。這些是造成當機最常見的原因。",
   "Più votati": "最高評分",
   "Platino 300 · oro 90 · argento 30 · bronzo 15 punti. I trofei arrivano dalla console.": "白金 300 · 黃金 90 · 白銀 30 · 青銅 15 分。獎盃來自主機。",
   "Playlist": "播放清單",
@@ -1520,7 +1517,6 @@
   "Spegni il caricamento automatico": "關閉自動上傳",
   "Spegni il microfono": "關閉麥克風",
   "Spegni la console": "關閉主機",
-  "Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti.": "從 Omega 選單關機、重新啟動或進入待命模式時，會等待安裝、複製和雲端存檔完成。",
   "Spenta": "關閉",
   "Spenti": "關閉",
   "Sposta": "移動",
@@ -1834,5 +1830,7 @@
   "▲ ▼  Sposta": "▲ ▼  移動",
   "◀ ▶  Sposta": "◀ ▶  移動",
   "✕ ingrandisci": "✕ 放大",
-  "✕ preferito   □ silenzia": "✕ 最愛   □ 靜音"
+  "✕ preferito   □ silenzia": "✕ 最愛   □ 靜音",
+  "Nuovi emulatori nello Store: Nintendo 64, PlayStation 1, PlayStation 2, PSP, Super Nintendo, Xbox, Xbox 360 (sperimentale) e RetroArch con 33 core ed EmulationStation.": "商店新增模擬器：Nintendo 64、PlayStation 1、PlayStation 2、PSP、超級任天堂、Xbox、Xbox 360（實驗性）以及內建 33 個核心與 EmulationStation 的 RetroArch。",
+  "Gli zip delle app con la cartella dentro un'altra cartella ora si installano bene, e i file dell'app hanno i permessi giusti per partire.": "應用程式資料夾位於另一個資料夾內的 zip 現在能正確安裝，應用程式的檔案也會取得啟動所需的權限。"
 }

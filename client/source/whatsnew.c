@@ -11,12 +11,10 @@
 // Novità di questa versione: testi in italiano esatto dentro N_(), tradotti
 // quando si disegnano (i18n/*.json).
 static const char *const ITEMS[] = {
-  N_("Nuovo: Aggiornamenti dei giochi. Omega trova l'ultimo aggiornamento ufficiale di ogni gioco installato, compatibile con il tuo firmware, lo scarica dai server di Sony e lo installa. Lo trovi in home e in Impostazioni \xE2\x80\xBA Home e giochi."),
-  N_("I download continuano anche se chiudi Omega e riprendono da dove erano rimasti. Il servizio è PatchDL di Knutwurst, incluso in Omega."),
-  N_("Opzioni di alimentazione: ora puoi mettere la console in modalità riposo, riavviarla o spegnerla direttamente da Omega."),
-  N_("Ventola: la soglia scelta adesso viene applicata davvero e resta anche quando un gioco la cambia; si può scegliere fino a 85 \xC2\xB0""C. In Sistema vedi anche la velocità della ventola, la frequenza del processore, il modello della console e da quanto è accesa."),
-  N_("Suoni dell'interfaccia rifatti, più puliti e vicini a quelli della console."),
-  N_("Non vieni più disconnesso dopo un giorno: resti collegato finché usi Omega."),
+  N_("Più stabile allo spegnimento: Omega ora si accorge quando spegni, riavvii o metti in riposo la console e chiude prima musica, voce del party, connessioni e giochi avviati da un disco esterno. Erano la causa più comune dei blocchi."),
+  N_("Spegni, Riavvia e Modalità riposo dal menu di Omega aspettano che installazioni, copie e salvataggi online siano finiti."),
+  N_("Il servizio in background lavora meno: controlla party e notifiche solo quando serve e, se la rete non c'è, riprova sempre più di rado."),
+  N_("Correzioni: la partizione di sistema non resta più aperta in scrittura, i file non si rovinano se la console si spegne di colpo e i registri non crescono più all'infinito."),
 };
 #define NITEMS (int)(sizeof ITEMS / sizeof *ITEMS)
 

@@ -28,6 +28,7 @@
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <poll.h>
 
 #define SR 48000
 #define BLOCK 256
@@ -52,7 +53,7 @@ static int aout_open(void) {
   }
   return aout >= 0;
 }
-static void aout_write(const int16_t *pcm) { if (aout >= 0) sceAudioOutOutput(aout, pcm); }
+static int aout_write(const int16_t *pcm) { return aout >= 0 ? sceAudioOutOutput(aout, pcm) : -1; }
 static void aout_close(void) { if (aout >= 0) { sceAudioOutOutput(aout, NULL); sceAudioOutClose(aout); aout = -1; } }
 #else
 #include <SDL2/SDL.h>
@@ -66,50 +67,80 @@ static int aout_open(void) {
   return aout != 0;
 }
 // come sceAudioOutOutput: si blocca finché in coda c'è più di qualche blocco
-static void aout_write(const int16_t *pcm) {
+static int aout_write(const int16_t *pcm) {
   while (SDL_GetQueuedAudioSize(aout) > BLOCK * 4 * 4) SDL_Delay(2);
-  SDL_QueueAudio(aout, pcm, BLOCK * 4);
+  return SDL_QueueAudio(aout, pcm, BLOCK * 4);
 }
 static void aout_close(void) { if (aout) { SDL_CloseAudioDevice(aout); aout = 0; } }
 #endif
 
 // ------------------------------------------------- uscita verso la UI (9096) --
+// Il socket della UI lo chiude solo out_thread, che lo usa: chi accetta passa
+// quello nuovo in pcm_new, così un descrittore non si chiude mai sotto un send().
 #define PCM_PORT 9096
-static volatile int pcm_client = -1;
-static void *pcm_accept_thread(void *arg) {
-  (void)arg;
-  int ls = socket(AF_INET, SOCK_STREAM, 0);
+static volatile int pcm_client = -1, pcm_new = -1;
+static pthread_mutex_t pcmx = PTHREAD_MUTEX_INITIALIZER;   // chiusura del socket della UI
+static volatile int asleep;                                 // riposo della console (player_power)
+static volatile int ls_open, out_awake, dec_busy;           // per aspettare che tutto sia fermo
+static int pcm_listen(void) {
+  int ls = socket(AF_INET, SOCK_STREAM, 0); if (ls < 0) return -1;
   int one = 1; setsockopt(ls, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
   struct sockaddr_in a; memset(&a, 0, sizeof a);
   a.sin_family = AF_INET; a.sin_port = htons(PCM_PORT); a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-  if (ls < 0 || bind(ls, (struct sockaddr *)&a, sizeof a) != 0 || listen(ls, 2) != 0) { player_log("lettore: porta %d non disponibile", PCM_PORT); return NULL; }
+  if (bind(ls, (struct sockaddr *)&a, sizeof a) != 0 || listen(ls, 2) != 0) { close(ls); return -1; }
+  return ls;
+}
+static void pcm_drop(void) {   // solo da out_thread
+  pthread_mutex_lock(&pcmx);
+  int c = pcm_client; pcm_client = -1;
+  if (c >= 0) close(c);
+  pthread_mutex_unlock(&pcmx);
+}
+static void *pcm_accept_thread(void *arg) {
+  (void)arg;
+  int ls = -1, backoff = 1, logged = 0;
   for (;;) {
+    // a riposo la porta resta chiusa; al risveglio si riapre
+    if (asleep) { if (ls >= 0) { close(ls); ls = -1; ls_open = 0; } usleep(100000); continue; }
+    if (ls < 0) {
+      ls = pcm_listen();
+      if (ls < 0) {
+        if (!logged++) player_log("lettore: porta %d non disponibile, riprovo", PCM_PORT);
+        sleep((unsigned)backoff); if (backoff < 30) backoff *= 2;
+        continue;
+      }
+      backoff = 1; logged = 0; ls_open = 1;
+    }
+    // accept solo quando c'è qualcuno: il ciclo resta libero di vedere il riposo
+    struct pollfd pf = { ls, POLLIN, 0 };
+    int pr = poll(&pf, 1, 250);
+    if (pr == 0) continue;
+    if (pr < 0 || (pf.revents & (POLLERR | POLLNVAL))) { close(ls); ls = -1; ls_open = 0; usleep(200000); continue; }
     int c = accept(ls, NULL, NULL);
     if (c < 0) { usleep(200000); continue; }
+    if (asleep) { close(c); continue; }
     // la UI può essere sospesa (gioco avviato, tasto PS): una scrittura che resta
     // ferma più di 1 s vuol dire "non c'è più", e si torna all'uscita della console
     struct timeval tv = { 1, 0 }; setsockopt(c, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
+    setsockopt(c, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
     int buf = 16 * 1024; setsockopt(c, SOL_SOCKET, SO_SNDBUF, &buf, sizeof buf);
-    setsockopt(c, IPPROTO_TCP, TCP_NODELAY, &one, sizeof one);
+    int one = 1; setsockopt(c, IPPROTO_TCP, TCP_NODELAY, &one, sizeof one);
 #ifdef SO_NOSIGPIPE
     setsockopt(c, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof one);
 #endif
-    int old = pcm_client; pcm_client = c;
-    if (old >= 0) close(old);
+    int old = __sync_lock_test_and_set(&pcm_new, c);
+    if (old >= 0) close(old);              // mai passato a out_thread: è solo nostro
     player_log("lettore: la UI suona la musica (uscita della UI collegata)");
   }
   return NULL;
 }
-// 0 = mandato alla UI; -1 = UI non collegata o sparita
+// 0 = mandato alla UI; -1 = UI non collegata o sparita (solo da out_thread)
 static int pcm_send(const int16_t *blk, size_t bytes) {
   int c = pcm_client; if (c < 0) return -1;
   const char *p = (const char *)blk; size_t left = bytes;
   while (left) {
     ssize_t k = send(c, p, left, 0);
-    if (k <= 0) {
-      if (__sync_bool_compare_and_swap(&pcm_client, c, -1)) { close(c); player_log("lettore: uscita della UI scollegata"); }
-      return -1;
-    }
+    if (k <= 0) { pcm_drop(); player_log("lettore: uscita della UI scollegata"); return -1; }
     p += k; left -= (size_t)k;
   }
   return 0;
@@ -130,6 +161,7 @@ static unsigned seq;                 // cresce a ogni cambiamento: la UI interro
 // richieste al thread di decodifica
 static int want_load;                // apri il brano cur
 static double want_seek = -1;
+static double resume_at = -1;        // dopo il riposo: alla ripresa si riparte da qui (-1 = no)
 static int gen;                      // generazione del brano: invalida i dati vecchi nell'anello
 
 // brano in corso (scritti dal decode thread)
@@ -178,8 +210,11 @@ static void save(void) {
   FILE *f = fopen(tmp, "w"); if (!f) return;
   fprintf(f, "{\"volume\":%d,\"shuffle\":%d,\"repeat\":%d,\"index\":%d,\"items\":[", volume, shuffle, repeat, cur);
   for (int i = 0; i < count; i++) { if (i) fputc(',', f); item_json(f, &items[i]); }
-  fputs("]}\n", f); fclose(f);
-  rename(tmp, state_file);
+  fputs("]}\n", f);
+  // su disco prima del rename: una console spenta a metà non lascia il file vuoto
+  int ok = fflush(f) == 0 && fsync(fileno(f)) == 0;
+  if (fclose(f) != 0) ok = 0;
+  if (ok) rename(tmp, state_file); else unlink(tmp);
 }
 
 static void item_from(PlayerItem *it, JVal *o) {
@@ -219,6 +254,7 @@ static void load_locked(int idx, int play) {
   cur = idx;
   reset_track_locked();
   err[0] = 0;
+  resume_at = -1;
   if (idx < 0 || idx >= count) { state = PL_STOPPED; want_load = 0; bump(); return; }
   want_load = 1; want_seek = -1;
   state = play ? PL_LOADING : PL_PAUSED;
@@ -248,31 +284,43 @@ static void copy_tag(char *dst, size_t n, AVDictionary *md, const char *key) {
 }
 
 // "StreamTitle='Artista - Titolo';StreamUrl='...';"
-static void parse_icy(const char *pkt) {
-  const char *p = strstr(pkt, "StreamTitle='"); if (!p) return;
+// Titolo nuovo: copiato in note, e la notifica la manda chi chiama dopo aver
+// lasciato il mutex (on_track non deve mai girare con il lettore bloccato).
+static int parse_icy(const char *pkt, char *note, size_t nn) {
+  const char *p = strstr(pkt, "StreamTitle='"); if (!p) return 0;
   p += 13; const char *e = strstr(p, "';"); if (!e) e = p + strlen(p);
   size_t n = (size_t)(e - p); if (n >= sizeof stream_title) n = sizeof stream_title - 1;
-  if (n == strlen(stream_title) && !strncmp(stream_title, p, n)) return;
+  if (n == strlen(stream_title) && !strncmp(stream_title, p, n)) return 0;
   memcpy(stream_title, p, n); stream_title[n] = 0;
   bump();
-  if (on_track && stream_title[0]) on_track(stream_title, "");
+  snprintf(note, nn, "%s", stream_title);
+  return note[0] != 0;
 }
+static void track_note(const char *t, const char *a) { player_track_cb cb = on_track; if (cb && t && t[0]) cb(t, a); }
 
 static void *decode_thread(void *arg) {
   (void)arg;
   for (;;) {
     pthread_mutex_lock(&mx);
-    while (!want_load) pthread_cond_wait(&cv, &mx);
+    dec_busy = 0;
+    while (!want_load || asleep) pthread_cond_wait(&cv, &mx);   // a riposo niente rete
     want_load = 0;
+    if (cur < 0 || cur >= count) { pthread_mutex_unlock(&mx); continue; }   // brano tolto nel frattempo
     int my = gen;
     PlayerItem it = items[cur];
     int start_paused = state == PL_PAUSED;
+    dec_busy = 1;
     pthread_mutex_unlock(&mx);
 
+    const char *why = NULL; char ebuf[128];
+    AVCodecContext *cc = NULL; SwrContext *sw = NULL; AVPacket *pkt = NULL; AVFrame *fr = NULL;
+    int si = -1, rc = 0;
+    char note_t[256] = "", note_a[256] = "";
+    AVDictionary *opt = NULL;
     AVFormatContext *fc = avformat_alloc_context();
+    if (!fc) { why = "memoria"; goto done; }
     fc->interrupt_callback.callback = interrupt_cb;
     fc->interrupt_callback.opaque = &my;
-    AVDictionary *opt = NULL;
     av_dict_set(&opt, "user_agent", "Omega/1.0 (PS5 homebrew; +https://play.omegasuite.it)", 0);
     av_dict_set(&opt, "icy", "1", 0);
     av_dict_set(&opt, "reconnect", "1", 0);
@@ -280,10 +328,7 @@ static void *decode_thread(void *arg) {
     av_dict_set(&opt, "reconnect_delay_max", "8", 0);
     av_dict_set(&opt, "rw_timeout", "15000000", 0);
     av_dict_set(&opt, "tls_verify", "0", 0);
-    const char *why = NULL; char ebuf[128];
-    AVCodecContext *cc = NULL; SwrContext *sw = NULL; AVPacket *pkt = NULL; AVFrame *fr = NULL;
-    int si = -1;
-    int rc = avformat_open_input(&fc, it.url, NULL, &opt);
+    rc = avformat_open_input(&fc, it.url, NULL, &opt);
     av_dict_free(&opt);
     if (rc < 0) { av_strerror(rc, ebuf, sizeof ebuf); why = ebuf; fc = NULL; goto done; }
     if (avformat_find_stream_info(fc, NULL) < 0) { why = "formato non riconosciuto"; goto done; }
@@ -291,8 +336,8 @@ static void *decode_thread(void *arg) {
     si = av_find_best_stream(fc, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
     if (si < 0 || !codec) { why = "nessuna traccia audio"; goto done; }
     cc = avcodec_alloc_context3(codec);
-    avcodec_parameters_to_context(cc, fc->streams[si]->codecpar);
-    if (avcodec_open2(cc, codec, NULL) < 0) { why = "decoder non disponibile"; goto done; }
+    if (!cc) { why = "memoria"; goto done; }
+    if (avcodec_parameters_to_context(cc, fc->streams[si]->codecpar) < 0 || avcodec_open2(cc, codec, NULL) < 0) { why = "decoder non disponibile"; goto done; }
     AVChannelLayout out_l = AV_CHANNEL_LAYOUT_STEREO;
     if (swr_alloc_set_opts2(&sw, &out_l, AV_SAMPLE_FMT_S16, SR, &cc->ch_layout, cc->sample_fmt, cc->sample_rate, 0, NULL) < 0 || swr_init(sw) < 0) { why = "conversione audio"; goto done; }
 
@@ -304,7 +349,7 @@ static void *decode_thread(void *arg) {
       copy_tag(meta_artist, sizeof meta_artist, fc->metadata, "artist");
       copy_tag(meta_album, sizeof meta_album, fc->metadata, "album");
       // file: i tag sono più belli del nome del file, anche nella coda
-      if (!strcmp(items[cur].source, "file")) {
+      if (cur >= 0 && cur < count && !strcmp(items[cur].source, "file")) {
         if (meta_title[0]) snprintf(items[cur].title, sizeof items[cur].title, "%s", meta_title);
         if (meta_artist[0]) snprintf(items[cur].artist, sizeof items[cur].artist, "%s", meta_artist);
         if (meta_album[0]) snprintf(items[cur].album, sizeof items[cur].album, "%s", meta_album);
@@ -322,16 +367,15 @@ static void *decode_thread(void *arg) {
       }
       if (!start_paused) state = PL_PLAYING;
       bump();
-      if (on_track) {
-        const char *t = meta_title[0] ? meta_title : it.title;
-        const char *a = meta_artist[0] ? meta_artist : it.artist;
-        on_track(t, a);
-      }
+      snprintf(note_t, sizeof note_t, "%s", meta_title[0] ? meta_title : it.title);
+      snprintf(note_a, sizeof note_a, "%s", meta_artist[0] ? meta_artist : it.artist);
     }
     pthread_mutex_unlock(&mx);
+    track_note(note_t, note_a); note_t[0] = 0;
     player_log("lettore: aperto %s (%s, %d Hz, %s)", it.title[0] ? it.title : it.url, codec->name, cc->sample_rate, live ? "diretta" : "file");
 
     pkt = av_packet_alloc(); fr = av_frame_alloc();
+    if (!pkt || !fr) { why = "memoria"; goto done; }
     int16_t conv[8192 * 2];
     for (;;) {
       // seek richiesto?
@@ -359,7 +403,10 @@ static void *decode_thread(void *arg) {
       if (fc->pb) {
         uint8_t *icy = NULL;
         if (av_opt_get(fc->pb, "icy_metadata_packet", AV_OPT_SEARCH_CHILDREN, &icy) >= 0 && icy) {
-          if (*icy) { pthread_mutex_lock(&mx); if (my == gen) parse_icy((const char *)icy); pthread_mutex_unlock(&mx); }
+          if (*icy) {
+            pthread_mutex_lock(&mx); int nt = my == gen && parse_icy((const char *)icy, note_t, sizeof note_t); pthread_mutex_unlock(&mx);
+            if (nt) track_note(note_t, "");
+          }
           av_free(icy);
         }
       }
@@ -372,7 +419,8 @@ static void *decode_thread(void *arg) {
         copy_tag(a, sizeof a, ast->metadata, "artist");
         if (t[0] && live) {
           snprintf(pk, sizeof pk, "StreamTitle='%s%s%s';", a, a[0] ? " - " : "", t);
-          pthread_mutex_lock(&mx); if (my == gen) parse_icy(pk); pthread_mutex_unlock(&mx);
+          pthread_mutex_lock(&mx); int nt = my == gen && parse_icy(pk, note_t, sizeof note_t); pthread_mutex_unlock(&mx);
+          if (nt) track_note(note_t, "");
         }
       }
       if (pkt->stream_index != si) { av_packet_unref(pkt); continue; }
@@ -433,8 +481,20 @@ static void *out_thread(void *arg) {
   double pcm_clock = 0;
   int16_t blk[BLOCK * 2];
   float gain = 0;            // volume effettivo, segue quello chiesto senza scatti
-  int idle = 0, open = 0;
+  int idle = 0, open = 0, backoff = 200, errs = 0;
   for (;;) {
+    // riposo: uscita della console e socket della UI chiusi, si aspetta il risveglio
+    if (asleep) {
+      if (open) { aout_close(); open = 0; }
+      if (pcm_client >= 0) pcm_drop();
+      int c = __sync_lock_test_and_set(&pcm_new, -1); if (c >= 0) close(c);
+      out_awake = 0;
+      usleep(20000); continue;
+    }
+    out_awake = 1;
+    // UI collegata di nuovo: il socket vecchio lo chiude chi lo usava, cioè qui
+    int nc = __sync_lock_test_and_set(&pcm_new, -1);
+    if (nc >= 0) { pcm_drop(); pthread_mutex_lock(&pcmx); pcm_client = nc; pthread_mutex_unlock(&pcmx); }
     pthread_mutex_lock(&mx);
     int playing = state == PL_PLAYING;
     size_t avail = r_head - r_tail;
@@ -498,7 +558,14 @@ static void *out_thread(void *arg) {
       int v = (int)(blk[i] * gain);
       blk[i] = (int16_t)(v > 32767 ? 32767 : v < -32768 ? -32768 : v);
     }
-    aout_write(blk);
+    int r = aout_write(blk);
+    if (r >= 0) { backoff = 200; continue; }
+    // porta non più valida (riposo, uscita cambiata): si chiude e si riprova più
+    // tardi; senza attesa il ciclo girerebbe al 100% della CPU
+    if (errs++ < 5) player_log("lettore: uscita della console -> 0x%x, riprovo tra %d ms", r, backoff);
+    aout_close(); open = 0;
+    for (int w = 0; w < backoff && !asleep; w += 50) usleep(50000);
+    if (backoff < 5000) backoff *= 2;
   }
   return NULL;
 }
@@ -507,6 +574,7 @@ static void *out_thread(void *arg) {
 void player_init(const char *file) {
   state_file = file;
   items = calloc(PLAYER_MAX_ITEMS, sizeof *items);
+  if (!items) { player_log("lettore: memoria insufficiente, niente musica"); return; }
   rnd_state ^= (unsigned)time(NULL);
   if (file) {
     FILE *f = fopen(file, "r");
@@ -538,6 +606,7 @@ void player_init(const char *file) {
 }
 
 void player_enqueue(const PlayerItem *in, int n, int mode, int start, int play) {
+  if (!items) return;
   pthread_mutex_lock(&mx);
   if (mode == 0) { count = 0; cur = -1; }
   int at = mode == 2 && cur >= 0 ? cur + 1 : count;
@@ -552,6 +621,7 @@ void player_enqueue(const PlayerItem *in, int n, int mode, int start, int play) 
   if (mode == 0 && count) load_locked(start >= 0 && start < count ? start : 0, play);
   else if (play && n > 0) load_locked(at, 1);
   else if (cur < 0 && count) { cur = 0; bump(); }
+  else if (!count) { reset_track_locked(); want_load = 0; state = PL_STOPPED; bump(); }   // coda sostituita con niente
   else bump();
   save();
   pthread_mutex_unlock(&mx);
@@ -565,7 +635,12 @@ void player_play(void) {
     // la diretta in pausa è vecchia: si riparte dal vivo
     if (live) load_locked(cur, 1);
     bump();
-  } else if (state != PL_PLAYING && state != PL_LOADING && cur >= 0) load_locked(cur, 1);
+  } else if (state != PL_PLAYING && state != PL_LOADING && cur >= 0 && cur < count) {
+    // dopo il riposo si riprende dal punto in cui si era fermato
+    double at = resume_at;
+    load_locked(cur, 1);
+    if (at > 0) { want_seek = at; base_pos = at; }
+  }
   else if (cur < 0 && count) load_locked(0, 1);
   pthread_mutex_unlock(&mx);
 }
@@ -579,13 +654,14 @@ void player_toggle(void) {
   if (p) player_pause(); else player_play();
 }
 void player_stop(void) {
-  pthread_mutex_lock(&mx); reset_track_locked(); want_load = 0; state = PL_STOPPED; bump(); pthread_mutex_unlock(&mx);
+  pthread_mutex_lock(&mx); reset_track_locked(); want_load = 0; resume_at = -1; state = PL_STOPPED; bump(); pthread_mutex_unlock(&mx);
 }
 void player_next(void) { pthread_mutex_lock(&mx); if (!advance_locked(1, 1)) { reset_track_locked(); state = PL_STOPPED; bump(); } save(); pthread_mutex_unlock(&mx); }
 void player_prev(void) {
   pthread_mutex_lock(&mx);
   double pos = base_pos + played / (double)SR;
-  if (pos > 4 && !live) { want_seek = 0; bump(); }   // come i lettori veri: prima torna all'inizio
+  if (resume_at > 0) { resume_at = 0; base_pos = 0; bump(); }   // fermo dopo il riposo: all'inizio
+  else if (pos > 4 && !live) { want_seek = 0; bump(); }   // come i lettori veri: prima torna all'inizio
   else advance_locked(-1, 1);
   save();
   pthread_mutex_unlock(&mx);
@@ -599,17 +675,61 @@ void player_remove(int i) {
     count--;
     if (i < cur) cur--;
     reorder();
-    if (was_cur) { if (cur >= count) cur = count - 1; if (cur >= 0 && state == PL_PLAYING) load_locked(cur, 1); else { reset_track_locked(); state = PL_STOPPED; } }
+    if (was_cur) {
+      if (cur >= count) cur = count - 1;
+      if (cur >= 0 && state == PL_PLAYING) load_locked(cur, 1);
+      else { reset_track_locked(); want_load = 0; resume_at = -1; state = PL_STOPPED; }   // il decoder non deve aprire items[-1]
+    }
     bump(); save();
   }
   pthread_mutex_unlock(&mx);
 }
-void player_clear(void) { pthread_mutex_lock(&mx); reset_track_locked(); count = 0; cur = -1; want_load = 0; state = PL_STOPPED; bump(); save(); pthread_mutex_unlock(&mx); }
-void player_seek(double s) { pthread_mutex_lock(&mx); if (!live && s >= 0) { want_seek = dur > 0 && s > dur ? dur : s; bump(); } pthread_mutex_unlock(&mx); }
+void player_clear(void) { pthread_mutex_lock(&mx); reset_track_locked(); count = 0; cur = -1; want_load = 0; resume_at = -1; state = PL_STOPPED; bump(); save(); pthread_mutex_unlock(&mx); }
+void player_seek(double s) {
+  pthread_mutex_lock(&mx);
+  if (resume_at >= 0 && s >= 0) { resume_at = s; base_pos = s; bump(); }   // fermo dopo il riposo: vale alla ripresa
+  else if (!live && s >= 0) { want_seek = dur > 0 && s > dur ? dur : s; bump(); }
+  pthread_mutex_unlock(&mx);
+}
 void player_volume(int v) { pthread_mutex_lock(&mx); volume = v < 0 ? 0 : v > 100 ? 100 : v; bump(); save(); pthread_mutex_unlock(&mx); }
 void player_shuffle(int on) { pthread_mutex_lock(&mx); shuffle = !!on; reorder(); bump(); save(); pthread_mutex_unlock(&mx); }
 void player_repeat(int m) { pthread_mutex_lock(&mx); repeat = m < 0 || m > 2 ? 0 : m; bump(); save(); pthread_mutex_unlock(&mx); }
 void player_on_track(player_track_cb cb) { on_track = cb; }
+
+// Riposo o spegnimento (power.c). 1: il brano si ferma in pausa (coda e punto
+// restano, il decoder chiude il flusso), uscita della console e porta 9096
+// chiuse, stato su disco. 0: la porta si riapre; si resta in pausa, riparte
+// solo se lo chiede qualcuno. Torna entro un secondo circa.
+void player_power(int sleeping) {
+  if (!items) return;
+  pthread_mutex_lock(&mx);
+  if (!sleeping) {
+    int was = asleep; asleep = 0; bump();
+    pthread_mutex_unlock(&mx);
+    if (was) player_log("lettore: di nuovo pronto dopo il riposo (in pausa)");
+    return;
+  }
+  if (!asleep) {
+    asleep = 1;
+    if (cur >= 0 && cur < count && state != PL_STOPPED) {
+      double pos = base_pos + played / (double)SR; int was_live = live;
+      reset_track_locked();               // gen nuovo: FFmpeg interrompe letture e connessioni
+      want_load = 0; want_seek = -1;
+      resume_at = was_live ? -1 : pos; base_pos = was_live ? 0 : pos;
+      state = PL_PAUSED;
+    }
+    bump(); save();
+    player_log("lettore: riposo, musica in pausa");
+  }
+  pthread_mutex_unlock(&mx);
+  // send() verso la UI può restare fermo fino a 1 s: shutdown lo sblocca subito,
+  // la chiusura la fa out_thread (sotto pcmx il descrittore non cambia)
+  pthread_mutex_lock(&pcmx);
+  if (pcm_client >= 0) shutdown(pcm_client, SHUT_RDWR);
+  pthread_mutex_unlock(&pcmx);
+  for (int i = 0; i < 100 && (out_awake || ls_open || dec_busy); i++) usleep(10000);
+  if (out_awake || ls_open || dec_busy) player_log("lettore: riposo, uscita %d porta %d decoder %d ancora attivi", out_awake, ls_open, dec_busy);
+}
 int player_is_playing(void) { pthread_mutex_lock(&mx); int p = state == PL_PLAYING; pthread_mutex_unlock(&mx); return p; }
 
 // ------------------------------------------------------------------- JSON --

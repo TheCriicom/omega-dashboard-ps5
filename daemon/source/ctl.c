@@ -33,11 +33,13 @@
 //   GET  /v1/voice            voce del party nel servizio: {active,party,members,mic,muted,talking}
 //   POST /v1/voice  {"cmd":"mute|unmute|toggle|leave"}
 //   POST /v1/cmd    {"cmd":"play|pause|toggle|next|prev|stop|seek|volume|shuffle|repeat|jump|remove|clear","value":n}
+//                   {"cmd":"prepare_power|resume_power"} solo dalla console: prima di spegnere / annulla
 #include "ctl.h"
 #include "json.h"
 #include "player.h"
 #include "lib.h"
 #include "voice.h"
+#include "power.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -53,9 +55,12 @@
 #include <sys/mount.h>
 #include <sys/param.h>
 #include <errno.h>
+#include <poll.h>
 #include <unistd.h>
 
 #define MAX_BODY (4 * 1024 * 1024)
+#define MIN_FREE (3LL * 1024 * 1024 * 1024)   // un caricamento non lascia mai meno di 3 GB liberi
+#define REQ_S 8                               // tempo massimo per leggere una richiesta: /v1/ping non aspetta oltre
 
 void player_log(const char *fmt, ...);
 
@@ -105,7 +110,9 @@ int omega_thread(void *(*fn)(void *), void *arg) {
 extern const char REMOTE_HTML[]; extern const size_t REMOTE_HTML_LEN;
 
 static char data_dir[200];
-static int lsock = -1;
+static volatile int lsock = -1;
+static volatile int ctl_asleep;   // riposo della console (ctl_power): porta chiusa
+static pthread_t ctl_tid; static volatile int ctl_tid_ok;
 static time_t started_at;   // la UI lo confronta con la data del file: se il file è più nuovo, riavvia
 static char last_req[160] = "-";
 const char *ctl_last_request(void) { return last_req; }
@@ -147,8 +154,14 @@ void ctl_on_system(ctl_system_fn fn) { system_fn = fn; }
 const char *ctl_remote_token(void) { return secret; }
 
 static void send_all(int s, const void *p, size_t n) {
-  const char *c = p;
-  while (n) { ssize_t k = write(s, c, n); if (k <= 0) return; c += k; n -= (size_t)k; }
+  const char *c = p; time_t until = time(NULL) + REQ_S;   // chi non legge non tiene fermo il servizio
+  while (n) { ssize_t k = write(s, c, n); if (k <= 0 || time(NULL) > until) return; c += k; n -= (size_t)k; }
+}
+// read con una scadenza complessiva: un client lento non blocca le altre richieste
+static ssize_t read_until(int s, void *b, size_t n, time_t until) {
+  time_t left = until - time(NULL); if (left <= 0) return -1;
+  struct timeval tv = { left < 5 ? left : 5, 0 }; setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
+  return read(s, b, n);
 }
 
 static void reply(int s, int code, const char *type, const void *body, size_t len) {
@@ -167,9 +180,17 @@ static void reply_json(int s, int code, const char *js) { reply(s, code, "applic
 
 static int cmd_is(const char *a, const char *b) { return a && !strcmp(a, b); }
 
-NOINLINE static void do_cmd(int s, JVal *j) {
+NOINLINE static void do_cmd(int s, JVal *j, int local) {
   const char *c = jstr(j, "cmd", "");
   double v = jnum(j, "value", -1);
+  if (cmd_is(c, "prepare_power") || cmd_is(c, "resume_power")) {
+    if (!local) { reply_json(s, 403, "{\"error\":\"local_only\"}"); return; }
+    // la UI sta per spegnere: si risponde solo a lavoro finito. power_prepare
+    // chiude la porta in ascolto (ctl_power), non questa connessione.
+    if (cmd_is(c, "prepare_power")) power_prepare(); else power_resume();
+    reply_json(s, 200, "{\"ok\":true}");
+    return;
+  }
   if (cmd_is(c, "play")) player_play();
   else if (cmd_is(c, "pause")) player_pause();
   else if (cmd_is(c, "toggle")) player_toggle();
@@ -244,31 +265,58 @@ static void url_decode(char *s) {
 }
 static void music_dir(char *out, size_t n) { snprintf(out, n, "%s/Music", data_dir); mkdir(out, 0777); }
 
-NOINLINE static void do_upload(int s, const char *qs, const char *body_start, size_t have, long long clen) {
-  char name[256] = "", raw[512] = "";
-  const char *p = qs ? strstr(qs, "name=") : NULL;
-  if (p) { snprintf(raw, sizeof raw, "%.*s", (int)strcspn(p + 5, "&"), p + 5); url_decode(raw); }
-  if (!clean_name(raw, name, sizeof name)) { reply_json(s, 400, "{\"error\":\"bad_name\"}"); return; }
-  if (clen <= 0 || clen > MAX_UPLOAD) { reply_json(s, 413, "{\"error\":\"too_large\"}"); return; }
-  char dir[300], dst[600], tmp[620];
-  music_dir(dir, sizeof dir);
-  snprintf(dst, sizeof dst, "%s/%s", dir, name); snprintf(tmp, sizeof tmp, "%s.part", dst);
+// statfs come il pannello Sistema della UI (sulla console statvfs non è affidabile)
+static long long free_bytes(const char *dir) {
+  struct statfs v; if (statfs(dir, &v) != 0) return -1;
+  return (long long)v.f_bavail * (long long)v.f_bsize;
+}
+
+// Il file arriva in un thread suo, come i giochi: fino a 600 MB dal telefono
+// tenevano fermo il server, e la UI senza risposta a /v1/ping chiudeva il servizio.
+typedef struct { int s; char name[256], dst[600]; long long clen; char *pre; size_t have; } MusicJob;
+static void *music_thread(void *arg) {
+  MusicJob *m = arg;
+  struct timeval tv = { 60, 0 };
+  setsockopt(m->s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
+  char tmp[620]; snprintf(tmp, sizeof tmp, "%s.part", m->dst);
   int fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  if (fd < 0) { reply_json(s, 500, "{\"error\":\"write\"}"); return; }
-  long long got = 0; int ok = 1;
-  if (have) { if (write(fd, body_start, have) != (ssize_t)have) ok = 0; got = (long long)have; }
-  static char buf[256 * 1024];
-  while (ok && got < clen) {
-    ssize_t k = read(s, buf, (size_t)(clen - got < (long long)sizeof buf ? clen - got : (long long)sizeof buf));
+  long long got = 0; int ok = fd >= 0;
+  if (ok && m->have) { if (write(fd, m->pre, m->have) != (ssize_t)m->have) ok = 0; got = (long long)m->have; }
+  char *buf = ok ? malloc(256 * 1024) : NULL; if (!buf) ok = 0;
+  while (ok && got < m->clen) {
+    if (power_sleeping()) { ok = 0; break; }   // riposo o spegnimento: niente scritture nuove
+    ssize_t k = read(m->s, buf, (size_t)(m->clen - got < 256 * 1024 ? m->clen - got : 256 * 1024));
     if (k <= 0) { ok = 0; break; }
     if (write(fd, buf, (size_t)k) != k) { ok = 0; break; }
     got += k;
   }
-  close(fd);
-  if (!ok || got != clen) { unlink(tmp); reply_json(s, 400, "{\"error\":\"incomplete\"}"); return; }
-  rename(tmp, dst);
-  player_log("musica: caricato %s (%lld byte)", name, got);
-  reply_json(s, 200, "{\"ok\":true}");
+  free(buf);
+  if (fd >= 0) { if (ok && fsync(fd) != 0) ok = 0; close(fd); }
+  if (fd < 0) reply_json(m->s, 500, "{\"error\":\"write\"}");
+  else if (!ok || got != m->clen) { unlink(tmp); reply_json(m->s, 400, "{\"error\":\"incomplete\"}"); }
+  else { rename(tmp, m->dst); player_log("musica: caricato %s (%lld byte)", m->name, got); reply_json(m->s, 200, "{\"ok\":true}"); }
+  close(m->s); free(m->pre); free(m);
+  return NULL;
+}
+// 1 = la connessione passa al thread (il chiamante non la chiude)
+NOINLINE static int do_upload(int s, const char *qs, const char *body_start, size_t have, long long clen) {
+  char name[256] = "", raw[512] = "";
+  const char *p = qs ? strstr(qs, "name=") : NULL;
+  if (p) { snprintf(raw, sizeof raw, "%.*s", (int)strcspn(p + 5, "&"), p + 5); url_decode(raw); }
+  if (!clean_name(raw, name, sizeof name)) { reply_json(s, 400, "{\"error\":\"bad_name\"}"); return 0; }
+  if (clen <= 0 || clen > MAX_UPLOAD) { reply_json(s, 413, "{\"error\":\"too_large\"}"); return 0; }
+  if (power_sleeping()) { reply_json(s, 503, "{\"error\":\"busy\"}"); return 0; }
+  char dir[300];
+  music_dir(dir, sizeof dir);
+  long long fb = free_bytes(dir);
+  if (fb >= 0 && clen + MIN_FREE > fb) { reply_json(s, 507, "{\"error\":\"no_space\"}"); return 0; }
+  MusicJob *m = calloc(1, sizeof *m); if (!m) { reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; }
+  m->s = s; m->clen = clen;
+  snprintf(m->name, sizeof m->name, "%s", name); snprintf(m->dst, sizeof m->dst, "%s/%s", dir, name);
+  if (have > (size_t)clen) have = (size_t)clen;
+  if (have) { m->pre = malloc(have); if (!m->pre) { free(m); reply_json(s, 500, "{\"error\":\"memory\"}"); return 0; } memcpy(m->pre, body_start, have); m->have = have; }
+  if (spawn(music_thread, m) != 0) { free(m->pre); free(m); player_log("musica: nessun thread libero, il telefono riprova"); reply_json(s, 503, "{\"error\":\"busy\"}"); return 0; }
+  return 1;
 }
 
 NOINLINE static void music_files(int s) {
@@ -339,11 +387,6 @@ static int qparam(const char *qs, const char *key, char *out, size_t n) {
     p++;
   }
   out[0] = 0; return 0;
-}
-// statfs come il pannello Sistema della UI (sulla console statvfs non è affidabile)
-static long long free_bytes(const char *dir) {
-  struct statfs v; if (statfs(dir, &v) != 0) return -1;
-  return (long long)v.f_bavail * (long long)v.f_bsize;
 }
 static void rm_rf(const char *path) {
   struct stat st; if (lstat(path, &st) != 0) return;
@@ -464,6 +507,7 @@ static void *up_thread(void *arg) {
   if (ok && u->have) { ok = write(fd, u->pre, u->have) == (ssize_t)u->have; got = (long long)u->have; up_progress(u->batch, u->base + u->off + got, u->total); }
   char *buf = ok ? malloc(512 * 1024) : NULL; if (!buf) ok = 0;
   while (ok && got < u->clen) {
+    if (power_sleeping()) { ok = 0; break; }   // riposo o spegnimento: il .part resta, si riprende da lì
     long long want = u->clen - got; if (want > 512 * 1024) want = 512 * 1024;
     ssize_t k = read(u->s, buf, (size_t)want);
     if (k <= 0) { ok = 0; break; }
@@ -472,7 +516,7 @@ static void *up_thread(void *arg) {
     up_progress(u->batch, u->base + u->off + got, u->total);
   }
   free(buf);
-  if (fd >= 0) close(fd);
+  if (fd >= 0) { if (ok && fsync(fd) != 0) ok = 0; close(fd); }   // su disco prima del rename
   if (ok && got == u->clen && rename(tmp, u->dst) == 0) reply_json(u->s, 200, "{\"ok\":true}");
   else reply_json(u->s, 400, fd < 0 ? "{\"error\":\"write\"}" : "{\"error\":\"incomplete\"}");   // il .part resta: si riprende da lì
   close(u->s); free(u->pre); free(u);
@@ -489,7 +533,8 @@ NOINLINE static int start_upload(int s, const char *qs, const char *pre, size_t 
   if (clen < 0) { reply_json(s, 400, "{\"error\":\"length\"}"); return 0; }
   up_root(root, sizeof root);
   long long fb = free_bytes(root);
-  if (fb >= 0 && clen + 256LL * 1024 * 1024 > fb) { reply_json(s, 507, "{\"error\":\"no_space\"}"); return 0; }
+  if (fb >= 0 && clen + MIN_FREE > fb) { reply_json(s, 507, "{\"error\":\"no_space\"}"); return 0; }
+  if (power_sleeping()) { reply_json(s, 503, "{\"error\":\"busy\"}"); return 0; }
   snprintf(dst, sizeof dst, "%s/%s/%s", root, b, relc);
   if (clen == 0 && off == 0) {   // file vuoto (le cartelle dei giochi ne hanno): si crea e basta
     mkparents(dst);
@@ -737,8 +782,9 @@ NOINLINE static void do_library(int s, const char *what, JVal *j) {
 static int handle(int s, int local) {
   // intestazioni
   static char hdr[8192]; size_t hl = 0; char *end = NULL;
+  time_t until = time(NULL) + REQ_S;
   while (hl + 1 < sizeof hdr) {
-    ssize_t k = read(s, hdr + hl, sizeof hdr - 1 - hl);
+    ssize_t k = read_until(s, hdr + hl, sizeof hdr - 1 - hl, until);
     if (k <= 0) return 0;
     hl += (size_t)k; hdr[hl] = 0;
     if ((end = strstr(hdr, "\r\n\r\n"))) break;
@@ -843,8 +889,7 @@ static int handle(int s, int local) {
   }
   if (!strcmp(path, "/v1/music/upload")) {
     size_t have = hl - (size_t)(end + 4 - hdr);
-    do_upload(s, qcopy, end + 4, have, clen_ll);
-    return 0;
+    return do_upload(s, qcopy, end + 4, have, clen_ll);
   }
   if (clen > MAX_BODY) { reply_json(s, 413, "{\"error\":\"too_large\"}"); return 0; }
 
@@ -853,7 +898,7 @@ static int handle(int s, int local) {
   size_t have = hl - (size_t)(end + 4 - hdr);
   if (have > clen) have = clen;
   memcpy(body, end + 4, have);
-  while (have < clen) { ssize_t k = read(s, body + have, clen - have); if (k <= 0) break; have += (size_t)k; }
+  while (have < clen) { ssize_t k = read_until(s, body + have, clen - have, until); if (k <= 0) break; have += (size_t)k; }
   body[have] = 0;
   JVal *j = json_parse(body);
   free(body);
@@ -875,13 +920,19 @@ static int handle(int s, int local) {
     else {
       reply_json(s, 200, "{\"ok\":true}");
       player_log("servizio: chiuso dalla UI per l'aggiornamento");
-      player_stop();
-      close(s); close(lsock);
-      exit(0);
+      // exit() con FFmpeg, audio e microfono ancora vivi poteva bloccare la
+      // console: prima si fermano (al massimo un secondo ciascuno), poi _exit
+      voice_power(1);
+      player_power(1);
+      close(s); if (lsock >= 0) close(lsock);
+      _exit(0);
     }
   }
-  else if (!strcmp(path, "/v1/voice")) reply_json(s, voice_command(jstr(j, "cmd", "")) ? 200 : 400, "{}");
-  else if (!strcmp(path, "/v1/cmd")) do_cmd(s, j);
+  else if (!strcmp(path, "/v1/voice")) {   // le richieste al server le fa la voce nel suo thread
+    int r = voice_command(jstr(j, "cmd", ""));
+    reply_json(s, r == 2 ? 202 : r ? 200 : 400, "{}");
+  }
+  else if (!strcmp(path, "/v1/cmd")) do_cmd(s, j, local);
   else if (!strcmp(path, "/v1/queue")) do_queue(s, j);
   else reply_json(s, 404, "{\"error\":\"not_found\"}");
   json_free(j);
@@ -889,28 +940,48 @@ static int handle(int s, int local) {
 }
 
 static int ctl_port = OMEGA_CTL_PORT;
+static int listen_open(void) {
+  int ls = socket(AF_INET, SOCK_STREAM, 0); if (ls < 0) return -1;
+  int one = 1; setsockopt(ls, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
+  struct sockaddr_in a; memset(&a, 0, sizeof a);
+  a.sin_family = AF_INET; a.sin_port = htons((unsigned short)ctl_port); a.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(ls, (struct sockaddr *)&a, sizeof a) != 0 || listen(ls, 8) != 0) { close(ls); return -1; }
+  return ls;
+}
+// solo dal thread delle richieste: è l'unico che usa lsock
+static void listen_close(void) { int ls = lsock; lsock = -1; if (ls >= 0) close(ls); }
+
 static void *ctl_thread(void *arg) {
   (void)arg;
   { char probe; player_log("thread delle richieste: stack intorno a %p", (void *)&probe); }
-  int fails = 0;
+  ctl_tid = pthread_self(); ctl_tid_ok = 1;
+  int fails = 0, logged = 0;
   for (;;) {
+    if (ctl_asleep) { if (lsock >= 0) { listen_close(); player_log("controllo: porta %d chiusa per il riposo", ctl_port); } usleep(100000); continue; }
+    if (lsock < 0) {
+      lsock = listen_open();
+      if (lsock < 0) { if (!logged++) player_log("controllo: porta %d non disponibile (errno %d), riprovo", ctl_port, errno); sleep(2); continue; }
+      logged = 0;
+      player_log("controllo: di nuovo in ascolto sulla porta %d", ctl_port);
+    }
+    // accept solo quando c'è qualcuno: il ciclo resta libero di vedere il riposo
+    struct pollfd pf = { lsock, POLLIN, 0 };
+    int pr = poll(&pf, 1, 250);
+    if (pr == 0) continue;
     struct sockaddr_in ca; socklen_t cl = sizeof ca;
-    int c = accept(lsock, (struct sockaddr *)&ca, &cl);
+    int c = pr > 0 && !(pf.revents & (POLLERR | POLLNVAL)) ? accept(lsock, (struct sockaddr *)&ca, &cl) : -1;
     if (c < 0) {
       // dopo il riposo della console il socket in ascolto può restare morto:
       // dopo 5 s di errori di fila lo si chiude e si torna in ascolto
       if (++fails >= 50) {
         player_log("controllo: accept fallisce (errno %d), riapro la porta %d", errno, ctl_port);
-        close(lsock); lsock = socket(AF_INET, SOCK_STREAM, 0);
-        int one = 1; if (lsock >= 0) setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
-        struct sockaddr_in a; memset(&a, 0, sizeof a);
-        a.sin_family = AF_INET; a.sin_port = htons((unsigned short)ctl_port); a.sin_addr.s_addr = htonl(INADDR_ANY);
-        if (lsock < 0 || bind(lsock, (struct sockaddr *)&a, sizeof a) != 0 || listen(lsock, 8) != 0) { if (lsock >= 0) close(lsock); lsock = -1; sleep(2); }
+        listen_close();
         fails = 0;
       }
       usleep(100000); continue;
     }
     fails = 0;
+    if (ctl_asleep) { close(c); continue; }
     struct timeval tv = { 5, 0 };
     setsockopt(c, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
     setsockopt(c, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
@@ -918,6 +989,16 @@ static void *ctl_thread(void *arg) {
     if (!handle(c, local)) close(c);
   }
   return NULL;
+}
+
+// Riposo o spegnimento (power.c). 1: la porta in ascolto si chiude (le richieste
+// già accettate finiscono); dal thread delle richieste (prepare_power) subito,
+// da un altro thread la chiude lui entro mezzo secondo. 0: si riapre.
+void ctl_power(int sleeping) {
+  ctl_asleep = sleeping ? 1 : 0;
+  if (!sleeping) return;
+  if (ctl_tid_ok && pthread_equal(pthread_self(), ctl_tid)) { if (lsock >= 0) { listen_close(); player_log("controllo: porta %d chiusa per il riposo", ctl_port); } return; }
+  for (int i = 0; i < 50 && lsock >= 0; i++) usleep(10000);
 }
 
 int ctl_start(int port, const char *dir) {

@@ -278,6 +278,7 @@ void drives_tick(void);                                    // avvia il controllo
 int drives_changed(void);                                  // 1 se i giochi esterni sono cambiati (disco collegato o tolto)
 int drives_prepare_launch(const AppEntry *a, char *err, size_t en);   // monta e registra prima di avviare
 void drives_after_game(void);                              // smonta i giochi esterni non più in esecuzione
+void drives_unmount_all(void);                             // prima dello spegnimento: smonta tutti i giochi esterni
 // cartelle scelte dall'utente (drives.c): kind 0 giochi, 1 pkg
 int paths_list(int kind, char (*out)[300], int max);
 int paths_set(int kind, const char *path, int add);      // add 1 aggiunge, 0 toglie
@@ -289,6 +290,8 @@ void paths_menu(void);                                   // Impostazioni › Gio
 void storage_open(void); void storage_draw(float t); void storage_input(int b); void storage_tick(void);
 void storage_move_app(int app_idx);                      // "Sposta su un altro disco" dal menu di un gioco
 void storage_move_pkg(const char *path, int copy);       // file .pkg (pkgs.c)
+int  storage_busy(void);                                 // 1 se uno spostamento è in corso
+#define OMEGA_COPY_MARK ".omega-copia"                   // nella cartella di destinazione finché la copia non è finita
 
 long iso_epoch(const char *iso);
 void rel_time(const char *iso, char *out, size_t n);       // "5 min fa"
@@ -434,6 +437,7 @@ void music_mini(int x, int y, int alpha);
 void system_open(void); void system_draw(float t); void system_input(int b);
 void files_open(const char *start); void files_draw(float t); void files_input(int b);
 void files_tick(void); void files_overlay(void);
+int  files_busy(void);                     // 1 se una copia del file manager è in corso
 // Telecomando dal telefono (remote.c)
 void remote_open(void); void remote_draw(float t); void remote_input(int b);
 int  console_ip(char *out, size_t n);
@@ -513,11 +517,13 @@ void install_cleanup(void);               // file orfani (scaricamenti a metà, 
 int  pkg_info(const char *path, char *title, size_t tn, char *cid, size_t cn, const char *icon_dest);
 int  storage_view(InstallView *v);         // spostamento in corso (storage.c), per la stessa tessera
 int  saves_view(InstallView *v);           // caricamento o ripristino in corso, per la tessera nella home
+int  saves_busy(void);                     // 1 se si leggono o scrivono salvataggi della console
 int  store_uninstall(const char *title_id);   // 0 = ok
 
 // Aggiornamenti automatici (update.c, solo nella build ufficiale)
 void update_init(void);
 void update_tick(void);
+int  power_pending(void);                  // panels.c: riposo, riavvio o spegnimento richiesto da poco
 
 // ------------------------------------------------------- sessione e account --
 extern char f_user[64], f_pass[128], f_email[96], f_confirm[128];

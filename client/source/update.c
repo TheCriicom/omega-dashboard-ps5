@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include "monocypher-ed25519.h"
 #include <ctype.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -76,13 +77,20 @@ static int vercmp(const char *a, const char *b) {
   return 0;
 }
 
+// su disco prima del rename: dopo una corrente mancata il caricatore non deve
+// trovare un ELF vuoto o a metà
+static int fsync_path(const char *p) {
+  int fd = open(p, O_WRONLY); if (fd < 0) return -1;
+  int rc = fsync(fd); close(fd); return rc;
+}
+
 static long state_seq(void) {
   char *s = file_read(UPD_STATE, 4096, NULL); if (!s) return 0;
   JVal *j = json_parse(s); long q = (long)jnum(j, "seq", 0); json_free(j); free(s); return q;
 }
 static void state_save(long seq) {
   FILE *f = fopen(UPD_STATE ".tmp", "w"); if (!f) return;
-  fprintf(f, "{\"seq\":%ld,\"checked\":%ld}\n", seq, (long)time(NULL)); fclose(f);
+  fprintf(f, "{\"seq\":%ld,\"checked\":%ld}\n", seq, (long)time(NULL)); fflush(f); fsync(fileno(f)); fclose(f);
   rename(UPD_STATE ".tmp", UPD_STATE);
 }
 
@@ -106,7 +114,9 @@ static void sidecar_update(const char *elf, const char *sha, const char *ver) {
   out[o] = 0; free(s);
   char t[420]; snprintf(t, sizeof t, "%s.tmp", p);
   FILE *f = fopen(t, "w"); if (!f) return;
-  fwrite(out, 1, o, f); fclose(f); rename(t, p);
+  int ok = fwrite(out, 1, o, f) == o && fflush(f) == 0 && fsync(fileno(f)) == 0;
+  if (fclose(f) != 0 || !ok) { unlink(t); return; }
+  rename(t, p);
 }
 
 // ---------------------------------------------------------------- controllo --
@@ -152,6 +162,7 @@ static int check_once(void) {
     char got[65] = ""; file_sha256(tmp, got);
     if (strcmp(got, sha)) { omega_log("aggiornamenti: sha256 diverso per %s, scartato", TARGETS[t].id); unlink(tmp); continue; }
     chmod(tmp, 0755);
+    if (fsync_path(tmp) != 0) { omega_log("aggiornamenti: %s non scritto su disco, scartato", tmp); unlink(tmp); continue; }
     char old[420]; snprintf(old, sizeof old, "%s.old", TARGETS[t].path);
     unlink(old); if (!fresh) link(TARGETS[t].path, old);          // la versione precedente resta come .old
     if (rename(tmp, TARGETS[t].path) != 0) { omega_log("aggiornamenti: sostituzione di %s fallita", TARGETS[t].path); unlink(tmp); continue; }
@@ -173,6 +184,8 @@ static int check_once(void) {
 // fino al riavvio della console: lo si chiude (/v1/quit) e si avvia il nuovo.
 // Lo stesso se all'avvio di Omega il servizio configurato non risponde.
 static SDL_atomic_t svc_result;   // 0 niente, 1 riavviato, 2 serve il riavvio della console
+static Uint32 fail_since;         // primo ping senza risposta (0 = risponde); solo il thread degli aggiornamenti
+#define WEDGED_MS (180u * 1000)
 static int svc_alive(void) { char b[256]; return omega_http(HTTP_GET, "http://127.0.0.1:9095/v1/ping", NULL, NULL, b, sizeof b) == 200; }
 // Servizio bloccato senza file del pid (versioni vecchie): lo si cerca per nome
 // tra i processi (sysctl kern.proc). Si avanza con ki_structsize di ogni voce.
@@ -203,8 +216,17 @@ static int kill_by_name(const char *needle) {
   free(b);
   return n;
 }
+// il pid del file è ancora il servizio? (il file può essere rimasto da un
+// avvio precedente e il numero ora appartenere a un altro processo)
+static int pid_is(int pid, const char *needle) {
+  int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid }; struct kinfo_proc kp; size_t len = sizeof kp;
+  if (sysctl(mib, 4, &kp, &len, NULL, 0) != 0 || len < sizeof kp) return 0;
+  char comm[COMMLEN + 1]; memcpy(comm, kp.ki_comm, COMMLEN); comm[COMMLEN] = 0;
+  return strstr(comm, needle) != NULL;
+}
 #else
 static int kill_by_name(const char *needle) { (void)needle; return 0; }
+static int pid_is(int pid, const char *needle) { (void)pid; (void)needle; return 0; }
 #endif
 
 // la porta 9095 accetta connessioni (anche se il servizio non risponde)
@@ -255,12 +277,17 @@ static int svc_stale(void) {
 static int svc_start(int stop_old) {
   char path[300], err[200], b[256];
   if (!hen_daemon_path(path, sizeof path)) return 0;
-  // bloccato: la porta è occupata ma non risponde. Lo si chiude di forza (pid scritto dal servizio)
-  // (la porta può anche rifiutare le connessioni se la coda è piena: non si guarda)
+  // Non risponde. Si chiude di forza (pid scritto dal servizio) solo se la porta
+  // rifiuta le connessioni (processo bloccato o che non ascolta) o se non
+  // risponde da almeno 3 minuti: un servizio solo occupato non si uccide. Mai
+  // mentre la console sta per spegnersi.
   if (!svc_alive()) {
+    if (power_pending()) return 0;
+    int busy = svc_port_busy();
+    if (busy && (!fail_since || SDL_GetTicks() - fail_since < WEDGED_MS)) return 0;
     char *pf = file_read(OMEGA_DIR "/omega_redirect.pid", 32, NULL);
     int pid = pf ? atoi(pf) : 0; free(pf);
-    if (pid > 1 && pid != (int)getpid()) {
+    if (pid > 1 && pid != (int)getpid() && pid_is(pid, "omega_redirect")) {
       int rc = kill(pid, SIGKILL);
       omega_log("servizio bloccato: chiuso il processo %d (%d)", pid, rc);
       for (int i = 0; i < 20 && svc_port_busy(); i++) SDL_Delay(250);
@@ -286,9 +313,13 @@ static int upd_thread(void *arg) {
   Uint32 next_check = 0;
   int restarts = 0; Uint32 restart_window = SDL_GetTicks();
   for (;;) {
+    // riposo, riavvio o spegnimento in arrivo: il servizio non si tocca
+    if (power_pending()) { SDL_Delay(5000); continue; }
     // servizio configurato ma fermo (crash o avvio mancato): si riavvia, al massimo 5 volte l'ora
     if (SDL_GetTicks() - restart_window > 3600u * 1000) { restarts = 0; restart_window = SDL_GetTicks(); }
-    if (restarts < 5 && !svc_alive()) { int rr = svc_start(0); if (rr) { restarts++; if (rr == 1) omega_log("servizio: non rispondeva, riavviato"); } }
+    int alive = svc_alive();
+    if (alive) fail_since = 0; else if (!fail_since) fail_since = SDL_GetTicks() | 1;
+    if (restarts < 5 && !alive) { int rr = svc_start(0); if (rr) { restarts++; if (rr == 1) omega_log("servizio: non rispondeva, riavviato"); } }
     else if (restarts < 5 && svc_stale()) { omega_log("servizio: gira una versione vecchia, lo sostituisco"); restarts++; svc_start(1); }
     if (!next_check || SDL_GetTicks() >= next_check) {
       int r = check_once();

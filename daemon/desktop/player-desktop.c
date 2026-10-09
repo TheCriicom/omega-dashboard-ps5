@@ -52,4 +52,9 @@ int main(int argc, char **argv) {
 // controllo (ctl.c) e il lettore le chiamano comunque.
 int voice_command(const char *cmd) { (void)cmd; return 0; }
 void voice_state_json(char *out, size_t n) { snprintf(out, n, "{\"active\":false}"); }
+// niente riposo né spegnimento della console sul Mac (power.c)
+void voice_power(int sleeping) { (void)sleeping; }
+int power_sleeping(void) { return 0; }
+void power_prepare(void) {}
+void power_resume(void) {}
 void omega_diag(const char *comp, const char *ev, int ok, int rc, const char *detail) { (void)comp; (void)ev; (void)ok; (void)rc; (void)detail; }

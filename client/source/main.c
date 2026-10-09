@@ -702,10 +702,15 @@ int main(int argc, char **argv) {
     if (want_shot) { save_shot(); want_shot = 0; }
     SDL_RenderPresent(R);
     Uint32 spent = SDL_GetTicks() - now;
-    // tempi dei fotogrammi nel log ogni 15 s, per tarare il renderer software
-    { static Uint32 acc, frames, worst, since;
+    // tempi dei fotogrammi nel log, per tarare il renderer software: ogni 5 minuti,
+    // oppure dopo 15 s se la media è andata oltre i 40 ms (il log non cresce per niente)
+    { static Uint32 acc, frames, worst, since, logged;
       acc += spent; frames++; if (spent > worst) worst = spent;
-      if (now - since > 15000) { if (since) omega_log("frame: media %.1f ms, peggiore %u ms (%u frame)", (double)acc / frames, worst, frames); acc = frames = worst = 0; since = now; } }
+      if (now - since > 15000) {
+        int bad = acc > 40 * frames;
+        if (since && (bad || now - logged >= 300000)) { omega_log("frame: media %.1f ms, peggiore %u ms (%u frame)", (double)acc / frames, worst, frames); logged = now; }
+        acc = frames = worst = 0; since = now;
+      } }
     // Personalizza › Fluidità: 60, 30, o automatica (30 quando la home è ferma da 5 s)
     Uint32 frame_ms = FRAME_MS;
     if (g_prefs.fps == 1) frame_ms = 33;

@@ -46,3 +46,5 @@ size_t player_cover(unsigned char *out, size_t n, const char **mime);
 typedef void (*player_track_cb)(const char *title, const char *artist);
 void player_on_track(player_track_cb cb);
 int  player_is_playing(void);
+// power.c: 1 = riposo (pausa, audio e porta 9096 chiusi, stato su disco), 0 = di nuovo acceso (resta in pausa)
+void player_power(int sleeping);

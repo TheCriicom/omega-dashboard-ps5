@@ -24,6 +24,7 @@ int g_net_gen = 1;
 static int net_worker(void *arg) {
   (void)arg;
   char *buf = malloc(NET_BIG);
+  while (!buf) { SDL_Delay(1000); buf = malloc(NET_BIG); }   // memoria finita all'avvio: si riprova
   for (;;) {
     SDL_LockMutex(nq_mx);
     while (!nq_head) SDL_CondWait(nq_cv, nq_mx);
@@ -56,6 +57,7 @@ void net_req(int method, const char *path, const char *body, NetCb cb, void *ud)
   if (!j) return;
   j->method = method; snprintf(j->path, sizeof j->path, "%s", path);
   j->body = body ? strdup(body) : NULL;
+  if (body && !j->body) { free(j); return; }
   snprintf(j->token, sizeof j->token, "%s", g_token);
   j->gen = g_net_gen; j->cb = cb; j->ud = ud;
   SDL_LockMutex(nq_mx);

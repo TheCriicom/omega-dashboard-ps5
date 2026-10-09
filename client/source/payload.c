@@ -83,12 +83,13 @@ static int send_elfldr(const char *elf) {
   if (!f) return -1;
   int s = socket(AF_INET, SOCK_STREAM, 0);
   if (s < 0) { fclose(f); return -1; }
+  struct timeval tv = { 10, 0 }; setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);   // elfldr bloccato: non si resta appesi
   struct sockaddr_in sa; memset(&sa, 0, sizeof sa);
   sa.sin_family = AF_INET; sa.sin_port = htons(ELFLDR_PORT); sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
   int rc = -1;
   if (connect(s, (struct sockaddr *)&sa, sizeof sa) == 0) {
-    static char buf[64 * 1024]; size_t k; rc = 0;
-    while ((k = fread(buf, 1, sizeof buf, f)) > 0) {
+    char *buf = malloc(64 * 1024); size_t k; rc = buf ? 0 : -1;   // dal thread degli aggiornamenti e dal principale
+    while (buf && (k = fread(buf, 1, 64 * 1024, f)) > 0) {
       for (size_t off = 0; off < k;) {
         ssize_t w = send(s, buf + off, k - off, 0);
         if (w <= 0) { rc = -1; break; }
@@ -96,6 +97,7 @@ static int send_elfldr(const char *elf) {
       }
       if (rc) break;
     }
+    free(buf);
   }
   close(s); fclose(f);
   return rc;

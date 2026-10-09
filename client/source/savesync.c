@@ -88,6 +88,7 @@ static char focus_tid[16];
 static SDL_atomic_t st;        // 0 libero, 1 al lavoro, 2 finito (risultato da mostrare)
 static volatile long long jb_done, jb_total;
 static char jb_label[96], jb_phase[96], jb_result[300]; static int jb_err, jb_quiet; static Uint32 jb_ended;
+static SDL_atomic_t jb_kind;   // lavoro in corso (per saves_busy)
 static Uint32 auto_next;
 
 enum { J_REFRESH, J_SETUP, J_UNLOCK, J_RESET, J_REPASS, J_UPLOAD, J_RESTORE, J_UNDO, J_DELETE, J_AUTO };
@@ -476,7 +477,7 @@ static void arc_add_tree(Arc *a, const char *root, const char *rel, int depth) {
     unsigned char h[1 + 2 + 8 + 4]; h[0] = 1; h[1] = (unsigned char)pl; h[2] = (unsigned char)(pl >> 8);
     put64(h + 3, (uint64_t)s.st_size); put32(h + 11, (uint32_t)(s.st_mode & 0777));
     if (fwrite(h, 1, 3, a->f) != 3 || fwrite(ap, 1, (size_t)pl, a->f) != (size_t)pl || fwrite(h + 3, 1, 12, a->f) != 12) a->err = -4;
-    char buf[65536]; size_t k; long long left = s.st_size;
+    static char buf[65536]; size_t k; long long left = s.st_size;   // ricorsiva: niente 64 KB sullo stack a ogni livello (un lavoro alla volta)
     while (!a->err && left > 0 && (k = fread(buf, 1, sizeof buf, in)) > 0) {
       if ((long long)k > left) k = (size_t)left;
       if (fwrite(buf, 1, k, a->f) != k) a->err = -4;
@@ -975,11 +976,19 @@ static int start(int kind, const char *tid, const char *id, const char *pass, co
   snprintf(j->token, sizeof j->token, "%s", g_token); snprintf(j->me, sizeof j->me, "%s", S.me);
   snprintf(jb_label, sizeof jb_label, "%s", label ? label : _("Salvataggi online"));
   jb_phase[0] = 0; jb_done = 0; jb_total = 0; jb_quiet = 0; jb_ended = 0;
+  SDL_AtomicSet(&jb_kind, kind);
   SDL_AtomicSet(&st, 1);
   SDL_Thread *t = SDL_CreateThreadWithStackSize(worker, "saves", 1024 * 1024, j);
   if (!t) { free(j); SDL_AtomicSet(&st, 0); return -1; }
   SDL_DetachThread(t);
   return 0;
+}
+
+// Si leggono o scrivono i salvataggi della console (montaggio, ripristino):
+// riposo e spegnimento aspettano. La sola lettura dell'elenco online no.
+int saves_busy(void) {
+  int k = SDL_AtomicGet(&jb_kind);
+  return SDL_AtomicGet(&st) == 1 && (k == J_UPLOAD || k == J_RESTORE || k == J_UNDO || k == J_AUTO);
 }
 
 // Chiamato a ogni fotogramma: risultati e caricamento automatico.

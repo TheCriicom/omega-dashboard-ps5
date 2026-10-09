@@ -91,15 +91,28 @@ int hen_payload_dir(char *out, size_t n) {
 }
 
 // --------------------------------------------------------------- utilità --
+// Accanto, su disco (fsync) e poi rename: dopo una corrente mancata il
+// caricatore trova il file vecchio o quello nuovo intero, mai uno vuoto.
 static int copy_file(const char *src, const char *dst) {
   int in = open(src, O_RDONLY); if (in < 0) return -1;
   char tmp[700]; snprintf(tmp, sizeof tmp, "%s.part", dst);
   int out = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0777); if (out < 0) { close(in); return -2; }
-  char buf[65536]; ssize_t r; int rc = 0;
-  while ((r = read(in, buf, sizeof buf)) > 0) if (write(out, buf, (size_t)r) != r) { rc = -3; break; }
-  close(in); close(out);
+  char *buf = malloc(65536); ssize_t r = 0; int rc = buf ? 0 : -5;
+  while (buf && (r = read(in, buf, 65536)) > 0) if (write(out, buf, (size_t)r) != r) { rc = -3; break; }
+  if (!rc && r < 0) rc = -6;
+  if (!rc && fsync(out) != 0) rc = -7;
+  free(buf); close(in); if (close(out) != 0 && !rc) rc = -8;
   if (rc || rename(tmp, dst) != 0) { unlink(tmp); return rc ? rc : -4; }
   chmod(dst, 0777);
+  return 0;
+}
+// file di configurazione dei caricatori: stesso schema (accanto, fsync, rename)
+static int write_file(const char *path, const char *data) {
+  char tmp[700]; snprintf(tmp, sizeof tmp, "%s.omega-tmp", path);
+  int fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0666); if (fd < 0) return -1;
+  size_t L = strlen(data); int rc = write(fd, data, L) == (ssize_t)L && fsync(fd) == 0 ? 0 : -1;
+  if (close(fd) != 0) rc = -1;
+  if (rc || rename(tmp, path) != 0) { unlink(tmp); return -1; }
   return 0;
 }
 static int touch(const char *p) { FILE *f = fopen(p, "a"); if (!f) return -1; fclose(f); return 0; }
@@ -144,7 +157,7 @@ static int remove_line(const char *path, const char *line) {
     if (lines[i][0] == '!' && i + 1 < n && !strcmp(lines[i + 1], line)) continue;
     strcat(out, lines[i]); strcat(out, "\n");
   }
-  if (changed) { FILE *f = fopen(path, "w"); if (f) { fputs(out, f); fclose(f); } }
+  if (changed) write_file(path, out);
   free(out); free(b);
   return changed;
 }
@@ -165,7 +178,7 @@ static void ini_get(const char *path, const char *section, const char *key, char
 // section "" = file senza sezioni (pldmgr_config.txt); il file si crea se manca
 static int ini_set(const char *path, const char *section, const char *key, const char *val) {
   char *b = file_read(path, 256 * 1024, NULL);
-  if (!b) { FILE *f = fopen(path, "w"); if (!f) return -1; if (section[0]) fprintf(f, "[%s]\n", section); fprintf(f, "%s=%s\n", key, val); fclose(f); return 0; }
+  if (!b) { char n[600]; snprintf(n, sizeof n, "%s%s%s%s=%s\n", section[0] ? "[" : "", section, section[0] ? "]\n" : "", key, val); return write_file(path, n); }
   size_t cap = strlen(b) + 512; char *o = malloc(cap); if (!o) { free(b); return -1; }
   size_t at = 0; int in = !section[0], done = 0;
   char *p = b;
@@ -189,9 +202,7 @@ static int ini_set(const char *path, const char *section, const char *key, const
     else at += (size_t)snprintf(o + at, cap - at, "%s=%s\n", key, val);
   }
   o[at] = 0;
-  char tmp[600]; snprintf(tmp, sizeof tmp, "%s.omega-tmp", path);
-  FILE *f = fopen(tmp, "w"); int rc = -1;
-  if (f) { fputs(o, f); fclose(f); rc = rename(tmp, path); }
+  int rc = write_file(path, o);
   free(o); free(b);
   return rc;
 }
@@ -281,7 +292,7 @@ static void run_plan(void) {
       snprintf(mk, sizeof mk, "%s.auto_start", daemon_dst); steps[ST_DAEMON_AUTO].ok = touch(mk) == 0;
       if (owner == OWN_ONION) {   // priorità alta e nessun ritardo (schema di OnionHEN, version numerico)
         snprintf(mk, sizeof mk, "%s.json", daemon_dst);
-        FILE *f = fopen(mk, "w"); if (f) { fputs("{\"version\":1,\"priority\":900,\"delay_seconds\":0}\n", f); fclose(f); }
+        write_file(mk, "{\"version\":1,\"priority\":900,\"delay_seconds\":0}\n");
       }
     }
   }

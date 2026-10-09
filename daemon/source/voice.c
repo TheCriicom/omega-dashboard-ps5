@@ -53,7 +53,10 @@ void player_log(const char *fmt, ...);
 #define MAX_BATCH  10                   // al massimo 200 ms per POST
 #define MAX_BACKLOG 25                  // oltre 500 ms non spediti si butta il più vecchio
 #define UI_VOICE_S 5                    // la UI aggiorna ui-active ogni 2 s
-#define PARTY_EVERY_S 4
+#define PARTY_EVERY_S 4                 // in un party
+#define IDLE_EVERY_S 30                 // fuori dal party
+#define NET_BACKOFF_MAX_S 120           // rete giù: si riprova sempre più di rado
+#define SESSION_EVERY_S 2               // session.json
 
 enum { CODEC_OPUS = 1, CODEC_ADPCM = 2 };
 
@@ -114,10 +117,24 @@ int sceHttpReadData(int req, void *data, size_t size);
 int sceHttpDeleteRequest(int req);
 int sceHttpDeleteConnection(int conn);
 int sceHttpSetRecvTimeOut(int id, uint32_t usec);
+int sceHttpSetSendTimeOut(int id, uint32_t usec);
+int sceHttpSetConnectTimeOut(int id, uint32_t usec);
+int sceHttpAbortRequest(int req);
+
+static volatile int running;                 // sessione attiva (qui sopra: keep_req lo guarda)
 
 // Una connessione che resta aperta: le richieste dello stesso thread la riusano.
-typedef struct { int conn; char host[200]; } Keep;
+// slot: 1 invio, 2 ricezione; la richiesta in corso si interrompe all'arresto.
+typedef struct { int conn; char host[200]; int slot; } Keep;
 static void keep_close(Keep *k) { if (k->conn >= 0) sceHttpDeleteConnection(k->conn); k->conn = -1; }
+static pthread_mutex_t reqmx = PTHREAD_MUTEX_INITIALIZER;
+static int busy_req[3] = { -1, -1, -1 };
+static void req_mark(Keep *k, int req) { if (!k->slot) return; pthread_mutex_lock(&reqmx); busy_req[k->slot] = req; pthread_mutex_unlock(&reqmx); }
+static void req_abort_all(void) {
+  pthread_mutex_lock(&reqmx);
+  for (int i = 1; i < 3; i++) if (busy_req[i] >= 0) sceHttpAbortRequest(busy_req[i]);
+  pthread_mutex_unlock(&reqmx);
+}
 
 // method 0 GET, 1 POST. Ritorna lo stato HTTP o <0; *out (malloc) solo per le GET.
 static int keep_req(Keep *k, int method, const char *url, const char *token, const void *body, size_t blen,
@@ -125,9 +142,13 @@ static int keep_req(Keep *k, int method, const char *url, const char *token, con
   if (out) { *out = NULL; *olen = 0; }
   int tmpl = get_tmpl(); if (tmpl < 0) return -1;
   for (int attempt = 0; attempt < 2; attempt++) {
-    if (k->conn < 0) { k->conn = sceHttpCreateConnectionWithURL(tmpl, url, 1); if (k->conn < 0) return k->conn; }
+    if (k->slot && !running) break;       // sessione fermata: niente secondo tentativo
+    if (k->conn < 0) { k->conn = sceHttpCreateConnectionWithURL(tmpl, url, 1); if (k->conn < 0) { k->conn = -1; return -1; } }
     int req = sceHttpCreateRequestWithURL(k->conn, method, url, (uint64_t)blen);
     if (req < 0) { keep_close(k); continue; }
+    req_mark(k, req);
+    sceHttpSetConnectTimeOut(req, 5 * 1000 * 1000);
+    sceHttpSetSendTimeOut(req, 6 * 1000 * 1000);
     sceHttpSetRecvTimeOut(req, 6 * 1000 * 1000);
     char auth[760]; snprintf(auth, sizeof auth, "Bearer %s", token);
     sceHttpAddRequestHeader(req, "Authorization", auth, 1);
@@ -151,6 +172,7 @@ static int keep_req(Keep *k, int method, const char *url, const char *token, con
       if (buf) buf[total] = 0;
       if (out) { *out = buf; *olen = total; }
     }
+    req_mark(k, -1);
     sceHttpDeleteRequest(req);
     if (rc >= 0) return status;
     keep_close(k);            // connessione caduta: se ne apre una nuova, una volta
@@ -174,17 +196,21 @@ static Speaker *spk;                         // MAXSPK, allocati una volta
 static int16_t mic[MIC_RING]; static int mic_w, mic_r;
 static volatile int gen;                     // cambia a ogni avvio/arresto: i thread vecchi escono
 static volatile int live;                    // thread della sessione ancora vivi
-static volatile int running;                 // sessione attiva
 static volatile int mic_ok;                  // 1 microfono aperto
 static volatile int mic_silent_s;            // secondi di fila con il microfono a zero
 static volatile int muted;                   // muto (dal server o dal comando locale)
 static volatile int me_speaking;
-static volatile int left;                    // uscito dal party con il comando: niente riavvio fino al prossimo controllo
+static volatile int asleep;                  // console a riposo o in spegnimento: niente rete, microfono, audio
+static volatile int poke;                    // ricontrolla subito session.json e il party
+static int cmd_mute = -1, cmd_leave;         // comandi per il gestore, sotto mx
+static pthread_mutex_t ctlmx = PTHREAD_MUTEX_INITIALIZER;   // avvio e arresto della sessione
 static char me[40], party_name[80], url_base[200], tok[700];
 static int nmembers;
 static time_t last_party_ok;
 
-static void party_mute_remote(int on);
+static uint64_t ms_now(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return (uint64_t)ts.tv_sec * 1000 + (uint64_t)ts.tv_nsec / 1000000; }
+// attesa a passi brevi: all'arresto i thread della sessione escono subito
+static void nap(int g, int ms) { for (; ms > 0 && gen == g; ms -= 50) usleep((useconds_t)(ms < 50 ? ms : 50) * 1000); }
 
 // ---------------------------------------------------------------- microfono --
 int sceKernelLoadStartModule(const char *path, size_t argc, const void *argv, uint32_t flags, void *opt, int *res);
@@ -195,7 +221,7 @@ typedef int (*in_input_t)(int, void *);
 typedef int (*in_close_t)(int);
 typedef int (*in_silent_t)(int);
 static in_open_t in_open; static in_input_t in_input; static in_close_t in_close; static in_silent_t in_silent;
-static int mic_handle = -1;
+static volatile int mic_handle = -1;
 
 static int load_audioin(void) {
   if (in_open) return 1;
@@ -279,8 +305,8 @@ static void *mic_thread(void *arg) {
 // -------------------------------------------------------------------- invio --
 static void *tx_thread(void *arg) {
   int g = (int)(intptr_t)arg;
-  Keep k = { -1, "" };
-  int err = 0;
+  Keep k = { -1, "", 1 };
+  int err = 0, backoff = 200;
   OpusEncoder *enc = opus_encoder_create(VSR, 1, OPUS_APPLICATION_VOIP, &err);
   if (enc) {
     opus_encoder_ctl(enc, OPUS_SET_BITRATE(20000));
@@ -325,11 +351,11 @@ static void *tx_thread(void *arg) {
     pthread_mutex_lock(&mx); snprintf(ptoken, sizeof ptoken, "%s", tok);
     snprintf(url, sizeof url, "%s/api/v1/party/voice?codec=opus&seq=%u", url_base, seq++); pthread_mutex_unlock(&mx);
     int st = keep_req(&k, 1, url, ptoken, pkt, (size_t)len, "application/octet-stream", NULL, NULL, 0);
-    if (st == 204) fails = 0;
+    if (st == 204) { fails = 0; backoff = 200; }
     else {
       if (fails++ < 3 || fails % 50 == 0) lg("voce: invio -> %d", st);
-      if (st == 403) usleep(500 * 1000);                  // fuori dal party o muto: lo dirà il gestore
-      else if (st < 0) usleep(200 * 1000);
+      if (st == 403) nap(g, 500);                         // fuori dal party o muto: lo dirà il gestore
+      else if (st < 0) { nap(g, backoff); if (backoff < 5000) backoff *= 2; }   // rete giù: sempre più di rado
     }
   }
   if (enc) opus_encoder_destroy(enc);
@@ -387,19 +413,21 @@ static uint32_t rd32(const uint8_t *p) { return (uint32_t)p[0] | (uint32_t)p[1] 
 
 static void *rx_thread(void *arg) {
   int g = (int)(intptr_t)arg;
-  Keep k = { -1, "" };
-  uint32_t cursor = 0; char url[300], ptoken[700];
+  Keep k = { -1, "", 2 };
+  uint32_t cursor = 0; char url[300], ptoken[700]; int backoff = 400;
   while (gen == g) {
     pthread_mutex_lock(&mx); snprintf(ptoken, sizeof ptoken, "%s", tok);
     snprintf(url, sizeof url, "%s/api/v1/party/voice?after=%u&wait=1", url_base, cursor); pthread_mutex_unlock(&mx);
     unsigned char *b = NULL; size_t len = 0;
-    time_t t0 = time(NULL);
     int st = keep_req(&k, 0, url, ptoken, NULL, 0, NULL, &b, &len, 256 * 1024);
     if (st != 200 || len < 10 || memcmp(b, "OVC1", 4)) {
       free(b);
-      usleep(st == 403 ? 2000 * 1000 : time(NULL) == t0 ? 400 * 1000 : 100 * 1000);
+      // errori di fila: da 0,4 s fino a 10 s tra un tentativo e l'altro
+      if (st == 403) nap(g, 2000);
+      else { nap(g, backoff); if (backoff < 10000) backoff *= 2; }
       continue;
     }
+    backoff = 400;
     cursor = rd32(b + 4);
     int count = rd16(b + 8); size_t o = 10;
     for (int i = 0; i < count && o < len && gen == g; i++) {
@@ -424,14 +452,24 @@ int sceAudioOutOpen(int userId, int type, int index, unsigned len, unsigned freq
 int sceAudioOutOutput(int handle, const void *ptr);
 int sceAudioOutClose(int handle);
 
+static volatile int out_h = -1;              // porta della voce, aperta e chiusa dal suo thread
+
 static void *out_thread(void *arg) {
   int g = (int)(intptr_t)arg;
   sceAudioOutInit();
   // porta MAIN come la musica (sappiamo che suona anche dentro i giochi), mono S16
   int h = sceAudioOutOpen(255, 0, 0, OGRAIN, OSR, 0);
   if (h < 0) { lg("voce: uscita audio non aperta 0x%x", h); __sync_fetch_and_sub(&live, 1); return NULL; }
+  out_h = h;
   static int16_t out[OGRAIN]; float mixf[OGRAIN];
+  int backoff = 200, errs = 0;
   while (gen == g) {
+    if (h < 0) {   // porta persa: si riapre con calma, mai a vuoto
+      h = sceAudioOutOpen(255, 0, 0, OGRAIN, OSR, 0);
+      if (h < 0) { nap(g, backoff); if (backoff < 5000) backoff *= 2; continue; }
+      out_h = h;
+      lg("voce: uscita audio riaperta");
+    }
     int any = 0;
     for (int i = 0; i < OGRAIN; i++) mixf[i] = 0;
     pthread_mutex_lock(&mx);
@@ -468,19 +506,30 @@ static void *out_thread(void *arg) {
       if (x > 1) x = 1; else if (x < -1) x = -1;
       out[i] = (int16_t)(x * 30000);
     }
-    sceAudioOutOutput(h, out);   // bloccante: dà il ritmo (5,3 ms)
+    int r = sceAudioOutOutput(h, out);   // bloccante: dà il ritmo (5,3 ms)
+    if (r >= 0) { backoff = 200; continue; }
+    // porta non più valida (riposo, uscita cambiata): senza attesa il ciclo girerebbe al 100%
+    if (errs++ < 5) lg("voce: uscita audio 0x%x, la riapro tra %d ms", r, backoff);
+    sceAudioOutClose(h); h = out_h = -1;
+    nap(g, backoff); if (backoff < 5000) backoff *= 2;
   }
-  sceAudioOutOutput(h, NULL); sceAudioOutClose(h);
+  if (h >= 0) { sceAudioOutOutput(h, NULL); sceAudioOutClose(h); }
+  out_h = -1;
   __sync_fetch_and_sub(&live, 1);
   return NULL;
 }
 
 // --------------------------------------------------------------- controllo --
-static void session_stop(const char *why) {
-  if (!running) return;
-  __sync_fetch_and_add(&gen, 1);
-  running = 0;
-  for (int i = 0; i < 300 && live > 0; i++) usleep(10 * 1000);   // il microfono si chiude nel suo thread
+// Ferma la sessione e aspetta al massimo wait_ms che i thread escano. Si può
+// chiamare da più thread: solo il primo la ferma.
+static void session_stop(const char *why, int wait_ms) {
+  pthread_mutex_lock(&ctlmx);
+  int was = running;
+  if (was) { __sync_fetch_and_add(&gen, 1); running = 0; }
+  pthread_mutex_unlock(&ctlmx);
+  if (!was) return;
+  req_abort_all();                                                     // le richieste in corso non aspettano il timeout
+  for (int i = 0; i < wait_ms / 10 && live > 0; i++) usleep(10 * 1000);   // il microfono si chiude nel suo thread
   pthread_mutex_lock(&mx);
   for (int k = 0; k < MAXSPK; k++) { spk[k].oid[0] = 0; spk[k].fill = spk[k].playing = 0; }
   pthread_mutex_unlock(&mx);
@@ -495,19 +544,20 @@ static int spawn_n(void *(*fn)(void *), int g) {
   return 1;
 }
 
+// con ctlmx preso: così il riposo non arriva a metà avvio
 static void session_start(void) {
-  if (running || live > 0) return;
+  if (running || live > 0 || asleep) return;
   int g = __sync_add_and_fetch(&gen, 1);
   pthread_mutex_lock(&mx); mic_w = mic_r = 0; pthread_mutex_unlock(&mx);
   mic_silent_s = 0;
   if (!guard_no_mic) { guard_phase = 1; mic_ok = mic_open(); }
   else mic_ok = 0;
   guard_phase = 2;
+  running = 1;
   if (mic_ok && !spawn_n(mic_thread, g)) { in_close(mic_handle); mic_handle = -1; mic_ok = 0; }
   if (mic_ok) spawn_n(tx_thread, g);
   spawn_n(rx_thread, g);
   spawn_n(out_thread, g);
-  running = 1;
   lg("voce: attiva nel servizio (%s)", mic_ok ? "microfono acceso" : "solo ascolto");
   // niente notifica "voce attiva": in background la PS5 di solito non fa sentire
   // l'audio del servizio, e prometterlo sarebbe falso. Il microfono, se si apre,
@@ -517,7 +567,7 @@ static void session_start(void) {
 
 // GET /party: in un party? come si chiama, quanti siamo, sono muto?
 static int party_poll(const char *token) {
-  Keep k = { -1, "" };
+  Keep k = { -1, "", 0 };
   char url[300]; snprintf(url, sizeof url, "%s/api/v1/party", url_base);
   unsigned char *b = NULL; size_t len = 0;
   int st = keep_req(&k, 0, url, token, NULL, 0, NULL, &b, &len, 128 * 1024);
@@ -532,47 +582,104 @@ static int party_poll(const char *token) {
     pthread_mutex_lock(&mx);
     jcpy(party_name, sizeof party_name, p, "name");
     nmembers = jlen(jget(p, "members"));
-    JFOR(m, jget(p, "members")) if (!strcasecmp(jstr(m, "online_id", ""), me)) muted = jbool(m, "muted");
+    // un muto chiesto e non ancora spedito vince su quello del server
+    if (cmd_mute < 0) JFOR(m, jget(p, "members")) if (!strcasecmp(jstr(m, "online_id", ""), me)) muted = jbool(m, "muted");
     pthread_mutex_unlock(&mx);
   }
   json_free(j);
   return in;
 }
 
+static void party_mute_remote(int on) {
+  char token[700], url[300], body[32];
+  pthread_mutex_lock(&mx); snprintf(token, sizeof token, "%s", tok); snprintf(url, sizeof url, "%s/api/v1/party/mute", url_base); pthread_mutex_unlock(&mx);
+  if (!token[0] || !strncmp(url, "/api", 4)) return;
+  snprintf(body, sizeof body, "{\"muted\":%s}", on ? "true" : "false");
+  Keep k = { -1, "", 0 };
+  int st = keep_req(&k, 1, url, token, body, strlen(body), "application/json", NULL, NULL, 0);
+  keep_close(&k);
+  lg("voce: muto %s -> %d", on ? "acceso" : "spento", st);
+}
+
+// 1 = uscito
+static int party_leave(void) {
+  char token[700], url[300];
+  pthread_mutex_lock(&mx); snprintf(token, sizeof token, "%s", tok); snprintf(url, sizeof url, "%s/api/v1/party/leave", url_base); pthread_mutex_unlock(&mx);
+  if (!token[0] || !strncmp(url, "/api", 4)) return 0;
+  Keep k = { -1, "", 0 };
+  int st = keep_req(&k, 1, url, token, "{}", 2, "application/json", NULL, NULL, 0);
+  keep_close(&k);
+  lg("voce: uscita dal party -> %d", st);
+  return st == 200;
+}
+
+// Il gestore legge session.json ogni SESSION_EVERY_S e chiede /party ogni
+// PARTY_EVERY_S solo dentro un party (fuori ogni IDLE_EVERY_S, o subito quando
+// la UI lascia o cambia l'account); se la rete non risponde aspetta sempre di
+// più, fino a NET_BACKOFF_MAX_S. A riposo non fa niente. Fa anche le richieste
+// dei comandi (muto, uscita), così chi comanda non aspetta mai il server.
 static void *manager(void *arg) {
   (void)arg;
-  time_t last_poll = 0; int in_party = 0;
+  uint64_t next_poll = 0, next_sess = 0; int in_party = 0, has_session = 0, ui_had = 0, backoff_s = 0;
+  char token[700] = "", last_token[700] = "";
   for (;;) {
     usleep(500 * 1000);
+    if (asleep) { in_party = 0; next_poll = next_sess = 0; continue; }   // a riposo: niente file né rete
+    if (poke) { poke = 0; next_poll = next_sess = 0; }
+    uint64_t now = ms_now();
     int age = ui_active_age();
     int ui_has_it = age >= 0 && age < UI_VOICE_S;
-    char sess[2048] = "", token[700] = "", server[200] = "";
-    int has_session = read_session(sess, sizeof sess) > 0;
-    if (has_session) {
-      JVal *j = json_parse(sess);
-      if (j) { jcpy(token, sizeof token, j, "token"); jcpy(server, sizeof server, j, "server"); pthread_mutex_lock(&mx); jcpy(me, sizeof me, j, "online_id"); pthread_mutex_unlock(&mx); json_free(j); }
+    if (now >= next_sess) {
+      next_sess = now + SESSION_EVERY_S * 1000;
+      char sess[2048] = "", server[200] = "";
+      token[0] = 0;
+      if (read_session(sess, sizeof sess) > 0) {
+        JVal *j = json_parse(sess);
+        if (j) { jcpy(token, sizeof token, j, "token"); jcpy(server, sizeof server, j, "server"); pthread_mutex_lock(&mx); jcpy(me, sizeof me, j, "online_id"); pthread_mutex_unlock(&mx); json_free(j); }
+      }
       has_session = token[0] != 0 && !auth_blocked(token);
+      if (strcmp(token, last_token)) { snprintf(last_token, sizeof last_token, "%s", token); next_poll = 0; }   // account cambiato
+      if (has_session) {
+        pthread_mutex_lock(&mx);
+        snprintf(tok, sizeof tok, "%s", token);
+        // il server della sessione ("omega" = quello predefinito)
+        snprintf(url_base, sizeof url_base, "%s", (!server[0] || !strcmp(server, "omega")) ? base_url : server);
+        pthread_mutex_unlock(&mx);
+      }
+    }
+    // comandi arrivati dal server di controllo
+    pthread_mutex_lock(&mx); int m = cmd_mute, l = cmd_leave; cmd_leave = 0; pthread_mutex_unlock(&mx);
+    if (m >= 0) {
+      if (has_session) party_mute_remote(m);
+      pthread_mutex_lock(&mx); if (cmd_mute == m) cmd_mute = -1; pthread_mutex_unlock(&mx);
+    }
+    if (l && has_session && party_leave()) {
+      in_party = 0; next_poll = ms_now() + PARTY_EVERY_S * 1000;
+      session_stop("uscito dal party", 3000);
+      notify(_("Omega \xC2\xB7 sei uscito dal party"));
     }
     if (!has_session || ui_has_it) {
-      if (running) session_stop(ui_has_it ? "la UI è in primo piano" : "nessuna sessione");
-      in_party = 0; last_poll = 0;
+      if (running) session_stop(ui_has_it ? "la UI è in primo piano" : "nessuna sessione", 3000);
+      in_party = 0;
+      if (ui_has_it) ui_had = 1;
       continue;
     }
-    pthread_mutex_lock(&mx);
-    snprintf(tok, sizeof tok, "%s", token);
-    // il server della sessione ("omega" = quello predefinito)
-    snprintf(url_base, sizeof url_base, "%s", (!server[0] || !strcmp(server, "omega")) ? base_url : server);
-    pthread_mutex_unlock(&mx);
-    time_t now = time(NULL);
-    if (left) { left = 0; in_party = 0; last_poll = now; }
-    if (now - last_poll >= PARTY_EVERY_S) {
-      last_poll = now;
+    if (ui_had) { ui_had = 0; next_poll = 0; }    // la UI ha appena lasciato: forse in un party
+    now = ms_now();
+    if (now >= next_poll) {
       int r = party_poll(token);
-      if (r >= 0) { in_party = r; last_party_ok = now; }
-      else if (now - last_party_ok > 60) in_party = 0;   // rete giù da un minuto
+      if (r >= 0) {
+        in_party = r; last_party_ok = time(NULL); backoff_s = 0;
+        next_poll = ms_now() + (in_party ? PARTY_EVERY_S : IDLE_EVERY_S) * 1000;
+      } else {
+        backoff_s = backoff_s ? backoff_s * 2 : PARTY_EVERY_S * 2;
+        if (backoff_s > NET_BACKOFF_MAX_S) backoff_s = NET_BACKOFF_MAX_S;
+        next_poll = ms_now() + (uint64_t)backoff_s * 1000;
+        if (time(NULL) - last_party_ok > 60) in_party = 0;   // rete giù da un minuto
+      }
     }
-    if (in_party && !running && !guard_off) session_start();
-    else if (!in_party && running) session_stop("non sei più in un party");
+    if (in_party && !running && !guard_off) { pthread_mutex_lock(&ctlmx); session_start(); pthread_mutex_unlock(&ctlmx); }
+    else if (!in_party && running) session_stop("non sei più in un party", 3000);
   }
   return NULL;
 }
@@ -589,36 +696,36 @@ void voice_start(const char *base, int (*tmpl_fn)(void), int (*session_fn)(char 
   if (omega_thread(manager, NULL) != 0) lg("voce: gestore non avviato");
 }
 
-// ------------------------------------------------- comandi e stato (ctl.c) --
-static void party_mute_remote(int on) {
-  char token[700], url[300], body[32];
-  pthread_mutex_lock(&mx); snprintf(token, sizeof token, "%s", tok); snprintf(url, sizeof url, "%s/api/v1/party/mute", url_base); pthread_mutex_unlock(&mx);
-  if (!token[0] || !url_base[0]) return;
-  snprintf(body, sizeof body, "{\"muted\":%s}", on ? "true" : "false");
-  Keep k = { -1, "" };
-  int st = keep_req(&k, 1, url, token, body, strlen(body), "application/json", NULL, NULL, 0);
-  keep_close(&k);
-  lg("voce: muto %s -> %d", on ? "acceso" : "spento", st);
+// Riposo o spegnimento (power.c): sessione ferma, microfono e porta audio chiusi
+// entro un secondo, e il gestore non riparte finché non torna 0.
+void voice_power(int sleeping) {
+  if (!sleeping) {
+    pthread_mutex_lock(&ctlmx); int was = asleep; asleep = 0; poke = 1; pthread_mutex_unlock(&ctlmx);
+    if (was) lg("voce: di nuovo attiva dopo il riposo");
+    return;
+  }
+  uint64_t until = ms_now() + 1000;
+  pthread_mutex_lock(&ctlmx); asleep = 1; pthread_mutex_unlock(&ctlmx);
+  session_stop("riposo della console", 1000);
+  while ((mic_handle >= 0 || out_h >= 0) && ms_now() < until) usleep(10 * 1000);
+  if (mic_handle >= 0 || out_h >= 0) lg("voce: riposo, microfono o audio ancora aperti");
 }
 
+// ------------------------------------------------- comandi e stato (ctl.c) --
+// Non aspetta mai la rete: il muto vale subito, le richieste al server le fa il
+// gestore. 1 = fatto, 2 = accettato (in corso), 0 = comando sconosciuto o senza sessione.
 int voice_command(const char *cmd) {
   if (!strcmp(cmd, "mute") || !strcmp(cmd, "unmute") || !strcmp(cmd, "toggle")) {
+    pthread_mutex_lock(&mx);
     int on = !strcmp(cmd, "toggle") ? !muted : !strcmp(cmd, "mute");
-    muted = on;
-    party_mute_remote(on);
-    notify(on ? _("Omega \xC2\xB7 microfono spento") : _("Omega \xC2\xB7 microfono acceso"));
+    muted = on; cmd_mute = on;
+    pthread_mutex_unlock(&mx);
+    if (notify) notify(on ? _("Omega \xC2\xB7 microfono spento") : _("Omega \xC2\xB7 microfono acceso"));
     return 1;
   }
   if (!strcmp(cmd, "leave")) {
-    char token[700], url[300];
-    pthread_mutex_lock(&mx); snprintf(token, sizeof token, "%s", tok); snprintf(url, sizeof url, "%s/api/v1/party/leave", url_base); pthread_mutex_unlock(&mx);
-    if (!token[0]) return 0;
-    Keep k = { -1, "" };
-    int st = keep_req(&k, 1, url, token, "{}", 2, "application/json", NULL, NULL, 0);
-    keep_close(&k);
-    lg("voce: uscita dal party -> %d", st);
-    if (st == 200) { left = 1; session_stop("uscito dal party"); notify(_("Omega \xC2\xB7 sei uscito dal party")); }
-    return st == 200;
+    pthread_mutex_lock(&mx); int ok = tok[0] != 0; if (ok) cmd_leave = 1; pthread_mutex_unlock(&mx);
+    return ok ? 2 : 0;
   }
   return 0;
 }

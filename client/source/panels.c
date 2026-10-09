@@ -3,9 +3,16 @@
 // lettore di notizie.
 #include "app.h"
 #include "servers.h"
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <math.h>
+#include <netinet/in.h>
+#include <poll.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 #include <time.h>
+#include <unistd.h>
 
 // ------------------------------------------------------------------ utilità --
 static void backdrop(float t, int strength) { fill_rect(0, 0, SCREEN_W, SCREEN_H, RGB(2, 4, 10), (int)(strength * t)); }
@@ -136,19 +143,81 @@ static int cc_sel; static float cc_anim;
 
 // Riposo, riavvio e spegnimento: le stesse richieste del menu di sistema
 // (libSceSystemService), così la console chiude giochi e dischi in ordine.
+// Prima: niente se si sta scrivendo (installazione, spostamento, copia,
+// salvataggi); poi giochi esterni smontati, sync() e il servizio avvisato
+// (prepare_power) perché chiuda i suoi lavori. Se la console rifiuta, o non si
+// spegne entro un minuto (o si sveglia dal riposo), il servizio riprende.
 #ifdef PS5
 int sceSystemStateMgrEnterStandby(void);
 int sceSystemStateMgrReboot(void);
 int sceSystemStateMgrTurnOff(void);
 #endif
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+static SDL_atomic_t power_req;   // 1 dalla richiesta finché il servizio non riprende
+int power_pending(void) { return SDL_AtomicGet(&power_req) != 0; }
+
+// POST /v1/cmd al servizio con una socket propria e al massimo ms in tutto: il
+// servizio può non esserci o essere bloccato. Stato HTTP o -1.
+static int svc_cmd(const char *cmd, int ms) {
+  int s = socket(AF_INET, SOCK_STREAM, 0); if (s < 0) return -1;
+#ifdef SO_NOSIGPIPE
+  { int one = 1; setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof one); }
+#endif
+  struct sockaddr_in a; memset(&a, 0, sizeof a);
+  a.sin_family = AF_INET; a.sin_port = htons(9095); a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  fcntl(s, F_SETFL, fcntl(s, F_GETFL) | O_NONBLOCK);
+  Uint32 end = SDL_GetTicks() + (Uint32)ms; int st = -1;
+  struct pollfd p = { s, POLLOUT, 0 };
+  if (connect(s, (struct sockaddr *)&a, sizeof a) == 0 || (errno == EINPROGRESS && poll(&p, 1, ms) == 1)) {
+    int e = 0; socklen_t el = sizeof e; getsockopt(s, SOL_SOCKET, SO_ERROR, &e, &el);
+    char body[96], req[320]; snprintf(body, sizeof body, "{\"cmd\":\"%s\"}", cmd);
+    int n = snprintf(req, sizeof req, "POST /v1/cmd HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s", (int)strlen(body), body);
+    if (!e && send(s, req, (size_t)n, MSG_NOSIGNAL) == n) {
+      char r[64]; size_t got = 0; p.events = POLLIN;
+      while (got < sizeof r - 1) {
+        int left = (int)(end - SDL_GetTicks()); if (left <= 0 || poll(&p, 1, left) != 1) break;
+        ssize_t k = recv(s, r + got, sizeof r - 1 - got, 0); if (k <= 0) break;
+        got += (size_t)k;
+      }
+      r[got] = 0;
+      if (got >= 12 && !strncmp(r, "HTTP/1.", 7)) st = atoi(r + 9);
+    }
+  }
+  close(s);
+  return st;
+}
+static int power_watch(void *ud) {
+  (void)ud; time_t t0 = time(NULL);
+  while (time(NULL) - t0 < 60) SDL_Delay(1000);   // dal riposo l'orologio salta avanti: si esce subito
+  omega_log("alimentazione: ancora accesa, il servizio riprende (%d)", svc_cmd("resume_power", 4000));
+  SDL_AtomicSet(&power_req, 0);
+  return 0;
+}
 static void power_do(int idx, void *ud) {
   if (idx != 0) return;
   int what = (int)(intptr_t)ud, rc = -1;
+  if (power_pending()) return;
+  if (install_busy()) { set_msg(_("C'è già un'installazione in corso"), 1); return; }
+  if (storage_busy()) { set_msg(_("C'è già uno spostamento in corso"), 1); return; }
+  if (files_busy()) { set_msg(_("C'è già una copia in corso"), 1); return; }
+  if (saves_busy()) { set_msg(_("Attendi: c'è già un'operazione sui salvataggi in corso"), 1); return; }
   omega_log("alimentazione: %s", what == 0 ? "riposo" : what == 1 ? "riavvio" : "spegnimento");
+  SDL_AtomicSet(&power_req, 1);
+  drives_unmount_all();
+  sync();
+  omega_log("alimentazione: servizio avvisato (%d)", svc_cmd("prepare_power", 4000));
 #ifdef PS5
   rc = what == 0 ? sceSystemStateMgrEnterStandby() : what == 1 ? sceSystemStateMgrReboot() : sceSystemStateMgrTurnOff();
 #endif
-  if (rc != 0) { char m[120]; snprintf(m, sizeof m, _("La console ha rifiutato la richiesta (0x%x)"), (unsigned)rc); set_msg(m, 1); }
+  if (rc != 0) {
+    svc_cmd("resume_power", 4000); SDL_AtomicSet(&power_req, 0);
+    char m[120]; snprintf(m, sizeof m, _("La console ha rifiutato la richiesta (0x%x)"), (unsigned)rc); set_msg(m, 1);
+    return;
+  }
+  SDL_Thread *t = SDL_CreateThread(power_watch, "power", NULL);
+  if (t) SDL_DetachThread(t); else SDL_AtomicSet(&power_req, 0);
 }
 static void power_menu(int idx, void *ud) {
   (void)ud;

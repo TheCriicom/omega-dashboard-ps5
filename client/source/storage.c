@@ -11,6 +11,9 @@
 //   disco → interna   si smonta da /system_ex/app, i file vanno in /user/app/<TID>
 //                     (dove c'era solo la registrazione) e si registra lì;
 //   disco → disco     si copia e, spostando, si smonta e si cancella l'originale.
+// Ogni file copiato va su disco (fsync) e, prima di togliere l'originale, sync().
+// Durante la copia la destinazione ha il file OMEGA_COPY_MARK: se resta (corrente
+// mancata a metà), al tentativo successivo la copia parziale si toglie.
 // I giochi installati dal sistema come pacchetto (app.pkg cifrato) non si
 // possono montare da un disco: per quelli c'è lo spostamento della console.
 // Anche i file .pkg (gli installer) si spostano o si copiano da qui (pkgs.c).
@@ -117,6 +120,7 @@ static int copy_file(const char *a, const char *b) {
     mv_done += r;
   }
   if (r < 0) rc = -5;
+  if (!rc && fsync(out) != 0) rc = -10;   // exFAT sui dischi USB: i dati restano in cache finché non si chiede
   free(buf); close(in); if (close(out) != 0 && !rc) rc = -6;
   if (rc) unlink(b);
   else { struct stat s; if (stat(a, &s) == 0) chmod(b, s.st_mode & 0777); }
@@ -145,6 +149,20 @@ static int rm_tree(const char *p) {
   return rmdir(p) || rc;
 }
 
+// copia a metà di un tentativo precedente: sul disco si toglie tutta; nella
+// memoria interna restano la registrazione di Omega (sce_sys, mount.lnk)
+static void clean_partial(const char *dst, int internal) {
+  if (!internal) { rm_tree(dst); return; }
+  DIR *d = opendir(dst); if (!d) return;
+  struct dirent *e;
+  while ((e = readdir(d))) {
+    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..") || !strcmp(e->d_name, "sce_sys") || !strcmp(e->d_name, "mount.lnk") || !strcmp(e->d_name, OMEGA_COPY_MARK)) continue;
+    char q[1024]; snprintf(q, sizeof q, "%s/%s", dst, e->d_name); rm_tree(q);
+  }
+  closedir(d);
+  char mk[1024]; snprintf(mk, sizeof mk, "%s/" OMEGA_COPY_MARK, dst); unlink(mk);
+}
+
 static int move_thread(void *arg) {
   MoveJob *j = arg;
   mv_done = 0; mv_cancel = 0; mv_err = 0; mv_result[0] = 0;
@@ -157,14 +175,15 @@ static int move_thread(void *arg) {
     char dir[400]; snprintf(dir, sizeof dir, "%s", j->dst_mount);
     mkdir(dir, 0777);
     snprintf(dst, sizeof dst, "%s/%s", dir, base);
+    char part[620]; snprintf(part, sizeof part, "%s.part", dst); unlink(part);   // resto di una copia interrotta
     struct stat s; mv_total = stat(src, &s) == 0 ? (long long)s.st_size : 0;
     double fr = free_gb(dir);
     if (fr >= 0 && fr * 1e9 < mv_total + 64e6) { snprintf(mv_result, sizeof mv_result, _("Spazio insufficiente su %s: servono %.1f GB"), j->dst_label, mv_total / 1e9); mv_err = 1; goto out; }
     if (access(dst, 0) == 0) { snprintf(mv_result, sizeof mv_result, _("Su %s c'è già un file con questo nome"), j->dst_label); mv_err = 1; goto out; }
     snprintf(mv_phase, sizeof mv_phase, "%s", j->copy_only ? _("Copia") : _("Spostamento"));
     if (!j->copy_only && rename(src, dst) == 0) { mv_done = mv_total; }   // stesso disco: istantaneo
-    else if ((rc = copy_file(src, dst)) != 0) { snprintf(mv_result, sizeof mv_result, mv_cancel ? _("Operazione annullata") : _("Copia non riuscita (errore %d): il disco è pieno o in sola lettura?"), rc); mv_err = !mv_cancel; goto out; }
-    else if (!j->copy_only) unlink(src);
+    else if ((rc = copy_file(src, part)) != 0 || (rc = rename(part, dst)) != 0) { unlink(part); snprintf(mv_result, sizeof mv_result, mv_cancel ? _("Operazione annullata") : _("Copia non riuscita (errore %d): il disco è pieno o in sola lettura?"), rc); mv_err = !mv_cancel; goto out; }
+    else if (!j->copy_only) { sync(); unlink(src); }
     snprintf(mv_result, sizeof mv_result, j->copy_only ? _("Copiato su %s") : _("Spostato su %s"), j->dst_label);
     goto out;
   }
@@ -177,10 +196,13 @@ static int move_thread(void *arg) {
   // spazio: quello del gioco più mezzo giga di margine
   double fr = free_gb(j->to_internal ? APP_ROOT : j->dst_mount);
   if (fr >= 0 && fr * 1e9 < mv_total + 512e6) { snprintf(mv_result, sizeof mv_result, _("Spazio insufficiente su %s: servono %.1f GB, liberi %.1f GB"), j->dst_label, mv_total / 1e9, fr); mv_err = 1; goto out; }
+  char mk[700]; snprintf(mk, sizeof mk, "%s/" OMEGA_COPY_MARK, dst);
+  if (access(mk, 0) == 0) { omega_log("archivio: copia interrotta in %s, la tolgo", dst); clean_partial(dst, j->to_internal); }
   // a destinazione deve esserci al massimo la registrazione che fa Omega (mount.lnk + sce_sys)
   char eb[700]; snprintf(eb, sizeof eb, "%s/eboot.bin", dst);
   if (access(eb, 0) == 0) { snprintf(mv_result, sizeof mv_result, _("%s c'è già su %s"), e->name, j->dst_label); mv_err = 1; goto out; }
   snprintf(mv_phase, sizeof mv_phase, "%s", j->copy_only ? _("Copia") : _("Spostamento"));
+  if (mkdir(dst, 0777) == 0 || errno == EEXIST) { int fd = open(mk, O_WRONLY | O_CREAT | O_TRUNC, 0666); if (fd >= 0) { fsync(fd); close(fd); } sync(); }
   rc = copy_tree(src, dst);
   if (rc) {
     if (!j->to_internal) rm_tree(dst);   // copia a metà sul disco: via
@@ -190,6 +212,8 @@ static int move_thread(void *arg) {
   snprintf(mv_phase, sizeof mv_phase, "%s", _("Verifica"));
   long long got = tree_size(dst, 0);
   if (got < mv_total) { snprintf(mv_result, sizeof mv_result, _("La copia è incompleta (%lld di %lld byte): l'originale è intatto"), got, mv_total); mv_err = 1; goto out; }
+  // copia completa e su disco: solo adesso si toglie il segno e poi l'originale
+  unlink(mk); sync();
   snprintf(mv_phase, sizeof mv_phase, "%s", _("Registrazione"));
 #ifdef PS5
   if (j->to_internal) {
@@ -259,6 +283,7 @@ int storage_view(InstallView *v) {
   }
   return 0;
 }
+int storage_busy(void) { return SDL_AtomicGet(&mv_state) == 1; }
 void storage_cancel(void) { if (SDL_AtomicGet(&mv_state) == 1) mv_cancel = 1; }
 
 // ------------------------------------------------------ scelta del disco --

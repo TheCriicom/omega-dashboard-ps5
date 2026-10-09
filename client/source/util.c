@@ -122,7 +122,8 @@ void sha_hex(Sha256 *c, char out[65]) {
 
 int file_sha256(const char *path, char out[65]) {
   FILE *f = fopen(path, "rb"); if (!f) return -1;
-  Sha256 c; sha_init(&c); unsigned char b[65536]; size_t k;
-  while ((k = fread(b, 1, sizeof b, f)) > 0) sha_update(&c, b, k);
-  fclose(f); sha_hex(&c, out); return 0;
+  unsigned char *b = malloc(65536); if (!b) { fclose(f); return -1; }   // anche dai thread: niente 64 KB sullo stack
+  Sha256 c; sha_init(&c); size_t k;
+  while ((k = fread(b, 1, 65536, f)) > 0) sha_update(&c, b, k);
+  free(b); fclose(f); sha_hex(&c, out); return 0;
 }

@@ -1,12 +1,13 @@
 // Omega UI — giochi sui dischi esterni (HDD/SSD USB, chiavette, M.2).
 //
-// Un thread guarda ogni 4 s quali dischi sono collegati (/mnt/usb0..7,
+// Un thread guarda ogni 3 s quali dischi sono collegati (/mnt/usb0..7,
 // /mnt/ext0 archivio esteso, /mnt/ext1 M.2) e cerca le cartelle di gioco nei
 // posti usati dagli strumenti della scena: la radice del disco, homebrew/,
 // etaHEN/games/, games/, PS5/, PS4/ (un livello sotto). Una cartella è un gioco
 // se ha sce_sys/param.json (PS5) o sce_sys/param.sfo (PS4) e eboot.bin.
 // I giochi trovati compaiono in home con l'icona del disco (home.c, drives_merge);
-// se il disco si scollega spariscono, senza toccare niente.
+// se il disco si scollega spariscono, senza toccare niente. Le cartelle si
+// rileggono solo quando cambiano (o ogni 15 s), i param.json solo se cambiati.
 //
 // Avvio (come ShadowMount / dump_runner, letti dal loro codice): la cartella si
 // monta in SOLA LETTURA (nullfs) su /system_ex/app/<TID>; la prima volta si
@@ -32,13 +33,14 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <sys/mount.h>
+#include <time.h>
 #include <unistd.h>
 
 #define MAX_EXT 128
 typedef struct { char tid[16], name[96], src[300], icon[320], art[320], drive[40]; } ExtGame;
 
 static ExtGame found[MAX_EXT]; static int nfound;     // ultimo risultato (sotto mx)
-static SDL_mutex *mx; static SDL_atomic_t changed, wake;
+static SDL_mutex *mx, *amx; static SDL_atomic_t changed, wake, am_reset, frozen_until;
 static unsigned last_sig, last_apps_sig;
 
 // --------------------------------------------------------------- dischi --
@@ -175,15 +177,39 @@ static int read_sfo(const char *p, char *tid, char *name, size_t nn) {
   return tid_ok(tid);
 }
 
+// param.json/sfo già letti: si rileggono solo se cambiano data o dimensione
+// (o la lingua). Solo il thread dei dischi li usa.
+typedef struct { char path[400], lang[16], tid[16], name[96]; time_t mt; off_t sz; int ok; } Meta;
+static Meta meta[MAX_EXT * 2]; static int nmeta, meta_next;
+static int read_meta(const char *p, int sfo, char *tid, char *name, size_t nn) {
+  struct stat st; if (stat(p, &st) != 0) return 0;
+  const char *lang = i18n_locale();
+  for (int i = 0; i < nmeta; i++) {
+    Meta *m = &meta[i];
+    if (strcmp(m->path, p) || m->mt != st.st_mtime || m->sz != st.st_size || strcmp(m->lang, lang)) continue;
+    snprintf(tid, 16, "%s", m->tid); snprintf(name, nn, "%s", m->name); return m->ok;
+  }
+  int ok = sfo ? read_sfo(p, tid, name, nn) : read_json(p, tid, name, nn);
+  Meta *m = NULL;
+  for (int i = 0; i < nmeta && !m; i++) if (!strcmp(meta[i].path, p)) m = &meta[i];
+  if (!m) { if (nmeta < MAX_EXT * 2) m = &meta[nmeta++]; else { m = &meta[meta_next]; meta_next = (meta_next + 1) % (MAX_EXT * 2); } }
+  snprintf(m->path, sizeof m->path, "%s", p); snprintf(m->lang, sizeof m->lang, "%s", lang);
+  snprintf(m->tid, sizeof m->tid, "%s", tid); snprintf(m->name, sizeof m->name, "%s", name);
+  m->mt = st.st_mtime; m->sz = st.st_size; m->ok = ok;
+  return ok;
+}
+
 // una cartella: è un gioco? (sce_sys/param.json o param.sfo, ed eboot.bin)
 static void probe(const char *dir, const char *drive, ExtGame *list, int *n) {
   if (*n >= MAX_EXT) return;
   char p[400], tid[16] = "", name[96] = "";
   snprintf(p, sizeof p, "%s/eboot.bin", dir);
   if (access(p, 0) != 0) return;
+  snprintf(p, sizeof p, "%s/" OMEGA_COPY_MARK, dir);
+  if (access(p, 0) == 0) return;   // copia a metà (storage.c): non è ancora un gioco
   snprintf(p, sizeof p, "%s/sce_sys/param.json", dir);
-  int ok = access(p, 0) == 0 && read_json(p, tid, name, sizeof name);
-  if (!ok) { snprintf(p, sizeof p, "%s/sce_sys/param.sfo", dir); ok = access(p, 0) == 0 && read_sfo(p, tid, name, sizeof name); }
+  int ok = access(p, 0) == 0 && read_meta(p, 0, tid, name, sizeof name);
+  if (!ok) { snprintf(p, sizeof p, "%s/sce_sys/param.sfo", dir); ok = access(p, 0) == 0 && read_meta(p, 1, tid, name, sizeof name); }
   if (!ok) return;
   for (int i = 0; i < *n; i++) if (!strcmp(list[i].tid, tid)) return;   // lo stesso gioco su due dischi: il primo
   ExtGame *g = &list[(*n)++]; memset(g, 0, sizeof *g);
@@ -208,12 +234,13 @@ static void scan_dir(const char *base, const char *drive, ExtGame *list, int *n)
   closedir(d);
 }
 
+static const char *SUB[] = { "", "/homebrew", "/etaHEN/games", "/games", "/Games", "/PS5", "/PS4", "/ShadowMount", "/backups" };
+#define NSUB (sizeof SUB / sizeof *SUB)
 static void scan_all(ExtGame *list, int *n) {
-  static const char *SUB[] = { "", "/homebrew", "/etaHEN/games", "/games", "/Games", "/PS5", "/PS4", "/ShadowMount", "/backups" };
   *n = 0;
   Drive dr[16]; int nd = drives_list(dr, 16);
   for (int i = 0; i < nd; i++)
-    for (unsigned k = 0; k < sizeof SUB / sizeof *SUB; k++) { char b[200]; snprintf(b, sizeof b, "%s%s", dr[i].mount, SUB[k]); scan_dir(b, dr[i].label, list, n); }
+    for (unsigned k = 0; k < NSUB; k++) { char b[200]; snprintf(b, sizeof b, "%s%s", dr[i].mount, SUB[k]); scan_dir(b, dr[i].label, list, n); }
   for (unsigned k = 0; k < sizeof INTERNAL_GAMES / sizeof *INTERNAL_GAMES; k++) {
     char b[200]; snprintf(b, sizeof b, ROOT "%s", INTERNAL_GAMES[k]);
     scan_dir(b, _("Memoria interna"), list, n);
@@ -227,6 +254,25 @@ static void scan_all(ExtGame *list, int *n) {
     probe(cp[i], lab, list, n);
     scan_dir(cp[i], lab, list, n);
   }
+}
+
+// Firma delle cartelle dove si cercano i giochi: dischi collegati e data di
+// modifica delle cartelle. Costa solo qualche stat: si guarda ogni 3 s e la
+// lettura completa parte appena cambia (disco collegato, gioco copiato).
+static unsigned dirs_sig(void) {
+  unsigned h = 2166136261u;
+  #define MIX(v) do { unsigned long long x_ = (unsigned long long)(v); for (int b_ = 0; b_ < 8; b_++) { h ^= (unsigned)(x_ & 0xff); h *= 16777619u; x_ >>= 8; } } while (0)
+  Drive dr[16]; int nd = drives_list(dr, 16);
+  struct stat st; char b[400];
+  for (int i = 0; i < nd; i++) {
+    for (const char *c = dr[i].mount; *c; c++) MIX(*c);
+    for (unsigned k = 0; k < NSUB; k++) { snprintf(b, sizeof b, "%s%s", dr[i].mount, SUB[k]); if (stat(b, &st) == 0) { MIX(k); MIX(st.st_mtime); MIX(st.st_ino); } }
+  }
+  for (unsigned k = 0; k < sizeof INTERNAL_GAMES / sizeof *INTERNAL_GAMES; k++) { snprintf(b, sizeof b, ROOT "%s", INTERNAL_GAMES[k]); if (stat(b, &st) == 0) { MIX(k); MIX(st.st_mtime); } }
+  static char cp[32][300]; int nc = paths_list(0, cp, 32);
+  for (int i = 0; i < nc; i++) if (stat(cp[i], &st) == 0) { MIX(i); MIX(st.st_mtime); }
+  #undef MIX
+  return h;
 }
 
 // Firma dei titoli installati e degli homebrew: cambia quando ShadowMount monta
@@ -251,12 +297,17 @@ static unsigned apps_sig(void) {
 
 static void automount_tick(ExtGame *list, int n);
 
+static int am_frozen(void) { Uint32 u = (Uint32)SDL_AtomicGet(&frozen_until); return u && (int)(u - SDL_GetTicks()) > 0; }
+
 static int scan_thread(void *arg) {
   (void)arg;
-  static ExtGame tmp[MAX_EXT];
+  static ExtGame tmp[MAX_EXT]; static int n;
+  unsigned dsig = 0; Uint32 last_full = 0;
   for (;;) {
-    int n = 0;
-    if (g_prefs.ext_games) scan_all(tmp, &n);
+    // lettura completa solo se le cartelle sono cambiate, altrimenti ogni 15 s
+    unsigned ds = g_prefs.ext_games ? dirs_sig() : 0;
+    if (!g_prefs.ext_games) n = 0;
+    else if (ds != dsig || !last_full || SDL_GetTicks() - last_full >= 15000) { scan_all(tmp, &n); dsig = ds; last_full = SDL_GetTicks(); }
     // firma dell'elenco: se cambia (disco collegato o tolto) la home si rifà
     unsigned sig = 2166136261u;
     for (int i = 0; i < n; i++) for (const char *c = tmp[i].src; *c; c++) { sig ^= (unsigned char)*c; sig *= 16777619u; }
@@ -266,7 +317,7 @@ static int scan_thread(void *arg) {
       last_sig = sig; SDL_AtomicSet(&changed, 1);
       omega_log("dischi esterni: %d giochi", n);
     }
-    if (g_prefs.ext_games && g_prefs.automount) automount_tick(tmp, n);
+    if (g_prefs.ext_games && g_prefs.automount && !am_frozen()) { SDL_LockMutex(amx); automount_tick(tmp, n); SDL_UnlockMutex(amx); }
     unsigned as = apps_sig();
     if (as != last_apps_sig) {
       if (last_apps_sig) { SDL_AtomicSet(&changed, 1); omega_log("titoli o homebrew cambiati: si rifà la home"); }
@@ -281,7 +332,7 @@ static int scan_thread(void *arg) {
 
 static void ensure(void) {
   if (mx) return;
-  mx = SDL_CreateMutex();
+  mx = SDL_CreateMutex(); amx = SDL_CreateMutex();
   SDL_Thread *t = SDL_CreateThread(scan_thread, "drives", NULL);
   if (t) SDL_DetachThread(t);
 }
@@ -316,10 +367,21 @@ int unmount(const char *dir, int flags);
 int app_register(const char *title_id, const char *dir);   // install.c
 #define IOV(s) { (void *)(s), strlen(s) + 1 }
 
-static int remount_system_ex(void) {
-  // come ShadowMount: /system_ex in scrittura, per creare il punto di mount
+// Il punto di mount /system_ex/app/<TID>: se c'è già non si tocca niente.
+// Altrimenti, come ShadowMount, /system_ex (exFAT di sistema) va in scrittura,
+// ma solo il tempo di creare la cartella: poi torna subito in sola lettura,
+// così uno spegnimento brusco non lascia sporca la partizione di sistema.
+static void mount_point(const char *dst) {
+  struct stat st; if (stat(dst, &st) == 0) return;
+  struct statfs sf; int was_ro = statfs("/system_ex", &sf) == 0 && (sf.f_flags & MNT_RDONLY);
   struct iovec iov[] = { IOV("from"), IOV("/dev/ssd0.system_ex"), IOV("fspath"), IOV("/system_ex"), IOV("fstype"), IOV("exfatfs") };
-  return nmount(iov, sizeof iov / sizeof *iov, MNT_UPDATE);
+  int rc = nmount(iov, sizeof iov / sizeof *iov, MNT_UPDATE);
+  mkdir(dst, 0755);
+  if (rc == 0 && was_ro) {
+    sync();
+    struct iovec ro[] = { IOV("from"), IOV("/dev/ssd0.system_ex"), IOV("fspath"), IOV("/system_ex"), IOV("fstype"), IOV("exfatfs") };
+    if (nmount(ro, sizeof ro / sizeof *ro, MNT_UPDATE | MNT_RDONLY) != 0) omega_log("dischi: /system_ex non torna in sola lettura (%d)", errno);
+  }
 }
 static int mount_ro(const char *src, const char *dst) {
   struct iovec iov[] = { IOV("fstype"), IOV("nullfs"), IOV("from"), IOV(src), IOV("fspath"), IOV(dst) };
@@ -328,9 +390,10 @@ static int mount_ro(const char *src, const char *dst) {
 static int copy_file(const char *a, const char *b) {
   int in = open(a, O_RDONLY); if (in < 0) return -1;
   int out = open(b, O_WRONLY | O_CREAT | O_TRUNC, 0666); if (out < 0) { close(in); return -1; }
-  static char buf[64 * 1024]; ssize_t k; int rc = 0;
-  while ((k = read(in, buf, sizeof buf)) > 0) if (write(out, buf, (size_t)k) != k) { rc = -1; break; }
-  close(in); close(out); return rc;
+  char *buf = malloc(64 * 1024); ssize_t k; int rc = buf ? 0 : -1;   // anche dal thread dei dischi: niente buffer condiviso
+  while (buf && (k = read(in, buf, 64 * 1024)) > 0) if (write(out, buf, (size_t)k) != k) { rc = -1; break; }
+  if (!rc) fsync(out);
+  free(buf); close(in); close(out); return rc;
 }
 static void copy_tree(const char *a, const char *b) {
   mkdir(b, 0777);
@@ -352,8 +415,7 @@ int drives_prepare_launch(const AppEntry *a, char *err, size_t en) {
   if (access(p, 0) != 0) { snprintf(err, en, _("%s non risponde: il disco è ancora collegato?"), a->drive); return -1; }
 #ifdef PS5
   char dst[64]; snprintf(dst, sizeof dst, "/system_ex/app/%s", a->tid);
-  remount_system_ex();
-  mkdir(dst, 0755);
+  mount_point(dst);
   unmount(dst, 0);                       // mount vecchio rimasto (avvio precedente)
   if (mount_ro(a->src, dst) != 0) { snprintf(err, en, _("Non riesco a collegare il gioco dal disco (errore %d)"), errno); return -1; }
   // prima volta: metadati in /user/app/<TID> e registrazione nel sistema
@@ -390,7 +452,11 @@ void drives_after_game(void) {
   while (fscanf(f, "%31s", tid) == 1) {
 #ifdef PS5
     // col montaggio automatico i giochi restano montati finché c'è il disco
-    if (!strcmp(tid, run) || (g_prefs.automount && g_prefs.ext_games)) { kl += (size_t)snprintf(keep + kl, sizeof keep - kl, "%s\n", tid); continue; }
+    if (!strcmp(tid, run) || (g_prefs.automount && g_prefs.ext_games)) {
+      char ln[40]; snprintf(ln, sizeof ln, "%s\n", tid);
+      if (!strstr(keep, ln) && kl + strlen(ln) < sizeof keep) kl += (size_t)snprintf(keep + kl, sizeof keep - kl, "%s", ln);   // senza doppioni
+      continue;
+    }
     char dst[64]; snprintf(dst, sizeof dst, "/system_ex/app/%s", tid);
     int rc = unmount(dst, 0);
     omega_log("dischi: smontato %s -> %d", tid, rc);
@@ -398,6 +464,41 @@ void drives_after_game(void) {
   }
   fclose(f);
   f = fopen(OMEGA_DIR "/ext-mounted.txt", "w"); if (f) { fputs(keep, f); fclose(f); }
+}
+
+// Prima di riposo, riavvio o spegnimento (panels.c): si smontano tutti i giochi
+// esterni, dall'ultimo montato al primo, così i dischi si staccano puliti.
+// L'elenco resta: al prossimo avvio drives_after_game fa il resto. Il gioco in
+// esecuzione non si tocca (lo chiude il sistema). Per un minuto il montaggio
+// automatico è fermo; se la console non si spegne riparte da capo.
+void drives_unmount_all(void) {
+  if (amx) SDL_LockMutex(amx);
+  Uint32 until = SDL_GetTicks() + 60000; SDL_AtomicSet(&frozen_until, (int)(until ? until : 1));
+  SDL_AtomicSet(&am_reset, 1);
+  char tids[64][16]; int n = 0;
+  FILE *f = fopen(OMEGA_DIR "/ext-mounted.txt", "r");
+  if (f) {
+    char tid[32];
+    while (n < 64 && fscanf(f, "%31s", tid) == 1) {
+      int dup = 0; for (int i = 0; i < n; i++) if (!strcmp(tids[i], tid)) dup = 1;
+      if (!dup && tid_ok(tid)) snprintf(tids[n++], 16, "%s", tid);
+    }
+    fclose(f);
+  }
+#ifdef PS5
+  int app = sceSystemServiceGetAppIdOfRunningBigApp(); char run[64] = "";
+  if (app >= 0) sceSystemServiceGetAppTitleId(app, run);
+  for (int i = n - 1; i >= 0; i--) {
+    if (!strcmp(tids[i], run)) continue;
+    char dst[64]; snprintf(dst, sizeof dst, "/system_ex/app/%s", tids[i]);
+    int rc = unmount(dst, 0);
+    if (rc != 0 && errno != EINVAL && errno != ENOENT) rc = unmount(dst, MNT_FORCE);
+    omega_log("dischi: smontato %s prima dello spegnimento -> %d", tids[i], rc);
+  }
+#else
+  omega_log("(desktop) %d giochi esterni da smontare", n);
+#endif
+  if (amx) SDL_UnlockMutex(amx);
 }
 
 // ---------------------------------------------------- montaggio automatico --
@@ -408,6 +509,7 @@ void drives_after_game(void) {
 static char am_tid[MAX_EXT][16], am_src[MAX_EXT][300]; static int am_n;
 static char am_bad[MAX_EXT][300]; static int am_nbad;
 static void automount_tick(ExtGame *list, int n) {
+  if (SDL_AtomicSet(&am_reset, 0)) am_n = am_nbad = 0;   // smontati per lo spegnimento: si rimonta tutto
   for (int i = 0; i < am_n; ) {
     char p[400]; snprintf(p, sizeof p, "%s/eboot.bin", am_src[i]);
     if (access(p, 0) == 0) { i++; continue; }

@@ -369,6 +369,7 @@ static void diag_send(int idx, void *ud) {
   diag_add(b, &o, cap, "onion", OMEGA_DIR "/omega-onion.log", 30 * 1024);
   diag_add(b, &o, cap, "voice_guard", OMEGA_DIR "/voice-guard.txt", 1024);
   diag_add(b, &o, cap, "hen_setup", OMEGA_DIR "/hen-setup.txt", 1024);
+  diag_add(b, &o, cap, "installer", OMEGA_DIR "/omega-installer.log", 20 * 1024);
   if (o + 3 < cap) { b[o++] = '}'; b[o++] = '}'; b[o] = 0; } else { free(b); return; }
   net_req(HTTP_POST, OMEGA_API "/diag/report", b, diag_done, NULL);
   free(b);
@@ -445,13 +446,14 @@ void files_open(const char *start) {
 static int copy_file(const char *src, const char *dst) {
   int in = open(src, O_RDONLY); if (in < 0) return -1;
   int out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777); if (out < 0) { close(in); return -2; }
-  char *buf = malloc(1 << 20); ssize_t r; int rc = 0;
+  char *buf = malloc(1 << 20); ssize_t r = 0; int rc = buf ? 0 : -7;
   while (buf && (r = read(in, buf, 1 << 20)) > 0) {
     if (write(out, buf, (size_t)r) != r) { rc = -3; break; }
     copy_done += r;
   }
   if (r < 0) rc = -4;
-  free(buf); close(in); close(out);
+  if (!rc && fsync(out) != 0) rc = -8;   // su disco prima di togliere l'originale
+  free(buf); close(in); if (close(out) != 0 && !rc) rc = -9;
   return rc;
 }
 static long long tree_size(const char *p) {
@@ -493,13 +495,14 @@ static int copy_thread(void *arg) {
   if (j->cut && rename(j->src, j->dst) == 0) copy_err = 0;
   else {
     copy_err = copy_tree(j->src, j->dst);
-    if (!copy_err && j->cut) remove_tree(j->src);
+    if (!copy_err && j->cut) { sync(); remove_tree(j->src); }
   }
   free(j);
   SDL_AtomicSet(&copy_state, 2);
   return 0;
 }
 
+int files_busy(void) { return SDL_AtomicGet(&copy_state) == 1; }
 void files_tick(void) {
   if (SDL_AtomicGet(&copy_state) != 2) return;
   SDL_AtomicSet(&copy_state, 0);

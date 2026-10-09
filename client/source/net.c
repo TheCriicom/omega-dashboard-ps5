@@ -8,12 +8,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
+// Oltre 1 MB il log diventa omega-ui.log.1 (se ne tiene uno solo) e si riparte.
+#define LOG_MAX (1024 * 1024)
 void omega_log(const char *fmt, ...) {
   int fd = open(OMEGA_LOG, O_WRONLY | O_CREAT | O_APPEND, 0666);
   if (fd < 0) return;
+  struct stat st;
+  if (fstat(fd, &st) == 0 && st.st_size > LOG_MAX) {
+    close(fd); rename(OMEGA_LOG, OMEGA_LOG ".1");
+    fd = open(OMEGA_LOG, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    if (fd < 0) return;
+  }
   char l[1536];
   int n = snprintf(l, sizeof l, "[%lu] ", (unsigned long)time(NULL));
   va_list ap; va_start(ap, fmt); n += vsnprintf(l + n, sizeof l - n, fmt, ap); va_end(ap);

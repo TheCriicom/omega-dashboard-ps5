@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026.10.09.2
+
+- **Turning off, restarting and rest mode**: the daemon now watches the
+  system power state (the `SceSystemStateMgrInfo` / `SceSystemStateMgrStatus`
+  kernel flags, same method as ShadowMountPlus and OnionHEN) and, before the
+  console goes down, stops music, party voice, the control server and PatchDL
+  downloads and unmounts the games started from external drives (the one in
+  the foreground stays mounted during rest mode). It resumes by itself a few
+  seconds after waking up (`daemon/source/power.c`).
+- Turn off / Restart / Rest Mode from Omega's menu refuse while an install,
+  a copy or a cloud save job is running, unmount the external games and ask
+  the daemon to quiesce first.
+- `/system_ex` is no longer left mounted read-write after launching a game
+  from an external drive.
+- Daemon: audio output errors no longer spin the CPU; party and notification
+  polling slow down when not needed and back off without network; music
+  uploads and voice commands no longer block the control server; the UI only
+  restarts the daemon when it is really stuck; crash handler on its own stack;
+  SIGTERM handled; logs capped at 1 MB.
+- Files written with fsync before rename (updates, loader autoload entries,
+  library, player state, game copies); interrupted game copies are detected
+  and cleaned up.
+- Installer: every network step is written to `/data/Omega/omega-installer.log`,
+  which is now part of the diagnostics.
+
 ## 2026.10.09.1
 
 - **Game updates**: Omega finds the latest official update for every installed

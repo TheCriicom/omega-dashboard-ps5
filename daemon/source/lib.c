@@ -13,6 +13,7 @@
 #include <strings.h>
 #include <time.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #define MAX_ITEMS 2000
 #define MAX_JSON (8 * 1024 * 1024)
@@ -178,8 +179,11 @@ static void save_locked(void) {
     for (int k = 0; k < it->nshots; k++) { if (k) fputc(',', f); fputc('"', f); fputs(it->shots[k], f); fputc('"', f); }
     fputs("]}", f);
   }
-  fputs("]}\n", f); fclose(f);
-  rename(tmp, path);
+  fputs("]}\n", f);
+  // su disco prima del rename: una console spenta a metà non lascia la libreria vuota
+  int ok = fflush(f) == 0 && fsync(fileno(f)) == 0;
+  if (fclose(f) != 0) ok = 0;
+  if (ok) rename(tmp, path); else unlink(tmp);
   seq++;
 }
 

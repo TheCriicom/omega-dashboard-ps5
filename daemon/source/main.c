@@ -32,6 +32,7 @@
 #include "lib.h"
 #include "json.h"
 #include "player.h"
+#include "power.h"
 #include "voice.h"
 
 #ifndef OMEGA_BASE_URL
@@ -64,7 +65,7 @@
 #define LOOP_S           2
 
 #ifndef OMEGA_DAEMON_VERSION
-#define OMEGA_DAEMON_VERSION "2026.10.09.1"
+#define OMEGA_DAEMON_VERSION "2026.10.09.2"
 #endif
 #define HTTP_GET  0
 #define HTTP_POST 1
@@ -83,7 +84,11 @@ const char *i18n_code(void);
 // SCE_SYSTEM_SERVICE_PARAM_ID_LANG = 1; -1 se non disponibile
 static int sys_lang(void) { int v = -1; return sceSystemServiceParamGetInt(1, &v) == 0 ? v : -1; }
 
-static void lg(const char *fmt, ...) {
+// Il registro resta sotto 1 MB: oltre si tiene una sola copia vecchia (.1).
+#define LOG_MAX (1024 * 1024)
+void lg(const char *fmt, ...) {
+  struct stat ls;
+  if (stat(LOG, &ls) == 0 && ls.st_size > LOG_MAX) rename(LOG, LOG ".1");
   int fd = open(LOG, O_WRONLY | O_CREAT | O_APPEND, 0666); if (fd < 0) return;
   char b[512]; int n = snprintf(b, sizeof b, "[%lu] ", (unsigned long)time(NULL));
   va_list ap; va_start(ap, fmt); n += vsnprintf(b + n, sizeof b - n, fmt, ap); va_end(ap);
@@ -101,6 +106,8 @@ static int launch_omega(void) {
   struct sockaddr_in a; memset(&a, 0, sizeof a);
   a.sin_family = AF_INET; a.sin_port = htons(WEBSRV_PORT);
   a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  struct timeval tv = { 5, 0 };            // websrv bloccato non deve fermare il ciclo principale
+  setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv); setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
   if (connect(s, (struct sockaddr *)&a, sizeof a) != 0) { close(s); return -2; }
   const char *req =
     "GET /hbldr?pipe=0&daemon=0&path=" OMEGA_ELF "&cwd=" OMEGA_CWD " HTTP/1.1\r\n"
@@ -154,21 +161,34 @@ int sceHttpSetAutoRedirect(int id, int onOff);
 int sceHttpDeleteConnection(int conn);
 
 // Come nella UI, i certificati non vengono verificati.
+// La prepara il primo thread che ne ha bisogno (ciclo principale, voce, telecomando):
+// un passo alla volta sotto lucchetto, e un passo riuscito non si rifà, così un
+// errore a metà non lascia pool doppi né un sceSslInit ripetuto che fallisce per sempre.
 static int tmpl = -1;
+static pthread_mutex_t http_init_mx = PTHREAD_MUTEX_INITIALIZER;
 static int accept_cert(int e, void *const c[], int n, void *u) { (void)e; (void)c; (void)n; (void)u; return 0; }
 static int http_ready(void) {
   if (tmpl >= 0) return 1;
-  sceSysmoduleLoadModule(0x0009); sceSysmoduleLoadModule(0x0045); sceSysmoduleLoadModule(0x000A);
-  sceNetInit();
-  int pool = sceNetPoolCreate("omega-redirect", 32 * 1024, 0); if (pool < 0) return 0;
-  int ssl = sceSslInit(256 * 1024); if (ssl < 0) return 0;
-  int http = sceHttpInit(pool, ssl, 256 * 1024); if (http < 0) return 0;
-  tmpl = sceHttpCreateTemplate(http, "OmegaRedirect/1.00", 2, 1); if (tmpl < 0) return 0;
-  sceHttpSetConnectTimeOut(tmpl, 8 * 1000 * 1000);
-  sceHttpSetRecvTimeOut(tmpl, 8 * 1000 * 1000);
-  sceHttpsDisableOption(tmpl, 0x01);
-  sceHttpsSetSslCallback(tmpl, accept_cert, NULL);
-  return 1;
+  static int mods, pool = -1, ssl = -1, http = -1;
+  pthread_mutex_lock(&http_init_mx);
+  if (tmpl < 0) {
+    if (!mods) { sceSysmoduleLoadModule(0x0009); sceSysmoduleLoadModule(0x0045); sceSysmoduleLoadModule(0x000A); sceNetInit(); mods = 1; }
+    if (pool < 0) pool = sceNetPoolCreate("omega-redirect", 32 * 1024, 0);
+    if (pool >= 0 && ssl < 0) ssl = sceSslInit(256 * 1024);
+    if (ssl >= 0 && http < 0) http = sceHttpInit(pool, ssl, 256 * 1024);
+    if (http >= 0) {
+      int t = sceHttpCreateTemplate(http, "OmegaRedirect/1.00", 2, 1);
+      if (t >= 0) {
+        sceHttpSetConnectTimeOut(t, 8 * 1000 * 1000);
+        sceHttpSetRecvTimeOut(t, 8 * 1000 * 1000);
+        sceHttpsDisableOption(t, 0x01);
+        sceHttpsSetSslCallback(t, accept_cert, NULL);
+        tmpl = t;
+      }
+    }
+  }
+  pthread_mutex_unlock(&http_init_mx);
+  return tmpl >= 0;
 }
 
 static void json_esc(char *dst, size_t n, const char *src);
@@ -370,10 +390,12 @@ static long notif_last; static int notif_baseline;
 static int friends_online = -1;          // dall'ultima sincronizzazione, per il telecomando e il plugin
 static char sync_buf[64 * 1024];
 
-static void notify_tick(const char *token, int ui_fresh) {
-  if (ui_fresh) { notif_baseline = 0; return; }        // la UI le mostra come toast
+// 0 fatto, -1 rete o server non raggiungibili (il ciclo principale rallenta)
+static int notify_tick(const char *token, int ui_fresh) {
+  if (ui_fresh) { notif_baseline = 0; return 0; }        // la UI le mostra come toast
   char path[96]; snprintf(path, sizeof path, OMEGA_API "/sync?since=%ld", notif_baseline ? notif_last : 0L);
-  if (get_json(path, token, sync_buf, sizeof sync_buf) != 200) return;
+  int st = get_json(path, token, sync_buf, sizeof sync_buf);
+  if (st != 200) return st < 0 || st >= 500 ? -1 : 0;
   // amici connessi: chi ha una presenza diversa da offline
   JVal *sj = json_parse(sync_buf);
   if (sj) {
@@ -384,7 +406,7 @@ static void notify_tick(const char *token, int ui_fresh) {
   char tmp[32];
   if (json_get(sync_buf, "last_notification_id", tmp, sizeof tmp) == 0) {
     long last = atol(tmp);
-    if (!notif_baseline) { notif_last = last; notif_baseline = 1; return; }   // le precedenti non si ripetono
+    if (!notif_baseline) { notif_last = last; notif_baseline = 1; return 0; }   // le precedenti non si ripetono
     // per ogni notifica nuova: "title", più "body" per i messaggi
     const char *p = strstr(sync_buf, "\"notifications\":[");
     int shown = 0;
@@ -404,6 +426,7 @@ static void notify_tick(const char *token, int ui_fresh) {
     if (shown) lg("notifiche di sistema: %d", shown);
     notif_last = last;
   }
+  return 0;
 }
 
 // ----------------------------------------------------------------- presenza --
@@ -428,9 +451,9 @@ static int ui_active_age(void) {
   return stat(OMEGA_UI_ACTIVE, &st) == 0 ? (int)(time(NULL) - st.st_mtime) : -1;
 }
 
-static void notify_from_loop(void) {
+static int notify_from_loop(void) {
   char token[700];
-  if (session_token(token, sizeof token)) notify_tick(token, ui_in_foreground());
+  return session_token(token, sizeof token) ? notify_tick(token, ui_in_foreground()) : 0;
 }
 
 // La console si annuncia al server ogni 30 s: indirizzo nella rete di casa e
@@ -628,19 +651,41 @@ static void on_crash(int sig, siginfo_t *si, void *ucv) {
 #endif
   _exit(128 + sig);
 }
+// SIGTERM/SIGHUP/SIGINT (un caricatore che ferma i payload): solo un flag,
+// la chiusura in ordine la fa il ciclo principale.
+static volatile sig_atomic_t term_req;
+static void on_term(int sig) { (void)sig; term_req = 1; }
 static void guard_signals(void) {
   // il telefono o il browser chiudono spesso la connessione a metà risposta:
   // senza questo la scrittura sul socket chiuso (SIGPIPE) uccide il servizio
   signal(SIGPIPE, SIG_IGN);
+  // stack a parte per il gestore: con lo stack del thread esaurito non partirebbe
+  static char alt[64 * 1024];
+  stack_t ss; memset(&ss, 0, sizeof ss); ss.ss_sp = alt; ss.ss_size = sizeof alt;
+  int onstack = sigaltstack(&ss, NULL) == 0 ? SA_ONSTACK : 0;
   struct sigaction sa; memset(&sa, 0, sizeof sa);
-  sa.sa_sigaction = on_crash; sa.sa_flags = SA_SIGINFO;
+  sa.sa_sigaction = on_crash; sa.sa_flags = SA_SIGINFO | onstack;
   int sigs[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT };
   for (unsigned i = 0; i < sizeof sigs / sizeof *sigs; i++) sigaction(sigs[i], &sa, NULL);
+  struct sigaction st; memset(&st, 0, sizeof st);
+  st.sa_handler = on_term;
+  int ts[] = { SIGTERM, SIGHUP, SIGINT };
+  for (unsigned i = 0; i < sizeof ts / sizeof *ts; i++) sigaction(ts[i], &st, NULL);
+}
+
+// Chiusura in ordine (spegnimento, riavvio o caricatore che ci ferma): audio,
+// microfono e server prima, poi _exit senza passare dai distruttori della libc
+// mentre altri thread lavorano ancora.
+static void shutdown_now(const char *why) {
+  lg("chiusura: %s", why);
+  if (!power_sleeping()) { voice_power(1); player_power(1); }   // allo spegnimento l'ha già fatto power.c
+  _exit(0);
 }
 
 int main(void) {
   guard_signals();
   migrate_data_dir();
+  power_start();
   lg("==== omega_redirect avvio (%s) ====", OMEGA_DAEMON_VERSION);
   { int v = sys_lang(); i18n_init(v); lg("lingua: %s (valore di sistema %d)", i18n_code(), v); }
   // Una sola copia: più caricatori (OnionHEN, etaHEN, Payload Manager, autoloader)
@@ -669,7 +714,7 @@ int main(void) {
     }
   } else lg("Omega non è impostata come Home: nessun avvio automatico della UI");
 
-  int last_home = 1; time_t last = time(NULL), last_presence = 0, last_notify = 0, last_gameupd = 0, last_fan = 0;
+  int last_home = 1; time_t last = time(NULL), last_presence = 0, last_notify = 0, last_gameupd = 0, last_fan = 0, notify_every = NOTIFY_EVERY_S;
   for (;;) {
     int home = is_home();
     time_t now = time(NULL);
@@ -687,8 +732,16 @@ int main(void) {
       }
       last_home = home;
     }
+    if (power_stopping()) shutdown_now("la console si spegne");
+    if (term_req) shutdown_now("fermato dal caricatore");
+    // in riposo (o mentre la UI spegne la console) niente rete, disco né ventola
+    if (power_sleeping()) { last_home = 1; sleep(LOOP_S); continue; }
     if (now - last_presence >= PRESENCE_EVERY_S) { last_presence = now; presence_tick(); }
-    if (now - last_notify >= NOTIFY_EVERY_S) { last_notify = now; notify_from_loop(); }
+    // senza rete o con il server giù le notifiche si chiedono sempre più di rado (fino a 2 minuti)
+    if (now - last_notify >= notify_every) {
+      last_notify = now;
+      notify_every = notify_from_loop() < 0 ? (notify_every * 2 > 120 ? 120 : notify_every * 2) : NOTIFY_EVERY_S;
+    }
     if (now - last_gameupd >= GAMEUPD_EVERY_S) { last_gameupd = now; gameupd_tick(); }
     if (now - last_fan >= FAN_EVERY_S) { last_fan = now; fan_restore(); }
     diag_flush();
